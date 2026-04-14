@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "jvf_viewer/dist",
-  "installCommand": "npm ci",
+  "installCommand": "npm install --ignore-scripts=false",
   "rewrites": [
     { "source": "/jvf_viewer/(.*)", "destination": "/$1" },
     { "source": "/jvf_viewer", "destination": "/index.html" }
