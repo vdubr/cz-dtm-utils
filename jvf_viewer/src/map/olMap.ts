@@ -4,9 +4,12 @@ import { get as getProjection } from 'ol/proj.js';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 
+// S-JTSK bez towgs84 — shodné s ESRI:102067, jak ČÚZK AGS server renderuje tiles
+// towgs84 záměrně vynecháno: ČÚZK tiles neprošly datum shiftem, vektorová data
+// z JVF musí být v témže "falešném" CRS aby seděla na podklad
 proj4.defs(
   'EPSG:5514',
-  '+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +units=m +no_defs'
+  '+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +units=m +no_defs +type=crs'
 );
 register(proj4);
 

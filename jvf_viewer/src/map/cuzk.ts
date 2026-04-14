@@ -6,10 +6,22 @@ import Map from 'ol/Map.js';
 // AGS REST tile cache for ČÚZK maps — EPSG:5514 (wkid 102067)
 // Tile origin: (-925000, -920000), 256×256 tiles, resolutions are powers of 2048
 export const CUZK_TILE_ORIGIN: [number, number] = [-925000, -920000];
+// Přesné hodnoty z AGS REST API: https://ags.cuzk.cz/arcgis1/rest/services/ZTM/MapServer?f=json
 export const CUZK_RESOLUTIONS = [
-  2048.2549, 1024.1274, 512.0637, 256.0319, 128.0159,
-  64.0080, 32.0040, 16.0020, 8.0010, 4.0005,
-  2.0002, 1.0001, 0.5001, 0.2500,
+  2048.260096520193,
+  1024.1300482600966,
+  512.0650241300483,
+  256.03251206502415,
+  128.01625603251208,
+  64.00812801625604,
+  32.00406400812802,
+  16.00203200406401,
+  8.001016002032005,
+  4.000508001016002,
+  2.000254000508001,
+  1.0001270002540006,
+  0.5000635001270003,
+  0.25003175006350015,
 ];
 
 function makeCuzkTileGrid(): TileGrid {
