@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build --workspace=jvf_parser && npm run build --workspace=jvf_viewer",
+  "buildCommand": "npm run build",
   "outputDirectory": "jvf_viewer/dist",
   "installCommand": "npm install",
   "rewrites": [

@@ -4,5 +4,8 @@
   "workspaces": [
     "jvf_parser",
     "jvf_viewer"
-  ]
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=jvf_parser && npm run build --workspace=jvf_viewer"
+  }
 }
