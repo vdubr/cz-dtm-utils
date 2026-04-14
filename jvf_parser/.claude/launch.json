@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "jvf-viewer",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["/Users/vojtadubrovsky/_WORK/home/jvf_parser/start-viewer.sh"],
+      "port": 5174
+    }
+  ]
+}

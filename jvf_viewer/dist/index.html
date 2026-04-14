@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JVF DTM Prohlizec</title>
+  <script type="module" crossorigin src="/assets/index-BDzFo80p.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DsZehmQv.css">
+</head>
+<body>
+  <div id="app">
+    <header id="app-header">
+      <div class="header-left">
+        <span class="app-logo">&#11041;</span>
+        <h1>JVF DTM Prohlizec</h1>
+      </div>
+      <div class="header-right">
+        <button id="btn-upload" class="btn btn-primary">
+          <span class="btn-icon">&#8593;</span> Nahrat soubor
+        </button>
+        <input type="file" id="file-input" accept=".xml" style="display:none" />
+        <button id="btn-3d" class="btn btn-secondary">3D</button>
+      </div>
+    </header>
+    <div id="app-body">
+      <aside id="layer-panel">
+        <div class="panel-header">Vrstvy</div>
+        <div class="panel-section">
+          <div class="panel-section-title">Podkladove mapy</div>
+          <div id="base-layer-btns" class="base-layer-btns">
+            <button class="base-btn active" data-layer="zm">Zakladni mapa</button>
+            <button class="base-btn" data-layer="ortofoto">Ortofoto</button>
+          </div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">JVF vrstvy</div>
+          <div id="jvf-layers-list" class="jvf-layers-list">
+            <div class="empty-hint">Nahrajte JVF soubor</div>
+          </div>
+        </div>
+      </aside>
+      <main id="map-area">
+        <div id="map-container"></div>
+        <canvas id="three-canvas" style="display:none"></canvas>
+        <div id="loading-overlay" style="display:none">
+          <div class="spinner"></div>
+          <span>Nacitam...</span>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
