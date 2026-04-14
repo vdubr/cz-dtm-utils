@@ -11,7 +11,7 @@ import {
 import { setupFileUpload } from './ui/fileUpload.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
 import { setup3dToggle, getIs3dActive } from './ui/toggle3d.js';
-import { resetThreeCamera } from './viewer3d/threeScene.js';
+import { resetThreeCamera, setThreeLayerVisible } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
 import { createEmpty } from 'ol/extent.js';
@@ -66,7 +66,11 @@ function onJvfLoaded(data: JvfDtm): void {
   addJvfLayersToMap(olMap, layers);
 
   // Render layer panel
-  renderLayerPanel(layers);
+  renderLayerPanel(layers, {
+    onVisibilityChange: (elementName, visible) => {
+      setThreeLayerVisible(elementName, visible);
+    },
+  });
 
   // Enable zoom button now that data is loaded
   btnZoom.disabled = false;

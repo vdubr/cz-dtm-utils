@@ -1,8 +1,10 @@
 import type Map from 'ol/Map.js';
 import type { ObjektovyTyp } from 'jvf-parser';
-import { initThreeScene, disposeThreeScene, resizeThreeScene } from '../viewer3d/threeScene.js';
+import { initThreeScene, disposeThreeScene, resizeThreeScene, rebuildSceneGeometry } from '../viewer3d/threeScene.js';
 
 let is3dActive = false;
+let currentZExaggeration = 1;
+let currentObjekty: ObjektovyTyp[] = [];
 
 export function getIs3dActive(): boolean {
   return is3dActive;
@@ -21,8 +23,26 @@ export function setup3dToggle(
     if (is3dActive) {
       switchTo2d(olMap, mapContainer, threeCanvas, btn);
     } else {
-      switchTo3d(mapContainer, threeCanvas, btn, getObjekty());
+      currentObjekty = getObjekty();
+      switchTo3d(mapContainer, threeCanvas, btn, currentObjekty);
     }
+  });
+
+  // Z exaggeration buttons
+  const exaggerationBtns = document.querySelectorAll<HTMLButtonElement>('.btn-z-exag');
+  exaggerationBtns.forEach((exBtn) => {
+    exBtn.addEventListener('click', () => {
+      const value = Number(exBtn.dataset['exag'] ?? 1);
+      currentZExaggeration = value;
+
+      exaggerationBtns.forEach((b) => b.classList.remove('active'));
+      exBtn.classList.add('active');
+
+      // Rebuild geometry with new exaggeration — camera stays
+      if (is3dActive) {
+        rebuildSceneGeometry(currentZExaggeration);
+      }
+    });
   });
 }
 
@@ -39,12 +59,16 @@ function switchTo3d(
   mapContainer.style.display = 'none';
   canvas.style.display = 'block';
 
+  // Show z-exaggeration toolbar
+  const toolbar = document.getElementById('z-exag-toolbar');
+  if (toolbar) toolbar.style.display = 'flex';
+
   // Ensure canvas fills the map-area
   const mapArea = document.getElementById('map-area')!;
   canvas.width = mapArea.clientWidth;
   canvas.height = mapArea.clientHeight;
 
-  initThreeScene(canvas, objekty);
+  initThreeScene(canvas, objekty, currentZExaggeration);
 
   resizeObserver = new ResizeObserver(() => {
     canvas.width = mapArea.clientWidth;
@@ -70,6 +94,10 @@ function switchTo2d(
   }
 
   disposeThreeScene();
+
+  // Hide z-exaggeration toolbar
+  const toolbar = document.getElementById('z-exag-toolbar');
+  if (toolbar) toolbar.style.display = 'none';
 
   canvas.style.display = 'none';
   mapContainer.style.display = 'block';

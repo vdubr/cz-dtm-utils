@@ -343,6 +343,36 @@ html, body {
   cursor: grabbing;
 }
 
+/* ===== Z Exaggeration Toolbar ===== */
+#z-exag-toolbar {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(13, 17, 23, 0.82);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 6px 10px;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+
+.z-exag-label {
+  font-size: 11px;
+  color: #8b949e;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.btn-z-exag {
+  padding: 3px 10px !important;
+  font-size: 12px !important;
+  min-width: 36px;
+}
+
 /* ===== Loading Overlay ===== */
 #loading-overlay {
   position: absolute;

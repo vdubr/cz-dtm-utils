@@ -1,7 +1,11 @@
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { LAYER_COLORS } from '../map/jvfLayers.js';
 
-export function renderLayerPanel(layers: JvfVectorLayer[]): void {
+export interface LayerPanelCallbacks {
+  onVisibilityChange?: (elementName: string, visible: boolean) => void;
+}
+
+export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanelCallbacks = {}): void {
   const container = document.getElementById('jvf-layers-list')!;
   container.innerHTML = '';
 
@@ -52,9 +56,11 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
 
       item.addEventListener('click', () => {
         const visible = layer.olLayer.getVisible();
-        layer.olLayer.setVisible(!visible);
-        item.classList.toggle('active', !visible);
-        item.classList.toggle('inactive', visible);
+        const newVisible = !visible;
+        layer.olLayer.setVisible(newVisible);
+        item.classList.toggle('active', newVisible);
+        item.classList.toggle('inactive', !newVisible);
+        callbacks.onVisibilityChange?.(layer.objektovyTyp.elementName, newVisible);
       });
 
       groupEl.appendChild(item);
