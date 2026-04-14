@@ -1,12 +1,6 @@
 import * as THREE from 'three';
 import type { ObjektovyTyp, Geometry } from 'jvf-parser';
-import { LAYER_COLORS } from '../map/jvfLayers.js';
-
-const DEFAULT_COLOR = '#90a4ae';
-
-function hexToThreeColor(hex: string): THREE.Color {
-  return new THREE.Color(hex);
-}
+import { resolveStyle } from '../map/jvfLayers.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
@@ -91,7 +85,12 @@ function buildSceneObjects(
   zExaggeration: number
 ): void {
   for (const ot of objekty) {
-    const color = hexToThreeColor(LAYER_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR);
+    const s = resolveStyle(ot);
+    const color = new THREE.Color(s.strokeColor);
+    // fillColor may have 2-digit alpha suffix (e.g. '#ebe9e855') — strip it for Three.js
+    const fillHex = s.fillColor === 'none' ? s.strokeColor
+      : s.fillColor.length === 9 ? s.fillColor.slice(0, 7) : s.fillColor;
+    const fillColor = new THREE.Color(fillHex);
     const key = layerKey(ot);
 
     for (const zaz of ot.zaznamy) {
@@ -143,7 +142,7 @@ function buildSceneObjects(
             if (pts.length >= 9) {
               const g = new THREE.BufferGeometry();
               g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-              obj = new THREE.LineLoop(g, new THREE.LineBasicMaterial({ color }));
+              obj = new THREE.LineLoop(g, new THREE.LineBasicMaterial({ color: fillColor }));
             }
             break;
           }

@@ -1,5 +1,6 @@
 import 'ol/ol.css';
 import type { JvfDtm, ObjektovyTyp } from 'jvf-parser';
+import { runAllChecks } from 'jvf-parser';
 import { createOlMap } from './map/olMap.js';
 import { createZmLayer, createOrtofotoLayer, setupBaseLayerSwitcher } from './map/cuzk.js';
 import {
@@ -11,6 +12,7 @@ import {
 import { setupFileUpload } from './ui/fileUpload.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
 import { setup3dToggle, getIs3dActive } from './ui/toggle3d.js';
+import { showValidationModal } from './ui/validationModal.js';
 import { resetThreeCamera, setThreeLayerVisible } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -20,6 +22,7 @@ import { createEmpty } from 'ol/extent.js';
 let currentJvfLayers: JvfVectorLayer[] = [];
 let currentObjekty: ObjektovyTyp[] = [];
 let currentExtent: Extent = createEmpty();
+let currentDtm: JvfDtm | null = null;
 
 // Initialize map
 const olMap = createOlMap('map-container');
@@ -46,6 +49,14 @@ btnZoom.addEventListener('click', () => {
   }
 });
 
+// Setup validate button
+const btnValidate = document.getElementById('btn-validate') as HTMLButtonElement;
+btnValidate.addEventListener('click', () => {
+  if (!currentDtm) return;
+  const errors = runAllChecks(currentDtm);
+  showValidationModal(errors);
+});
+
 // Setup file upload
 setupFileUpload((data: JvfDtm) => {
   onJvfLoaded(data);
@@ -61,6 +72,7 @@ function onJvfLoaded(data: JvfDtm): void {
   currentJvfLayers = layers;
   currentObjekty = data.objekty;
   currentExtent = extent;
+  currentDtm = data;
 
   // Add to map
   addJvfLayersToMap(olMap, layers);
@@ -72,9 +84,11 @@ function onJvfLoaded(data: JvfDtm): void {
     },
   });
 
-  // Enable zoom button now that data is loaded
+  // Enable zoom + validate buttons now that data is loaded
   btnZoom.disabled = false;
   btnZoom.removeAttribute('title');
+  btnValidate.disabled = false;
+  btnValidate.removeAttribute('title');
 
   // Fit map to loaded data extent
   if (!isEmpty(extent)) {

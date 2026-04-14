@@ -6,26 +6,20 @@ import OlLineString from 'ol/geom/LineString.js';
 import OlPolygon from 'ol/geom/Polygon.js';
 import Style from 'ol/style/Style.js';
 import CircleStyle from 'ol/style/Circle.js';
+import IconStyle from 'ol/style/Icon.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import { extend, createEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
 import type Map from 'ol/Map.js';
 import type { ObjektovyTyp, Geometry, GmlPolygon } from 'jvf-parser';
+import { getSymbology, FALLBACK_COLORS, DEFAULT_COLOR } from './symbology.js';
 
-export const LAYER_COLORS: Record<string, string> = {
-  ZPS: '#64b5f6',
-  TI: '#ff9800',
-  DI: '#ffeb3b',
-  GAD: '#66bb6a',
-  OPL: '#ce93d8',
-};
+// Re-export for consumers that previously imported LAYER_COLORS from here
+export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
 
-const DEFAULT_COLOR = '#90a4ae';
-
-function getColor(obsahovaCast: string): string {
-  return LAYER_COLORS[obsahovaCast] ?? DEFAULT_COLOR;
-}
+/** Base path for SVG symbols served from public/symboly/ */
+const SVG_BASE = './symboly/';
 
 function flatCoordsToRing(flat: number[], dim: number): number[][] {
   const ring: number[][] = [];
@@ -44,25 +38,65 @@ function buildPolygonRings(poly: GmlPolygon): number[][][] {
   return rings;
 }
 
-function createStyleForGeom(geomType: Geometry['type'], color: string): Style {
+/** Resolve pixel stroke width from katalog mm value (1mm ≈ 3.78px at 96dpi, scale for screen legibility) */
+function mmToPx(mm: number): number {
+  return Math.max(1, mm * 3.78);
+}
+
+export interface ResolvedStyle {
+  fillColor: string;
+  strokeColor: string;
+  strokeWidthPx: number;
+  /** SVG filename for point symbol, if available */
+  pointSvg?: string;
+}
+
+/**
+ * Resolve style for an ObjektovyTyp from its codeBase.
+ * Exported so threeScene.ts can use the same logic.
+ */
+export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
+  const sym = getSymbology(ot.codeBase);
+  if (sym) {
+    const fill = sym.fillColor ?? (FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR) + '55';
+    const stroke = sym.strokeColor ?? (FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR);
+    const width = sym.strokeWidth != null ? mmToPx(sym.strokeWidth) : 1.5;
+    return { fillColor: fill, strokeColor: stroke, strokeWidthPx: width, pointSvg: sym.pointSvg };
+  }
+  const fallback = FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR;
+  return { fillColor: fallback + '33', strokeColor: fallback, strokeWidthPx: 1.5 };
+}
+
+function createStyleForGeom(
+  geomType: Geometry['type'],
+  s: ResolvedStyle,
+): Style {
   switch (geomType) {
     case 'Point':
+      if (s.pointSvg) {
+        return new Style({
+          image: new IconStyle({
+            src: SVG_BASE + s.pointSvg,
+            scale: 0.25,
+          }),
+        });
+      }
       return new Style({
         image: new CircleStyle({
           radius: 4,
-          fill: new Fill({ color }),
-          stroke: new Stroke({ color: 'rgba(0,0,0,0.4)', width: 1 }),
+          fill: new Fill({ color: s.strokeColor }),
+          stroke: new Stroke({ color: s.strokeColor, width: 1 }),
         }),
       });
     case 'LineString':
     case 'MultiCurve':
       return new Style({
-        stroke: new Stroke({ color, width: 2 }),
+        stroke: new Stroke({ color: s.strokeColor, width: s.strokeWidthPx }),
       });
     case 'Polygon':
       return new Style({
-        fill: new Fill({ color: color + '33' }),
-        stroke: new Stroke({ color, width: 1.5 }),
+        fill: new Fill({ color: s.fillColor }),
+        stroke: new Stroke({ color: s.strokeColor, width: Math.max(1, s.strokeWidthPx * 0.5) }),
       });
   }
 }
@@ -81,7 +115,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
   const totalExtent = createEmpty();
 
   for (const ot of objekty) {
-    const color = getColor(ot.obsahovaCast);
+    const s = resolveStyle(ot);
     const features: Feature[] = [];
 
     for (const zaznam of ot.zaznamy) {
@@ -119,7 +153,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 features.push(
                   new Feature({
                     geometry: new OlLineString(coords),
-                    style: createStyleForGeom('LineString', color),
+                    style: createStyleForGeom('LineString', s),
                   })
                 );
               }
@@ -129,7 +163,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         }
 
         if (feature) {
-          feature.set('style', createStyleForGeom(geom.type, color));
+          feature.set('style', createStyleForGeom(geom.type, s));
           features.push(feature);
         }
       }
@@ -141,15 +175,15 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     const layerExtent = source.getExtent();
     if (layerExtent) extend(totalExtent, layerExtent);
 
-    const style = createStyleForGeom(
+    const defaultStyle = createStyleForGeom(
       ot.zaznamy[0]?.geometrie[0]?.type ?? 'Point',
-      color
+      s,
     );
 
     const olLayer = new VectorLayer({
       source,
       style: (feature) => {
-        return (feature.get('style') as Style | undefined) ?? style;
+        return (feature.get('style') as Style | undefined) ?? defaultStyle;
       },
     });
 
