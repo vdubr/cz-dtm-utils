@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fixture: layer1-errors.xml
+  Záměrně nevalidní JVF soubor pro testování Vrstvy 1 (geometrická validita)
+  a Vrstvy 2 (konzistence Polygon ↔ MultiCurve).
+
+  Obsažené chyby:
+    INVALID_COORDINATE         — PodrobnyBodZPS/ID_INVALID_COORD: NaN v souřadnici Z
+    SRS_DIMENSION_MISMATCH     — PodrobnyBodZPS/ID_DIM_MISMATCH: 5 čísel, srsDimension=3 → 5%3≠0
+    LINESTRING_TOO_FEW_POINTS  — HraniceStavby/ID_LINE_FEW_PTS: pouze 1 bod
+    RING_TOO_FEW_POINTS        — BudovaPlocha/ID_RING_FEW_PTS: ring má 3 body (dim=2, 6 čísel)
+    RING_NOT_CLOSED            — BudovaPlocha/ID_RING_NOT_CLOSED: první ≠ poslední bod
+    RING_SELF_INTERSECTION     — BudovaPlocha/ID_RING_SELF_INT: self-intersecting bowtie polygon
+    POLYGON_MULTICURVE_POINT_COUNT_MISMATCH — BudovaPlocha/ID_PMC_COUNT: polygon 4 body, MC 3 body
+    POLYGON_MULTICURVE_COORDS_MISMATCH      — BudovaPlocha/ID_PMC_COORDS: XY souřadnice se liší
+-->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.4.3</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2024-01-01T00:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">změnové věty</TypZapisu>
+    <Data>
+
+      <!-- ================================================================
+           INVALID_COORDINATE — Z souřadnice je "NaN"
+           Parser načte text "NaN" jako NaN float.
+           ================================================================ -->
+      <PodrobnyBodZPS>
+        <ObjektovyTypNazev code_base="0100000218" code_suffix="01" xmlns="pobzps">podrobný bod ZPS</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="pobzps">Geodetické prvky</KategorieObjektu>
+        <SkupinaObjektu xmlns="pobzps">Podrobný bod</SkupinaObjektu>
+        <ObsahovaCast xmlns="pobzps">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="pobzps">
+
+          <!-- INVALID_COORDINATE: Z=NaN -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_INVALID_COORD</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_INVALID_COORD_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-600000.00 -1100000.00 NaN</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- SRS_DIMENSION_MISMATCH: 5 čísel pro srsDimension=3 → 5%3≠0 -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DIM_MISMATCH</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_DIM_MISMATCH_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-600000.00 -1100000.00 300.00 -600001.00 -1100001.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+        </ZaznamyObjektu>
+      </PodrobnyBodZPS>
+
+      <!-- ================================================================
+           LINESTRING_TOO_FEW_POINTS — HraniceStavby s jediným bodem
+           ================================================================ -->
+      <HraniceStavby>
+        <ObjektovyTypNazev code_base="0200000051" code_suffix="01" xmlns="hrasta">hranice stavby</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="hrasta">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="hrasta">Hranice stavby</SkupinaObjektu>
+        <ObsahovaCast xmlns="hrasta">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="hrasta">
+
+          <!-- LINESTRING_TOO_FEW_POINTS: pouze 1 bod (2 souřadnice při dim=2) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_LINE_FEW_PTS</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_LINE_FEW_PTS_01" srsDimension="2" srsName="EPSG:5514">
+                  <gml:posList>-600000.00 -1100000.00</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+        </ZaznamyObjektu>
+      </HraniceStavby>
+
+      <!-- ================================================================
+           Chyby polygonů — BudovaPlocha
+           ================================================================ -->
+      <BudovaPlocha>
+        <ObjektovyTypNazev code_base="0200000020" code_suffix="01" xmlns="budplo">budova plocha</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="budplo">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="budplo">Budova</SkupinaObjektu>
+        <ObsahovaCast xmlns="budplo">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="budplo">
+
+          <!-- RING_TOO_FEW_POINTS: exterior má pouze 3 body (6 čísel při dim=2) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_RING_FEW_PTS</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID_RING_FEW_PTS_01" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>0.0 0.0 10.0 0.0 5.0 10.0</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- RING_NOT_CLOSED: první bod (0,0) ≠ poslední bod (10,10) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_RING_NOT_CLOSED</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID_RING_NOT_CLOSED_01" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>0.0 0.0 10.0 0.0 10.0 10.0 0.0 10.0 10.0 10.0</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- RING_SELF_INTERSECTION: bowtie — (0,0)→(10,10)→(10,0)→(0,10)→(0,0)
+               Úsečky (0,0)→(10,10) a (10,0)→(0,10) se kříží v bodě (5,5). -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_RING_SELF_INT</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID_RING_SELF_INT_01" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>0.0 0.0 10.0 10.0 10.0 0.0 0.0 10.0 0.0 0.0</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- POLYGON_MULTICURVE_POINT_COUNT_MISMATCH:
+               Polygon exterior: 4 body (čtverec 0,0→10,0→10,10→0,10→0,0)
+               MultiCurve:       3 body (trojúhelník 0,0→10,0→5,10→0,0) — počet se liší -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_PMC_COUNT</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID_PMC_COUNT_01" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <!-- čtverec: 4 unikátní body + uzavírací = 5 bodů -->
+                      <posList>0.0 0.0 10.0 0.0 10.0 10.0 0.0 10.0 0.0 0.0</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+              <multiCurveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <MultiCurve gml:id="ID_PMC_COUNT_02" srsDimension="3" srsName="EPSG:5514">
+                  <curveMember>
+                    <LineString gml:id="ID_PMC_COUNT_02a" srsDimension="3">
+                      <!-- trojúhelník: 3 unikátní body + uzavírací = 4 body (12 čísel, dim=3) -->
+                      <posList>0.0 0.0 300.0 10.0 0.0 300.0 5.0 10.0 300.0 0.0 0.0 300.0</posList>
+                    </LineString>
+                  </curveMember>
+                </MultiCurve>
+              </multiCurveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- POLYGON_MULTICURVE_COORDS_MISMATCH:
+               Polygon exterior: čtverec (0,0)→(10,0)→(10,10)→(0,10)→(0,0)
+               MultiCurve:       čtverec (1,0)→(10,0)→(10,10)→(0,10)→(1,0) — X[0] se liší -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_PMC_COORDS</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID_PMC_COORDS_01" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>0.0 0.0 10.0 0.0 10.0 10.0 0.0 10.0 0.0 0.0</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+              <multiCurveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <MultiCurve gml:id="ID_PMC_COORDS_02" srsDimension="3" srsName="EPSG:5514">
+                  <curveMember>
+                    <LineString gml:id="ID_PMC_COORDS_02a" srsDimension="3">
+                      <!-- X[0]=1 místo 0 — souřadnice se liší -->
+                      <posList>1.0 0.0 300.0 10.0 0.0 300.0 10.0 10.0 300.0 0.0 10.0 300.0 1.0 0.0 300.0</posList>
+                    </LineString>
+                  </curveMember>
+                </MultiCurve>
+              </multiCurveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+        </ZaznamyObjektu>
+      </BudovaPlocha>
+
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>

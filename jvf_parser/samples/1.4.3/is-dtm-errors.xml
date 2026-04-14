@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fixture: is-dtm-errors.xml
+  Záměrně nevalidní JVF soubor pro testování IS DTM kontrol.
+
+  Obsažené chyby:
+    COORD_OUT_OF_BOUNDS_XY  — PodrobnyBodZPS/ID_OOB_XY:    X=-100.0 leží mimo S-JTSK rozsah
+    COORD_OUT_OF_BOUNDS_Z   — PodrobnyBodZPS/ID_OOB_Z:     Z=5000.0 m nad max 1620 m
+    COORD_PRECISION_EXCEEDED — PodrobnyBodZPS/ID_PRECISION: X má 3 desetinná místa
+    LINE_SELF_INTERSECTION  — HraniceStavby/ID_LINE_SI:    linie tvoří bowtie (kříží se)
+    SEGMENT_ZERO_LENGTH     — HraniceStavby/ID_ZERO_SEG:   dva sousední body jsou totožné
+    DUPLICATE_LINE_ERROR    — HraniceStavby/ID_DUP_LINE_A + ID_DUP_LINE_B: identické XYZ
+    DUPLICATE_LINE_WARNING  — HraniceStavby/ID_DUP_LINE_C + ID_DUP_LINE_D: identické XY, Z liší o 0.05 m
+    DUPLICATE_POINT         — PodrobnyBodZPS/ID_DUP_PT_A + ID_DUP_PT_B: identické XYZ
+    POINTS_TOO_CLOSE        — PodrobnyBodZPS/ID_CLOSE_A + ID_CLOSE_B: vzdálenost 0.03 m < 0.05 m
+    SEGMENT_TOO_SHORT       — HraniceStavby/ID_SHORT_SEG: segment délky 0.03 m < 0.05 m
+-->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.4.3</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2024-01-01T00:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">změnové věty</TypZapisu>
+    <Data>
+
+      <!-- ================================================================
+           Bodové objekty ZPS — kontroly 1.5, 1.6, 3.8, 3.9
+           ================================================================ -->
+      <PodrobnyBodZPS>
+        <ObjektovyTypNazev code_base="0100000218" code_suffix="01" xmlns="pobzps">podrobný bod ZPS</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="pobzps">Geodetické prvky</KategorieObjektu>
+        <SkupinaObjektu xmlns="pobzps">Podrobný bod</SkupinaObjektu>
+        <ObsahovaCast xmlns="pobzps">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="pobzps">
+
+          <!-- COORD_OUT_OF_BOUNDS_XY: X=-100.0 leží mimo S-JTSK (xMin=-904685) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_OOB_XY</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_OOB_XY_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-100.00 -1100000.00 300.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- COORD_OUT_OF_BOUNDS_Z: Z=5000.0 > max 1620 m n.m. pro ZPS -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_OOB_Z</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_OOB_Z_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-600000.00 -1100000.00 5000.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- COORD_PRECISION_EXCEEDED: X má 3 desetinná místa (povolen max 2) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_PRECISION</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_PRECISION_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-600000.123 -1100000.00 300.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- DUPLICATE_POINT: dva záznamy se stejným XYZ bodu -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DUP_PT_A</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_DUP_PT_A_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-700000.00 -1100000.00 350.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- DUPLICATE_POINT: identické XYZ jako ID_DUP_PT_A -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DUP_PT_B</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_DUP_PT_B_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-700000.00 -1100000.00 350.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- POINTS_TOO_CLOSE A: bod na pozici X -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_CLOSE_A</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_CLOSE_A_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>-800000.00 -1100000.00 400.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- POINTS_TOO_CLOSE B: vzdálenost od A = 0.03 m < MIN_DISTANCE_TOLERANCE 0.05 m -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_CLOSE_B</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_CLOSE_B_01" srsDimension="3" srsName="EPSG:5514">
+                  <!-- vzdálenost XY od A: 0.03 m < MIN_DISTANCE_TOLERANCE 0.05 m -->
+                  <pos>-800000.03 -1100000.00 400.00</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+        </ZaznamyObjektu>
+      </PodrobnyBodZPS>
+
+      <!-- ================================================================
+           Liniové objekty — kontroly 3.4, 3.5, 3.6, 3.10
+           ================================================================ -->
+      <HraniceStavby>
+        <ObjektovyTypNazev code_base="0200000051" code_suffix="01" xmlns="hrasta">hranice stavby</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="hrasta">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="hrasta">Hranice stavby</SkupinaObjektu>
+        <ObsahovaCast xmlns="hrasta">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="hrasta">
+
+          <!-- LINE_SELF_INTERSECTION: linie tvaru X — (0,0)→(10,10)→(10,0)→(0,10) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_LINE_SI</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_LINE_SI_01" srsDimension="2" srsName="EPSG:5514">
+                  <gml:posList>0.0 0.0 10.0 10.0 10.0 0.0 0.0 10.0</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- SEGMENT_ZERO_LENGTH: bod zopakován → nulová délka segmentu -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_ZERO_SEG</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_ZERO_SEG_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-600000.00 -1100000.00 300.00 -600000.00 -1100000.00 300.00 -600010.00 -1100000.00 300.00</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- DUPLICATE_LINE_ERROR: identické XYZ jako DUP_LINE_B -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DUP_LINE_A</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_DUP_LINE_A_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-600100.00 -1100000.00 300.00 -600200.00 -1100000.00 300.00</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- DUPLICATE_LINE_ERROR: identické XYZ jako DUP_LINE_A -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DUP_LINE_B</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_DUP_LINE_B_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-600100.00 -1100000.00 300.00 -600200.00 -1100000.00 300.00</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- DUPLICATE_LINE_WARNING: stejné XY jako DUP_LINE_D, Z liší o 0.05 m < 0.12 m -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DUP_LINE_C</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_DUP_LINE_C_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-600300.00 -1100000.00 300.00 -600400.00 -1100000.00 300.00</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- DUPLICATE_LINE_WARNING: stejné XY jako DUP_LINE_C, Z liší o 0.05 m -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DUP_LINE_D</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_DUP_LINE_D_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-600300.00 -1100000.00 300.05 -600400.00 -1100000.00 300.05</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- SEGMENT_TOO_SHORT: segment délky 0.03 m < MIN_DISTANCE_TOLERANCE 0.05 m -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_SHORT_SEG</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_SHORT_SEG_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-601000.00 -1100000.00 300.00 -601000.03 -1100000.00 300.00</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+        </ZaznamyObjektu>
+      </HraniceStavby>
+
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>

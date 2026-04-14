@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fixture: layer3-errors.xml
+  Záměrně nevalidní JVF soubor pro testování Vrstvy 3 (meziobjektová topologie).
+
+  Obsažené chyby:
+    DEFBOD_OUTSIDE_PLOCHA — BudovaDefinicniBod/ID_DEFBOD_OUTSIDE leží mimo BudovaPlocha
+    DEFBOD_NO_PLOCHA      — JezeroDefinicniBod/ID_DEFBOD_NOPLOCHA: v souboru není žádná JezeroPlocha
+    OSA_OUTSIDE_OBVOD     — OsaPozemniKomunikace/ID_OSA_OUTSIDE: osa leží mimo ObvodPozemniKomunikace
+    LINE_DANGLING_END     — HraniceStavby: 3 linie, krajní dvě mají volný konec
+-->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.4.3</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2024-01-01T00:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">změnové věty</TypZapisu>
+    <Data>
+
+      <!-- ================================================================
+           DEFBOD_OUTSIDE_PLOCHA
+           BudovaPlocha: čtverec (0,0)→(10,0)→(10,10)→(0,10)→(0,0)
+           BudovaDefinicniBod ID_DEFBOD_OUTSIDE: bod (50, 50) — mimo čtverec
+           ================================================================ -->
+      <BudovaPlocha>
+        <ObjektovyTypNazev code_base="0200000020" code_suffix="01" xmlns="budplo">budova plocha</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="budplo">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="budplo">Budova</SkupinaObjektu>
+        <ObsahovaCast xmlns="budplo">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="budplo">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_BUDOVA_PLOCHA</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID_BUDOVA_PLOCHA_01" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <!-- čtverec: (0,0)→(10,0)→(10,10)→(0,10)→(0,0) -->
+                      <posList>0.0 0.0 10.0 0.0 10.0 10.0 0.0 10.0 0.0 0.0</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </BudovaPlocha>
+
+      <BudovaDefinicniBod>
+        <ObjektovyTypNazev code_base="0200000020" code_suffix="04" xmlns="buddef">budova definiční bod</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="buddef">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="buddef">Budova</SkupinaObjektu>
+        <ObsahovaCast xmlns="buddef">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="buddef">
+          <!-- DEFBOD_OUTSIDE_PLOCHA: bod (50, 50) leží mimo čtverec (0,0)→(10,10) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DEFBOD_OUTSIDE</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_DEFBOD_OUTSIDE_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>50.0 50.0 300.0</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </BudovaDefinicniBod>
+
+      <!-- ================================================================
+           DEFBOD_NO_PLOCHA
+           JezeroDefinicniBod je přítomen, ale JezeroPlocha v souboru chybí.
+           ================================================================ -->
+      <JezeroDefinicniBod>
+        <ObjektovyTypNazev code_base="0300000210" code_suffix="04" xmlns="jezdef">jezero definiční bod</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="jezdef">Vodní plochy</KategorieObjektu>
+        <SkupinaObjektu xmlns="jezdef">Jezero</SkupinaObjektu>
+        <ObsahovaCast xmlns="jezdef">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="jezdef">
+          <!-- DEFBOD_NO_PLOCHA: žádná JezeroPlocha v souboru -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_DEFBOD_NOPLOCHA</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="ID_DEFBOD_NOPLOCHA_01" srsDimension="3" srsName="EPSG:5514">
+                  <pos>5.0 5.0 300.0</pos>
+                </Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </JezeroDefinicniBod>
+
+      <!-- ================================================================
+           OSA_OUTSIDE_OBVOD
+           ObvodPozemniKomunikace: obdélník (0,0)→(100,0)→(100,10)→(0,10)→(0,0)
+           OsaPozemniKomunikace ID_OSA_OUTSIDE: osa od (50,-20) → (50,-5) — mimo obvod
+           ================================================================ -->
+      <ObvodPozemniKomunikace>
+        <ObjektovyTypNazev code_base="0100000003" code_suffix="03" xmlns="obvopk">obvod pozemní komunikace</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="obvopk">Dopravní stavby</KategorieObjektu>
+        <SkupinaObjektu xmlns="obvopk">Silniční doprava</SkupinaObjektu>
+        <ObsahovaCast xmlns="obvopk">DI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="obvopk">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_OBVOD_PK</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID_OBVOD_PK_01" srsName="EPSG:5514" srsDimension="2">
+                  <exterior>
+                    <LinearRing>
+                      <!-- obdélník 100×10: (0,0)→(100,0)→(100,10)→(0,10)→(0,0) -->
+                      <posList>0.0 0.0 100.0 0.0 100.0 10.0 0.0 10.0 0.0 0.0</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </ObvodPozemniKomunikace>
+
+      <OsaPozemniKomunikace>
+        <ObjektovyTypNazev code_base="0100000004" code_suffix="02" xmlns="osapok">osa pozemní komunikace</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="osapok">Dopravní stavby</KategorieObjektu>
+        <SkupinaObjektu xmlns="osapok">Silniční doprava</SkupinaObjektu>
+        <ObsahovaCast xmlns="osapok">DI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="osapok">
+
+          <!-- OSA_OUTSIDE_OBVOD: osa od (50,-20)→(50,-5) leží mimo obvod (Y min=0) -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_OSA_OUTSIDE</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_OSA_OUTSIDE_01" srsName="EPSG:5514" srsDimension="2">
+                  <gml:posList>50.0 -20.0 50.0 -5.0</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+        </ZaznamyObjektu>
+      </OsaPozemniKomunikace>
+
+      <!-- ================================================================
+           LINE_DANGLING_END
+           Tři linie HraniceStavby:
+             - A: (0,100)→(10,100) — end napojeno na B.start, start VOLNÝ
+             - B: (10,100)→(20,100) — oba konce napojeny
+             - C: (20,100)→(30,100) — start napojeno na B.end, end VOLNÝ
+           Výsledek: 2 dangling ends (start linie A, end linie C)
+           ================================================================ -->
+      <HraniceStavby>
+        <ObjektovyTypNazev code_base="0200000051" code_suffix="01" xmlns="hrasta">hranice stavby</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="hrasta">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="hrasta">Hranice stavby</SkupinaObjektu>
+        <ObsahovaCast xmlns="hrasta">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="hrasta">
+
+          <!-- LINE_DANGLING_END: start (0,100) je volný -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_LINE_DANGLE_A</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_LINE_DANGLE_A_01" srsDimension="2" srsName="EPSG:5514">
+                  <gml:posList>0.0 100.0 10.0 100.0</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- Prostřední linie — oba konce napojeny -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_LINE_DANGLE_B</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_LINE_DANGLE_B_01" srsDimension="2" srsName="EPSG:5514">
+                  <gml:posList>10.0 100.0 20.0 100.0</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+          <!-- LINE_DANGLING_END: end (30,100) je volný -->
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>ID_LINE_DANGLE_C</ID>
+              </SpolecneAtributyVsechObjektu>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="ID_LINE_DANGLE_C_01" srsDimension="2" srsName="EPSG:5514">
+                  <gml:posList>20.0 100.0 30.0 100.0</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+
+        </ZaznamyObjektu>
+      </HraniceStavby>
+
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>
