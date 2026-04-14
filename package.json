@@ -1,0 +1,8 @@
+{
+  "name": "cz-dtm-utils",
+  "private": true,
+  "workspaces": [
+    "jvf_parser",
+    "jvf_viewer"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build --workspace=jvf_parser && npm run build --workspace=jvf_viewer",
+  "outputDirectory": "jvf_viewer/dist",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/jvf_viewer/(.*)", "destination": "/$1" },
+    { "source": "/jvf_viewer", "destination": "/index.html" }
+  ]
+}
