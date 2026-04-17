@@ -4,7 +4,8 @@
 
 **`git push origin main` = automatické nasazení.** Vercel sleduje repozitář přes hook a nasadí aplikaci sám. Žádné další kroky nejsou potřeba.
 
-- Produkční URL: **https://cz-dtm-utils.vercel.app/jvf_viewer/**
+- Produkční URL: **https://cz-dtm-utils.vercel.app/jvf_viewer/** (přímý odkaz)
+- Také dostupné na: **https://cz-dtm-utils.vercel.app/** (root redirect)
 
 ## Struktura projektu
 
