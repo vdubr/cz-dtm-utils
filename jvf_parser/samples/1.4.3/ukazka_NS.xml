@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<objtyp:JVFDTM xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gss="http://www.isotc211.org/2005/gss" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gsr="http://www.isotc211.org/2005/gsr" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:objtyp="objtyp" xmlns:cmn="cmn" xmlns:dopinf="dopinf" xmlns:atr="atr" xmlns:servis="servis" xmlns:ext="ext" xmlns:pdmdef="pdmdef" xmlns:pobzps="pobzps" xmlns:idebod="idebod" xmlns:hrasta="hrasta">
+  <objtyp:DataJVFDTM>
+    <cmn:VerzeJVFDTM>1.4.3</cmn:VerzeJVFDTM>
+    <cmn:DatumZapisu>2026-04-16T14:17:13.0000000+02:00</cmn:DatumZapisu>
+    <cmn:TypZapisu>kompletní zápis</cmn:TypZapisu>
+    <objtyp:Data>
+      <objtyp:PatkaDeskaMonolitPilirDefinicniBod>
+        <pdmdef:ObjektovyTypNazev code_base="0100000183" code_suffix="04">patka, deska, monolit, pilíř</pdmdef:ObjektovyTypNazev>
+        <pdmdef:KategorieObjektu>Součásti a příslušenství staveb</pdmdef:KategorieObjektu>
+        <pdmdef:SkupinaObjektu>Stavba společná pro více skupin</pdmdef:SkupinaObjektu>
+        <pdmdef:ObsahovaCast>ZPS</pdmdef:ObsahovaCast>
+        <pdmdef:ZaznamyObjektu>
+          <pdmdef:ZaznamObjektu>
+            <cmn:ZapisObjektu>i</cmn:ZapisObjektu>
+            <pdmdef:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu />
+              <atr:SpolecneAtributyObjektuDefinicnichBodu>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+              </atr:SpolecneAtributyObjektuDefinicnichBodu>
+            </pdmdef:AtributyObjektu>
+            <pdmdef:GeometrieObjektu>
+              <gml:pointProperty>
+                <gml:Point gml:id="ID1_04" srsName="urn:ogc:def:crs:EPSG::5514" srsDimension="3">
+                  <gml:pos>-617739.21 -1029075.21 0.00</gml:pos>
+                </gml:Point>
+              </gml:pointProperty>
+            </pdmdef:GeometrieObjektu>
+          </pdmdef:ZaznamObjektu>
+        </pdmdef:ZaznamyObjektu>
+      </objtyp:PatkaDeskaMonolitPilirDefinicniBod>
+      <objtyp:PodrobnyBodZPS>
+        <pobzps:ObjektovyTypNazev code_base="0100000218" code_suffix="01">podrobný bod ZPS</pobzps:ObjektovyTypNazev>
+        <pobzps:KategorieObjektu>Geodetické prvky</pobzps:KategorieObjektu>
+        <pobzps:SkupinaObjektu>Podrobný bod</pobzps:SkupinaObjektu>
+        <pobzps:ObsahovaCast>ZPS</pobzps:ObsahovaCast>
+        <pobzps:ZaznamyObjektu>
+          <pobzps:ZaznamObjektu>
+            <cmn:ZapisObjektu>i</cmn:ZapisObjektu>
+            <pobzps:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu />
+              <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+              <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+              <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+              <atr:ZpusobPorizeniPB_ZPS>1</atr:ZpusobPorizeniPB_ZPS>
+              <atr:CisloBodu>145</atr:CisloBodu>
+            </pobzps:AtributyObjektu>
+            <pobzps:GeometrieObjektu>
+              <gml:pointProperty>
+                <gml:Point gml:id="ID2_01" srsName="urn:ogc:def:crs:EPSG::5514" srsDimension="3">
+                  <gml:pos>-617739.38 -1029075.09 296.68</gml:pos>
+                </gml:Point>
+              </gml:pointProperty>
+            </pobzps:GeometrieObjektu>
+          </pobzps:ZaznamObjektu>
+        </pobzps:ZaznamyObjektu>
+      </objtyp:PodrobnyBodZPS>
+      <objtyp:HraniceStavby>
+        <hrasta:ObjektovyTypNazev code_base="0100000300" code_suffix="02">hranice stavby</hrasta:ObjektovyTypNazev>
+        <hrasta:KategorieObjektu>Konstrukční prvky objektů</hrasta:KategorieObjektu>
+        <hrasta:SkupinaObjektu>Základní konstrukční prvek</hrasta:SkupinaObjektu>
+        <hrasta:ObsahovaCast>ZPS</hrasta:ObsahovaCast>
+        <hrasta:ZaznamyObjektu>
+          <hrasta:ZaznamObjektu>
+            <cmn:ZapisObjektu>i</cmn:ZapisObjektu>
+            <hrasta:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu />
+              <atr:SpolecneAtributyObjektuZPS>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+                <atr:ZpusobPorizeniZPS>1</atr:ZpusobPorizeniZPS>
+              </atr:SpolecneAtributyObjektuZPS>
+              <atr:TypStavby>7</atr:TypStavby>
+            </hrasta:AtributyObjektu>
+            <hrasta:GeometrieObjektu>
+              <gml:curveProperty>
+                <gml:LineString gml:id="ID12_02" srsName="urn:ogc:def:crs:EPSG::5514" srsDimension="3">
+                  <gml:posList>-617739.38 -1029075.09 296.68 -617739.03 -1029075.12 296.69 -617739.05 -1029075.34 296.69 -617739.40 -1029075.31 296.72 -617739.38 -1029075.09 296.68</gml:posList>
+                </gml:LineString>
+              </gml:curveProperty>
+            </hrasta:GeometrieObjektu>
+          </hrasta:ZaznamObjektu>
+        </hrasta:ZaznamyObjektu>
+      </objtyp:HraniceStavby>
+    </objtyp:Data>
+  </objtyp:DataJVFDTM>
+</objtyp:JVFDTM>
