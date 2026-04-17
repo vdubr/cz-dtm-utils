@@ -14,6 +14,7 @@ function createParser(): XMLParser {
   return new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: '@_',
+    removeNSPrefix: true,
     isArray: (name) => ['ZaznamObjektu', 'curveMember'].includes(name),
     // Preserve text content of elements that may be pure numbers
     parseTagValue: true,
