@@ -1,6 +1,14 @@
 import { defineConfig } from 'vite';
+import { execSync } from 'node:child_process';
+
+const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
+const buildTime = new Date().toISOString();
 
 export default defineConfig({
+  define: {
+    __COMMIT_HASH__: JSON.stringify(commitHash),
+    __BUILD_TIME__: JSON.stringify(buildTime),
+  },
   base: '/jvf_viewer/',
   optimizeDeps: {
     include: ['ol', 'proj4', 'three'],

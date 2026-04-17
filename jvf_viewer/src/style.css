@@ -133,6 +133,14 @@ html, body {
   text-align: center;
 }
 
+.build-info {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: #30363d;
+  font-family: monospace;
+}
+
 .heart {
   color: #484f58;
   transition: color 0.2s;

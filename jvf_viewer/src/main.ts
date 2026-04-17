@@ -24,6 +24,17 @@ let currentObjekty: ObjektovyTyp[] = [];
 let currentExtent: Extent = createEmpty();
 let currentDtm: JvfDtm | null = null;
 
+// Build info
+const buildInfoEl = document.getElementById('build-info');
+if (buildInfoEl) {
+  const dt = new Date(__BUILD_TIME__);
+  const formatted = dt.toLocaleString('cs-CZ', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  });
+  buildInfoEl.textContent = `${__COMMIT_HASH__} · ${formatted}`;
+}
+
 // Initialize map
 const olMap = createOlMap('map-container');
 
