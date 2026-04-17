@@ -1,5 +1,11 @@
 # Projektový kontext pro Claude
 
+## Nasazení
+
+**`git push origin main` = automatické nasazení.** Vercel sleduje repozitář přes hook a nasadí aplikaci sám. Žádné další kroky nejsou potřeba.
+
+- Produkční URL: **https://cz-dtm-utils.vercel.app/jvf_viewer/**
+
 ## Struktura projektu
 
 ```
