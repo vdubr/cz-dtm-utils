@@ -22,7 +22,7 @@ export function createOlMap(targetId: string): Map {
   const view = new View({
     projection: 'EPSG:5514',
     center: [-641127, -1042466],
-    zoom: 13,
+    zoom: 8,
     minZoom: 5,
     maxZoom: 20,
   });
