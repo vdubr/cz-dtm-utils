@@ -21,8 +21,8 @@ if (proj5514) {
 export function createOlMap(targetId: string): Map {
   const view = new View({
     projection: 'EPSG:5514',
-    center: [-600000, -1160000],
-    zoom: 7,
+    center: [-621000, -1003000],
+    zoom: 13,
     minZoom: 5,
     maxZoom: 20,
   });
