@@ -98,6 +98,10 @@ function createStyleForGeom(
         fill: new Fill({ color: s.fillColor }),
         stroke: new Stroke({ color: s.strokeColor, width: Math.max(1, s.strokeWidthPx * 0.5) }),
       });
+    default:
+      return new Style({
+        stroke: new Stroke({ color: s.strokeColor, width: s.strokeWidthPx }),
+      });
   }
 }
 
@@ -150,12 +154,13 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
               const dim = curve.srsDimension > 0 ? curve.srsDimension : 2;
               const coords = flatCoordsToRing(curve.coordinates, dim);
               if (coords.length >= 2) {
-                features.push(
-                  new Feature({
-                    geometry: new OlLineString(coords),
-                    style: createStyleForGeom('LineString', s),
-                  })
-                );
+                const mcFeature = new Feature({
+                  geometry: new OlLineString(coords),
+                });
+                mcFeature.set('style', createStyleForGeom('LineString', s));
+                mcFeature.set('jvfElementName', ot.elementName);
+                mcFeature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
+                features.push(mcFeature);
               }
             }
             break;
@@ -164,6 +169,8 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
 
         if (feature) {
           feature.set('style', createStyleForGeom(geom.type, s));
+          feature.set('jvfElementName', ot.elementName);
+          feature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
           features.push(feature);
         }
       }
@@ -206,4 +213,26 @@ export function removeJvfLayersFromMap(map: Map, layers: JvfVectorLayer[]): void
   for (const { olLayer } of layers) {
     map.removeLayer(olLayer);
   }
+}
+
+/**
+ * Find the first OL Feature matching elementName + objectId across all JVF layers.
+ * Returns null if not found.
+ */
+export function findFeature(
+  layers: JvfVectorLayer[],
+  elementName: string,
+  objectId: string,
+): Feature | null {
+  for (const { olLayer } of layers) {
+    const source = olLayer.getSource();
+    if (!source) continue;
+    const found = source.getFeatures().find(
+      (f) =>
+        f.get('jvfElementName') === elementName &&
+        f.get('jvfObjectId') === objectId,
+    );
+    if (found) return found;
+  }
+  return null;
 }

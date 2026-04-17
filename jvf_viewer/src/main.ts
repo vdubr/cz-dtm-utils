@@ -12,7 +12,8 @@ import {
 import { setupFileUpload } from './ui/fileUpload.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
 import { setup3dToggle, getIs3dActive } from './ui/toggle3d.js';
-import { showValidationModal } from './ui/validationModal.js';
+import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
+import { initHighlightLayer } from './map/highlight.js';
 import { resetThreeCamera, setThreeLayerVisible } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -37,6 +38,8 @@ if (buildInfoEl) {
 
 // Initialize map
 const olMap = createOlMap('map-container');
+initHighlightLayer(olMap);
+initErrorPanel(olMap, () => currentJvfLayers);
 
 // Add CUZK base layers
 const zmLayer = createZmLayer();
@@ -60,12 +63,16 @@ btnZoom.addEventListener('click', () => {
   }
 });
 
-// Setup validate button
+// Setup validate button — toggle panel
 const btnValidate = document.getElementById('btn-validate') as HTMLButtonElement;
 btnValidate.addEventListener('click', () => {
-  if (!currentDtm) return;
-  const errors = runAllChecks(currentDtm);
-  showValidationModal(errors);
+  if (isPanelVisible()) {
+    hideErrors();
+  } else {
+    if (!currentDtm) return;
+    const errors = runAllChecks(currentDtm);
+    showErrors(errors);
+  }
 });
 
 // Setup file upload
