@@ -1,5 +1,20 @@
+/**
+ * Veřejné API knihovny jvf-parser (verze JVF DTM 1.4.3).
+ *
+ * Top-level obsahuje:
+ *   - Parser a doménové typy
+ *   - Katalog entit a sdílené atributy
+ *
+ * Topologická validace žije v samostatném balíčku `jvf-topology`
+ * (viz `jvf_topology/`).
+ */
+// ---------------------------------------------------------------------------
+// Parser + doménové typy
+// ---------------------------------------------------------------------------
 export { parseJvfDtm } from './parser.js';
-export { checkCoordinateBounds, checkCoordinatePrecision, checkDanglingEnds, checkDefBodInPlocha, checkDuplicateLines, checkDuplicatePoints, checkGeometricValidity, checkLineSelfIntersection, checkMinSegmentLength, checkOsaInObvod, checkPointProximity, checkPolygonMultiCurveConsistency, checkZeroLengthSegments, runAllChecks, runTopologyChecks, DEFBOD_PLOCHA_PAIRS, DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE, OSA_OBVOD_PAIRS, SNAP_TOLERANCE, SJTSK_BOUNDS, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS, } from './topology.js';
+// ---------------------------------------------------------------------------
+// Katalog entit a sdílené atributy (generované)
+// ---------------------------------------------------------------------------
 export { ENTITY_CATALOG } from './generated/entities.js';
 export * from './generated/enums.js';
 //# sourceMappingURL=index.js.map

@@ -1,0 +1,69 @@
+/**
+ * Topologická validace JVF DTM objektů — barrel modul.
+ *
+ * Tři vrstvy kontrol (viz CLAUDE.md):
+ *  - Vrstva 1: Geometrická validita (bez závislostí mezi objekty)   → `validity.ts`
+ *  - Vrstva 2: Konzistence uvnitř záznamu (Polygon ↔ MultiCurve)    → `consistency.ts`
+ *  - Vrstva 3: Meziobjektová topologie                              → `relations.ts`
+ *
+ * IS DTM 1.5+1.6 (rozsah a přesnost souřadnic)                      → `bounds.ts`
+ * IS DTM 3.4+3.5+3.10 (self-intersection, nulový/krátký segment)    → `segments.ts`
+ * IS DTM 3.6+3.8+3.9 (duplicitní linie/body, blízkost bodů)         → `duplicates.ts`
+ */
+import { checkGeometricValidity } from './validity.js';
+import { checkPolygonMultiCurveConsistency } from './consistency.js';
+import { checkCoordinateBounds, checkCoordinatePrecision } from './bounds.js';
+import { checkLineSelfIntersection, checkMinSegmentLength, checkZeroLengthSegments, } from './segments.js';
+import { checkDuplicateLines, checkDuplicatePoints, checkPointProximity, } from './duplicates.js';
+import { checkDanglingEnds, checkDefBodInPlocha, checkOsaInObvod, } from './relations.js';
+export { DEFBOD_PLOCHA_PAIRS, DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE, OSA_OBVOD_PAIRS, SJTSK_BOUNDS, SNAP_TOLERANCE, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS, } from './constants.js';
+export { checkGeometricValidity } from './validity.js';
+export { checkPolygonMultiCurveConsistency } from './consistency.js';
+export { checkCoordinateBounds, checkCoordinatePrecision } from './bounds.js';
+export { checkLineSelfIntersection, checkMinSegmentLength, checkZeroLengthSegments, } from './segments.js';
+export { checkDuplicateLines, checkDuplicatePoints, checkPointProximity, } from './duplicates.js';
+export { checkDanglingEnds, checkDefBodInPlocha, checkOsaInObvod, } from './relations.js';
+// ---------------------------------------------------------------------------
+// Hlavní vstupní body
+// ---------------------------------------------------------------------------
+/**
+ * Spustí zadané kontroly nad DTM dokumentem a vrátí souhrnný seznam chyb.
+ */
+export function runTopologyChecks(dtm, checks) {
+    return checks.flatMap((check) => check(dtm));
+}
+/**
+ * Spustí všechny implementované kontroly.
+ *
+ * Vrstva 1: Geometrická validita
+ * Vrstva 2: Konzistence Polygon ↔ MultiCurve
+ * IS DTM 1.5: Rozsah souřadnic S-JTSK
+ * IS DTM 1.6: Přesnost souřadnic na cm
+ * IS DTM 3.4: Self-intersection liniových prvků
+ * IS DTM 3.5: Nulová délka segmentu
+ * IS DTM 3.6: Duplicity liniových prvků (v rámci JVF)
+ * IS DTM 3.8: Duplicita bodů (v rámci JVF)
+ * IS DTM 3.9: Blízkost bodů
+ * IS DTM 3.10: Minimální délka segmentu
+ * Vrstva 3A: Definiční bod leží v odpovídající ploše
+ * Vrstva 3B: Osa PK leží uvnitř Obvodu PK
+ * Vrstva 3C: Volné konce liniových prvků
+ */
+export function runAllChecks(dtm) {
+    return runTopologyChecks(dtm, [
+        checkGeometricValidity,
+        checkPolygonMultiCurveConsistency,
+        checkCoordinateBounds,
+        checkCoordinatePrecision,
+        checkLineSelfIntersection,
+        checkZeroLengthSegments,
+        checkDuplicateLines,
+        checkDuplicatePoints,
+        checkPointProximity,
+        checkMinSegmentLength,
+        checkDefBodInPlocha,
+        checkOsaInObvod,
+        checkDanglingEnds,
+    ]);
+}
+//# sourceMappingURL=index.js.map
