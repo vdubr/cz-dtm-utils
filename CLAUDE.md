@@ -10,31 +10,54 @@
 ## Struktura projektu
 
 ```
-cz-dtm-utils/
-├── jvf_parser/          # TypeScript parser JVF DTM souborů
+cz-dtm-utils/              # npm workspaces monorepo
+├── jvf_dtm_types/       # Sdílené doménové typy (jvf-dtm-types)
+│   └── src/
+│       ├── index.ts             # re-export
+│       └── 1.4.3/types.ts       # JvfDtm, ObjektovyTyp, ZaznamObjektu, Geometry, GmlPoint/LineString/Polygon/MultiCurve, …
+├── jvf_parser/          # TypeScript parser JVF DTM souborů (jvf-parser)
 │   ├── src/1.4.3/       # Implementace pro verzi 1.4.3
-│   │   ├── types.ts             # Typy: JvfDtm, ObjektovyTyp, ZaznamObjektu, Geometry, ...
+│   │   ├── types.ts             # re-export z jvf-dtm-types (pro interní ../types.js importy)
 │   │   ├── geometry-primitives.ts  # parsePoint, parseLineString, parsePolygon, parseMultiCurve
 │   │   ├── geometry.ts          # parseGeometrieObjektu, parseOblastObjektuKI
 │   │   ├── parser.ts            # Hlavní parser
 │   │   ├── attributes.ts        # Parsování atributů
 │   │   ├── xml-helpers.ts       # Pomocné funkce pro XML
-│   │   └── index.ts
+│   │   └── index.ts             # veřejné API parseru (bez topologie)
 │   ├── docs/1.4.3/xsd/  # XSD schémata DTM specifikace
 │   │   ├── common/              # Společné typy (atributy, common, extenze, servis)
 │   │   ├── objekty/             # XSD pro každý typ objektu (358 souborů)
 │   │   │   # Konvence názvů: {nazev_objektu}-{typ_geometrie}.xsd
 │   │   │   # Typy geometrie v názvu: -bod, -linie, -plocha, -defbod
 │   │   └── ext/gml/             # GML 3.2 schémata
-│   └── samples/1.4.3/   # Ukázkové JVF soubory
+│   └── samples/1.4.3/   # Ukázkové JVF soubory (sdíleno i pro testy topologie)
 │       ├── ukazka_ZPS.xml       # Základní prostorová situace (body)
 │       ├── ukazka_DI.xml        # Dopravní infrastruktura
 │       ├── ukazka_GAD.xml
 │       ├── ukazka_KI.xml
 │       └── ukazka_OPL.xml
-└── jvf_viewer/          # Vite/OpenLayers viewer
-    └── src/map/jvfLayers.ts  # Renderování geometrií do OL vrstev
+├── jvf_topology/        # Topologická validace (jvf-topology)
+│   ├── src/1.4.3/
+│   │   ├── index.ts           # runAllChecks, runTopologyChecks, re-exporty
+│   │   ├── types.ts           # TopologyError, TopologyCheck, interní typy
+│   │   ├── constants.ts       # SJTSK_BOUNDS, tolerance, DEFBOD/OSA páry
+│   │   ├── geometry-math.ts   # mkError, toPoints, dist3D, pointInPolygon, ...
+│   │   ├── validity.ts        # Vrstva 1: checkGeometricValidity
+│   │   ├── consistency.ts     # Vrstva 2: checkPolygonMultiCurveConsistency
+│   │   ├── bounds.ts          # 1.5 + 1.6: rozsah a přesnost souřadnic
+│   │   ├── segments.ts        # 3.4 + 3.5 + 3.10: self-intersection, segmenty
+│   │   ├── duplicates.ts      # 3.6 + 3.8 + 3.9: duplicity a blízkost
+│   │   └── relations.ts       # Vrstva 3: DefBod/Plocha, Osa/Obvod, volné konce
+│   └── tests/1.4.3/topology/  # 160 testů (Vitest)
+└── jvf_viewer/          # Vite/OpenLayers viewer (jvf-viewer)
+    └── src/map/jvfLayers.ts   # Renderování geometrií do OL vrstev
 ```
+
+**Závislosti mezi workspaces:**
+- `jvf-dtm-types` — bez závislostí (čisté typy)
+- `jvf-parser` → `jvf-dtm-types`
+- `jvf-topology` → `jvf-dtm-types` (prod), `jvf-parser` (dev — jen pro fixture testy)
+- `jvf-viewer` → `jvf-parser`, `jvf-topology`
 
 ## DTM geometrie — jak to funguje
 
@@ -102,9 +125,12 @@ function runTopologyChecks(dtm: JvfDtm, checks: TopologyCheck[]): TopologyError[
 - [x] Vrstva 2: Konzistence Polygon/MultiCurve
 - [x] Vrstva 3: Meziobjektová topologie
 
-Implementováno v `jvf_parser/src/1.4.3/topology.ts`. Testy: `tests/1.4.3/topology/` (84 testů, vše zelené).
+Implementováno v samostatném workspace balíčku **`jvf-topology`**
+(`jvf_topology/src/1.4.3/`, 10 souborů dle vrstev). Závislost na typech
+přes `jvf-dtm-types`, žádná z. na parseru (runtime).
+Testy: `jvf_topology/tests/1.4.3/topology/` (160 testů, vše zelené).
 
-### Implementované kontroly (`topology.ts`)
+### Implementované kontroly (`jvf-topology`)
 
 **Vrstva 1 — Geometrická validita** (`checkGeometricValidity`)
 - `INVALID_COORDINATE` — NaN nebo Infinity v souřadnicích
@@ -133,10 +159,42 @@ Implementováno v `jvf_parser/src/1.4.3/topology.ts`. Testy: `tests/1.4.3/topolo
 - `OSA_OUTSIDE_OBVOD` / `OSA_NO_OBVOD` — vrcholy Osy PK musí ležet v Obvodu PK
 - `LINE_DANGLING_END` — volné konce linií stejného typu (snap tolerance `SNAP_TOLERANCE` = 0,05 m)
 
-### Exportované konstanty (z `index.ts`)
-- `SJTSK_BOUNDS`, `Z_BOUNDS_ZPS`, `Z_BOUNDS_DEFBOD`
-- `DUPLICATE_Z_TOLERANCE` = 0.12 m
-- `MIN_DISTANCE_TOLERANCE` = 0.05 m
-- `SNAP_TOLERANCE` = 0.05 m
-- `DEFBOD_PLOCHA_PAIRS` — 63 párů objektových typů DefBod↔Plocha
-- `OSA_OBVOD_PAIRS`
+### Veřejné API
+
+**`jvf-dtm-types`** — sdílené doménové typy (bez runtime kódu):
+- `JvfDtm`, `ObjektovyTyp`, `ZaznamObjektu`, `Geometry`, `CommonAttributes`
+- GML: `GmlPoint`, `GmlLineString`, `GmlPolygon`, `GmlMultiCurve`
+- Enumy: `TypZapisu`, `ZapisObjektuType`, `ObsahovaCast`
+
+**`jvf-parser`** — XML → typované objekty:
+- `parseJvfDtm`
+- Re-export typů z `jvf-dtm-types` (zpětná kompatibilita)
+- `ENTITY_CATALOG` + sdílené atributy z generovaných modulů
+
+**`jvf-topology`** — validace:
+- `runAllChecks`, `runTopologyChecks` — hlavní vstupní body
+- `TopologyError`, `TopologyErrorSeverity`, `TopologyCheck` — typy
+- Všechny jednotlivé `check*` funkce (13 funkcí) pro custom sestavy
+- Tolerance a rozsahy (`SJTSK_BOUNDS`, `Z_BOUNDS_ZPS`, `Z_BOUNDS_DEFBOD`,
+  `DUPLICATE_Z_TOLERANCE` = 0.12 m, `MIN_DISTANCE_TOLERANCE` = 0.05 m,
+  `SNAP_TOLERANCE` = 0.05 m)
+- Páry objektových typů: `DEFBOD_PLOCHA_PAIRS` (63 párů), `OSA_OBVOD_PAIRS`
+
+## Naming conventions
+
+Kódová báze je česky-doménově, ale dodržuje jednotné pravidlo pro rozpoznání,
+co je „DTM jazyk" a co „programátorská infrastruktura":
+
+- **Slovesa vždy anglicky**: `parse*`, `check*`, `extract*`, `run*`, `build*`,
+  `render*`, `resolve*`
+- **Doménové názvy z DTM XSD zůstávají česky**: `ZaznamObjektu`,
+  `ObjektovyTyp`, `BudovaDefBod`, `Plocha`, `Osa`, `Obvod`, `GeometrieObjektu`
+  — tyto termíny přesně odpovídají XML schématu a změna by rozbila vazbu
+  na specifikaci
+- **Obecné GIS / programátorské pojmy anglicky**: `Point`, `LineString`,
+  `Polygon`, `MultiCurve`, `Error`, `Severity`, `Bounds`, `Tolerance`
+- **Komentáře česky** (tým je CZ, doména je CZ)
+- **UI stringy a error messages česky** (koncový uživatel je CZ)
+- Funkce typu `checkOsaInObvod` jsou záměrně bilingvní:
+  `check` = sloveso (EN), `OsaInObvod` = DTM doména (CZ).
+  Nepřejmenovávat.

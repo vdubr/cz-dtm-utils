@@ -1,7 +1,9 @@
 node_modules/
 dist/
-# Keep jvf_parser dist for Vercel build (viewer depends on compiled types)
+# Keep workspace package dists for Vercel build (viewer depends on compiled types)
 !jvf_parser/dist/
+!jvf_dtm_types/dist/
+!jvf_topology/dist/
 .vercel/
 *.js.map
 *.d.ts.map

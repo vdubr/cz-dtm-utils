@@ -2,11 +2,13 @@
   "name": "cz-dtm-utils",
   "private": true,
   "workspaces": [
+    "jvf_dtm_types",
     "jvf_parser",
+    "jvf_topology",
     "jvf_viewer"
   ],
   "scripts": {
-    "build": "npm run build --workspace=jvf_parser && npm run build --workspace=jvf_viewer"
+    "build": "npm run build -w jvf-dtm-types && npm run build -w jvf-parser && npm run build -w jvf-topology && npm run build -w jvf-viewer"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.1"

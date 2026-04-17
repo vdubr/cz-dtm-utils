@@ -746,3 +746,81 @@ html, body {
   color: #d29922;
   border: 1px solid rgba(210, 153, 34, 0.35);
 }
+
+/* ===== Collapsible group headers ===== */
+.group-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.group-header:hover td {
+  background: #1c2128;
+}
+
+.group-header-error td {
+  background: rgba(248, 81, 73, 0.05);
+  border-top: 1px solid #21262d;
+}
+
+.group-header-warning td {
+  background: rgba(210, 153, 34, 0.05);
+  border-top: 1px solid #21262d;
+}
+
+.group-meta {
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-chevron {
+  font-size: 11px;
+  color: #8b949e;
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+
+.group-chevron.expanded {
+  color: #c9d1d9;
+}
+
+.group-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.group-count-error {
+  background: rgba(248, 81, 73, 0.18);
+  color: #f85149;
+  border: 1px solid rgba(248, 81, 73, 0.35);
+}
+
+.group-count-warning {
+  background: rgba(210, 153, 34, 0.18);
+  color: #d29922;
+  border: 1px solid rgba(210, 153, 34, 0.35);
+}
+
+/* Detail rows — slightly indented */
+.group-row td.col-sev,
+.group-row td.col-code {
+  border-bottom-color: transparent;
+}
+
+.group-row td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 14px;
+  color: #8b949e;
+}
+
+.group-row td.col-type { color: #c9d1d9; }
+.group-row td.col-msg  { color: #c9d1d9; }

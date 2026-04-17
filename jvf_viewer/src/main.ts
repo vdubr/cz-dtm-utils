@@ -1,6 +1,6 @@
 import 'ol/ol.css';
 import type { JvfDtm, ObjektovyTyp } from 'jvf-parser';
-import { runAllChecks } from 'jvf-parser';
+import { runAllChecks } from 'jvf-topology';
 import { createOlMap } from './map/olMap.js';
 import { createZmLayer, createOrtofotoLayer, setupBaseLayerSwitcher } from './map/cuzk.js';
 import {
