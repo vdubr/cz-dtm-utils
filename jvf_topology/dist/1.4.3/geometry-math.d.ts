@@ -7,9 +7,24 @@
  * - Měření vzdálenosti (`dist3D`)
  * - Extrakce dat ze `JvfDtm` (`collectCoordSets`, `extractPolygons`, `buildIndex`)
  */
-import type { GmlLineString, GmlMultiCurve, GmlPoint, GmlPolygon, JvfDtm, ObjektovyTyp } from 'jvf-dtm-types';
+import type { GmlLineString, GmlMultiCurve, GmlPoint, GmlPolygon, JvfDtm, ObjektovyTyp, ZaznamObjektu } from 'jvf-dtm-types';
 import type { CoordSet, ErrorCtx, ExtractedPolygon, Point2D, TopologyError, TopologyErrorSeverity } from './types.js';
 export declare function mkError(ctx: ErrorCtx, severity: TopologyErrorSeverity, code: string, message: string): TopologyError;
+/**
+ * Vrátí úroveň umístění objektu (LEVEL: −3 až +3) ze specifických atributů záznamu.
+ *
+ * DTM rozlišuje tři atributy podle obsahové části:
+ * - `UrovenUmisteniObjektuZPS` (ZPS)
+ * - `UrovenUmisteniObjektuTI` (technická infrastruktura)
+ * - `UrovenUmisteniObjektuDI` (dopravní infrastruktura)
+ *
+ * Záznam může mít pouze jeden z nich. Pokud atribut chybí nebo není číslem,
+ * vrací `null` — kontroly takové záznamy typicky zahrnou do společné skupiny.
+ *
+ * Topologické kontroly dle specifikace probíhají **per LEVEL** — dva prvky
+ * v různých úrovních (např. povrch vs. podzemí) nejsou v kolizi.
+ */
+export declare function getLevel(zaznam: ZaznamObjektu): number | null;
 /**
  * Vrátí pole 2D bodů z plochého pole koordinát s danou dimenzí.
  */

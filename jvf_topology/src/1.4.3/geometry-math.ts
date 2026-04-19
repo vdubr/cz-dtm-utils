@@ -15,6 +15,7 @@ import type {
   GmlPolygon,
   JvfDtm,
   ObjektovyTyp,
+  ZaznamObjektu,
 } from 'jvf-dtm-types';
 import type {
   CoordSet,
@@ -46,6 +47,34 @@ export function mkError(
     err.objectId = ctx.objectId;
   }
   return err;
+}
+
+/**
+ * Vrátí úroveň umístění objektu (LEVEL: −3 až +3) ze specifických atributů záznamu.
+ *
+ * DTM rozlišuje tři atributy podle obsahové části:
+ * - `UrovenUmisteniObjektuZPS` (ZPS)
+ * - `UrovenUmisteniObjektuTI` (technická infrastruktura)
+ * - `UrovenUmisteniObjektuDI` (dopravní infrastruktura)
+ *
+ * Záznam může mít pouze jeden z nich. Pokud atribut chybí nebo není číslem,
+ * vrací `null` — kontroly takové záznamy typicky zahrnou do společné skupiny.
+ *
+ * Topologické kontroly dle specifikace probíhají **per LEVEL** — dva prvky
+ * v různých úrovních (např. povrch vs. podzemí) nejsou v kolizi.
+ */
+export function getLevel(zaznam: ZaznamObjektu): number | null {
+  const a = zaznam.attributes;
+  const v =
+    a['UrovenUmisteniObjektuZPS'] ??
+    a['UrovenUmisteniObjektuTI'] ??
+    a['UrovenUmisteniObjektuDI'];
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string' && v !== '') {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

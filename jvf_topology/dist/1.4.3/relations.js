@@ -6,7 +6,7 @@
  * - 3C: Volné konce liniových prvků stejného objektového typu (`SNAP_TOLERANCE`)
  */
 import { DEFBOD_PLOCHA_PAIRS, OSA_OBVOD_PAIRS, SNAP_TOLERANCE, } from './constants.js';
-import { buildIndex, dist3D, extractPolygons, mkError, pointInPolygon, toPoints, } from './geometry-math.js';
+import { buildIndex, dist3D, extractPolygons, getLevel, mkError, pointInPolygon, toPoints, } from './geometry-math.js';
 // ---------------------------------------------------------------------------
 // Vrstva 3A — DefBod leží v odpovídající Ploše
 // ---------------------------------------------------------------------------
@@ -141,11 +141,11 @@ export function checkDanglingEnds(dtm) {
         const lineZaznamy = objTyp.zaznamy.filter(z => z.geometrie.some(g => g.type === 'LineString' || g.type === 'MultiCurve'));
         if (lineZaznamy.length < 2)
             continue;
-        // Extrahovat start/end každé linie
+        // Extrahovat start/end každé linie a její úroveň umístění (LEVEL)
         const endpoints = lineZaznamy.map(z => {
             const start = extractLineStart(z);
             const end = extractLineEnd(z);
-            return { zaznam: z, start, end };
+            return { zaznam: z, level: getLevel(z), start, end };
         }).filter((e) => e.start !== undefined && e.end !== undefined);
         if (endpoints.length < 2)
             continue;
@@ -153,16 +153,20 @@ export function checkDanglingEnds(dtm) {
             const curr = endpoints[i];
             if (curr === undefined)
                 continue;
-            // Zkontrolovat start tohoto prvku
+            // Zkontrolovat start tohoto prvku — jen sousedé na stejné úrovni umístění
             const startConnected = endpoints.some((other, j) => {
                 if (j === i || other === undefined)
+                    return false;
+                if (other.level !== curr.level)
                     return false;
                 return (dist3D(curr.start.x, curr.start.y, undefined, other.start.x, other.start.y, undefined) <= SNAP_TOLERANCE ||
                     dist3D(curr.start.x, curr.start.y, undefined, other.end.x, other.end.y, undefined) <= SNAP_TOLERANCE);
             });
-            // Zkontrolovat end tohoto prvku
+            // Zkontrolovat end tohoto prvku — jen sousedé na stejné úrovni umístění
             const endConnected = endpoints.some((other, j) => {
                 if (j === i || other === undefined)
+                    return false;
+                if (other.level !== curr.level)
                     return false;
                 return (dist3D(curr.end.x, curr.end.y, undefined, other.start.x, other.start.y, undefined) <= SNAP_TOLERANCE ||
                     dist3D(curr.end.x, curr.end.y, undefined, other.end.x, other.end.y, undefined) <= SNAP_TOLERANCE);

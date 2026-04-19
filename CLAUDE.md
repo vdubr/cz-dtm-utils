@@ -192,6 +192,14 @@ za duplicitu** (je to legitimní vzor změny atributů). Kontroly
 `checkDuplicateLines`, `checkDuplicatePoints` a `checkPointProximity`
 takové páry přeskakují vždy, nezávisle na režimu.
 
+**LEVEL-awareness (úroveň umístění):**
+Duplicitní a blízkostní kontroly (3.6, 3.8, 3.9) a `checkDanglingEnds`
+porovnávají prvky **per LEVEL** — dva geometricky identické prvky v různých
+úrovních (např. povrch vs. podzemí, −3 až +3) nejsou duplicita ani kolize.
+Hodnota se čte ze specifických atributů `UrovenUmisteniObjektuZPS/TI/DI`
+pomocí `getLevel(zaznam)`. Záznamy bez atributu se považují za stejnou
+skupinu (`null`).
+
 ## Naming conventions
 
 Kódová báze je česky-doménově, ale dodržuje jednotné pravidlo pro rozpoznání,

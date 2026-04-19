@@ -7,7 +7,7 @@
  * - 3.9 Blízkost bodů stejného typu (vzdálenost < MIN_DISTANCE_TOLERANCE, 3D)
  */
 import { DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE } from './constants.js';
-import { dist3D, mkError, toPoints } from './geometry-math.js';
+import { dist3D, getLevel, mkError, toPoints } from './geometry-math.js';
 /**
  * Dvojice záznamů s `ZapisObjektu = 'd'` + `'i'`/`'u'` nepředstavuje duplicitu —
  * jde o vzor změnového souboru, kde se starý záznam maže a vzápětí vkládá nový
@@ -37,9 +37,12 @@ export function checkDuplicateLines(dtm) {
         const lineZaznamy = objTyp.zaznamy.filter(z => z.geometrie.some(g => g.type === 'LineString' || g.type === 'MultiCurve'));
         if (lineZaznamy.length < 2)
             continue;
-        // Normalizovaný klíč: seřazené XY vrcholy → string
+        // Normalizovaný klíč: LEVEL + seřazené XY vrcholy → string.
+        // Duplicitní kontrola dle spec. probíhá per LEVEL (objekty na různých
+        // úrovních — podzemí vs. povrch — nejsou duplicitní).
         const keys = lineZaznamy.map(z => ({
             zaznam: z,
+            level: getLevel(z),
             xyKey: extractLineXYKey(z),
             zCoords: extractLineZCoords(z),
         }));
@@ -50,6 +53,8 @@ export function checkDuplicateLines(dtm) {
                 if (a === undefined || b === undefined)
                     continue;
                 if (a.xyKey !== b.xyKey || a.xyKey === '')
+                    continue;
+                if (a.level !== b.level)
                     continue;
                 if (isChangesetDeleteInsertPair(a.zaznam, b.zaznam))
                     continue;
@@ -167,6 +172,7 @@ export function checkDuplicatePoints(dtm) {
         const seen = new Map();
         for (const zaznam of pointZaznamy) {
             const objectId = zaznam.commonAttributes.id;
+            const level = getLevel(zaznam);
             for (let gi = 0; gi < zaznam.geometrie.length; gi++) {
                 const geom = zaznam.geometrie[gi];
                 if (geom === undefined || geom.type !== 'Point')
@@ -175,9 +181,11 @@ export function checkDuplicatePoints(dtm) {
                 const x = coordinates[0], y = coordinates[1], z = coordinates[2];
                 if (x === undefined || y === undefined)
                     continue;
+                // Klíč zahrnuje LEVEL — kontrola per úroveň umístění dle spec.
+                const levelKey = level === null ? 'null' : String(level);
                 const key = isDefBod
-                    ? `${x},${y}`
-                    : `${x},${y},${z ?? ''}`;
+                    ? `${levelKey}|${x},${y}`
+                    : `${levelKey}|${x},${y},${z ?? ''}`;
                 const prev = seen.get(key);
                 if (prev !== undefined) {
                     if (isChangesetDeleteInsertPair(prev.zaznam, zaznam))
@@ -210,7 +218,7 @@ export function checkPointProximity(dtm) {
         const pointZaznamy = objTyp.zaznamy.filter(z => z.geometrie.some(g => g.type === 'Point'));
         if (pointZaznamy.length < 2)
             continue;
-        // Extrahovat body s pozicí
+        // Extrahovat body s pozicí a úrovní umístění (LEVEL)
         const pts = pointZaznamy.map(z => {
             const geom = z.geometrie.find(g => g.type === 'Point');
             if (geom?.type !== 'Point')
@@ -219,6 +227,7 @@ export function checkPointProximity(dtm) {
             return {
                 zaznam: z,
                 id: z.commonAttributes.id,
+                level: getLevel(z),
                 x: c[0] ?? 0,
                 y: c[1] ?? 0,
                 z: c[2],
@@ -228,6 +237,8 @@ export function checkPointProximity(dtm) {
             for (let j = i + 1; j < pts.length; j++) {
                 const a = pts[i], b = pts[j];
                 if (a === undefined || b === undefined)
+                    continue;
+                if (a.level !== b.level)
                     continue;
                 const d = dist3D(a.x, a.y, a.z, b.x, b.y, b.z);
                 if (d > 0 && d < MIN_DISTANCE_TOLERANCE) {

@@ -36,14 +36,24 @@ function makeObjTyp(
 
 function makeZaznam(
   geometrie: ZaznamObjektu['geometrie'],
-  id?: string
+  id?: string,
+  attributes: ZaznamObjektu['attributes'] = {}
 ): ZaznamObjektu {
   return {
     zapisObjektu: 'i',
     commonAttributes: id !== undefined ? { id } : {},
-    attributes: {},
+    attributes,
     geometrie,
   };
+}
+
+/** Zkratka pro tvorbu záznamu s úrovní umístění ZPS. */
+function makeZaznamLvl(
+  geometrie: ZaznamObjektu['geometrie'],
+  id: string,
+  level: number
+): ZaznamObjektu {
+  return makeZaznam(geometrie, id, { UrovenUmisteniObjektuZPS: level });
 }
 
 function makePoint(x: number, y: number, z = 300.0, id = 'P1'): ZaznamObjektu['geometrie'][number] {
@@ -389,6 +399,62 @@ describe('checkDuplicatePoints', () => {
       makeObjTyp('BodovyObjekt', [makeZaznam([makePoint(VALID_X, VALID_Y, VALID_Z)], 'B2')]),
     ]);
     expect(checkDuplicatePoints(dtm)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LEVEL-awareness (UrovenUmisteniObjektuZPS) — duplicity a blízkost per úroveň
+// ---------------------------------------------------------------------------
+
+describe('LEVEL-awareness', () => {
+  it('body se stejnými XYZ na různých úrovních → žádná duplicita', () => {
+    const dtm = makeDtm([makeObjTyp('PodrobnyBodZPS', [
+      makeZaznamLvl([makePoint(VALID_X, VALID_Y, VALID_Z)], 'B1', 0),
+      makeZaznamLvl([makePoint(VALID_X, VALID_Y, VALID_Z)], 'B2', -1),
+    ])]);
+    expect(checkDuplicatePoints(dtm)).toEqual([]);
+  });
+
+  it('body se stejnými XYZ na stejné úrovni → DUPLICATE_POINT', () => {
+    const dtm = makeDtm([makeObjTyp('PodrobnyBodZPS', [
+      makeZaznamLvl([makePoint(VALID_X, VALID_Y, VALID_Z)], 'B1', 0),
+      makeZaznamLvl([makePoint(VALID_X, VALID_Y, VALID_Z)], 'B2', 0),
+    ])]);
+    const errors = checkDuplicatePoints(dtm);
+    expect(errors[0]?.code).toBe('DUPLICATE_POINT');
+  });
+
+  it('identické linie na různých úrovních → žádná duplicita', () => {
+    const line = makeLine([
+      [VALID_X, VALID_Y, VALID_Z],
+      [VALID_X - 100, VALID_Y, VALID_Z],
+    ]);
+    const dtm = makeDtm([makeObjTyp('OsaTest', [
+      makeZaznamLvl([line], 'L1', 0),
+      makeZaznamLvl([line], 'L2', 1),
+    ])]);
+    expect(checkDuplicateLines(dtm)).toEqual([]);
+  });
+
+  it('identické linie na stejné úrovni → DUPLICATE_LINE_ERROR', () => {
+    const line = makeLine([
+      [VALID_X, VALID_Y, VALID_Z],
+      [VALID_X - 100, VALID_Y, VALID_Z],
+    ]);
+    const dtm = makeDtm([makeObjTyp('OsaTest', [
+      makeZaznamLvl([line], 'L1', 0),
+      makeZaznamLvl([line], 'L2', 0),
+    ])]);
+    const errors = checkDuplicateLines(dtm);
+    expect(errors[0]?.code).toBe('DUPLICATE_LINE_ERROR');
+  });
+
+  it('body blíže než tolerance na různých úrovních → žádné POINTS_TOO_CLOSE', () => {
+    const dtm = makeDtm([makeObjTyp('BodTest', [
+      makeZaznamLvl([makePoint(VALID_X, VALID_Y, VALID_Z)], 'B1', 0),
+      makeZaznamLvl([makePoint(VALID_X - 0.03, VALID_Y, VALID_Z)], 'B2', -1),
+    ])]);
+    expect(checkPointProximity(dtm)).toEqual([]);
   });
 });
 

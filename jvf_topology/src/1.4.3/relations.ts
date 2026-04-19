@@ -17,6 +17,7 @@ import {
   buildIndex,
   dist3D,
   extractPolygons,
+  getLevel,
   mkError,
   pointInPolygon,
   toPoints,
@@ -204,12 +205,12 @@ export function checkDanglingEnds(dtm: JvfDtm): TopologyError[] {
     );
     if (lineZaznamy.length < 2) continue;
 
-    // Extrahovat start/end každé linie
+    // Extrahovat start/end každé linie a její úroveň umístění (LEVEL)
     const endpoints = lineZaznamy.map(z => {
       const start = extractLineStart(z);
       const end = extractLineEnd(z);
-      return { zaznam: z, start, end };
-    }).filter((e): e is { zaznam: ZaznamObjektu; start: Point2D; end: Point2D } =>
+      return { zaznam: z, level: getLevel(z), start, end };
+    }).filter((e): e is { zaznam: ZaznamObjektu; level: number | null; start: Point2D; end: Point2D } =>
       e.start !== undefined && e.end !== undefined
     );
 
@@ -219,18 +220,20 @@ export function checkDanglingEnds(dtm: JvfDtm): TopologyError[] {
       const curr = endpoints[i];
       if (curr === undefined) continue;
 
-      // Zkontrolovat start tohoto prvku
+      // Zkontrolovat start tohoto prvku — jen sousedé na stejné úrovni umístění
       const startConnected = endpoints.some((other, j) => {
         if (j === i || other === undefined) return false;
+        if (other.level !== curr.level) return false;
         return (
           dist3D(curr.start.x, curr.start.y, undefined, other.start.x, other.start.y, undefined) <= SNAP_TOLERANCE ||
           dist3D(curr.start.x, curr.start.y, undefined, other.end.x, other.end.y, undefined) <= SNAP_TOLERANCE
         );
       });
 
-      // Zkontrolovat end tohoto prvku
+      // Zkontrolovat end tohoto prvku — jen sousedé na stejné úrovni umístění
       const endConnected = endpoints.some((other, j) => {
         if (j === i || other === undefined) return false;
+        if (other.level !== curr.level) return false;
         return (
           dist3D(curr.end.x, curr.end.y, undefined, other.start.x, other.start.y, undefined) <= SNAP_TOLERANCE ||
           dist3D(curr.end.x, curr.end.y, undefined, other.end.x, other.end.y, undefined) <= SNAP_TOLERANCE

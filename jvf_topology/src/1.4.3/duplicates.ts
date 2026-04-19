@@ -10,7 +10,7 @@
 import type { JvfDtm, ZaznamObjektu } from 'jvf-dtm-types';
 import type { ErrorCtx, TopologyError } from './types.js';
 import { DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE } from './constants.js';
-import { dist3D, mkError, toPoints } from './geometry-math.js';
+import { dist3D, getLevel, mkError, toPoints } from './geometry-math.js';
 
 /**
  * Dvojice záznamů s `ZapisObjektu = 'd'` + `'i'`/`'u'` nepředstavuje duplicitu —
@@ -47,9 +47,12 @@ export function checkDuplicateLines(dtm: JvfDtm): TopologyError[] {
     );
     if (lineZaznamy.length < 2) continue;
 
-    // Normalizovaný klíč: seřazené XY vrcholy → string
+    // Normalizovaný klíč: LEVEL + seřazené XY vrcholy → string.
+     // Duplicitní kontrola dle spec. probíhá per LEVEL (objekty na různých
+     // úrovních — podzemí vs. povrch — nejsou duplicitní).
     const keys = lineZaznamy.map(z => ({
       zaznam: z,
+      level: getLevel(z),
       xyKey: extractLineXYKey(z),
       zCoords: extractLineZCoords(z),
     }));
@@ -60,6 +63,7 @@ export function checkDuplicateLines(dtm: JvfDtm): TopologyError[] {
         const b = keys[j];
         if (a === undefined || b === undefined) continue;
         if (a.xyKey !== b.xyKey || a.xyKey === '') continue;
+        if (a.level !== b.level) continue;
         if (isChangesetDeleteInsertPair(a.zaznam, b.zaznam)) continue;
 
         const objectIdA = a.zaznam.commonAttributes.id;
@@ -179,6 +183,7 @@ export function checkDuplicatePoints(dtm: JvfDtm): TopologyError[] {
 
     for (const zaznam of pointZaznamy) {
       const objectId = zaznam.commonAttributes.id;
+      const level = getLevel(zaznam);
       for (let gi = 0; gi < zaznam.geometrie.length; gi++) {
         const geom = zaznam.geometrie[gi];
         if (geom === undefined || geom.type !== 'Point') continue;
@@ -186,9 +191,11 @@ export function checkDuplicatePoints(dtm: JvfDtm): TopologyError[] {
         const x = coordinates[0], y = coordinates[1], z = coordinates[2];
         if (x === undefined || y === undefined) continue;
 
+        // Klíč zahrnuje LEVEL — kontrola per úroveň umístění dle spec.
+        const levelKey = level === null ? 'null' : String(level);
         const key = isDefBod
-          ? `${x},${y}`
-          : `${x},${y},${z ?? ''}`;
+          ? `${levelKey}|${x},${y}`
+          : `${levelKey}|${x},${y},${z ?? ''}`;
 
         const prev = seen.get(key);
         if (prev !== undefined) {
@@ -228,7 +235,7 @@ export function checkPointProximity(dtm: JvfDtm): TopologyError[] {
     );
     if (pointZaznamy.length < 2) continue;
 
-    // Extrahovat body s pozicí
+    // Extrahovat body s pozicí a úrovní umístění (LEVEL)
     const pts = pointZaznamy.map(z => {
       const geom = z.geometrie.find(g => g.type === 'Point');
       if (geom?.type !== 'Point') return undefined;
@@ -236,6 +243,7 @@ export function checkPointProximity(dtm: JvfDtm): TopologyError[] {
       return {
         zaznam: z,
         id: z.commonAttributes.id,
+        level: getLevel(z),
         x: c[0] ?? 0,
         y: c[1] ?? 0,
         z: c[2],
@@ -246,6 +254,7 @@ export function checkPointProximity(dtm: JvfDtm): TopologyError[] {
       for (let j = i + 1; j < pts.length; j++) {
         const a = pts[i], b = pts[j];
         if (a === undefined || b === undefined) continue;
+        if (a.level !== b.level) continue;
         const d = dist3D(a.x, a.y, a.z, b.x, b.y, b.z);
         if (d > 0 && d < MIN_DISTANCE_TOLERANCE) {
           if (isChangesetDeleteInsertPair(a.zaznam, b.zaznam)) continue;
