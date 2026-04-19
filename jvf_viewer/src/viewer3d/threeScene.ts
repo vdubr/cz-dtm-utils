@@ -5,6 +5,13 @@ import { resolveStyle } from '../map/jvfLayers.js';
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
 
+interface OrbitState {
+  isDragging: boolean;
+  prevMouse: { x: number; y: number };
+  spherical: { theta: number; phi: number; radius: number };
+  center: THREE.Vector3;
+}
+
 interface SceneState {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -15,59 +22,62 @@ interface SceneState {
   cy: number;
   cz: number;
   objekty: ObjektovyTyp[];
+  orbit: OrbitState;
+  /** AbortController pro odstranění všech DOM event listenerů při dispose */
+  controlsAbort: AbortController;
 }
 
 let state: SceneState | null = null;
 
-let isDragging = false;
-let prevMouse = { x: 0, y: 0 };
-let spherical = { theta: 0, phi: Math.PI / 3, radius: 50000 };
-let sceneCenter = new THREE.Vector3(0, 0, 0);
-
-function updateCamera(camera: THREE.PerspectiveCamera): void {
+function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void {
+  const { spherical, center } = orbit;
   const x =
-    sceneCenter.x +
+    center.x +
     spherical.radius * Math.sin(spherical.phi) * Math.sin(spherical.theta);
-  const y = sceneCenter.y + spherical.radius * Math.cos(spherical.phi);
+  const y = center.y + spherical.radius * Math.cos(spherical.phi);
   const z =
-    sceneCenter.z +
+    center.z +
     spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
   camera.position.set(x, y, z);
-  camera.lookAt(sceneCenter);
+  camera.lookAt(center);
 }
 
 function attachOrbitControls(
   canvas: HTMLCanvasElement,
-  camera: THREE.PerspectiveCamera
+  camera: THREE.PerspectiveCamera,
+  orbit: OrbitState,
+  signal: AbortSignal
 ): void {
+  const opts = { signal };
+
   canvas.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    prevMouse = { x: e.clientX, y: e.clientY };
-  });
+    orbit.isDragging = true;
+    orbit.prevMouse = { x: e.clientX, y: e.clientY };
+  }, opts);
 
   canvas.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    spherical.theta -= (e.clientX - prevMouse.x) * 0.005;
-    spherical.phi -= (e.clientY - prevMouse.y) * 0.005;
-    spherical.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, spherical.phi));
-    prevMouse = { x: e.clientX, y: e.clientY };
-    updateCamera(camera);
-  });
+    if (!orbit.isDragging) return;
+    orbit.spherical.theta -= (e.clientX - orbit.prevMouse.x) * 0.005;
+    orbit.spherical.phi -= (e.clientY - orbit.prevMouse.y) * 0.005;
+    orbit.spherical.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, orbit.spherical.phi));
+    orbit.prevMouse = { x: e.clientX, y: e.clientY };
+    updateCamera(camera, orbit);
+  }, opts);
 
   canvas.addEventListener('mouseup', () => {
-    isDragging = false;
-  });
+    orbit.isDragging = false;
+  }, opts);
 
   canvas.addEventListener('mouseleave', () => {
-    isDragging = false;
-  });
+    orbit.isDragging = false;
+  }, opts);
 
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    spherical.radius *= 1 + e.deltaY * 0.001;
-    spherical.radius = Math.max(1, spherical.radius);
-    updateCamera(camera);
-  }, { passive: false });
+    orbit.spherical.radius *= 1 + e.deltaY * 0.001;
+    orbit.spherical.radius = Math.max(1, orbit.spherical.radius);
+    updateCamera(camera, orbit);
+  }, { ...opts, passive: false });
 }
 
 // Build layerKey — unique identifier per ObjektovyTyp
@@ -178,7 +188,7 @@ function buildSceneObjects(
   }
 }
 
-// Remove all data objects from scene (leaves lights, grid)
+// Remove all data objects from scene (leaves lights, grid) and release GPU resources.
 function clearSceneObjects(scene: THREE.Scene): void {
   const toRemove: THREE.Object3D[] = [];
   scene.traverse((obj) => {
@@ -186,7 +196,11 @@ function clearSceneObjects(scene: THREE.Scene): void {
   });
   for (const obj of toRemove) {
     scene.remove(obj);
-    if ((obj as THREE.Mesh).geometry) (obj as THREE.Mesh).geometry.dispose();
+    const withGeom = obj as Partial<THREE.Line & THREE.Points>;
+    withGeom.geometry?.dispose();
+    const mat = withGeom.material;
+    if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+    else mat?.dispose();
   }
 }
 
@@ -197,10 +211,14 @@ export function initThreeScene(
 ): void {
   disposeThreeScene();
 
-  // Reset orbit state for fresh view
-  isDragging = false;
-  spherical = { theta: 0, phi: Math.PI / 3, radius: 50000 };
-  sceneCenter = new THREE.Vector3(0, 0, 0);
+  // Fresh orbit state per session (žádné module-level globals, aby HMR a reinit
+  // neskládali starou a novou scénu dohromady).
+  const orbit: OrbitState = {
+    isDragging: false,
+    prevMouse: { x: 0, y: 0 },
+    spherical: { theta: 0, phi: Math.PI / 3, radius: 50000 },
+    center: new THREE.Vector3(0, 0, 0),
+  };
 
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
@@ -309,11 +327,13 @@ export function initThreeScene(
       }
     }
 
-    spherical.radius = maxSpread > 0 ? maxSpread * 2 : 5000;
+    orbit.spherical.radius = maxSpread > 0 ? maxSpread * 2 : 5000;
   }
 
-  updateCamera(camera);
-  attachOrbitControls(canvas, camera);
+  updateCamera(camera, orbit);
+
+  const controlsAbort = new AbortController();
+  attachOrbitControls(canvas, camera, orbit, controlsAbort.signal);
 
   let animFrameId: number | null = null;
 
@@ -324,7 +344,19 @@ export function initThreeScene(
 
   animate();
 
-  state = { scene, camera, renderer, animFrameId: null, initialRadius: spherical.radius, cx, cy, cz, objekty };
+  state = {
+    scene,
+    camera,
+    renderer,
+    animFrameId: null,
+    initialRadius: orbit.spherical.radius,
+    cx,
+    cy,
+    cz,
+    objekty,
+    orbit,
+    controlsAbort,
+  };
   Object.defineProperty(state, 'animFrameId', {
     get() { return animFrameId; },
     set(v) { animFrameId = v; },
@@ -353,17 +385,21 @@ export function disposeThreeScene(): void {
   if (state.animFrameId !== null) {
     cancelAnimationFrame(state.animFrameId);
   }
+  // Odpojit všechny DOM event listenery registrované v attachOrbitControls
+  state.controlsAbort.abort();
+  // Uvolnit geometrie + materiály všech datových objektů
+  clearSceneObjects(state.scene);
   state.renderer.dispose();
   state = null;
 }
 
 export function resetThreeCamera(): void {
   if (!state) return;
-  spherical.theta = 0;
-  spherical.phi = Math.PI / 3;
-  spherical.radius = state.initialRadius;
-  sceneCenter = new THREE.Vector3(0, 0, 0);
-  updateCamera(state.camera);
+  state.orbit.spherical.theta = 0;
+  state.orbit.spherical.phi = Math.PI / 3;
+  state.orbit.spherical.radius = state.initialRadius;
+  state.orbit.center.set(0, 0, 0);
+  updateCamera(state.camera, state.orbit);
 }
 
 export function resizeThreeScene(canvas: HTMLCanvasElement): void {

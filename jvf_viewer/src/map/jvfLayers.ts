@@ -23,8 +23,11 @@ const SVG_BASE = './symboly/';
 
 function flatCoordsToRing(flat: number[], dim: number): number[][] {
   const ring: number[][] = [];
-  for (let i = 0; i < flat.length; i += dim) {
-    ring.push([flat[i]!, flat[i + 1]!]);
+  for (let i = 0; i + 1 < flat.length; i += dim) {
+    const x = flat[i];
+    const y = flat[i + 1];
+    if (x === undefined || y === undefined) continue;
+    ring.push([x, y]);
   }
   return ring;
 }
@@ -129,8 +132,11 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         switch (geom.type) {
           case 'Point': {
             const coords = geom.data.coordinates;
+            const x = coords[0];
+            const y = coords[1];
+            if (x === undefined || y === undefined) break;
             feature = new Feature({
-              geometry: new OlPoint([coords[0]!, coords[1]!]),
+              geometry: new OlPoint([x, y]),
             });
             break;
           }
@@ -182,16 +188,12 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     const layerExtent = source.getExtent();
     if (layerExtent) extend(totalExtent, layerExtent);
 
-    const defaultStyle = createStyleForGeom(
-      ot.zaznamy[0]?.geometrie[0]?.type ?? 'Point',
-      s,
-    );
-
+    // Každá feature má individuálně nastavený style (viz feature.set('style', …)
+    // výše). Fallback nepotřebujeme — source je statický, style propojení se dědí
+    // z feature property.
     const olLayer = new VectorLayer({
       source,
-      style: (feature) => {
-        return (feature.get('style') as Style | undefined) ?? defaultStyle;
-      },
+      style: (feature) => feature.get('style') as Style | undefined,
     });
 
     olLayer.set('jvfNazev', ot.nazev);

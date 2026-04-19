@@ -146,7 +146,7 @@ Testy: `jvf_topology/tests/1.4.3/topology/` (160 testů, vše zelené).
 
 **IS DTM kontroly** (dle `docs/1.4.3/kontroly-dat-dtm.md`, sekce 1.5, 1.6, 3.4–3.10)
 - `COORD_OUT_OF_BOUNDS_XY` / `COORD_OUT_OF_BOUNDS_Z` — S-JTSK rozsahy
-- `COORD_PRECISION_EXCEEDED` — max 3 desetinná místa
+- `COORD_PRECISION_EXCEEDED` — max 2 desetinná místa (přesnost na cm)
 - `LINE_SELF_INTERSECTION` — průnik linie se sebou samou
 - `SEGMENT_ZERO_LENGTH` — nulový segment
 - `DUPLICATE_LINE_ERROR` / `DUPLICATE_LINE_WARNING` — duplicitní linie

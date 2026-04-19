@@ -110,15 +110,12 @@ export function checkPolygonMultiCurveConsistency(dtm: JvfDtm): TopologyError[] 
 
       const n = polyPts.length;
 
-      // Hledat shodný offset (normální pořadí)
-      const matchesForward = findMatchingOffset(polyPts, mcPts, n);
+      // Shoda: stejné body v normálním NEBO opačném pořadí, s libovolným offsetem.
+      const matched =
+        findMatchingOffset(polyPts, mcPts, n) !== -1 ||
+        findMatchingOffset(polyPts, [...mcPts].reverse(), n) !== -1;
 
-      // Zkusit opačné pořadí
-      const matchesReverse = matchesForward === -1
-        ? findMatchingOffset(polyPts, [...mcPts].reverse(), n)
-        : 0;
-
-      if (matchesForward === -1 && matchesReverse === -1) {
+      if (!matched) {
         errors.push(
           mkError(
             ctx,
