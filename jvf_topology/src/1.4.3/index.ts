@@ -32,6 +32,7 @@ import {
   checkDefBodInPlocha,
   checkOsaInObvod,
 } from './relations.js';
+import { checkDelAreaContainsDefBodPlocha } from './del-areas.js';
 
 // ---------------------------------------------------------------------------
 // Re-exporty
@@ -68,6 +69,7 @@ export {
   checkDefBodInPlocha,
   checkOsaInObvod,
 } from './relations.js';
+export { checkDelAreaContainsDefBodPlocha } from './del-areas.js';
 
 // ---------------------------------------------------------------------------
 // Hlavní vstupní body
@@ -120,6 +122,7 @@ const BASE_CHECKS: TopologyCheck[] = [
   checkDuplicatePoints,
   checkPointProximity,
   checkMinSegmentLength,
+  checkDelAreaContainsDefBodPlocha,
 ];
 
 /**
@@ -152,6 +155,7 @@ const CROSS_OBJECT_CHECKS: TopologyCheck[] = [
  * IS DTM 3.8: Duplicita bodů (v rámci JVF)
  * IS DTM 3.9: Blízkost bodů
  * IS DTM 3.10: Minimální délka segmentu
+ * DEL oblasti: Definiční bod uvnitř DEL oblasti kompletní ZPS (warning)
  * Vrstva 3A: Definiční bod leží v odpovídající ploše   (pouze 'complete')
  * Vrstva 3B: Osa PK leží uvnitř Obvodu PK              (pouze 'complete')
  * Vrstva 3C: Volné konce liniových prvků               (pouze 'complete')

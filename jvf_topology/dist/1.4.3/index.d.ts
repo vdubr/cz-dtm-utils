@@ -20,6 +20,7 @@ export { checkCoordinateBounds, checkCoordinatePrecision } from './bounds.js';
 export { checkLineSelfIntersection, checkMinSegmentLength, checkZeroLengthSegments, } from './segments.js';
 export { checkDuplicateLines, checkDuplicatePoints, checkPointProximity, } from './duplicates.js';
 export { checkDanglingEnds, checkDefBodInPlocha, checkOsaInObvod, } from './relations.js';
+export { checkDelAreaContainsDefBodPlocha } from './del-areas.js';
 /**
  * Režim validace — určuje, které kontroly jsou smysluplné.
  *
@@ -55,6 +56,7 @@ export declare function runTopologyChecks(dtm: JvfDtm, checks: TopologyCheck[]):
  * IS DTM 3.8: Duplicita bodů (v rámci JVF)
  * IS DTM 3.9: Blízkost bodů
  * IS DTM 3.10: Minimální délka segmentu
+ * DEL oblasti: Definiční bod uvnitř DEL oblasti kompletní ZPS (warning)
  * Vrstva 3A: Definiční bod leží v odpovídající ploše   (pouze 'complete')
  * Vrstva 3B: Osa PK leží uvnitř Obvodu PK              (pouze 'complete')
  * Vrstva 3C: Volné konce liniových prvků               (pouze 'complete')

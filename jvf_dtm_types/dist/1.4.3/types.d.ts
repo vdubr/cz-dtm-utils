@@ -66,10 +66,40 @@ export interface ObjektovyTyp {
     obsahovaCast: ObsahovaCast | string;
     zaznamy: ZaznamObjektu[];
 }
+/**
+ * Typ oblasti kompletní ZPS.
+ *
+ * Hodnota se v JVF přenáší přes `SpolecneAtributyVsechObjektu/PopisObjektu`
+ * s hodnotou `"NEW"` nebo `"DEL"`:
+ * - `NEW` — nově předávaná oblast kompletní ZPS (přidat do DB).
+ * - `DEL` — oblast, která má být z kompletní ZPS odstraněna.
+ *   Pokud se uvnitř takové oblasti nachází plocha definičního bodu
+ *   (viz `DEFBOD_PLOCHA_PAIRS`), dojde po přijetí ke zmenšení ZPS a objekt
+ *   je potřeba nahlásit jako upozornění (`DEL_AREA_CONTAINS_DEFBOD_PLOCHA`).
+ */
+export type OblastKompletniZPSTyp = 'NEW' | 'DEL' | 'unknown';
+/**
+ * Jeden záznam v `DoprovodneInformace/OblastiKompletniZPS`.
+ *
+ * Každý záznam popisuje jednu plošnou oblast (případně její obvod nebo
+ * referenční def. bod). `PopisObjektu` rozhoduje, zda jde o NEW/DEL záznam.
+ */
+export interface OblastKompletniZPSZaznam {
+    typ: OblastKompletniZPSTyp;
+    commonAttributes: CommonAttributes;
+    attributes: Record<string, string | number | boolean | null>;
+    plocha?: GmlPolygon;
+    obvod?: GmlMultiCurve;
+    defBod?: GmlPoint;
+}
+export interface DoprovodneInformace {
+    oblastiKompletniZPS: OblastKompletniZPSZaznam[];
+}
 export interface JvfDtm {
     verze: string;
     datumZapisu: string;
     typZapisu: TypZapisu;
     objekty: ObjektovyTyp[];
+    doprovodneInformace?: DoprovodneInformace;
 }
 //# sourceMappingURL=types.d.ts.map

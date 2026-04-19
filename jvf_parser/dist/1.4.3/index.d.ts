@@ -9,7 +9,7 @@
  * (viz `jvf_topology/`).
  */
 export { parseJvfDtm } from './parser.js';
-export type { CommonAttributes, Geometry, GmlLineString, GmlMultiCurve, GmlPoint, GmlPolygon, JvfDtm, ObjektovyTyp, ObsahovaCast, TypZapisu, ZaznamObjektu, ZapisObjektuType, } from './types.js';
+export type { CommonAttributes, DoprovodneInformace, Geometry, GmlLineString, GmlMultiCurve, GmlPoint, GmlPolygon, JvfDtm, ObjektovyTyp, ObsahovaCast, OblastKompletniZPSTyp, OblastKompletniZPSZaznam, TypZapisu, ZaznamObjektu, ZapisObjektuType, } from './types.js';
 export { ENTITY_CATALOG } from './generated/entities.js';
 export type { EntityMeta, EntityAttrsMap, GeomKind, } from './generated/entities.js';
 export * from './generated/enums.js';

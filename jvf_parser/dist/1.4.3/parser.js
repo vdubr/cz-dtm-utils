@@ -1,13 +1,14 @@
 import { XMLParser } from 'fast-xml-parser';
 import { parseGeometrieObjektu, parseOblastObjektuKI } from './geometry.js';
 import { parseAtributyObjektu } from './attributes.js';
+import { parseDoprovodneInformace } from './doprovodne-informace.js';
 import { extractText } from './xml-helpers.js';
 function createParser() {
     return new XMLParser({
         ignoreAttributes: false,
         attributeNamePrefix: '@_',
         removeNSPrefix: true,
-        isArray: (name) => ['ZaznamObjektu', 'curveMember'].includes(name),
+        isArray: (name) => ['ZaznamObjektu', 'ZaznamZPS', 'curveMember'].includes(name),
         // Preserve text content of elements that may be pure numbers
         parseTagValue: true,
         parseAttributeValue: true,
@@ -120,11 +121,13 @@ export function parseJvfDtm(xml) {
             }
         }
     }
+    const doprovodneInformace = parseDoprovodneInformace(dataJvfDtm['DoprovodneInformace']);
     return {
         verze,
         datumZapisu,
         typZapisu,
         objekty,
+        ...(doprovodneInformace !== undefined ? { doprovodneInformace } : {}),
     };
 }
 //# sourceMappingURL=parser.js.map

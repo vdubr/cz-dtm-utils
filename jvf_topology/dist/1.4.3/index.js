@@ -16,6 +16,7 @@ import { checkCoordinateBounds, checkCoordinatePrecision } from './bounds.js';
 import { checkLineSelfIntersection, checkMinSegmentLength, checkZeroLengthSegments, } from './segments.js';
 import { checkDuplicateLines, checkDuplicatePoints, checkPointProximity, } from './duplicates.js';
 import { checkDanglingEnds, checkDefBodInPlocha, checkOsaInObvod, } from './relations.js';
+import { checkDelAreaContainsDefBodPlocha } from './del-areas.js';
 export { DEFBOD_PLOCHA_PAIRS, DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE, OSA_OBVOD_PAIRS, SJTSK_BOUNDS, SNAP_TOLERANCE, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS, } from './constants.js';
 export { checkGeometricValidity } from './validity.js';
 export { checkPolygonMultiCurveConsistency } from './consistency.js';
@@ -23,6 +24,7 @@ export { checkCoordinateBounds, checkCoordinatePrecision } from './bounds.js';
 export { checkLineSelfIntersection, checkMinSegmentLength, checkZeroLengthSegments, } from './segments.js';
 export { checkDuplicateLines, checkDuplicatePoints, checkPointProximity, } from './duplicates.js';
 export { checkDanglingEnds, checkDefBodInPlocha, checkOsaInObvod, } from './relations.js';
+export { checkDelAreaContainsDefBodPlocha } from './del-areas.js';
 /**
  * Rozhodne výsledný režim na základě `mode` a obsahu dokumentu.
  */
@@ -53,6 +55,7 @@ const BASE_CHECKS = [
     checkDuplicatePoints,
     checkPointProximity,
     checkMinSegmentLength,
+    checkDelAreaContainsDefBodPlocha,
 ];
 /**
  * Meziobjektové kontroly (Vrstva 3) — vyžadují kompletní ZPS v dokumentu.
@@ -83,6 +86,7 @@ const CROSS_OBJECT_CHECKS = [
  * IS DTM 3.8: Duplicita bodů (v rámci JVF)
  * IS DTM 3.9: Blízkost bodů
  * IS DTM 3.10: Minimální délka segmentu
+ * DEL oblasti: Definiční bod uvnitř DEL oblasti kompletní ZPS (warning)
  * Vrstva 3A: Definiční bod leží v odpovídající ploše   (pouze 'complete')
  * Vrstva 3B: Osa PK leží uvnitř Obvodu PK              (pouze 'complete')
  * Vrstva 3C: Volné konce liniových prvků               (pouze 'complete')

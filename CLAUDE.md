@@ -159,6 +159,14 @@ Testy: `jvf_topology/tests/1.4.3/topology/` (160 testů, vše zelené).
 - `OSA_OUTSIDE_OBVOD` / `OSA_NO_OBVOD` — vrcholy Osy PK musí ležet v Obvodu PK
 - `LINE_DANGLING_END` — volné konce linií stejného typu (snap tolerance `SNAP_TOLERANCE` = 0,05 m)
 
+**DEL oblasti (DoprovodneInformace)** — `checkDelAreaContainsDefBodPlocha`
+- `DEL_AREA_CONTAINS_DEFBOD_PLOCHA` — warning, pokud definiční bod některé ZPS
+  plochy (z `DEFBOD_PLOCHA_PAIRS`) leží uvnitř polygonu DEL oblasti v
+  `DoprovodneInformace/OblastiKompletniZPS`. Po přijetí takového souboru dojde
+  ke zmenšení oblasti kompletní ZPS. Insert záznamy (`zapisObjektu='i'`) se
+  přeskakují — IS DMVS je nehlásí, protože ještě nemají přidělené ID.
+  Kontrola běží v obou režimech (`complete` i `changeset`).
+
 ### Veřejné API
 
 **`jvf-dtm-types`** — sdílené doménové typy (bez runtime kódu):

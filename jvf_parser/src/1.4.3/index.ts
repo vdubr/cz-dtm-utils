@@ -16,6 +16,7 @@
 export { parseJvfDtm } from './parser.js';
 export type {
   CommonAttributes,
+  DoprovodneInformace,
   Geometry,
   GmlLineString,
   GmlMultiCurve,
@@ -24,6 +25,8 @@ export type {
   JvfDtm,
   ObjektovyTyp,
   ObsahovaCast,
+  OblastKompletniZPSTyp,
+  OblastKompletniZPSZaznam,
   TypZapisu,
   ZaznamObjektu,
   ZapisObjektuType,
