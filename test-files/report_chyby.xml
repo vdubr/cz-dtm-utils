@@ -1,0 +1,263 @@
+***** Spuštěno: 17.04.2026 07:52:42 *****
+07:52:42 - Prejimka verze: 3.20.4.1
+------------------------------------------------------------------------------------
+07:52:42 - Inicializuji Teigha knihovny ... ok
+07:52:42 - Načítám systémové tabulky ... ok
+------------------------------------------------------------------------------------
+07:52:43 - KONTROLA VSTUPNÍCH DAT
+------------------------------------------------------------------------------------
+Soubor aktualizace: SUBJ-00007989_CZ052_10796_JVF.jvf.xml
+IDZmeny (IS DMVS): PGAD-BD1894D7-913C-43A0-97ED-9A238EC521AF
+IDZmeny: 53613
+Typ: Aktualizace GAD
+JVF verze: 1.4.3
+------------------------------------------------------------------------------------
+Kontrola vstupních dat ... ok
+------------------------------------------------------------------------------------
+Validace dle XSD - Aktualizační soubor - SUBJ-00007989_CZ052_10796_JVF.jvf.xml ... ok
+------------------------------------------------------------------------------------
+Načítám údaje o změně ... ok
+------------------------------------------------------------------------------------
+Kontroluji vstupní informace - údaje o změně ...  Upozornění (1)
+------------------------------------------------------------------------------------
+Upozornění: vstupní informace: NazevZakazky se neshoduje s daty v doprovodných informacích
+------------------------------------------------------------------------------------
+Načítám oblast aktualizace ... ok
+Kontrola umístění oblasti v území kraje - oblast aktualizace ... ok
+------------------------------------------------------------------------------------
+Načítám oblasti kompletní ZPS ... ok
+------------------------------------------------------------------------------------
+07:52:44 - Kontroluji tabulkový prostor ... ok
+------------------------------------------------------------------------------------
+07:52:45 - KONTROLA PRESHRANIČNÍ EDITACE KRAJ-KRAJ (oblast aktualizace)
+------------------------------------------------------------------------------------
+Načítám extent kraje ... ok
+------------------------------------------------------------------------------------
+Oblast aktualizace nemá průnik s hranicí kraje
+------------------------------------------------------------------------------------
+07:52:45 - KONTROLA PRESHRANIČNÍ EDITACE KRAJ-SVÚ (oblast aktualizace)
+------------------------------------------------------------------------------------
+Načítám oblasti SVÚ ... ok
+------------------------------------------------------------------------------------
+Oblast zámku nemá průnik s oblastmi SVÚ
+------------------------------------------------------------------------------------
+07:52:45 - KONTROLA STRUKTURY DAT
+------------------------------------------------------------------------------------
+07:52:45 - Načítám aktualizační soubor
+------------------------------------------------------------------------------------
+Kontrola struktury akt. souboru ... ok
+------------------------------------------------------------------------------------
+budova	i:2 u:0 d:2 
+provozní plocha pozemní komunikace	i:1 u:0 d:2 
+chodník	i:0 u:0 d:1 
+nájezd	i:4 u:0 d:6 
+příkop, násep, zářez dopravní stavby	i:1 u:0 d:2 
+plot	i:12 u:1 d:7 
+stavebně upravený vjezd na pozemek	i:3 u:1 d:3 
+zeď	i:7 u:0 d:0 
+patka, deska, monolit, pilíř	i:1 u:0 d:0 
+stavba pro zpevnění povrchu	i:3 u:0 d:0 
+neidentifikovaný objekt	i:0 u:1 d:1 
+udržovaná plocha zeleně	i:0 u:0 d:2 
+podrobný bod ZPS	i:121 u:0 d:45 
+hranice budovy	i:23 u:3 d:8 
+hranice stavby	i:22 u:0 d:0 
+hranice dopravní stavby nebo plochy	i:10 u:5 d:23 
+hranice udržované zeleně	i:2 u:0 d:0 
+přidružená plocha pozemní komunikace	i:1 u:0 d:0 
+------------------------------------------------------------------------------------
+Celkem:  i:213 u:11 d:102 
+------------------------------------------------------------------------------------
+Kontrola geometrie prvků - Aktualizační soubor ... ok
+------------------------------------------------------------------------------------
+07:52:45 - Stahuji referenční data do tabulkového prostoru ... ok
+------------------------------------------------------------------------------------
+07:52:49 - Nastavuji variantu přejímky dat ZPS ... ok (hybridní data)
+------------------------------------------------------------------------------------
+Kontrola vazby upravovaných prvků na datový sklad ... ok
+Kontrola nastavení typových atributů ... ok
+Kontrola délky textových atributů ... ok
+Kontrola nepovolených hodnot Z ... ok
+Kontrola nastavení třídy přesnosti na PB ... ok
+------------------------------------------------------------------------------------
+07:52:50 - KONTROLA PRESHRANIČNÍ EDITACE KRAJ-KRAJ (oblast zámku)
+------------------------------------------------------------------------------------
+Oblast zámku nemá průnik s hranicí kraje
+------------------------------------------------------------------------------------
+07:52:50 - KONTROLA PRESHRANIČNÍ EDITACE KRAJ-SVÚ (oblast zámku)
+------------------------------------------------------------------------------------
+Oblast zámku nemá průnik s oblastmi SVÚ
+------------------------------------------------------------------------------------
+07:52:50 - Nastavuji příznak konsolidovaných dat (pkonsolidovanadata=false) ... ok
+------------------------------------------------------------------------------------
+07:52:50 - Nastavuji třídu přesnosti
+------------------------------------------------------------------------------------
+Přiřazuji PB bodům ... hotovo
+Přiřazuji PB liniím ... hotovo
+------------------------------------------------------------------------------------
+07:52:50 - Posílám data do tabulkového prostoru ... ok
+------------------------------------------------------------------------------------
+07:52:51 - Kontroluji umístění prvků aktualizace ... ok
+------------------------------------------------------------------------------------
+07:52:51 - Nastavuji příznak konsolidovaných dat - aktualizační data ... ok
+------------------------------------------------------------------------------------
+07:52:51 - Nastavuji příznak konsolidovaných dat - referenční data (dle rozsahu mazaných oblastí) ... ok
+
+***** Ukončeno: 17.04.2026 07:52:52 *****
+***** Spuštěno: 17.04.2026 07:52:52 *****
+07:52:52 - Inicializacni kontroly verze: 3.20.4.1
+------------------------------------------------------------------------------------
+07:52:52 - Kontroluji tabulkový prostor ... ok
+07:52:52 - Spouštím inicializační kontroly
+------------------------------------------------------------------------------------
+07:52:52 - Načítám systémové tabulky ... ok
+------------------------------------------------------------------------------------
+07:52:52 - KONTROLA TOPOLOGIE DAT - PODROBNE BODY
+------------------------------------------------------------------------------------
+Načítám metadatové služby - objekty topologie ZPS a chyby DTM ... ok
+------------------------------------------------------------------------------------
+Kontrola volných podrobných bodů ... chyby (3)
+------------------------------------------------------------------------------------
+Chyba : volný podrobný bod ID: 52000330001119764
+Chyba : volný podrobný bod ID: 52000330001119759
+Chyba : volný podrobný bod ID: 52000330001112517
+------------------------------------------------------------------------------------
+Kontrola závislosti bodových prvků na podrobných bodech ... ok
+Kontrola závislosti konců a vrcholů linií na podrobných bodech ... ok
+Kontrola duplicit podrobných bodů ... ok
+------------------------------------------------------------------------------------
+07:52:53 - Aktualizuji informace tabulkového prostoru ... ok
+------------------------------------------------------------------------------------
+07:52:53 - KONTROLA TOPOLOGIE DAT - BODOVE A LINIOVE PRVKY
+------------------------------------------------------------------------------------
+07:52:53 - Načítám metadatové služby - objekty topologie ZPS a chyby DTM
+------------------------------------------------------------------------------------
+07:52:53 - Úroveň: -3 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:53 - Úroveň: -2 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:53 - Úroveň: -1 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:53 - Úroveň: 0
+------------------------------------------------------------------------------------
+Kontrola nulových úseček ... ok
+Kontrola svislice na linii ... ok
+Kontrola duplicity svislic ve 3D ... ok
+Kontrola překryvu svislic ve 3D ... ok
+Kontrola svislice ... ok
+Kontrola Z vzdálenosti linií - 3D  ... ok
+Kontrola duplicity bodových objektů 3D ... ok
+Kontrola křížení - trojmezí ... ok
+Kontrola křížení ... ok
+Kontrola překryvů ... ok
+Kontrola krátkých úseček ... ok
+Kontrola duplicitních linií - 2D ... ok
+Kontrola překryvů - samopřekryv ... ok
+Kontrola duplicitních linií - 3D ... ok
+Kontrola křížení - samokřížení ... ok
+Kontrola vzdálenosti vrcholů linie od jiné linie 2D ... ok
+Kontrola křížení prvků jedné skupiny ... ok
+Kontrola překryvů prvků jedné skupiny ... ok
+Kontrola blízkosti bodových objektů < 5 cm ... ok
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: 1 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: 2 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: 3 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Aktualizuji informace tabulkového prostoru ... ok
+------------------------------------------------------------------------------------
+07:52:54 - KONTROLA TVORBY A STRUKTURY PLOŠNÝCH PRVKŮ
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: -3 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: -3 (odvozené plochy) - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: -2 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: -2 (odvozené plochy) - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: -1 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:54 - Úroveň: -1 (odvozené plochy) - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 0
+------------------------------------------------------------------------------------
+Kontrola definičních bodů bez plochy ... chyby (1)
+------------------------------------------------------------------------------------
+Chyba : definiční bod bez plochy - definiční bod ID: 52000280000026564
+------------------------------------------------------------------------------------
+Kontrola více stejných definičních bodů v ploše ... ok
+Kontrola více různých definičních bodů v ploše ... ok
+Kontrola ploch bez definičního bodu ... ok
+Kontrola ploch bez definičního bodu mimo level L0 ... ok
+Kontrola ploch s více stejnými definičními body ... ok
+Kontrola ploch s více různými definičními body ... ok
+Kontrola malých ploch (obsah) ... ok
+Kontrola mazaných ploch ... upozornění (28)
+------------------------------------------------------------------------------------
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000140000011900 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000140000011900 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018951 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018951 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000015552 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000015552 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000017869 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000017869 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000280000026565 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000280000026565 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000010000013375 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000010000013375 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018930 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018930 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000140000011126 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000140000011126 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018931 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018931 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000280000025075 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000280000025075 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018950 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000018950 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000010000013405 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000010000013405 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000015750 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000015750 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000020260 - dojde ke zmenšení oblasti kompletní ZPS
+Upozornění : Oblast DEL obsahuje plochu def.bodu: 52000120000020260 - dojde ke zmenšení oblasti kompletní ZPS
+------------------------------------------------------------------------------------
+Kontrola umístění změněných ploch v oblasti změny ... nekontrolováno
+Kontrola předaných odvozených dat ... nekontrolováno
+Kontrola nových ploch ... nekontrolováno
+Kontrola přesunutí mazaných definičních bodů ... nekontrolováno
+Kontrola plochy přesunutého aktualizovaného definičního bodu ... nekontrolováno
+Kontrola přesunutí aktualizovaných definičních bodů ... nekontrolováno
+Kontrola plochy přesunutého mazaného definičního bodu ... nekontrolováno
+Kontrola volných hranic/plochotvorných liniových prvků 3D ... nekontrolováno
+Kontrola volných hranic/plochotvorných liniových prvků 2D ... nekontrolováno
+Kontrola hierarchie typu hranice ... nekontrolováno
+Kontrola existence svislých hran ... nekontrolováno
+Kontrola volných svislic ... nekontrolováno
+Kontrola napojení 2D duplicitních linií ... nekontrolováno
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 0 (odvozené plochy) - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 1 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 1 (odvozené plochy) - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 2 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 2 (odvozené plochy) - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 3 - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Úroveň: 3 (odvozené plochy) - neobsahuje data pro kontrolu
+------------------------------------------------------------------------------------
+07:52:56 - Inicializuji Teigha knihovny ... ok
+------------------------------------------------------------------------------------
+07:52:56 - Zapisuji lokalizace chyb/varování do formátu DGN ... ok
+------------------------------------------------------------------------------------
+Kontrola byla ukončena s chybami.
+
+***** Ukončeno: 17.04.2026 07:52:56 *****

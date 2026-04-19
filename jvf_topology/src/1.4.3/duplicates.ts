@@ -13,6 +13,22 @@ import { DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE } from './constants.js';
 import { dist3D, mkError, toPoints } from './geometry-math.js';
 
 /**
+ * Dvojice záznamů s `ZapisObjektu = 'd'` + `'i'`/`'u'` nepředstavuje duplicitu —
+ * jde o vzor změnového souboru, kde se starý záznam maže a vzápětí vkládá nový
+ * (často jen se změnou atributů, geometrie zůstává stejná).
+ *
+ * Vrací `true`, když má dvojice být přeskočena z duplicitních kontrol.
+ */
+function isChangesetDeleteInsertPair(a: ZaznamObjektu, b: ZaznamObjektu): boolean {
+  const za = a.zapisObjektu;
+  const zb = b.zapisObjektu;
+  return (
+    (za === 'd' && (zb === 'i' || zb === 'u')) ||
+    (zb === 'd' && (za === 'i' || za === 'u'))
+  );
+}
+
+/**
  * Kontrola 3.6 (částečná): Duplicitní liniové objekty ve stejném objektovém typu
  * s identickými XY vrcholy uvnitř jednoho JVF souboru.
  *
@@ -44,6 +60,7 @@ export function checkDuplicateLines(dtm: JvfDtm): TopologyError[] {
         const b = keys[j];
         if (a === undefined || b === undefined) continue;
         if (a.xyKey !== b.xyKey || a.xyKey === '') continue;
+        if (isChangesetDeleteInsertPair(a.zaznam, b.zaznam)) continue;
 
         const objectIdA = a.zaznam.commonAttributes.id;
         const ctx: ErrorCtx = {
@@ -158,7 +175,7 @@ export function checkDuplicatePoints(dtm: JvfDtm): TopologyError[] {
     );
     if (pointZaznamy.length < 2) continue;
 
-    const seen = new Map<string, string | undefined>(); // key → objectId
+    const seen = new Map<string, { id: string | undefined; zaznam: ZaznamObjektu }>();
 
     for (const zaznam of pointZaznamy) {
       const objectId = zaznam.commonAttributes.id;
@@ -173,8 +190,9 @@ export function checkDuplicatePoints(dtm: JvfDtm): TopologyError[] {
           ? `${x},${y}`
           : `${x},${y},${z ?? ''}`;
 
-        const prevId = seen.get(key);
-        if (prevId !== undefined || seen.has(key)) {
+        const prev = seen.get(key);
+        if (prev !== undefined) {
+          if (isChangesetDeleteInsertPair(prev.zaznam, zaznam)) continue;
           const ctx: ErrorCtx = {
             objektovyTyp: objTyp.elementName,
             ...(objectId !== undefined ? { objectId } : {}),
@@ -183,10 +201,10 @@ export function checkDuplicatePoints(dtm: JvfDtm): TopologyError[] {
           errors.push(
             mkError(ctx, 'error', 'DUPLICATE_POINT',
               `Duplicitní bod ${isDefBod ? 'XY' : 'XYZ'} (${isDefBod ? `${x}, ${y}` : `${x}, ${y}, ${z ?? '?'}`}) ` +
-              `nalezen také v záznamu ${prevId ?? '(bez id)'}.`)
+              `nalezen také v záznamu ${prev.id ?? '(bez id)'}.`)
           );
         } else {
-          seen.set(key, objectId);
+          seen.set(key, { id: objectId, zaznam });
         }
       }
     }
@@ -216,6 +234,7 @@ export function checkPointProximity(dtm: JvfDtm): TopologyError[] {
       if (geom?.type !== 'Point') return undefined;
       const c = geom.data.coordinates;
       return {
+        zaznam: z,
         id: z.commonAttributes.id,
         x: c[0] ?? 0,
         y: c[1] ?? 0,
@@ -229,6 +248,7 @@ export function checkPointProximity(dtm: JvfDtm): TopologyError[] {
         if (a === undefined || b === undefined) continue;
         const d = dist3D(a.x, a.y, a.z, b.x, b.y, b.z);
         if (d > 0 && d < MIN_DISTANCE_TOLERANCE) {
+          if (isChangesetDeleteInsertPair(a.zaznam, b.zaznam)) continue;
           const ctx: ErrorCtx = {
             objektovyTyp: objTyp.elementName,
             ...(a.id !== undefined ? { objectId: a.id } : {}),

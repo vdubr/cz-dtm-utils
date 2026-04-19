@@ -104,15 +104,16 @@ export function checkCoordinatePrecision(dtm) {
 }
 /**
  * Vrátí první souřadnici s více než 2 desetinnými místy, nebo undefined.
- * Používá přísné desetinné počítání (string-based), aby se vyhnul float zaokrouhlování.
+ * Porovnává s verzí zaokrouhlenou na 2 desetinná místa — odolné vůči
+ * exponenciálnímu zápisu (např. 1e-7 nemá '.', ale přesnost porušuje)
+ * i float artefaktům (epsilon 1e-9 tlumí jitter typu 0.1+0.2=0.30000000000000004).
  */
 function findPrecisionViolation(coords) {
     for (const v of coords) {
         if (v === undefined)
             continue;
-        const s = v.toString();
-        const dot = s.indexOf('.');
-        if (dot !== -1 && s.length - dot - 1 > 2) {
+        const rounded = Math.round(v * 100) / 100;
+        if (Math.abs(v - rounded) > 1e-9) {
             return v;
         }
     }

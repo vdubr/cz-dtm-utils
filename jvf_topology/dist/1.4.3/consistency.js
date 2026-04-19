@@ -83,13 +83,10 @@ export function checkPolygonMultiCurveConsistency(dtm) {
                 continue;
             }
             const n = polyPts.length;
-            // Hledat shodný offset (normální pořadí)
-            const matchesForward = findMatchingOffset(polyPts, mcPts, n);
-            // Zkusit opačné pořadí
-            const matchesReverse = matchesForward === -1
-                ? findMatchingOffset(polyPts, [...mcPts].reverse(), n)
-                : 0;
-            if (matchesForward === -1 && matchesReverse === -1) {
+            // Shoda: stejné body v normálním NEBO opačném pořadí, s libovolným offsetem.
+            const matched = findMatchingOffset(polyPts, mcPts, n) !== -1 ||
+                findMatchingOffset(polyPts, [...mcPts].reverse(), n) !== -1;
+            if (!matched) {
                 errors.push(mkError(ctx, 'error', 'POLYGON_MULTICURVE_COORDS_MISMATCH', 'XY souřadnice exterioru Polygonu a MultiCurve se neshodují ' +
                     '(ani při různém počátku nebo opačném pořadí bodů).'));
             }

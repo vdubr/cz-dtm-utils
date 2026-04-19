@@ -86,9 +86,9 @@ export const DEFBOD_PLOCHA_PAIRS = [
     { defbod: 'SklenikDefinicniBod', plocha: 'SklenikPlocha' },
     { defbod: 'SouhrnnaPlochaZeleznicnichDrahDefinicniBod', plocha: 'SouhrnnaPlochaZeleznicnichDrahPlocha' },
     { defbod: 'SpecialniDrahaDefinicniBod', plocha: 'SpecialniDrahaPlocha' },
-    { defbod: 'StavbaProZpevneniPovrchu DefinicniBod', plocha: 'StavbaProZpevneniPovrchuPlocha' },
+    { defbod: 'StavbaProZpevneniPovrchuDefinicniBod', plocha: 'StavbaProZpevneniPovrchuPlocha' },
     { defbod: 'StavebneUpraveneKorytoDefinicniBod', plocha: 'StavebneUpraveneKorytoPlocha' },
-    { defbod: 'SterkovaPrehrazdaDefinicniBod', plocha: 'SterkovaPrehrazdaPlocha' },
+    { defbod: 'SterkovaPrehrazkaDefinicniBod', plocha: 'SterkovaPrehrazkaPlocha' },
     { defbod: 'StupenDefinicniBod', plocha: 'StupenPlocha' },
     { defbod: 'SuchaNadrzDefinicniBod', plocha: 'SuchaNadrzPlocha' },
     { defbod: 'TerasaDefinicniBod', plocha: 'TerasaPlocha' },
@@ -103,7 +103,7 @@ export const DEFBOD_PLOCHA_PAIRS = [
     { defbod: 'ZarizeniVodovodniPripojkyDefinicniBod', plocha: 'ZarizeniVodovodniPripojkyPlocha' },
     { defbod: 'ZastreseniDefinicniBod', plocha: 'ZastreseniPlocha' },
     { defbod: 'ZedDefinicniBod', plocha: 'ZedPlocha' },
-    { defbod: 'ZemedelskaPlochaDefinicniBod', plocha: 'ZemedelskaPlocha' },
+    { defbod: 'ZemedelskaPlochaDefinicniBod', plocha: 'ZemedelskaPlochaPlocha' },
     { defbod: 'PozemniLanovaDrahaDefinicniBod', plocha: 'PozemniLanovaDrahaPlocha' },
 ];
 // ---------------------------------------------------------------------------

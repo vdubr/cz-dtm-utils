@@ -74,6 +74,27 @@ export {
 // ---------------------------------------------------------------------------
 
 /**
+ * Režim validace — určuje, které kontroly jsou smysluplné.
+ *
+ * - `'complete'`: kompletní JVF soubor obsahující celou ZPS v rámci území.
+ *   Lze spouštět všechny kontroly včetně meziobjektové topologie.
+ * - `'changeset'`: změnový JVF (TypZapisu="změnové věty") obsahující jen
+ *   insert/update/delete záznamy. Meziobjektové kontroly (Vrstva 3) by
+ *   generovaly false positives, protože sousední objekty jsou v databázi
+ *   ZPS, kterou náš balíček nevidí.
+ * - `'auto'`: detekce z `dtm.typZapisu`.
+ */
+export type ValidationMode = 'complete' | 'changeset' | 'auto';
+
+/**
+ * Rozhodne výsledný režim na základě `mode` a obsahu dokumentu.
+ */
+function resolveMode(dtm: JvfDtm, mode: ValidationMode): 'complete' | 'changeset' {
+  if (mode !== 'auto') return mode;
+  return dtm.typZapisu === 'změnové věty' ? 'changeset' : 'complete';
+}
+
+/**
  * Spustí zadané kontroly nad DTM dokumentem a vrátí souhrnný seznam chyb.
  */
 export function runTopologyChecks(
@@ -84,7 +105,42 @@ export function runTopologyChecks(
 }
 
 /**
+ * Kontroly bezpečné pro kompletní i změnový režim.
+ * Ověřují validitu geometrie jednotlivých záznamů a vztahy uvnitř záznamu,
+ * bez závislosti na referenční databázi.
+ */
+const BASE_CHECKS: TopologyCheck[] = [
+  checkGeometricValidity,
+  checkPolygonMultiCurveConsistency,
+  checkCoordinateBounds,
+  checkCoordinatePrecision,
+  checkLineSelfIntersection,
+  checkZeroLengthSegments,
+  checkDuplicateLines,
+  checkDuplicatePoints,
+  checkPointProximity,
+  checkMinSegmentLength,
+];
+
+/**
+ * Meziobjektové kontroly (Vrstva 3) — vyžadují kompletní ZPS v dokumentu.
+ * V režimu `'changeset'` se neprovádějí, protože sousední geometrie,
+ * plochy a obvody mohou existovat v referenční databázi mimo JVF soubor.
+ */
+const CROSS_OBJECT_CHECKS: TopologyCheck[] = [
+  checkDefBodInPlocha,
+  checkOsaInObvod,
+  checkDanglingEnds,
+];
+
+/**
  * Spustí všechny implementované kontroly.
+ *
+ * @param dtm  Parsovaný JVF DTM dokument.
+ * @param mode Režim validace:
+ *   - `'complete'` — kompletní ZPS, běží všechny vrstvy (default pro starší volající).
+ *   - `'changeset'` — jen změnový soubor, Vrstva 3 se přeskočí.
+ *   - `'auto'` — detekce z `dtm.typZapisu` (doporučeno).
  *
  * Vrstva 1: Geometrická validita
  * Vrstva 2: Konzistence Polygon ↔ MultiCurve
@@ -96,24 +152,16 @@ export function runTopologyChecks(
  * IS DTM 3.8: Duplicita bodů (v rámci JVF)
  * IS DTM 3.9: Blízkost bodů
  * IS DTM 3.10: Minimální délka segmentu
- * Vrstva 3A: Definiční bod leží v odpovídající ploše
- * Vrstva 3B: Osa PK leží uvnitř Obvodu PK
- * Vrstva 3C: Volné konce liniových prvků
+ * Vrstva 3A: Definiční bod leží v odpovídající ploše   (pouze 'complete')
+ * Vrstva 3B: Osa PK leží uvnitř Obvodu PK              (pouze 'complete')
+ * Vrstva 3C: Volné konce liniových prvků               (pouze 'complete')
  */
-export function runAllChecks(dtm: JvfDtm): TopologyError[] {
-  return runTopologyChecks(dtm, [
-    checkGeometricValidity,
-    checkPolygonMultiCurveConsistency,
-    checkCoordinateBounds,
-    checkCoordinatePrecision,
-    checkLineSelfIntersection,
-    checkZeroLengthSegments,
-    checkDuplicateLines,
-    checkDuplicatePoints,
-    checkPointProximity,
-    checkMinSegmentLength,
-    checkDefBodInPlocha,
-    checkOsaInObvod,
-    checkDanglingEnds,
-  ]);
+export function runAllChecks(
+  dtm: JvfDtm,
+  mode: ValidationMode = 'auto'
+): TopologyError[] {
+  const resolved = resolveMode(dtm, mode);
+  const checks =
+    resolved === 'complete' ? [...BASE_CHECKS, ...CROSS_OBJECT_CHECKS] : BASE_CHECKS;
+  return runTopologyChecks(dtm, checks);
 }

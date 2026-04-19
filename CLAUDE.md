@@ -172,13 +172,25 @@ Testy: `jvf_topology/tests/1.4.3/topology/` (160 testů, vše zelené).
 - `ENTITY_CATALOG` + sdílené atributy z generovaných modulů
 
 **`jvf-topology`** — validace:
-- `runAllChecks`, `runTopologyChecks` — hlavní vstupní body
+- `runAllChecks(dtm, mode?)` — hlavní vstupní bod.
+  - `mode: 'complete' | 'changeset' | 'auto'` (default `'auto'`).
+  - `'auto'` detekuje režim z `dtm.typZapisu`: `'změnové věty'` → `changeset`, jinak `complete`.
+  - V režimu `'changeset'` se přeskakuje Vrstva 3 (meziobjektová topologie),
+    protože sousední plochy / obvody / linie mohou existovat v referenční
+    databázi ZPS, kterou JVF soubor nevidí — jinak by vznikaly false positives.
+- `runTopologyChecks(dtm, checks)` — vlastní sestavení sady kontrol.
 - `TopologyError`, `TopologyErrorSeverity`, `TopologyCheck` — typy
 - Všechny jednotlivé `check*` funkce (13 funkcí) pro custom sestavy
 - Tolerance a rozsahy (`SJTSK_BOUNDS`, `Z_BOUNDS_ZPS`, `Z_BOUNDS_DEFBOD`,
   `DUPLICATE_Z_TOLERANCE` = 0.12 m, `MIN_DISTANCE_TOLERANCE` = 0.05 m,
   `SNAP_TOLERANCE` = 0.05 m)
 - Páry objektových typů: `DEFBOD_PLOCHA_PAIRS` (63 párů), `OSA_OBVOD_PAIRS`
+
+**Chování duplicitních kontrol v changeset souborech:**
+Dvojice `ZapisObjektu='d' + 'i'/'u'` se stejnou geometrií se **nepovažuje
+za duplicitu** (je to legitimní vzor změny atributů). Kontroly
+`checkDuplicateLines`, `checkDuplicatePoints` a `checkPointProximity`
+takové páry přeskakují vždy, nezávisle na režimu.
 
 ## Naming conventions
 
