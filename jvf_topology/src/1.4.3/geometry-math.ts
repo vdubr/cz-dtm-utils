@@ -77,6 +77,22 @@ export function getLevel(zaznam: ZaznamObjektu): number | null {
   return null;
 }
 
+/**
+ * Rozhodne, zda elementName v DTM označuje definiční bod.
+ *
+ * DTM používá konvenci `{Kořen}DefinicniBod` (např. `BudovaDefinicniBod`,
+ * `LesDefinicniBod`). Pro robustnost se povoluje i zkrácená forma `DefBod`,
+ * která se historicky vyskytovala v některých testech / interních dokumentech,
+ * ale v reálných datech (JVF 1.4.3) se nepoužívá.
+ *
+ * Case-insensitive porovnání — XSD garantuje PascalCase, ale ověřujeme přes
+ * lowercase pro odolnost vůči možným variacím.
+ */
+export function isDefBodElementName(elementName: string): boolean {
+  const n = elementName.toLowerCase();
+  return n.includes('definicnibod') || n.includes('defbod');
+}
+
 // ---------------------------------------------------------------------------
 // Konverze souřadnic
 // ---------------------------------------------------------------------------

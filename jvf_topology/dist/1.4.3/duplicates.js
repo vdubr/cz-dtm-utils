@@ -7,7 +7,7 @@
  * - 3.9 Blízkost bodů stejného typu (vzdálenost < MIN_DISTANCE_TOLERANCE, 3D)
  */
 import { DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE } from './constants.js';
-import { dist3D, getLevel, mkError, toPoints } from './geometry-math.js';
+import { dist3D, getLevel, isDefBodElementName, mkError, toPoints } from './geometry-math.js';
 /**
  * Dvojice záznamů s `ZapisObjektu = 'd'` + `'i'`/`'u'` nepředstavuje duplicitu —
  * jde o vzor změnového souboru, kde se starý záznam maže a vzápětí vkládá nový
@@ -164,7 +164,7 @@ function maxZDifference(a, b) {
 export function checkDuplicatePoints(dtm) {
     const errors = [];
     for (const objTyp of dtm.objekty) {
-        const isDefBod = objTyp.elementName.toLowerCase().includes('defbod');
+        const isDefBod = isDefBodElementName(objTyp.elementName);
         // Sbíráme záznamy s Point geometrií
         const pointZaznamy = objTyp.zaznamy.filter(z => z.geometrie.some(g => g.type === 'Point'));
         if (pointZaznamy.length < 2)

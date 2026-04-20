@@ -10,7 +10,7 @@
 import type { JvfDtm, ZaznamObjektu } from 'jvf-dtm-types';
 import type { ErrorCtx, TopologyError } from './types.js';
 import { DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE } from './constants.js';
-import { dist3D, getLevel, mkError, toPoints } from './geometry-math.js';
+import { dist3D, getLevel, isDefBodElementName, mkError, toPoints } from './geometry-math.js';
 
 /**
  * Dvojice záznamů s `ZapisObjektu = 'd'` + `'i'`/`'u'` nepředstavuje duplicitu —
@@ -171,7 +171,7 @@ export function checkDuplicatePoints(dtm: JvfDtm): TopologyError[] {
   const errors: TopologyError[] = [];
 
   for (const objTyp of dtm.objekty) {
-    const isDefBod = objTyp.elementName.toLowerCase().includes('defbod');
+    const isDefBod = isDefBodElementName(objTyp.elementName);
 
     // Sbíráme záznamy s Point geometrií
     const pointZaznamy = objTyp.zaznamy.filter(z =>

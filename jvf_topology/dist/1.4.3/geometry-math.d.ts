@@ -26,6 +26,18 @@ export declare function mkError(ctx: ErrorCtx, severity: TopologyErrorSeverity, 
  */
 export declare function getLevel(zaznam: ZaznamObjektu): number | null;
 /**
+ * Rozhodne, zda elementName v DTM označuje definiční bod.
+ *
+ * DTM používá konvenci `{Kořen}DefinicniBod` (např. `BudovaDefinicniBod`,
+ * `LesDefinicniBod`). Pro robustnost se povoluje i zkrácená forma `DefBod`,
+ * která se historicky vyskytovala v některých testech / interních dokumentech,
+ * ale v reálných datech (JVF 1.4.3) se nepoužívá.
+ *
+ * Case-insensitive porovnání — XSD garantuje PascalCase, ale ověřujeme přes
+ * lowercase pro odolnost vůči možným variacím.
+ */
+export declare function isDefBodElementName(elementName: string): boolean;
+/**
  * Vrátí pole 2D bodů z plochého pole koordinát s danou dimenzí.
  */
 export declare function toPoints(coords: number[], dim: number): Point2D[];

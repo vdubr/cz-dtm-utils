@@ -8,7 +8,9 @@
     "jvf_viewer"
   ],
   "scripts": {
-    "build": "npm run build -w jvf-dtm-types && npm run build -w jvf-parser && npm run build -w jvf-topology && npm run build -w jvf-viewer"
+    "build": "npm run build -w jvf-dtm-types && npm run build -w jvf-parser && npm run build -w jvf-topology && npm run build -w jvf-viewer",
+    "typecheck": "npm run typecheck -w jvf-dtm-types && npm run typecheck -w jvf-parser && npm run typecheck -w jvf-topology && npm run typecheck -w jvf-viewer",
+    "test": "npm run test -w jvf-parser && npm run test -w jvf-topology"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.60.1"

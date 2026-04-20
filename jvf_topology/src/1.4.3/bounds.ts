@@ -14,7 +14,7 @@
 import type { JvfDtm } from 'jvf-dtm-types';
 import type { ErrorCtx, TopologyError } from './types.js';
 import { SJTSK_BOUNDS, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS } from './constants.js';
-import { collectCoordSets, mkError } from './geometry-math.js';
+import { collectCoordSets, isDefBodElementName, mkError } from './geometry-math.js';
 
 /**
  * Kontrola 1.5: Souřadnice XY musí ležet v rozsahu S-JTSK pro území ČR.
@@ -29,7 +29,7 @@ export function checkCoordinateBounds(dtm: JvfDtm): TopologyError[] {
 
   for (const objTyp of dtm.objekty) {
     const isZps = objTyp.obsahovaCast === 'ZPS';
-    const isDefBod = objTyp.elementName.toLowerCase().includes('defbod');
+    const isDefBod = isDefBodElementName(objTyp.elementName);
     const zBounds = isDefBod ? Z_BOUNDS_DEFBOD : Z_BOUNDS_ZPS;
 
     for (const zaznam of objTyp.zaznamy) {

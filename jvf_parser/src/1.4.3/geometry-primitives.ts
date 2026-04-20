@@ -133,11 +133,14 @@ export function parseMultiCurve(mcEl: Record<string, unknown>): GmlMultiCurve {
     for (const member of memberList) {
       if (typeof member === 'object' && member !== null) {
         const memberObj = member as Record<string, unknown>;
-        // LineString may appear with or without gml: prefix
+        // LineString může být s nebo bez `gml:` prefixu (fast-xml-parser má
+        // `removeNSPrefix: true`, ale obranně kontrolujeme obě varianty).
+        // Break po prvním nálezu — stejné chování jako ostatní GML parsery výše.
         for (const key of ['LineString', 'gml:LineString']) {
           const ls = memberObj[key];
           if (ls != null && typeof ls === 'object') {
             curves.push(parseLineString(ls as Record<string, unknown>));
+            break;
           }
         }
       }

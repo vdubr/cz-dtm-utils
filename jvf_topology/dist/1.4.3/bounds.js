@@ -11,7 +11,7 @@
  * - `COORD_PRECISION_EXCEEDED`
  */
 import { SJTSK_BOUNDS, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS } from './constants.js';
-import { collectCoordSets, mkError } from './geometry-math.js';
+import { collectCoordSets, isDefBodElementName, mkError } from './geometry-math.js';
 /**
  * Kontrola 1.5: Souřadnice XY musí ležet v rozsahu S-JTSK pro území ČR.
  * Pro objekty ZPS (obsahovaCast === 'ZPS') se kontroluje i rozsah Z.
@@ -24,7 +24,7 @@ export function checkCoordinateBounds(dtm) {
     const errors = [];
     for (const objTyp of dtm.objekty) {
         const isZps = objTyp.obsahovaCast === 'ZPS';
-        const isDefBod = objTyp.elementName.toLowerCase().includes('defbod');
+        const isDefBod = isDefBodElementName(objTyp.elementName);
         const zBounds = isDefBod ? Z_BOUNDS_DEFBOD : Z_BOUNDS_ZPS;
         for (const zaznam of objTyp.zaznamy) {
             const objectId = zaznam.commonAttributes.id;

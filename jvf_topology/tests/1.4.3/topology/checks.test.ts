@@ -131,6 +131,16 @@ describe('checkCoordinateBounds', () => {
     expect(checkCoordinateBounds(dtm)).toEqual([]);
   });
 
+  // Regrese: reálné názvy v JVF 1.4.3 používají "DefinicniBod", ne "DefBod".
+  // Dřív se detekce dělala přes includes('defbod'), což zde selhávalo
+  // a Z=0 bylo nesprávně reportováno jako COORD_OUT_OF_BOUNDS_Z.
+  it('Z = 0 pro BudovaDefinicniBod (reálný název) → žádná chyba', () => {
+    const dtm = makeDtm([makeObjTyp('BudovaDefinicniBod', [
+      makeZaznam([makePoint(VALID_X, VALID_Y, 0)]),
+    ], 'ZPS')]);
+    expect(checkCoordinateBounds(dtm)).toEqual([]);
+  });
+
   it('Z = 0 pro normální ZPS bod → COORD_OUT_OF_BOUNDS_Z (min ZPS = 1 m)', () => {
     const dtm = makeDtm([makeObjTyp('PodrobnyBodZPS', [
       makeZaznam([makePoint(VALID_X, VALID_Y, 0)]),
@@ -379,6 +389,18 @@ describe('checkDuplicatePoints', () => {
     const dtm = makeDtm([makeObjTyp('BudovaDefBod', [
       makeZaznam([makePoint(VALID_X, VALID_Y, 300)], 'D1'),
       makeZaznam([makePoint(VALID_X, VALID_Y, 350)], 'D2'), // různé Z, ale defbod = 2D
+    ])]);
+    const errors = checkDuplicatePoints(dtm);
+    expect(errors[0]?.code).toBe('DUPLICATE_POINT');
+  });
+
+  // Regrese: reálné názvy v JVF 1.4.3 používají "DefinicniBod", ne "DefBod".
+  // Dřív se detekce dělala přes includes('defbod'), což zde selhávalo,
+  // takže dva defboddy se stejným XY a různým Z nebyly ohlášeny.
+  it('dva BudovaDefinicniBod (reálný název) se stejnými XY, různým Z → DUPLICATE_POINT', () => {
+    const dtm = makeDtm([makeObjTyp('BudovaDefinicniBod', [
+      makeZaznam([makePoint(VALID_X, VALID_Y, 300)], 'D1'),
+      makeZaznam([makePoint(VALID_X, VALID_Y, 350)], 'D2'),
     ])]);
     const errors = checkDuplicatePoints(dtm);
     expect(errors[0]?.code).toBe('DUPLICATE_POINT');
