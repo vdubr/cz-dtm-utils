@@ -10,7 +10,6 @@ type FilterType = 'all' | 'error' | 'warning';
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const panel      = document.getElementById('error-panel')       as HTMLElement;
-const closeBtn   = document.getElementById('error-panel-close') as HTMLButtonElement;
 const resizeHandle = document.getElementById('error-panel-resize') as HTMLElement;
 const errorList  = document.getElementById('error-list')        as HTMLDivElement;
 const summaryEl  = document.getElementById('error-summary')     as HTMLDivElement;
@@ -20,8 +19,10 @@ const filterBtns = panel.querySelectorAll<HTMLButtonElement>('.filter-btn');
 let currentErrors: TopologyError[] = [];
 let currentFilter: FilterType = 'all';
 let activeRow: HTMLElement | null = null;
+let activeError: TopologyError | null = null;
 let getJvfLayers: (() => JvfVectorLayer[]) | null = null;
 let olMap: OlMap | null = null;
+let onHideCallback: (() => void) | null = null;
 const expandedGroups = new Set<string>();
 
 // ── Summary ───────────────────────────────────────────────────────────────────
@@ -66,11 +67,27 @@ function toggleGroup(code: string): void {
 
 // ── Row click ─────────────────────────────────────────────────────────────────
 function handleRowClick(row: HTMLElement, err: TopologyError): void {
+  // Druhý klik na stejný řádek → zrušit výběr (toggle off).
+  if (activeRow === row) {
+    row.classList.remove('active');
+    activeRow = null;
+    activeError = null;
+    clearHighlight();
+    clearThreeHighlight();
+    return;
+  }
+
   // Deactivate previous
   if (activeRow) activeRow.classList.remove('active');
   activeRow = row;
+  activeError = err;
   row.classList.add('active');
 
+  applyHighlight(err);
+}
+
+/** Apply highlight + zoom for the given error in the currently active view (2D or 3D). */
+function applyHighlight(err: TopologyError): void {
   if (!err.objectId || !olMap || !getJvfLayers) return;
 
   if (getIs3dActive()) {
@@ -86,10 +103,20 @@ function handleRowClick(row: HTMLElement, err: TopologyError): void {
   zoomToFeature(olMap, feature);
 }
 
+/**
+ * Re-apply highlight + zoom for the currently selected error in the active view.
+ * Called after switching 2D ↔ 3D so selection persists across view modes.
+ */
+export function reapplyActiveHighlight(): void {
+  if (!activeError) return;
+  applyHighlight(activeError);
+}
+
 // ── Render rows ───────────────────────────────────────────────────────────────
 function renderRows(): void {
   errorList.innerHTML = '';
   activeRow = null;
+  activeError = null;
 
   const filtered =
     currentFilter === 'all'
@@ -201,6 +228,8 @@ export function hideErrors(): void {
   clearHighlight();
   clearThreeHighlight();
   if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
+  activeError = null;
+  onHideCallback?.();
 }
 
 export function isPanelVisible(): boolean {
@@ -208,12 +237,14 @@ export function isPanelVisible(): boolean {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-export function initErrorPanel(map: OlMap, getLayers: () => JvfVectorLayer[]): void {
+export function initErrorPanel(
+  map: OlMap,
+  getLayers: () => JvfVectorLayer[],
+  opts: { onHide?: () => void } = {},
+): void {
   olMap = map;
   getJvfLayers = getLayers;
-
-  // Close button
-  closeBtn.addEventListener('click', hideErrors);
+  onHideCallback = opts.onHide ?? null;
 
   // Escape key
   document.addEventListener('keydown', (e) => {

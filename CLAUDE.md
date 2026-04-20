@@ -1,5 +1,13 @@
 # Projektový kontext pro Claude
 
+## Důležitá pravidla pro Claude
+
+- **Informace v README modalu vieweru (`jvf_viewer/src/ui/infoModal.ts`) je
+  nutné udržovat aktuální.** Při každé změně funkcionality aplikace
+  (nová kontrola, nový ovládací prvek, změna chování 3D, apod.) zkontrolovat
+  a případně upravit obsah `INFO_CONTENT_HTML` v `infoModal.ts` tak, aby
+  popis aplikace odpovídal skutečnému stavu.
+
 ## Nasazení
 
 **`git push origin main` = automatické nasazení.** Vercel sleduje repozitář přes hook a nasadí aplikaci sám. Žádné další kroky nejsou potřeba.
@@ -166,6 +174,31 @@ Testy: `jvf_topology/tests/1.4.3/topology/` (160 testů, vše zelené).
   ke zmenšení oblasti kompletní ZPS. Insert záznamy (`zapisObjektu='i'`) se
   přeskakují — IS DMVS je nehlásí, protože ještě nemají přidělené ID.
   Kontrola běží v obou režimech (`complete` i `changeset`).
+
+### Kontroly vyžadující referenční databázi IS DMVS (neimplementovatelné)
+
+Při porovnání s výstupem oficiálního nástroje **Přejímka 3.20.4.1** (soubor
+`test-files/SUBJ-00007989_CZ052_10796_JVF.jvf.xml` vs `test-files/report_chyby.xml`)
+bylo ověřeno, že parser produkuje **100% shodné statistiky** (i/u/d per ObjektovyTyp)
+a **detekuje všech 14 unikátních DEL upozornění** bez false positives. Přejímka
+však navíc hlásí 4 chyby, jejichž ID se v JVF souboru vůbec nevyskytují:
+
+- **"Volný podrobný bod ID: …"** — PB existující v referenční databázi ZPS,
+  který by po aplikaci změnových vět zůstal bez vazby na žádný prvek. JVF
+  věty tyto PB nezmiňují, kontrola vyžaduje znalost současného stavu DB.
+- **"Definiční bod bez plochy ID: …"** — def.bod v DB, jehož nadřazená plocha
+  je JVF souborem mazána (`d`), ale def.bod sám není součástí changesetu.
+
+Obě kontroly jsou **server-side v IS DMVS** a porovnávají changeset proti
+aktuálnímu stavu databáze ZPS. Bez přístupu k referenční DB je
+`jvf-topology` nemůže provést. Toto omezení je stejného charakteru jako
+přeskakování Vrstvy 3 v režimu `changeset` — knihovna vidí jen JVF soubor,
+nikoli okolní kontext.
+
+Rozdíl v granularitě DEL upozornění (ref: 28×, naše: 14×) je dán tím, že
+Přejímka reportuje každý pár (def.bod, DEL polygon) samostatně, zatímco naše
+kontrola hlásí 1× per def.bod nezávisle na počtu překryvů. Obě varianty jsou
+ekvivalentní z pohledu pokrytí — volba je čistě prezenční.
 
 ### Veřejné API
 

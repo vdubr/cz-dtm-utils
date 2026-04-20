@@ -1,12 +1,26 @@
 import * as THREE from 'three';
 import type { ObjektovyTyp, Geometry } from 'jvf-parser';
 import { resolveStyle } from '../map/jvfLayers.js';
+import {
+  loadTerrainMesh,
+  updateTerrainZExaggeration,
+  disposeTerrainMesh,
+  clearTerrainCache,
+  type BBox,
+} from './terrain.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
 // Tag for highlight objects (exclude from clearSceneObjects — they live in a parallel group)
 const HIGHLIGHT_TAG = 'jvfHighlight';
+/** Tag pro terén — zůstává ve scéně i při rebuildSceneGeometry. */
+const TERRAIN_TAG = 'terrain';
 const HIGHLIGHT_COLOR = 0x39ff14;
+
+/** Buffer kolem JVF dat pro stahovaný terén (m). */
+const TERRAIN_BUFFER_M = 300;
+/** Rozlišení terénního meshe (vertexů na hranu). */
+const TERRAIN_RESOLUTION = 256;
 
 type DragMode = 'none' | 'orbit' | 'pan';
 
@@ -26,14 +40,80 @@ interface SceneState {
   cx: number;
   cy: number;
   cz: number;
+  /** Bbox JVF dat v S-JTSK (před aplikací centroidu). Null pokud scéna nemá data. */
+  dataBbox: BBox | null;
   objekty: ObjektovyTyp[];
   orbit: OrbitState;
   pivotMarker: THREE.Object3D;
+  /** Aktuální terénní skupina (mesh + vrstevnice) nebo null. Žije napříč rebuildSceneGeometry. */
+  terrainMesh: THREE.Group | null;
   /** AbortController pro odstranění všech DOM event listenerů při dispose */
   controlsAbort: AbortController;
 }
 
 let state: SceneState | null = null;
+
+/**
+ * Přetrvávající stav viditelnosti vrstev napříč inicializacemi 3D scény.
+ * Uživatel může skrýt vrstvu v 2D, přepnout na 3D a očekává, že vrstva
+ * zůstane skrytá. `state` je `null` mimo 3D režim, takže stav viditelnosti
+ * musíme držet mimo něj.
+ */
+const hiddenLayers = new Set<string>();
+
+/** Aktuální barva pozadí 3D scény. Uchovává se mimo `state`, aby volba
+ *  přežila re-init při přepnutí 2D ↔ 3D a při rebuildu geometrie. */
+let currentBackground = '#0a0a0f';
+
+/** Přepínač: renderovat Point features jako SVG sprity (true) nebo jako
+ *  `THREE.Points` (false, původní chování). Platí jen pro 3D. */
+let useSvgSymbols = false;
+
+/** Přepínač zobrazení terénu (ČÚZK DMR5G). Persistuje přes re-init scény. */
+let terrainVisible = false;
+
+/** Cache SVG textur: klíč = název SVG souboru. Sdíleno napříč scénami. */
+const svgTextureCache = new Map<string, THREE.Texture>();
+
+/** Base path pro SVG symboly (stejný jako v 2D). */
+const SVG_BASE = './symboly/';
+
+/** Načte SVG jako THREE.Texture. Vrací cachovanou instanci pro opakované volání. */
+function getSvgTexture(svgFile: string): THREE.Texture {
+  const cached = svgTextureCache.get(svgFile);
+  if (cached) return cached;
+
+  const loader = new THREE.TextureLoader();
+  const tex = loader.load(SVG_BASE + svgFile, () => {
+    // SVG načteno — vynuť re-render (pokud běží aktivní scéna)
+    if (state) state.renderer.render(state.scene, state.camera);
+  });
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  svgTextureCache.set(svgFile, tex);
+  return tex;
+}
+
+export function setThreeBackground(color: string): void {
+  currentBackground = color;
+  if (state) state.scene.background = new THREE.Color(color);
+}
+
+export function getUseSvgSymbols(): boolean {
+  return useSvgSymbols;
+}
+
+export function setUseSvgSymbols(value: boolean): void {
+  if (useSvgSymbols === value) return;
+  useSvgSymbols = value;
+  // Při běžící scéně znovu postav objekty (kamera zůstane).
+  if (state) rebuildSceneGeometry(lastZExaggeration);
+}
+
+/** Naposledy použitá hodnota zExaggeration — potřebujeme ji, když
+ *  rebuildujeme scénu mimo UI (např. při přepnutí SVG toggle). */
+let lastZExaggeration = 1;
 
 function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void {
   const { spherical, center } = orbit;
@@ -161,6 +241,7 @@ function buildSceneObjects(
       : s.fillColor.length === 9 ? s.fillColor.slice(0, 7) : s.fillColor;
     const fillColor = new THREE.Color(fillHex);
     const key = layerKey(ot);
+    const layerVisible = !hiddenLayers.has(key);
 
     for (const zaz of ot.zaznamy) {
       const objectId = zaz.commonAttributes?.id ?? null;
@@ -173,13 +254,32 @@ function buildSceneObjects(
             const x = (c[0] ?? 0) - cx;
             const z3 = (c[1] ?? 0) - cy;
             const y3 = ((c[2] ?? 0) - cz) * zExaggeration;
-            const geomPt = new THREE.BufferGeometry();
-            geomPt.setAttribute(
-              'position',
-              new THREE.Float32BufferAttribute([x, y3, z3], 3)
-            );
-            const mat = new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
-            obj = new THREE.Points(geomPt, mat);
+
+            if (useSvgSymbols && s.pointSvg) {
+              // Sprite s SVG texturou — vždy čelem ke kameře, velikost v world
+              // jednotkách (metrech). sizeAttenuation=true (default) = sprite
+              // se zmenšuje s vzdáleností, což odpovídá chování 3D objektu.
+              const tex = getSvgTexture(s.pointSvg);
+              const mat = new THREE.SpriteMaterial({
+                map: tex,
+                transparent: true,
+                depthTest: false,
+                sizeAttenuation: true,
+              });
+              const sprite = new THREE.Sprite(mat);
+              sprite.position.set(x, y3, z3);
+              // Velikost ~ 2 m (SVG ikony reprezentují šachty/sloupy ~ 1–3 m).
+              sprite.scale.set(2, 2, 1);
+              obj = sprite;
+            } else {
+              const geomPt = new THREE.BufferGeometry();
+              geomPt.setAttribute(
+                'position',
+                new THREE.Float32BufferAttribute([x, y3, z3], 3)
+              );
+              const mat = new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
+              obj = new THREE.Points(geomPt, mat);
+            }
             break;
           }
           case 'LineString': {
@@ -233,6 +333,7 @@ function buildSceneObjects(
                 const lineObj = new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
                 lineObj.userData[DATA_TAG] = key;
                 lineObj.userData['jvfObjectId'] = objectId;
+                lineObj.visible = layerVisible;
                 scene.add(lineObj);
               }
             }
@@ -243,6 +344,7 @@ function buildSceneObjects(
         if (obj) {
           obj.userData[DATA_TAG] = key;
           obj.userData['jvfObjectId'] = objectId;
+          obj.visible = layerVisible;
           scene.add(obj);
         }
       }
@@ -250,11 +352,14 @@ function buildSceneObjects(
   }
 }
 
-// Remove all data objects from scene (leaves lights, grid) and release GPU resources.
+// Remove all data objects from scene (leaves lights, grid, terrain) and release GPU resources.
 function clearSceneObjects(scene: THREE.Scene): void {
   const toRemove: THREE.Object3D[] = [];
   scene.traverse((obj) => {
-    if (obj.userData[DATA_TAG] !== undefined) toRemove.push(obj);
+    // Terén má vlastní TERRAIN_TAG a NEMÁ DATA_TAG — nepromazat ho.
+    if (obj.userData[DATA_TAG] !== undefined && obj.userData[TERRAIN_TAG] !== true) {
+      toRemove.push(obj);
+    }
   });
   for (const obj of toRemove) {
     scene.remove(obj);
@@ -286,7 +391,7 @@ export function initThreeScene(
   const height = canvas.clientHeight;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#0a0a0f');
+  scene.background = new THREE.Color(currentBackground);
 
   const camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000000);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -303,11 +408,14 @@ export function initThreeScene(
   const grid = new THREE.GridHelper(200000, 20, 0x222244, 0x1a1a2e);
   scene.add(grid);
 
-  // Compute centroid from all points
+  // Compute centroid AND bbox from all points
   let sumX = 0, sumY = 0, sumZ = 0, count = 0;
+  let minX = +Infinity, maxX = -Infinity, minY = +Infinity, maxY = -Infinity;
 
   function addCoord(x: number, y: number, z: number): void {
     sumX += x; sumY += y; sumZ += z; count++;
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
   }
 
   function collectCoords(geom: Geometry): void {
@@ -355,6 +463,7 @@ export function initThreeScene(
   const cy = count > 0 ? sumY / count : 0;
   const cz = count > 0 ? sumZ / count : 0;
 
+  lastZExaggeration = zExaggeration;
   buildSceneObjects(scene, objekty, cx, cy, cz, zExaggeration);
 
   // Set initial camera radius from bounding box
@@ -407,6 +516,10 @@ export function initThreeScene(
   const pivotMarker = createPivotMarker();
   scene.add(pivotMarker);
 
+  const dataBbox: BBox | null = count > 0
+    ? { minX, minY, maxX, maxY }
+    : null;
+
   state = {
     scene,
     camera,
@@ -416,9 +529,11 @@ export function initThreeScene(
     cx,
     cy,
     cz,
+    dataBbox,
     objekty,
     orbit,
     pivotMarker,
+    terrainMesh: null,
     controlsAbort,
   };
   Object.defineProperty(state, 'animFrameId', {
@@ -427,24 +542,47 @@ export function initThreeScene(
   });
   // Počáteční synchronizace kamery + markeru
   updateCamera(camera, orbit);
+
+  // Pokud byl terén zapnutý z předchozí relace, načti ho pro aktuální bbox.
+  // Fire-and-forget — pokud selže, ukáže se error v konzoli, ale scéna zůstává funkční.
+  if (terrainVisible && dataBbox) {
+    void ensureTerrainLoaded();
+  }
 }
 
-// Rebuild only geometry (preserves camera position)
+// Rebuild only geometry (preserves camera). Terén zůstává ve scéně, jen
+// přepočítáme Y souřadnice jeho vertexů dle nového zExaggeration.
 export function rebuildSceneGeometry(zExaggeration: number): void {
   if (!state) return;
+  lastZExaggeration = zExaggeration;
   clearThreeHighlight();
   clearSceneObjects(state.scene);
   buildSceneObjects(state.scene, state.objekty, state.cx, state.cy, state.cz, zExaggeration);
+  if (state.terrainMesh) {
+    updateTerrainZExaggeration(state.terrainMesh, zExaggeration);
+  }
 }
 
-// Show/hide all 3D objects belonging to a layer
+// Show/hide all 3D objects belonging to a layer. Vždy aktualizuje persistentní
+// `hiddenLayers` — tak zůstane viditelnost konzistentní i přes re-init scény
+// (přepnutí 2D ↔ 3D).
 export function setThreeLayerVisible(elementName: string, visible: boolean): void {
+  if (visible) hiddenLayers.delete(elementName);
+  else hiddenLayers.add(elementName);
   if (!state) return;
   state.scene.traverse((obj) => {
     if (obj.userData[DATA_TAG] === elementName) {
       obj.visible = visible;
     }
   });
+}
+
+/**
+ * Vymazat persistentní mapu skrytých vrstev. Volat při nahrání nového JVF,
+ * aby se nezachovaly skrývací rozhodnutí z předchozích dat.
+ */
+export function resetThreeLayerVisibility(): void {
+  hiddenLayers.clear();
 }
 
 export function disposeThreeScene(): void {
@@ -458,8 +596,71 @@ export function disposeThreeScene(): void {
   clearThreeHighlight();
   // Uvolnit geometrie + materiály všech datových objektů
   clearSceneObjects(state.scene);
+  // Uvolnit terénní mesh (cache rasteru zůstává — znovupoužitelné při re-initu)
+  if (state.terrainMesh) {
+    state.scene.remove(state.terrainMesh);
+    disposeTerrainMesh(state.terrainMesh);
+    state.terrainMesh = null;
+  }
   state.renderer.dispose();
   state = null;
+}
+
+// ── Terén (ČÚZK DMR5G) ───────────────────────────────────────────────────────
+
+export function isTerrainVisible(): boolean {
+  return terrainVisible;
+}
+
+/**
+ * Zapne/vypne terén. Při zapnutí (a existujících datech) asynchronně stáhne
+ * raster a sestaví mesh. Při vypnutí jen skryje mesh (cache zachována).
+ *
+ * @throws při síťové/parsing chybě — volající (toggle3d.ts) handluje alert +
+ *         uncheck checkboxu.
+ */
+export async function setTerrainVisible(visible: boolean): Promise<void> {
+  terrainVisible = visible;
+  if (!state) return;
+  if (visible) {
+    await ensureTerrainLoaded();
+  } else if (state.terrainMesh) {
+    state.terrainMesh.visible = false;
+  }
+}
+
+/** Načte terén, pokud ještě není ve scéně. Idempotentní. */
+async function ensureTerrainLoaded(): Promise<void> {
+  if (!state || !state.dataBbox) return;
+  if (state.terrainMesh) {
+    state.terrainMesh.visible = true;
+    return;
+  }
+  const mesh = await loadTerrainMesh(state.dataBbox, {
+    buffer: TERRAIN_BUFFER_M,
+    resolution: TERRAIN_RESOLUTION,
+    centroid: [state.cx, state.cy, state.cz],
+    zExaggeration: lastZExaggeration,
+  });
+  mesh.userData[TERRAIN_TAG] = true;
+  // Mesh dostává DATA_TAG jen kvůli `findSceneObjects` filtru v pickPointFromClient —
+  // ale pozor, `clearSceneObjects` testuje `TERRAIN_TAG` první a tu větu přeskočí.
+  // Pro pick nechceme terén jako target (nemá jvfObjectId), takže DATA_TAG nepřidáme.
+  state.scene.add(mesh);
+  state.terrainMesh = mesh;
+}
+
+/**
+ * Zahodí cache rasterů (volat při nahrání nového JVF souboru).
+ * Terénní mesh je v disposeThreeScene uvolněn automaticky při re-init scény.
+ */
+export function invalidateTerrainCache(): void {
+  clearTerrainCache();
+  if (state?.terrainMesh) {
+    state.scene.remove(state.terrainMesh);
+    disposeTerrainMesh(state.terrainMesh);
+    state.terrainMesh = null;
+  }
 }
 
 // Walk-through: posune orbit.center (a tedy i kameru) podél horizontálního

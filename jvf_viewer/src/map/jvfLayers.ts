@@ -12,14 +12,30 @@ import Stroke from 'ol/style/Stroke.js';
 import { extend, createEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
 import type Map from 'ol/Map.js';
-import type { ObjektovyTyp, Geometry, GmlPolygon } from 'jvf-parser';
-import { getSymbology, FALLBACK_COLORS, DEFAULT_COLOR } from './symbology.js';
+import type { ObjektovyTyp, ZaznamObjektu, Geometry, GmlPolygon } from 'jvf-parser';
+import {
+  getSymbology,
+  FALLBACK_COLORS,
+  DEFAULT_COLOR,
+  type ObjectSymbology,
+  type SymbolVariant,
+} from './symbology.js';
+import { VARIANT_ATTR } from './variantAttrMap.js';
 
 // Re-export for consumers that previously imported LAYER_COLORS from here
 export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
 
 /** Base path for SVG symbols served from public/symboly/ */
 const SVG_BASE = './symboly/';
+
+/**
+ * Referenční měřítko pro převod mm (papírová velikost v katalogu) na metry
+ * v terénu. 1:500 znamená, že 1 mm na papíře = 0,5 m v terénu.
+ */
+const REFERENCE_SCALE = 500;
+const MM_TO_METERS = 0.001;
+/** Kolik metrů v terénu odpovídá 1 mm v katalogu. */
+const MM_TO_MAP_METERS = MM_TO_METERS * REFERENCE_SCALE;
 
 function flatCoordsToRing(flat: number[], dim: number): number[][] {
   const ring: number[][] = [];
@@ -46,34 +62,163 @@ function mmToPx(mm: number): number {
   return Math.max(1, mm * 3.78);
 }
 
+/**
+ * Parse lineStyle string from catalog into dash pattern in mm.
+ *
+ * Examples:
+ *   'plná'                            → undefined
+ *   'čárkovaná 60,0 6,0 [68]'          → [60, 6]
+ *   'čárkovaná 2,0 1,5 /\n3,5 7,0'     → [2, 1.5, 3.5, 7]
+ *
+ * CZ decimal comma is normalized to dot. The `[NN]` suffix (pattern number
+ * from the catalog) is ignored. Forward slashes / newlines separate segments
+ * but are flattened into a single dash array.
+ */
+export function parseLineStyle(lineStyle: string | undefined): number[] | undefined {
+  if (!lineStyle) return undefined;
+  const trimmed = lineStyle.trim();
+  if (trimmed === 'plná' || trimmed === '') return undefined;
+  // Strip leading keyword ("čárkovaná") and trailing [NN]
+  const body = trimmed
+    .replace(/^čárkovaná\s+/i, '')
+    .replace(/\s*\[\d+\]\s*$/, '');
+  // Split on whitespace / slashes / newlines, keep numeric tokens
+  const tokens = body.split(/[\s/\n]+/).filter(Boolean);
+  const nums: number[] = [];
+  for (const t of tokens) {
+    const n = parseFloat(t.replace(',', '.'));
+    if (Number.isFinite(n) && n > 0) nums.push(n);
+  }
+  if (nums.length === 0) return undefined;
+  // OL requires even-length dash array (dash, gap, dash, gap, …)
+  if (nums.length % 2 === 1) nums.push(nums[nums.length - 1]!);
+  return nums;
+}
+
+/**
+ * Convert dash pattern from mm (on paper at REFERENCE_SCALE) to px on screen
+ * at the given map resolution. Zoom-dependent — dash grows/shrinks with zoom.
+ */
+function dashMmToPx(dashMm: number[], resolution: number): number[] {
+  if (resolution <= 0) return dashMm;
+  return dashMm.map((mm) => {
+    const meters = mm * MM_TO_MAP_METERS;
+    const px = meters / resolution;
+    return Math.max(2, px);
+  });
+}
+
 export interface ResolvedStyle {
   fillColor: string;
   strokeColor: string;
   strokeWidthPx: number;
+  /** Dash pattern in mm (paper units), converted to px per zoom in style fn. */
+  lineDashMm?: number[];
   /** SVG filename for point symbol, if available */
   pointSvg?: string;
 }
 
 /**
- * Resolve style for an ObjektovyTyp from its codeBase.
+ * Merge base symbology + matching variant (if any) into a flat style source.
+ * Variant fields override base fields only when defined.
+ */
+function mergeSymbologyWithVariant(
+  base: ObjectSymbology,
+  variant: SymbolVariant | undefined,
+): {
+  fillColor?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  lineStyle?: string;
+  pointSvg?: string;
+} {
+  return {
+    fillColor: variant?.fillColor ?? base.fillColor,
+    strokeColor: variant?.strokeColor ?? base.strokeColor,
+    strokeWidth: variant?.strokeWidth ?? base.strokeWidth,
+    lineStyle: variant?.lineStyle ?? base.lineStyle,
+    pointSvg: base.pointSvg,
+  };
+}
+
+/**
+ * Build ResolvedStyle from merged symbology fields. Falls back to content-part
+ * default color when catalog is silent. For lines & polygons: if strokeColor
+ * is not set, fillColor is used as stroke (catalog convention — most line
+ * entries carry their color in `fillColor`).
+ */
+function buildResolvedStyle(
+  merged: ReturnType<typeof mergeSymbologyWithVariant>,
+  obsahovaCast: string,
+): ResolvedStyle {
+  const fallback = FALLBACK_COLORS[obsahovaCast] ?? DEFAULT_COLOR;
+  const primary = merged.fillColor ?? fallback;
+  const fill = merged.fillColor ?? fallback + '55';
+  // Pro linie / obrysy: když chybí strokeColor, použij fillColor (katalog
+  // u linií ukládá barvu do fillColor).
+  const stroke = merged.strokeColor ?? primary;
+  const width = merged.strokeWidth != null ? mmToPx(merged.strokeWidth) : 1.5;
+  const lineDashMm = parseLineStyle(merged.lineStyle);
+  return {
+    fillColor: fill,
+    strokeColor: stroke,
+    strokeWidthPx: width,
+    lineDashMm,
+    pointSvg: merged.pointSvg,
+  };
+}
+
+/**
+ * Resolve style for an ObjektovyTyp from its codeBase (base style, no variant).
  * Exported so threeScene.ts can use the same logic.
  */
 export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
   const sym = getSymbology(ot.codeBase);
   if (sym) {
-    const fill = sym.fillColor ?? (FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR) + '55';
-    const stroke = sym.strokeColor ?? (FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR);
-    const width = sym.strokeWidth != null ? mmToPx(sym.strokeWidth) : 1.5;
-    return { fillColor: fill, strokeColor: stroke, strokeWidthPx: width, pointSvg: sym.pointSvg };
+    return buildResolvedStyle(mergeSymbologyWithVariant(sym, undefined), ot.obsahovaCast);
   }
   const fallback = FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR;
   return { fillColor: fallback + '33', strokeColor: fallback, strokeWidthPx: 1.5 };
 }
 
+/**
+ * Resolve style for a single záznam, applying variant lookup based on
+ * VARIANT_ATTR map. Falls back to base style when no variant matches.
+ */
+export function resolveStyleForZaznam(
+  ot: ObjektovyTyp,
+  zaznam: ZaznamObjektu,
+): ResolvedStyle {
+  const sym = getSymbology(ot.codeBase);
+  if (!sym) return resolveStyle(ot);
+
+  const variantMap = VARIANT_ATTR[ot.codeBase];
+  let variant: SymbolVariant | undefined;
+  if (variantMap && sym.variants && sym.variants.length > 0) {
+    const raw = zaznam.attributes?.[variantMap.attrName];
+    if (raw !== undefined && raw !== null) {
+      const key = String(raw);
+      const idx = variantMap.valueToVariantIndex[key];
+      if (idx !== undefined && sym.variants[idx]) {
+        variant = sym.variants[idx];
+      }
+    }
+  }
+
+  return buildResolvedStyle(mergeSymbologyWithVariant(sym, variant), ot.obsahovaCast);
+}
+
+/**
+ * Build OL Style for a given geometry type from a ResolvedStyle. When the
+ * style carries a dash pattern, it must be resolved per frame using the
+ * current map resolution (hence `resolution` param).
+ */
 function createStyleForGeom(
   geomType: Geometry['type'],
   s: ResolvedStyle,
+  resolution: number,
 ): Style {
+  const dashPx = s.lineDashMm ? dashMmToPx(s.lineDashMm, resolution) : undefined;
   switch (geomType) {
     case 'Point':
       if (s.pointSvg) {
@@ -94,16 +239,28 @@ function createStyleForGeom(
     case 'LineString':
     case 'MultiCurve':
       return new Style({
-        stroke: new Stroke({ color: s.strokeColor, width: s.strokeWidthPx }),
+        stroke: new Stroke({
+          color: s.strokeColor,
+          width: s.strokeWidthPx,
+          lineDash: dashPx,
+        }),
       });
     case 'Polygon':
       return new Style({
         fill: new Fill({ color: s.fillColor }),
-        stroke: new Stroke({ color: s.strokeColor, width: Math.max(1, s.strokeWidthPx * 0.5) }),
+        stroke: new Stroke({
+          color: s.strokeColor,
+          width: Math.max(1, s.strokeWidthPx * 0.5),
+          lineDash: dashPx,
+        }),
       });
     default:
       return new Style({
-        stroke: new Stroke({ color: s.strokeColor, width: s.strokeWidthPx }),
+        stroke: new Stroke({
+          color: s.strokeColor,
+          width: s.strokeWidthPx,
+          lineDash: dashPx,
+        }),
       });
   }
 }
@@ -122,10 +279,10 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
   const totalExtent = createEmpty();
 
   for (const ot of objekty) {
-    const s = resolveStyle(ot);
     const features: Feature[] = [];
 
     for (const zaznam of ot.zaznamy) {
+      const sFeature = resolveStyleForZaznam(ot, zaznam);
       for (const geom of zaznam.geometrie) {
         let feature: Feature | null = null;
 
@@ -163,7 +320,8 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 const mcFeature = new Feature({
                   geometry: new OlLineString(coords),
                 });
-                mcFeature.set('style', createStyleForGeom('LineString', s));
+                mcFeature.set('jvfResolvedStyle', sFeature);
+                mcFeature.set('jvfGeomType', 'LineString');
                 mcFeature.set('jvfElementName', ot.elementName);
                 mcFeature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
                 features.push(mcFeature);
@@ -174,7 +332,8 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         }
 
         if (feature) {
-          feature.set('style', createStyleForGeom(geom.type, s));
+          feature.set('jvfResolvedStyle', sFeature);
+          feature.set('jvfGeomType', geom.type);
           feature.set('jvfElementName', ot.elementName);
           feature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
           features.push(feature);
@@ -188,12 +347,16 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     const layerExtent = source.getExtent();
     if (layerExtent) extend(totalExtent, layerExtent);
 
-    // Každá feature má individuálně nastavený style (viz feature.set('style', …)
-    // výše). Fallback nepotřebujeme — source je statický, style propojení se dědí
-    // z feature property.
+    // Dynamická style function — dash závisí na resolution (zoom-dependent).
+    // Feature si nese svůj ResolvedStyle v property; styl se buduje per frame.
     const olLayer = new VectorLayer({
       source,
-      style: (feature) => feature.get('style') as Style | undefined,
+      style: (feature, resolution) => {
+        const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
+        const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
+        if (!s || !geomType) return undefined;
+        return createStyleForGeom(geomType, s, resolution);
+      },
     });
 
     olLayer.set('jvfNazev', ot.nazev);

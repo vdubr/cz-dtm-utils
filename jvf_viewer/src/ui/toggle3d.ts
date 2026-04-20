@@ -11,8 +11,15 @@ import {
   resetThreeCamera,
   setPivot,
   pickPointFromClient,
+  setThreeBackground,
+  setUseSvgSymbols,
+  getUseSvgSymbols,
+  setTerrainVisible,
+  isTerrainVisible,
+  invalidateTerrainCache,
 } from '../viewer3d/threeScene.js';
 import { clearHighlight } from '../map/highlight.js';
+import { reapplyActiveHighlight } from './errorPanel.js';
 
 let is3dActive = false;
 let currentZExaggeration = 1;
@@ -22,6 +29,40 @@ export function getIs3dActive(): boolean {
   return is3dActive;
 }
 let resizeObserver: ResizeObserver | null = null;
+
+/**
+ * Reload 3D scene with new data. Called after JVF upload while the user is
+ * already in 3D mode — without this, the scene keeps the empty state.
+ * No-op when 3D is inactive.
+ *
+ * Terén: cache rasteru se invaliduje (jiný bbox = jiný terén). Pokud byl
+ * checkbox zapnutý, po re-init scény se terén načte znovu pro nový bbox
+ * (ensureTerrainLoaded v initThreeScene).
+ */
+export function reloadThreeSceneData(objekty: ObjektovyTyp[]): void {
+  if (!is3dActive) return;
+  currentObjekty = objekty;
+  const canvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
+  if (!canvas) return;
+  invalidateTerrainCache();
+  disposeThreeScene();
+  const mapArea = document.getElementById('map-area');
+  if (mapArea) {
+    canvas.width = mapArea.clientWidth;
+    canvas.height = mapArea.clientHeight;
+  }
+  initThreeScene(canvas, objekty, currentZExaggeration);
+  // Spinner: pokud je terén zapnutý, fetch běží na pozadí; zobrazíme indikátor
+  const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
+  const terrainSpinner = document.getElementById('terrain-spinner') as HTMLElement | null;
+  if (terrainCheckbox?.checked && isTerrainVisible()) {
+    // initThreeScene už spustil ensureTerrainLoaded (fire-and-forget)
+    // Pro UX ukážeme spinner do dalšího requestu — bohužel bez promise handle
+    // nemůžeme přesně vypnout. Řešení: krátká heuristika na 3 s, nebo nechat spinner off.
+    // Pro prototyp vypínáme spinner okamžitě (uživatel pozná, že terén chvíli chybí).
+    terrainSpinner?.setAttribute('hidden', '');
+  }
+}
 
 export function setup3dToggle(
   olMap: Map,
@@ -39,6 +80,68 @@ export function setup3dToggle(
       switchTo3d(mapContainer, threeCanvas, btn, currentObjekty);
     }
   });
+
+  // Collapse/expand bottom toolbars
+  const toolbarsEl = document.getElementById('bottom-toolbars');
+  const toggleBtn = document.getElementById('bottom-toolbars-toggle');
+  toggleBtn?.addEventListener('click', () => {
+    toolbarsEl?.classList.toggle('collapsed');
+  });
+
+  // Background color picker (3D only)
+  const BG_COLORS: Record<string, string> = {
+    dark: '#0a0a0f',
+    light: '#f5f5f5',
+  };
+  const bgBtns = document.querySelectorAll<HTMLButtonElement>('.btn-bg');
+  bgBtns.forEach((bgBtn) => {
+    bgBtn.addEventListener('click', () => {
+      const key = bgBtn.dataset['bg'] ?? 'dark';
+      const color = BG_COLORS[key] ?? BG_COLORS['dark']!;
+      setThreeBackground(color);
+      bgBtns.forEach((b) => b.classList.remove('active'));
+      bgBtn.classList.add('active');
+    });
+  });
+
+  // SVG symboly toggle (jen 3D)
+  const svgCheckbox = document.getElementById('toggle-svg-symbols') as HTMLInputElement | null;
+  if (svgCheckbox) {
+    svgCheckbox.checked = getUseSvgSymbols();
+    svgCheckbox.addEventListener('change', () => {
+      setUseSvgSymbols(svgCheckbox.checked);
+    });
+  }
+
+  // Terén (ČÚZK DMR5G) toggle (jen 3D)
+  const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
+  const terrainSpinner = document.getElementById('terrain-spinner') as HTMLElement | null;
+  if (terrainCheckbox) {
+    terrainCheckbox.checked = isTerrainVisible();
+    terrainCheckbox.addEventListener('change', async () => {
+      if (terrainCheckbox.checked) {
+        terrainSpinner?.removeAttribute('hidden');
+        terrainCheckbox.disabled = true;
+        try {
+          await setTerrainVisible(true);
+        } catch (err) {
+          console.error('[terrain] načtení selhalo', err);
+          alert(
+            'Nepodařilo se načíst terén z ČÚZK DMR5G:\n' +
+            (err as Error).message
+          );
+          terrainCheckbox.checked = false;
+          // Zachovat konzistenci stavu v threeScene
+          void setTerrainVisible(false);
+        } finally {
+          terrainSpinner?.setAttribute('hidden', '');
+          terrainCheckbox.disabled = false;
+        }
+      } else {
+        await setTerrainVisible(false);
+      }
+    });
+  }
 
   // Z exaggeration buttons
   const exaggerationBtns = document.querySelectorAll<HTMLButtonElement>('.btn-z-exag');
@@ -172,9 +275,11 @@ function switchTo3d(
 ): void {
   is3dActive = true;
   btn.textContent = '2D';
+  btn.title = 'Přepnout zpět na 2D mapu';
   btn.classList.add('active');
 
-  // Přepínáme režim — zrušit 2D highlight, aby nezůstal viset
+  // 2D highlight přestává být viditelný (mapa je skrytá); 3D highlight
+  // znovu aplikujeme níže po inicializaci scény.
   clearHighlight();
 
   mapContainer.style.display = 'none';
@@ -183,6 +288,10 @@ function switchTo3d(
   // Show bottom toolbars (3D nav + z-exaggeration)
   const toolbar = document.getElementById('bottom-toolbars');
   if (toolbar) toolbar.style.display = 'flex';
+
+  // Show 3D-only options in the layer panel
+  const threeOpts = document.getElementById('three-options-section');
+  if (threeOpts) threeOpts.style.display = '';
 
   // Ensure canvas fills the map-area
   const mapArea = document.getElementById('map-area')!;
@@ -197,6 +306,9 @@ function switchTo3d(
     resizeThreeScene(canvas);
   });
   resizeObserver.observe(mapArea);
+
+  // Přenést výběr z 2D → 3D (highlight + zoom na objekt)
+  reapplyActiveHighlight();
 }
 
 function switchTo2d(
@@ -207,6 +319,7 @@ function switchTo2d(
 ): void {
   is3dActive = false;
   btn.textContent = '3D';
+  btn.title = 'Přepnout mezi 2D mapou a 3D pohledem';
   btn.classList.remove('active');
 
   if (resizeObserver) {
@@ -220,9 +333,17 @@ function switchTo2d(
   const toolbar = document.getElementById('bottom-toolbars');
   if (toolbar) toolbar.style.display = 'none';
 
+  // Hide 3D-only options in the layer panel
+  const threeOpts = document.getElementById('three-options-section');
+  if (threeOpts) threeOpts.style.display = 'none';
+
   canvas.style.display = 'none';
   mapContainer.style.display = 'block';
 
-  // Trigger OL map to update its size
-  setTimeout(() => olMap.updateSize(), 50);
+  // Trigger OL map to update its size, then reapply selection (3D → 2D).
+  // OL vyžaduje platnou velikost viewportu, jinak by zoom/fit selhal.
+  setTimeout(() => {
+    olMap.updateSize();
+    reapplyActiveHighlight();
+  }, 50);
 }

@@ -90,6 +90,7 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
     for (const layer of groupLayers) {
       const item = document.createElement('div');
       item.className = 'layer-item active';
+      item.title = `Kliknutím zapnout/vypnout vrstvu „${layer.objektovyTyp.nazev || layer.objektovyTyp.elementName}“`;
 
       const symbolEl = buildSymbolEl(layer);
 

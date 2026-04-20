@@ -17,9 +17,21 @@
         <h1>JVF DTM Prohlizec</h1>
       </div>
       <div class="header-right">
-        <button id="btn-upload" class="btn btn-primary">
-          <span class="btn-icon">&#8593;</span> Nahrat soubor
-        </button>
+        <div class="upload-wrapper">
+          <button id="btn-upload" class="btn btn-primary" title="Vybrat a načíst JVF DTM soubor (XML)">
+            <span class="btn-icon">&#8593;</span> Nahrat soubor
+          </button>
+          <button id="btn-upload-menu" class="btn btn-primary btn-upload-menu" title="Načíst ukázkový soubor" aria-haspopup="true" aria-expanded="false">
+            <span class="material-symbols-outlined">expand_more</span>
+          </button>
+          <div id="upload-menu" class="upload-menu" hidden role="menu">
+            <div class="upload-menu-title">Ukázkové soubory</div>
+            <button class="upload-menu-item" data-sample="ukazka_ZPS.xml" role="menuitem" title="Základní prostorová situace">ukazka_ZPS.xml</button>
+            <button class="upload-menu-item" data-sample="ukazka_DI.xml" role="menuitem" title="Dopravní infrastruktura">ukazka_DI.xml</button>
+            <button class="upload-menu-item" data-sample="ukazka_KI.xml" role="menuitem" title="Komunikační infrastruktura">ukazka_KI.xml</button>
+            <button class="upload-menu-item" data-sample="ukazka_OPL.xml" role="menuitem" title="Ochranná pásma a linie">ukazka_OPL.xml</button>
+          </div>
+        </div>
         <input type="file" id="file-input" accept=".xml" style="display:none" />
         <button id="btn-zoom" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           <span class="btn-icon">&#8982;</span> Zoom na data
@@ -27,41 +39,58 @@
         <button id="btn-validate" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           Zkontrolovat
         </button>
-        <button id="btn-3d" class="btn btn-secondary">3D</button>
+        <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>
       </div>
     </header>
     <div id="app-body">
       <aside id="layer-panel">
-        <div class="panel-header">Vrstvy</div>
         <div class="panel-section">
           <div class="panel-section-title">Podkladove mapy</div>
           <div id="base-layer-btns" class="base-layer-btns">
-            <button class="base-btn active" data-layer="zm">Zakladni mapa</button>
-            <button class="base-btn" data-layer="ortofoto">Ortofoto</button>
+            <button class="base-btn active" data-layer="zm" title="Zobrazit ČÚZK Základní mapu jako podklad">Zakladni mapa</button>
+            <button class="base-btn" data-layer="ortofoto" title="Zobrazit ČÚZK Ortofoto (letecké snímky) jako podklad">Ortofoto</button>
           </div>
         </div>
-        <div class="panel-section">
+        <div class="panel-section panel-section-jvf">
           <div class="panel-section-title">JVF vrstvy</div>
           <div id="jvf-layers-list" class="jvf-layers-list">
             <div class="empty-hint">Nahrajte JVF soubor</div>
           </div>
+          <div id="three-options-section" class="three-options-footer" style="display:none">
+            <label class="toggle-row" title="Renderovat bodové objekty jako SVG ikony (stejné jako 2D) místo jednoduchých puntíků">
+              <input type="checkbox" id="toggle-svg-symbols" />
+              <span>SVG symboly pro body</span>
+            </label>
+            <label class="toggle-row" title="Zobrazit terén z ČÚZK DMR5G (±300 m kolem dat), hypsometricky obarvený">
+              <input type="checkbox" id="toggle-terrain" />
+              <span>Terén (ČÚZK DMR5G)</span>
+              <span id="terrain-spinner" class="terrain-spinner" hidden></span>
+            </label>
+          </div>
         </div>
         <footer class="panel-footer">
-          Made by Vojtech Dubrovsky for <span class="heart">&#10084;<span class="heart-tooltip">My wife</span></span>
-          <span class="build-info" id="build-info"></span>
+          <button id="btn-info" class="footer-info-btn" title="O aplikaci">
+            <span class="material-symbols-outlined">info</span>
+          </button>
+          <div class="footer-text">
+            Made by Vojtech Dubrovsky for <span class="heart">&#10084;<span class="heart-tooltip">My wife</span></span>
+            <span class="build-info" id="build-info"></span>
+          </div>
         </footer>
       </aside>
       <main id="map-area">
         <div id="map-container"></div>
         <canvas id="three-canvas" style="display:none"></canvas>
         <div id="bottom-toolbars" style="display:none">
+          <button id="bottom-toolbars-toggle" class="btn btn-secondary toolbars-toggle" title="Skrýt/zobrazit ovládání"><span class="material-symbols-outlined">expand_more</span></button>
+          <div id="bottom-toolbars-inner" class="toolbars-inner">
           <div id="nav3d-toolbar" class="toolbar-panel">
             <span class="toolbar-label">Procházení:</span>
             <div class="nav3d-pad">
               <button class="btn btn-secondary btn-nav3d nav-up" data-nav="walk-forward" title="Vpřed (W / ↑)"><span class="material-symbols-outlined">arrow_upward</span></button>
               <button class="btn btn-secondary btn-nav3d nav-left" data-nav="walk-left" title="Vlevo (A / ←)"><span class="material-symbols-outlined">arrow_back</span></button>
-              <button class="btn btn-secondary btn-nav3d nav-right" data-nav="walk-right" title="Vpravo (D / →)"><span class="material-symbols-outlined">arrow_forward</span></button>
               <button class="btn btn-secondary btn-nav3d nav-down" data-nav="walk-back" title="Vzad (S / ↓)"><span class="material-symbols-outlined">arrow_downward</span></button>
+              <button class="btn btn-secondary btn-nav3d nav-right" data-nav="walk-right" title="Vpravo (D / →)"><span class="material-symbols-outlined">arrow_forward</span></button>
             </div>
             <button class="btn btn-secondary btn-nav3d" data-nav="walk-up" title="Výš (Q)"><span class="material-symbols-outlined">vertical_align_top</span></button>
             <button class="btn btn-secondary btn-nav3d" data-nav="walk-down" title="Níž (E)"><span class="material-symbols-outlined">vertical_align_bottom</span></button>
@@ -79,10 +108,16 @@
           </div>
           <div id="z-exag-toolbar" class="toolbar-panel">
             <span class="toolbar-label">Výška:</span>
-            <button class="btn btn-secondary btn-z-exag active" data-exag="1">1×</button>
-            <button class="btn btn-secondary btn-z-exag" data-exag="2">2×</button>
-            <button class="btn btn-secondary btn-z-exag" data-exag="5">5×</button>
-            <button class="btn btn-secondary btn-z-exag" data-exag="10">10×</button>
+            <button class="btn btn-secondary btn-z-exag active" data-exag="1" title="Reálná výška (bez převýšení)">1×</button>
+            <button class="btn btn-secondary btn-z-exag" data-exag="2" title="Dvojnásobné převýšení (zvýraznění terénu)">2×</button>
+            <button class="btn btn-secondary btn-z-exag" data-exag="5" title="Pětinásobné převýšení">5×</button>
+            <button class="btn btn-secondary btn-z-exag" data-exag="10" title="Desetinásobné převýšení (silné zvýraznění)">10×</button>
+          </div>
+          <div id="bg-toolbar" class="toolbar-panel">
+            <span class="toolbar-label">Pozadí:</span>
+            <button class="btn btn-secondary btn-bg active" data-bg="dark" title="Tmavé pozadí"><span class="material-symbols-outlined">dark_mode</span></button>
+            <button class="btn btn-secondary btn-bg" data-bg="light" title="Světlé pozadí (lepší kontrast pro tmavé linie)"><span class="material-symbols-outlined">light_mode</span></button>
+          </div>
           </div>
         </div>
         <div id="loading-overlay" style="display:none">
@@ -94,18 +129,28 @@
         <div class="panel-resize-handle" id="error-panel-resize"></div>
         <div class="panel-header error-panel-header">
           <span>Topologická validace</span>
-          <button id="error-panel-close" class="panel-close-btn" aria-label="Zavrit">&times;</button>
         </div>
         <div class="error-panel-toolbar">
           <div id="error-summary" class="error-summary"></div>
           <div class="error-filters">
-            <button class="filter-btn active" data-filter="all">Vše</button>
-            <button class="filter-btn" data-filter="error">Chyby</button>
-            <button class="filter-btn" data-filter="warning">Varování</button>
+            <button class="filter-btn active" data-filter="all" title="Zobrazit všechny nálezy (chyby i varování)">Vše</button>
+            <button class="filter-btn" data-filter="error" title="Zobrazit pouze chyby (severity: error)">Chyby</button>
+            <button class="filter-btn" data-filter="warning" title="Zobrazit pouze varování (severity: warning)">Varování</button>
           </div>
         </div>
         <div id="error-list" class="error-list"></div>
       </aside>
+    </div>
+  </div>
+  <div id="info-modal" class="modal-overlay" style="display:none">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+      <div class="modal-header">
+        <h2 id="info-modal-title">O aplikaci</h2>
+        <button id="info-modal-close" class="modal-close" title="Zavřít">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body" id="info-modal-body"></div>
     </div>
   </div>
   <script type="module" src="/src/main.ts"></script>

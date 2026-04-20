@@ -11,10 +11,11 @@ import {
 } from './map/jvfLayers.js';
 import { setupFileUpload } from './ui/fileUpload.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
-import { setup3dToggle, getIs3dActive } from './ui/toggle3d.js';
+import { setup3dToggle, getIs3dActive, reloadThreeSceneData } from './ui/toggle3d.js';
 import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
 import { initHighlightLayer } from './map/highlight.js';
-import { resetThreeCamera, setThreeLayerVisible } from './viewer3d/threeScene.js';
+import { setupInfoModal } from './ui/infoModal.js';
+import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
 import { createEmpty } from 'ol/extent.js';
@@ -39,7 +40,9 @@ if (buildInfoEl) {
 // Initialize map
 const olMap = createOlMap('map-container');
 initHighlightLayer(olMap);
-initErrorPanel(olMap, () => currentJvfLayers);
+initErrorPanel(olMap, () => currentJvfLayers, {
+  onHide: () => btnValidate.classList.remove('active'),
+});
 
 // Add CUZK base layers
 const zmLayer = createZmLayer();
@@ -48,6 +51,9 @@ setupBaseLayerSwitcher(olMap, zmLayer, ortofotoLayer);
 
 // Setup 3D toggle — getObjekty returns current loaded data
 setup3dToggle(olMap, () => currentObjekty);
+
+// Setup info modal (footer)
+setupInfoModal();
 
 // Setup zoom-to-data button
 const btnZoom = document.getElementById('btn-zoom') as HTMLButtonElement;
@@ -72,6 +78,7 @@ btnValidate.addEventListener('click', () => {
     if (!currentDtm) return;
     const errors = runAllChecks(currentDtm);
     showErrors(errors);
+    btnValidate.classList.add('active');
   }
 });
 
@@ -83,6 +90,9 @@ setupFileUpload((data: JvfDtm) => {
 function onJvfLoaded(data: JvfDtm): void {
   // Remove previous JVF layers
   removeJvfLayersFromMap(olMap, currentJvfLayers);
+
+  // Reset persisted 3D layer visibility — nový soubor, jiné vrstvy.
+  resetThreeLayerVisibility();
 
   // Build new layers
   const { layers, extent } = buildJvfLayers(data.objekty);
@@ -104,9 +114,16 @@ function onJvfLoaded(data: JvfDtm): void {
 
   // Enable zoom + validate buttons now that data is loaded
   btnZoom.disabled = false;
-  btnZoom.removeAttribute('title');
+  btnZoom.title = 'Přiblížit pohled na rozsah načtených JVF dat';
   btnValidate.disabled = false;
-  btnValidate.removeAttribute('title');
+  btnValidate.title = 'Spustit topologickou validaci dat a zobrazit panel s nálezy';
+
+  // Pokud je aktivní 3D, přebuduj scénu s novými daty (a zacentruj kameru).
+  // Bez toho by scéna zůstala prázdná, protože `initThreeScene` se volá jen
+  // při přepnutí 2D → 3D.
+  if (getIs3dActive()) {
+    reloadThreeSceneData(data.objekty);
+  }
 
   // Fit map to loaded data extent
   if (!isEmpty(extent)) {
