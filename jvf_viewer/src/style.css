@@ -435,12 +435,19 @@ html, body {
   cursor: grabbing;
 }
 
-/* ===== Z Exaggeration Toolbar ===== */
-#z-exag-toolbar {
+/* ===== Bottom toolbars (3D nav + z-exag) ===== */
+#bottom-toolbars {
   position: absolute;
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 100;
+}
+
+.toolbar-panel {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -448,10 +455,10 @@ html, body {
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
   padding: 6px 10px;
-  z-index: 100;
   backdrop-filter: blur(4px);
 }
 
+.toolbar-label,
 .z-exag-label {
   font-size: 11px;
   color: #8b949e;
@@ -459,11 +466,82 @@ html, body {
   white-space: nowrap;
 }
 
+.toolbar-sep {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255,255,255,0.1);
+  margin: 2px 2px;
+}
+
 .btn-z-exag {
   padding: 3px 10px !important;
   font-size: 12px !important;
   min-width: 36px;
 }
+
+/* ===== 3D navigation toolbar ===== */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.btn-nav3d {
+  padding: 4px 6px !important;
+  min-width: 30px;
+  height: 28px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 80ms ease, box-shadow 80ms ease, transform 80ms ease;
+}
+
+.btn-nav3d .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* Keyboard-pressed feedback — synced with actual key state */
+.btn-nav3d.key-pressed {
+  background: #1f6feb !important;
+  border-color: #1f6feb !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(31, 111, 235, 0.35);
+  transform: translateY(1px);
+}
+
+/* Active state for toggleable buttons (set-pivot) */
+.btn-nav3d.active {
+  background: #d29922 !important;
+  border-color: #d29922 !important;
+  color: #0d1117 !important;
+  box-shadow: 0 0 0 2px rgba(210, 153, 34, 0.35);
+}
+
+.nav3d-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  grid-template-rows: repeat(3, 26px);
+  gap: 2px;
+}
+
+.nav3d-pad .btn-nav3d {
+  padding: 0 !important;
+  min-width: 28px;
+  width: 28px;
+  height: 26px;
+}
+
+.nav3d-pad .btn-nav3d .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.nav3d-pad .nav-up    { grid-column: 2; grid-row: 1; }
+.nav3d-pad .nav-left  { grid-column: 1; grid-row: 2; }
+.nav3d-pad .nav-right { grid-column: 3; grid-row: 2; }
+.nav3d-pad .nav-down  { grid-column: 2; grid-row: 3; }
 
 /* ===== Loading Overlay ===== */
 #loading-overlay {

@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JVF DTM Prohlizec</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
@@ -51,12 +54,36 @@
       <main id="map-area">
         <div id="map-container"></div>
         <canvas id="three-canvas" style="display:none"></canvas>
-        <div id="z-exag-toolbar" style="display:none">
-          <span class="z-exag-label">Výška:</span>
-          <button class="btn btn-secondary btn-z-exag active" data-exag="1">1×</button>
-          <button class="btn btn-secondary btn-z-exag" data-exag="2">2×</button>
-          <button class="btn btn-secondary btn-z-exag" data-exag="5">5×</button>
-          <button class="btn btn-secondary btn-z-exag" data-exag="10">10×</button>
+        <div id="bottom-toolbars" style="display:none">
+          <div id="nav3d-toolbar" class="toolbar-panel">
+            <span class="toolbar-label">Procházení:</span>
+            <div class="nav3d-pad">
+              <button class="btn btn-secondary btn-nav3d nav-up" data-nav="walk-forward" title="Vpřed (W / ↑)"><span class="material-symbols-outlined">arrow_upward</span></button>
+              <button class="btn btn-secondary btn-nav3d nav-left" data-nav="walk-left" title="Vlevo (A / ←)"><span class="material-symbols-outlined">arrow_back</span></button>
+              <button class="btn btn-secondary btn-nav3d nav-right" data-nav="walk-right" title="Vpravo (D / →)"><span class="material-symbols-outlined">arrow_forward</span></button>
+              <button class="btn btn-secondary btn-nav3d nav-down" data-nav="walk-back" title="Vzad (S / ↓)"><span class="material-symbols-outlined">arrow_downward</span></button>
+            </div>
+            <button class="btn btn-secondary btn-nav3d" data-nav="walk-up" title="Výš (Q)"><span class="material-symbols-outlined">vertical_align_top</span></button>
+            <button class="btn btn-secondary btn-nav3d" data-nav="walk-down" title="Níž (E)"><span class="material-symbols-outlined">vertical_align_bottom</span></button>
+            <span class="toolbar-sep"></span>
+            <button class="btn btn-secondary btn-nav3d" data-nav="zoom-in" title="Přiblížit (+)"><span class="material-symbols-outlined">zoom_in</span></button>
+            <button class="btn btn-secondary btn-nav3d" data-nav="zoom-out" title="Oddálit (−)"><span class="material-symbols-outlined">zoom_out</span></button>
+            <span class="toolbar-sep"></span>
+            <button class="btn btn-secondary btn-nav3d" data-nav="rot-left" title="Otočit doleva"><span class="material-symbols-outlined">rotate_left</span></button>
+            <button class="btn btn-secondary btn-nav3d" data-nav="rot-right" title="Otočit doprava"><span class="material-symbols-outlined">rotate_right</span></button>
+            <button class="btn btn-secondary btn-nav3d" data-nav="tilt-up" title="Sklonit nahoru"><span class="material-symbols-outlined">expand_less</span></button>
+            <button class="btn btn-secondary btn-nav3d" data-nav="tilt-down" title="Sklonit dolů"><span class="material-symbols-outlined">expand_more</span></button>
+            <span class="toolbar-sep"></span>
+            <button class="btn btn-secondary btn-nav3d" data-nav="set-pivot" title="Klikněte do scény pro nastavení středu otáčení"><span class="material-symbols-outlined">adjust</span></button>
+            <button class="btn btn-secondary btn-nav3d" data-nav="reset" title="Reset pohledu (R)"><span class="material-symbols-outlined">home</span></button>
+          </div>
+          <div id="z-exag-toolbar" class="toolbar-panel">
+            <span class="toolbar-label">Výška:</span>
+            <button class="btn btn-secondary btn-z-exag active" data-exag="1">1×</button>
+            <button class="btn btn-secondary btn-z-exag" data-exag="2">2×</button>
+            <button class="btn btn-secondary btn-z-exag" data-exag="5">5×</button>
+            <button class="btn btn-secondary btn-z-exag" data-exag="10">10×</button>
+          </div>
         </div>
         <div id="loading-overlay" style="display:none">
           <div class="spinner"></div>
