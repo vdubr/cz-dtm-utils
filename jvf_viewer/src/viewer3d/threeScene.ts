@@ -15,11 +15,13 @@ interface SceneState {
   cy: number;
   cz: number;
   objekty: ObjektovyTyp[];
+  pivotMarker: THREE.Object3D;
 }
 
 let state: SceneState | null = null;
 
-let isDragging = false;
+type DragMode = 'none' | 'orbit' | 'pan';
+let dragMode: DragMode = 'none';
 let prevMouse = { x: 0, y: 0 };
 let spherical = { theta: 0, phi: Math.PI / 3, radius: 50000 };
 let sceneCenter = new THREE.Vector3(0, 0, 0);
@@ -34,33 +36,85 @@ function updateCamera(camera: THREE.PerspectiveCamera): void {
     spherical.radius * Math.sin(spherical.phi) * Math.cos(spherical.theta);
   camera.position.set(x, y, z);
   camera.lookAt(sceneCenter);
+  // Sync pivot marker
+  if (state) {
+    state.pivotMarker.position.copy(sceneCenter);
+    // Marker mění velikost se vzdáleností kamery, aby byl vždy viditelný
+    const s = spherical.radius * 0.015;
+    state.pivotMarker.scale.setScalar(s);
+  }
+}
+
+function createPivotMarker(): THREE.Object3D {
+  const group = new THREE.Group();
+  // 3 barevné osy (Red=X, Green=Y, Blue=Z) — orientace
+  const axes = new THREE.AxesHelper(1);
+  (axes.material as THREE.Material).depthTest = false;
+  axes.renderOrder = 999;
+  group.add(axes);
+  // Malá koule uprostřed, aby bod byl vidět i zdálky
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.15, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0xffdd33, depthTest: false })
+  );
+  sphere.renderOrder = 1000;
+  group.add(sphere);
+  return group;
+}
+
+// Posune sceneCenter o zadaný vektor v obrazové rovině kamery.
+// dxScreen, dyScreen: pixely kurzorem; převedou se na světové jednotky podle radius.
+function panSceneByScreen(
+  camera: THREE.PerspectiveCamera,
+  dxScreen: number,
+  dyScreen: number
+): void {
+  // Right a up vektor kamery (sloupce matrixe)
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+  const up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
+  // Scale: pan se měřítkem podle vzdálenosti od scény (aby se v dálce hýbalo víc)
+  const scale = spherical.radius * 0.0015;
+  sceneCenter.addScaledVector(right, -dxScreen * scale);
+  sceneCenter.addScaledVector(up, dyScreen * scale);
+  updateCamera(camera);
 }
 
 function attachOrbitControls(
   canvas: HTMLCanvasElement,
   camera: THREE.PerspectiveCamera
 ): void {
+  // Blokuj kontextové menu na pravém tlačítku — používáme ho pro panning
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
   canvas.addEventListener('mousedown', (e) => {
-    isDragging = true;
+    // button 0 = levé (orbit), 2 = pravé (pan), shift+levé = pan
+    if (e.button === 2 || (e.button === 0 && e.shiftKey)) {
+      dragMode = 'pan';
+    } else if (e.button === 0) {
+      dragMode = 'orbit';
+    } else {
+      return;
+    }
     prevMouse = { x: e.clientX, y: e.clientY };
   });
 
   canvas.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    spherical.theta -= (e.clientX - prevMouse.x) * 0.005;
-    spherical.phi -= (e.clientY - prevMouse.y) * 0.005;
-    spherical.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, spherical.phi));
+    if (dragMode === 'none') return;
+    const dx = e.clientX - prevMouse.x;
+    const dy = e.clientY - prevMouse.y;
+    if (dragMode === 'orbit') {
+      spherical.theta -= dx * 0.005;
+      spherical.phi -= dy * 0.005;
+      spherical.phi = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, spherical.phi));
+      updateCamera(camera);
+    } else if (dragMode === 'pan') {
+      panSceneByScreen(camera, dx, dy);
+    }
     prevMouse = { x: e.clientX, y: e.clientY };
-    updateCamera(camera);
   });
 
-  canvas.addEventListener('mouseup', () => {
-    isDragging = false;
-  });
-
-  canvas.addEventListener('mouseleave', () => {
-    isDragging = false;
-  });
+  canvas.addEventListener('mouseup', () => { dragMode = 'none'; });
+  canvas.addEventListener('mouseleave', () => { dragMode = 'none'; });
 
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -198,7 +252,7 @@ export function initThreeScene(
   disposeThreeScene();
 
   // Reset orbit state for fresh view
-  isDragging = false;
+  dragMode = 'none';
   spherical = { theta: 0, phi: Math.PI / 3, radius: 50000 };
   sceneCenter = new THREE.Vector3(0, 0, 0);
 
@@ -324,11 +378,16 @@ export function initThreeScene(
 
   animate();
 
-  state = { scene, camera, renderer, animFrameId: null, initialRadius: spherical.radius, cx, cy, cz, objekty };
+  const pivotMarker = createPivotMarker();
+  scene.add(pivotMarker);
+
+  state = { scene, camera, renderer, animFrameId: null, initialRadius: spherical.radius, cx, cy, cz, objekty, pivotMarker };
   Object.defineProperty(state, 'animFrameId', {
     get() { return animFrameId; },
     set(v) { animFrameId = v; },
   });
+  // Počáteční synchronizace markeru s pivotem a velikostí podle kamery
+  updateCamera(camera);
 }
 
 // Rebuild only geometry (preserves camera position)
@@ -355,6 +414,102 @@ export function disposeThreeScene(): void {
   }
   state.renderer.dispose();
   state = null;
+}
+
+// Walk-through: posune sceneCenter (a tedy i kameru) podél horizontálního
+// směru kamery. forward/back = podél pohledu promítnutého do vodorovné roviny,
+// left/right = strafe kolmo na pohled, up/down = svisle.
+export function walk3d(direction: 'forward' | 'back' | 'left' | 'right' | 'up' | 'down'): void {
+  if (!state) return;
+  const { camera } = state;
+  // Kamerový forward (normalizovaný) a right vektor
+  const fwd = new THREE.Vector3();
+  camera.getWorldDirection(fwd);
+  // Pro horizontální pohyb: vynuluj y složku (scéna má y=up)
+  if (direction === 'forward' || direction === 'back' || direction === 'left' || direction === 'right') {
+    fwd.y = 0;
+    if (fwd.lengthSq() > 1e-9) fwd.normalize();
+  }
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+  right.y = 0;
+  if (right.lengthSq() > 1e-9) right.normalize();
+
+  const step = spherical.radius * 0.08; // 8 % aktuální vzdálenosti kamery
+  switch (direction) {
+    case 'forward': sceneCenter.addScaledVector(fwd, step); break;
+    case 'back':    sceneCenter.addScaledVector(fwd, -step); break;
+    case 'right':   sceneCenter.addScaledVector(right, step); break;
+    case 'left':    sceneCenter.addScaledVector(right, -step); break;
+    case 'up':      sceneCenter.y += step; break;
+    case 'down':    sceneCenter.y -= step; break;
+  }
+  updateCamera(camera);
+}
+
+// Screen-space pan (kolmo na pohled) — pro myš (shift+drag / pravé tlačítko)
+// Zachováno kvůli kompatibilitě; z UI již nevoláme.
+export function pan3d(direction: 'up' | 'down' | 'left' | 'right'): void {
+  if (!state) return;
+  const step = 60;
+  const dx = direction === 'left' ? -step : direction === 'right' ? step : 0;
+  const dy = direction === 'up' ? -step : direction === 'down' ? step : 0;
+  panSceneByScreen(state.camera, dx, dy);
+}
+
+// Nastav nový pivot (bod, kolem kterého se orbit toci) — zachová polohu kamery
+// a jen přesměruje pohled + přepočítá sférické souřadnice.
+export function setPivot(worldX: number, worldY: number, worldZ: number): void {
+  if (!state) return;
+  const { camera } = state;
+  sceneCenter.set(worldX, worldY, worldZ);
+  // Dopočti novou theta/phi/radius tak, aby kamera zůstala tam, kde je
+  const dx = camera.position.x - sceneCenter.x;
+  const dy = camera.position.y - sceneCenter.y;
+  const dz = camera.position.z - sceneCenter.z;
+  const r = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (r < 1e-6) return;
+  spherical.radius = r;
+  spherical.phi = Math.acos(Math.max(-1, Math.min(1, dy / r)));
+  spherical.theta = Math.atan2(dx, dz);
+  camera.lookAt(sceneCenter);
+}
+
+// Raycast z klienta obrazovky do scény, vrátí první zásah nebo null.
+export function pickPointFromClient(clientX: number, clientY: number): THREE.Vector3 | null {
+  if (!state) return null;
+  const { scene, camera, renderer } = state;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -(((clientY - rect.top) / rect.height) * 2 - 1)
+  );
+  const raycaster = new THREE.Raycaster();
+  // Tolerance pro Line/Points, jinak se skoro nikdy netrefíme
+  raycaster.params.Line = { threshold: spherical.radius * 0.01 };
+  raycaster.params.Points = { threshold: spherical.radius * 0.01 };
+  raycaster.setFromCamera(ndc, camera);
+  // Filtruj jen data objekty (ne grid/lights)
+  const targets: THREE.Object3D[] = [];
+  scene.traverse((o) => { if (o.userData[DATA_TAG] !== undefined) targets.push(o); });
+  const hits = raycaster.intersectObjects(targets, false);
+  return hits[0]?.point.clone() ?? null;
+}
+
+export function zoom3d(direction: 'in' | 'out'): void {
+  if (!state) return;
+  const factor = direction === 'in' ? 0.85 : 1.18;
+  spherical.radius = Math.max(1, spherical.radius * factor);
+  updateCamera(state.camera);
+}
+
+export function rotate3d(axis: 'yaw-left' | 'yaw-right' | 'tilt-up' | 'tilt-down'): void {
+  if (!state) return;
+  const step = Math.PI / 24; // 7.5°
+  if (axis === 'yaw-left') spherical.theta += step;
+  else if (axis === 'yaw-right') spherical.theta -= step;
+  else if (axis === 'tilt-up') spherical.phi = Math.max(0.05, spherical.phi - step);
+  else if (axis === 'tilt-down') spherical.phi = Math.min(Math.PI / 2 - 0.05, spherical.phi + step);
+  updateCamera(state.camera);
 }
 
 export function resetThreeCamera(): void {
