@@ -12,6 +12,7 @@ import {
   setPivot,
   pickPointFromClient,
 } from '../viewer3d/threeScene.js';
+import { clearHighlight } from '../map/highlight.js';
 
 let is3dActive = false;
 let currentZExaggeration = 1;
@@ -172,6 +173,9 @@ function switchTo3d(
   is3dActive = true;
   btn.textContent = '2D';
   btn.classList.add('active');
+
+  // Přepínáme režim — zrušit 2D highlight, aby nezůstal viset
+  clearHighlight();
 
   mapContainer.style.display = 'none';
   canvas.style.display = 'block';

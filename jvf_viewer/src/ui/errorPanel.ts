@@ -3,6 +3,8 @@ import type OlMap from 'ol/Map.js';
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { findFeature } from '../map/jvfLayers.js';
 import { highlightFeature, clearHighlight, zoomToFeature } from '../map/highlight.js';
+import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature } from '../viewer3d/threeScene.js';
+import { getIs3dActive } from './toggle3d.js';
 
 type FilterType = 'all' | 'error' | 'warning';
 
@@ -70,6 +72,12 @@ function handleRowClick(row: HTMLElement, err: TopologyError): void {
   row.classList.add('active');
 
   if (!err.objectId || !olMap || !getJvfLayers) return;
+
+  if (getIs3dActive()) {
+    highlightThreeFeature(err.objektovyTyp, err.objectId);
+    zoomToThreeFeature(err.objektovyTyp, err.objectId);
+    return;
+  }
 
   const feature = findFeature(getJvfLayers(), err.objektovyTyp, err.objectId);
   if (!feature) return;
@@ -191,6 +199,7 @@ export function showErrors(errors: TopologyError[]): void {
 export function hideErrors(): void {
   panel.style.display = 'none';
   clearHighlight();
+  clearThreeHighlight();
   if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
 }
 

@@ -4,6 +4,9 @@ import { resolveStyle } from '../map/jvfLayers.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
+// Tag for highlight objects (exclude from clearSceneObjects — they live in a parallel group)
+const HIGHLIGHT_TAG = 'jvfHighlight';
+const HIGHLIGHT_COLOR = 0x39ff14;
 
 type DragMode = 'none' | 'orbit' | 'pan';
 
@@ -160,6 +163,7 @@ function buildSceneObjects(
     const key = layerKey(ot);
 
     for (const zaz of ot.zaznamy) {
+      const objectId = zaz.commonAttributes?.id ?? null;
       for (const geom of zaz.geometrie) {
         let obj: THREE.Object3D | null = null;
 
@@ -228,6 +232,7 @@ function buildSceneObjects(
                 g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
                 const lineObj = new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
                 lineObj.userData[DATA_TAG] = key;
+                lineObj.userData['jvfObjectId'] = objectId;
                 scene.add(lineObj);
               }
             }
@@ -237,6 +242,7 @@ function buildSceneObjects(
 
         if (obj) {
           obj.userData[DATA_TAG] = key;
+          obj.userData['jvfObjectId'] = objectId;
           scene.add(obj);
         }
       }
@@ -426,6 +432,7 @@ export function initThreeScene(
 // Rebuild only geometry (preserves camera position)
 export function rebuildSceneGeometry(zExaggeration: number): void {
   if (!state) return;
+  clearThreeHighlight();
   clearSceneObjects(state.scene);
   buildSceneObjects(state.scene, state.objekty, state.cx, state.cy, state.cz, zExaggeration);
 }
@@ -447,6 +454,8 @@ export function disposeThreeScene(): void {
   }
   // Odpojit všechny DOM event listenery registrované v attachOrbitControls
   state.controlsAbort.abort();
+  // Uvolnit highlight overlay (má vlastní klonované geometrie/materiály)
+  clearThreeHighlight();
   // Uvolnit geometrie + materiály všech datových objektů
   clearSceneObjects(state.scene);
   state.renderer.dispose();
@@ -570,4 +579,195 @@ export function resizeThreeScene(canvas: HTMLCanvasElement): void {
   state.camera.aspect = width / height;
   state.camera.updateProjectionMatrix();
   state.renderer.setSize(width, height);
+}
+
+// ── Highlight & zoom ─────────────────────────────────────────────────────────
+
+/** Najde všechny scene objekty odpovídající dvojici elementName + objectId. */
+function findSceneObjects(elementName: string, objectId: string): THREE.Object3D[] {
+  if (!state) return [];
+  const found: THREE.Object3D[] = [];
+  state.scene.traverse((obj) => {
+    if (
+      obj.userData[DATA_TAG] === elementName &&
+      obj.userData['jvfObjectId'] === objectId &&
+      obj.userData[HIGHLIGHT_TAG] !== true
+    ) {
+      found.push(obj);
+    }
+  });
+  return found;
+}
+
+/** Spočte svět. bounding box pro zadané objekty. */
+function computeObjectsBox(objs: THREE.Object3D[]): THREE.Box3 | null {
+  if (objs.length === 0) return null;
+  const box = new THREE.Box3();
+  let any = false;
+  for (const obj of objs) {
+    const b = new THREE.Box3().setFromObject(obj);
+    if (!b.isEmpty()) {
+      if (any) box.union(b);
+      else { box.copy(b); any = true; }
+    }
+  }
+  return any ? box : null;
+}
+
+/** Odstraní existující zvýrazňovací objekty ze scény. */
+export function clearThreeHighlight(): void {
+  if (!state) return;
+  const toRemove: THREE.Object3D[] = [];
+  state.scene.traverse((obj) => {
+    if (obj.userData[HIGHLIGHT_TAG] === true) toRemove.push(obj);
+  });
+  for (const obj of toRemove) {
+    state.scene.remove(obj);
+    const withGeom = obj as Partial<THREE.Line & THREE.Points & THREE.Mesh>;
+    withGeom.geometry?.dispose();
+    const mat = withGeom.material;
+    if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+    else mat?.dispose();
+  }
+}
+
+/**
+ * Vytvoří zvýrazňovací overlay pro daný objekt. WebGL ignoruje
+ * `LineBasicMaterial.linewidth`, takže samotný klon linie by nebyl vidět přes
+ * originál. Proto kombinujeme několik efektů:
+ *   1. Klon linie/polygonu v HIGHLIGHT_COLOR (depthTest: false, renderOrder vysoký)
+ *   2. Velké zelené body na všech vrcholech geometrie (spolehlivě viditelné)
+ *   3. Billboard kruh kolem těžiště bboxu jako výrazný marker
+ */
+export function highlightThreeFeature(elementName: string, objectId: string): void {
+  if (!state) return;
+  clearThreeHighlight();
+  const objs = findSceneObjects(elementName, objectId);
+  if (objs.length === 0) return;
+
+  // Sběrný box pro umístění marker-kroužku
+  const overallBox = new THREE.Box3();
+  let boxAny = false;
+
+  for (const src of objs) {
+    const srcGeom = (src as THREE.Line | THREE.Points).geometry;
+    if (!srcGeom) continue;
+
+    // Aktualizovat bounding box pro marker
+    srcGeom.computeBoundingBox();
+    if (srcGeom.boundingBox) {
+      if (boxAny) overallBox.union(srcGeom.boundingBox);
+      else { overallBox.copy(srcGeom.boundingBox); boxAny = true; }
+    }
+
+    // 1) Klon linie/polygonu — přinejhorším nebude vidět, ale nepřekáží
+    if (src instanceof THREE.LineLoop || src instanceof THREE.Line) {
+      const lineGeom = srcGeom.clone();
+      const lineObj = src instanceof THREE.LineLoop
+        ? new THREE.LineLoop(lineGeom, new THREE.LineBasicMaterial({
+            color: HIGHLIGHT_COLOR, depthTest: false, transparent: true,
+          }))
+        : new THREE.Line(lineGeom, new THREE.LineBasicMaterial({
+            color: HIGHLIGHT_COLOR, depthTest: false, transparent: true,
+          }));
+      lineObj.userData[HIGHLIGHT_TAG] = true;
+      lineObj.renderOrder = 9998;
+      state.scene.add(lineObj);
+    }
+
+    // 2) Body na vrcholech — WebGL linewidth je ignorován, ale PointsMaterial.size funguje.
+    //    Tohle je hlavní viditelná stopa highlightu pro linie i polygony.
+    const vertsGeom = srcGeom.clone();
+    const vertsObj = new THREE.Points(
+      vertsGeom,
+      new THREE.PointsMaterial({
+        color: HIGHLIGHT_COLOR,
+        size: src instanceof THREE.Points ? 16 : 10,
+        sizeAttenuation: false,
+        depthTest: false,
+        transparent: true,
+      })
+    );
+    vertsObj.userData[HIGHLIGHT_TAG] = true;
+    vertsObj.renderOrder = 9999;
+    state.scene.add(vertsObj);
+  }
+
+  // 3) Marker kroužek (sprite) kolem středu bboxu — vždy viditelný z jakékoliv vzdálenosti
+  if (boxAny) {
+    const center = new THREE.Vector3();
+    overallBox.getCenter(center);
+    const size = new THREE.Vector3();
+    overallBox.getSize(size);
+    const radius = Math.max(size.x, size.y, size.z, 1);
+
+    const marker = createRingMarker(radius * 1.3);
+    marker.position.copy(center);
+    marker.userData[HIGHLIGHT_TAG] = true;
+    marker.renderOrder = 10000;
+    state.scene.add(marker);
+  }
+}
+
+/**
+ * Kroužek ze `LineLoop` (mnohoúhelník aproximující kruh) ve stejné rovině XZ
+ * — slouží jako výrazný marker nad terénem.
+ */
+function createRingMarker(radius: number): THREE.Object3D {
+  const segments = 64;
+  const pts: number[] = [];
+  for (let i = 0; i < segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
+    pts.push(Math.cos(a) * radius, 0, Math.sin(a) * radius);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  return new THREE.LineLoop(
+    g,
+    new THREE.LineBasicMaterial({ color: HIGHLIGHT_COLOR, depthTest: false, transparent: true })
+  );
+}
+
+/**
+ * Animovaný zoom 3D kamery na bounding box objektu. Nastavuje orbit.center
+ * do středu bboxu a upravuje radius dle velikosti.
+ */
+export function zoomToThreeFeature(elementName: string, objectId: string): void {
+  if (!state) return;
+  const objs = findSceneObjects(elementName, objectId);
+  const box = computeObjectsBox(objs);
+  if (!box) return;
+
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+
+  const maxDim = Math.max(size.x, size.y, size.z);
+  // fov je v stupních; převod pomocí tan(fov/2)
+  const fov = (state.camera.fov * Math.PI) / 180;
+  // min radius, aby byl bod / malý objekt rozumně daleko
+  const fitRadius = Math.max(10, (maxDim * 0.6) / Math.tan(fov / 2) + maxDim * 0.5);
+
+  animateCameraTo(center, fitRadius);
+}
+
+/** Plynulá animace orbit.center a radius. */
+function animateCameraTo(target: THREE.Vector3, targetRadius: number, durationMs = 500): void {
+  if (!state) return;
+  const startCenter = state.orbit.center.clone();
+  const startRadius = state.orbit.spherical.radius;
+  const startTime = performance.now();
+
+  function step(): void {
+    if (!state) return;
+    const t = Math.min(1, (performance.now() - startTime) / durationMs);
+    // easeInOutCubic
+    const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    state.orbit.center.lerpVectors(startCenter, target, e);
+    state.orbit.spherical.radius = startRadius + (targetRadius - startRadius) * e;
+    updateCamera(state.camera, state.orbit);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  step();
 }
