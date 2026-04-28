@@ -37,6 +37,34 @@ const MM_TO_METERS = 0.001;
 /** Kolik metrů v terénu odpovídá 1 mm v katalogu. */
 const MM_TO_MAP_METERS = MM_TO_METERS * REFERENCE_SCALE;
 
+/**
+ * Referenční resolution mapy [m/px], při které je SVG symbol v normální
+ * velikosti (`scale = REFERENCE_ICON_SCALE`). Přibližně odpovídá měřítku
+ * 1:500 na běžné obrazovce (96 dpi). Při větší resolution (oddálení) se
+ * symbol zmenšuje, při menší (přiblížení) zvětšuje, vše v rozmezí
+ * `[MIN_ICON_SCALE, MAX_ICON_SCALE]`.
+ *
+ * Nad `HIDE_ICON_RESOLUTION` se SVG nerenderují vůbec — místo nich se
+ * zobrazí malý barevný puntík (CircleStyle), aby mapa zůstala čitelná.
+ */
+const REFERENCE_ICON_RESOLUTION = 0.5;
+const REFERENCE_ICON_SCALE = 0.25;
+const MIN_ICON_SCALE = 0.08;
+const MAX_ICON_SCALE = 0.35;
+const HIDE_ICON_RESOLUTION = 4.0;
+
+/**
+ * Vypočítá adaptivní scale pro IconStyle podle aktuální resolution mapy.
+ * Pokud je resolution nad threshold, vrátí `null` (volající má místo SVG
+ * nakreslit jen tečku).
+ */
+function adaptiveIconScale(resolution: number): number | null {
+  if (resolution <= 0) return REFERENCE_ICON_SCALE;
+  if (resolution >= HIDE_ICON_RESOLUTION) return null;
+  const scale = REFERENCE_ICON_SCALE * (REFERENCE_ICON_RESOLUTION / resolution);
+  return Math.max(MIN_ICON_SCALE, Math.min(MAX_ICON_SCALE, scale));
+}
+
 function flatCoordsToRing(flat: number[], dim: number): number[][] {
   const ring: number[][] = [];
   for (let i = 0; i + 1 < flat.length; i += dim) {
@@ -220,22 +248,28 @@ function createStyleForGeom(
 ): Style {
   const dashPx = s.lineDashMm ? dashMmToPx(s.lineDashMm, resolution) : undefined;
   switch (geomType) {
-    case 'Point':
-      if (s.pointSvg) {
+    case 'Point': {
+      // Při velkém oddálení nahradíme SVG ikonu malou barevnou tečkou —
+      // jinak se symboly překrývají a mapa je nepřehledná.
+      const iconScale = s.pointSvg ? adaptiveIconScale(resolution) : null;
+      if (s.pointSvg && iconScale !== null) {
         return new Style({
           image: new IconStyle({
             src: SVG_BASE + s.pointSvg,
-            scale: 0.25,
+            scale: iconScale,
           }),
         });
       }
+      // Tečka — buď fallback (žádné SVG), nebo příliš oddálené.
+      const dotRadius = s.pointSvg ? 2 : 4;
       return new Style({
         image: new CircleStyle({
-          radius: 4,
+          radius: dotRadius,
           fill: new Fill({ color: s.strokeColor }),
           stroke: new Stroke({ color: s.strokeColor, width: 1 }),
         }),
       });
+    }
     case 'LineString':
     case 'MultiCurve':
       return new Style({

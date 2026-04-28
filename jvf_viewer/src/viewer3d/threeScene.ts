@@ -115,6 +115,15 @@ export function setUseSvgSymbols(value: boolean): void {
  *  rebuildujeme scénu mimo UI (např. při přepnutí SVG toggle). */
 let lastZExaggeration = 1;
 
+/**
+ * Hranice, nad kterou se SVG sprity skrývají (ekvivalent 2D
+ * `HIDE_ICON_RESOLUTION`). Při velkém oddálení kamery od pivotu by
+ * sprity pokrývaly scénu jako kobercová mozaika. Hodnota je v metrech
+ * (jednotkách scény) — sprite je velký 2 m, takže nad ~150 m vzdálenosti
+ * jsou ikony stejně skoro neviditelné.
+ */
+const SPRITE_HIDE_RADIUS = 150;
+
 function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void {
   const { spherical, center } = orbit;
   const x =
@@ -132,7 +141,30 @@ function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void 
     // Marker mění velikost se vzdáleností kamery, aby byl vždy viditelný
     const s = spherical.radius * 0.015;
     state.pivotMarker.scale.setScalar(s);
+    // Skrýt SVG sprity při velkém oddálení (čitelnost scény).
+    updateSpriteVisibility(state.scene, spherical.radius);
   }
+}
+
+/**
+ * Skryje / zobrazí SVG sprity podle vzdálenosti kamery (resp. radiusu
+ * orbitu). Volá se z `updateCamera` při každé změně kamery. Při větším
+ * oddálení než `SPRITE_HIDE_RADIUS` se sprity skryjí, body zůstanou
+ * reprezentovány barevnými puntíky, které renderujeme zvlášť (vždy).
+ *
+ * V současné implementaci nemáme paralelní vrstvu puntíků — sprite je
+ * jediná reprezentace bodu při zapnutém SVG toggle. Skrytí spritu = bod
+ * není vidět vůbec. To je akceptovatelný kompromis: uživatel chce při
+ * silném oddálení vidět hlavně linie a plochy, body znovu uvidí po
+ * přiblížení.
+ */
+function updateSpriteVisibility(scene: THREE.Scene, radius: number): void {
+  const visible = radius < SPRITE_HIDE_RADIUS;
+  scene.traverse((obj) => {
+    if (obj.userData['jvfSprite'] === true) {
+      obj.visible = visible;
+    }
+  });
 }
 
 function createPivotMarker(): THREE.Object3D {
@@ -259,17 +291,21 @@ function buildSceneObjects(
               // Sprite s SVG texturou — vždy čelem ke kameře, velikost v world
               // jednotkách (metrech). sizeAttenuation=true (default) = sprite
               // se zmenšuje s vzdáleností, což odpovídá chování 3D objektu.
+              // depthTest=true: sprite se nepřekresluje přes vše, respektuje
+              // hloubku scény (jinak při velkém oddálení vznikne změť ikon).
               const tex = getSvgTexture(s.pointSvg);
               const mat = new THREE.SpriteMaterial({
                 map: tex,
                 transparent: true,
-                depthTest: false,
+                depthTest: true,
                 sizeAttenuation: true,
               });
               const sprite = new THREE.Sprite(mat);
               sprite.position.set(x, y3, z3);
               // Velikost ~ 2 m (SVG ikony reprezentují šachty/sloupy ~ 1–3 m).
               sprite.scale.set(2, 2, 1);
+              // Tag pro adaptivní visibility v `updateSpriteVisibility`.
+              sprite.userData['jvfSprite'] = true;
               obj = sprite;
             } else {
               const geomPt = new THREE.BufferGeometry();
