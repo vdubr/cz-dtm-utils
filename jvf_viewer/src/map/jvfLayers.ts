@@ -38,31 +38,39 @@ const MM_TO_METERS = 0.001;
 const MM_TO_MAP_METERS = MM_TO_METERS * REFERENCE_SCALE;
 
 /**
- * Referenční resolution mapy [m/px], při které je SVG symbol v normální
- * velikosti (`scale = REFERENCE_ICON_SCALE`). Přibližně odpovídá měřítku
- * 1:500 na běžné obrazovce (96 dpi). Při větší resolution (oddálení) se
- * symbol zmenšuje, při menší (přiblížení) zvětšuje, vše v rozmezí
- * `[MIN_ICON_SCALE, MAX_ICON_SCALE]`.
+ * Bodové SVG symboly mají velikost definovanou ve světových souřadnicích
+ * (terénu), ne v pixelech obrazovky. Konvence ČÚZK Katalogu kartografických
+ * symbolů: 1 SVG-px = 0,01 mm na papíře. Při referenčním měřítku 1:500 to
+ * znamená:
  *
- * Nad `HIDE_ICON_RESOLUTION` se SVG nerenderují vůbec — místo nich se
- * zobrazí malý barevný puntík (CircleStyle), aby mapa zůstala čitelná.
+ *   1 SVG-px = 0,01 mm × 500 = 5 mm = 0,005 m v terénu
+ *
+ * Symbol se tedy v mapě chová jako reálný objekt — při přiblížení se
+ * zvětšuje, při oddálení zmenšuje stejně jako linie/plochy. OL `Icon.scale`
+ * násobí nativní pixelovou šířku SVG, takže scale potřebný pro
+ * "1 SVG-px = SVG_PX_TO_METERS metrů" je čistě `SVG_PX_TO_METERS / resolution`
+ * (nezávisle na velikosti konkrétního SVG).
  */
-const REFERENCE_ICON_RESOLUTION = 0.5;
-const REFERENCE_ICON_SCALE = 0.25;
-const MIN_ICON_SCALE = 0.08;
-const MAX_ICON_SCALE = 0.35;
+const SVG_PX_TO_METERS = 0.005;
+
+/**
+ * Nad touto resolution mapy se SVG symboly nahrazují malou barevnou tečkou
+ * (CircleStyle). Důvod: při velkém oddálení by symbol byl menší než pixel
+ * a nečitelný; jednotná tečka je rozeznatelnější.
+ *
+ * Při resolution = 4 m/px má 1 SVG-px = 0,005 m / 4 m/px = 0,00125 px,
+ * takže 200 SVG-px symbol má ~0,25 px na obrazovce — neviditelný.
+ */
 const HIDE_ICON_RESOLUTION = 4.0;
 
 /**
- * Vypočítá adaptivní scale pro IconStyle podle aktuální resolution mapy.
- * Pokud je resolution nad threshold, vrátí `null` (volající má místo SVG
- * nakreslit jen tečku).
+ * Vypočítá `IconStyle.scale` pro aktuální resolution mapy. Vrací `null`
+ * pokud je mapa příliš oddálená — volající má místo SVG vykreslit tečku.
  */
 function adaptiveIconScale(resolution: number): number | null {
-  if (resolution <= 0) return REFERENCE_ICON_SCALE;
+  if (resolution <= 0) return SVG_PX_TO_METERS;
   if (resolution >= HIDE_ICON_RESOLUTION) return null;
-  const scale = REFERENCE_ICON_SCALE * (REFERENCE_ICON_RESOLUTION / resolution);
-  return Math.max(MIN_ICON_SCALE, Math.min(MAX_ICON_SCALE, scale));
+  return SVG_PX_TO_METERS / resolution;
 }
 
 function flatCoordsToRing(flat: number[], dim: number): number[][] {
@@ -383,8 +391,18 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
 
     // Dynamická style function — dash závisí na resolution (zoom-dependent).
     // Feature si nese svůj ResolvedStyle v property; styl se buduje per frame.
+    //
+    // `updateWhileInteracting` + `updateWhileAnimating`: defaultně OL během
+    // pan/zoom interakce použije rastrově roztažený canvas z posledního
+    // renderu (rychlé, ale style fn se nepřepočítává — symboly skáčou na
+    // novou velikost teprve po dokončení gesta). S těmito flagy se style
+    // fn volá každý frame, takže škálování bodových symbolů a dash patternu
+    // linií je plynulé i během zoomu. Trade-off: vyšší CPU zátěž při velkých
+    // datasetech.
     const olLayer = new VectorLayer({
       source,
+      updateWhileInteracting: true,
+      updateWhileAnimating: true,
       style: (feature, resolution) => {
         const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
         const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;

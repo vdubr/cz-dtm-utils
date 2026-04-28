@@ -78,15 +78,41 @@ const svgTextureCache = new Map<string, THREE.Texture>();
 /** Base path pro SVG symboly (stejný jako v 2D). */
 const SVG_BASE = './symboly/';
 
+/**
+ * Konverze nativní pixelové velikosti SVG na metry v terénu.
+ * Stejná konvence jako ve 2D (`SVG_PX_TO_METERS` v jvfLayers.ts):
+ * 1 SVG-px = 0,01 mm na papíře × měřítko 1:500 = 0,005 m v terénu.
+ *
+ * Sprite.scale ve three.js je v world units (metrech, díky `sizeAttenuation`).
+ */
+const SVG_PX_TO_METERS = 0.005;
+
 /** Načte SVG jako THREE.Texture. Vrací cachovanou instanci pro opakované volání. */
 function getSvgTexture(svgFile: string): THREE.Texture {
   const cached = svgTextureCache.get(svgFile);
   if (cached) return cached;
 
   const loader = new THREE.TextureLoader();
-  const tex = loader.load(SVG_BASE + svgFile, () => {
-    // SVG načteno — vynuť re-render (pokud běží aktivní scéna)
-    if (state) state.renderer.render(state.scene, state.camera);
+  const tex = loader.load(SVG_BASE + svgFile, (loaded) => {
+    // SVG načteno — projdi všechny sprity používající tuto texturu a nastav
+    // jim správnou fyzickou velikost podle nativních rozměrů SVG. Texture
+    // loader je asynchronní, takže při vytvoření spritu jsme ještě neznali
+    // image.width/height. Po načtení je textura sdílená přes cache, můžeme
+    // sprity v aktivní scéně dohledat přes `userData.jvfSpriteTexKey`.
+    if (state) {
+      const w = (loaded.image as HTMLImageElement | undefined)?.width ?? 0;
+      const h = (loaded.image as HTMLImageElement | undefined)?.height ?? 0;
+      if (w > 0 && h > 0) {
+        const sx = w * SVG_PX_TO_METERS;
+        const sy = h * SVG_PX_TO_METERS;
+        state.scene.traverse((obj) => {
+          if (obj.userData['jvfSpriteTexKey'] === svgFile) {
+            obj.scale.set(sx, sy, 1);
+          }
+        });
+      }
+      state.renderer.render(state.scene, state.camera);
+    }
   });
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
@@ -288,11 +314,17 @@ function buildSceneObjects(
             const y3 = ((c[2] ?? 0) - cz) * zExaggeration;
 
             if (useSvgSymbols && s.pointSvg) {
-              // Sprite s SVG texturou — vždy čelem ke kameře, velikost v world
-              // jednotkách (metrech). sizeAttenuation=true (default) = sprite
-              // se zmenšuje s vzdáleností, což odpovídá chování 3D objektu.
-              // depthTest=true: sprite se nepřekresluje přes vše, respektuje
-              // hloubku scény (jinak při velkém oddálení vznikne změť ikon).
+              // Sprite s SVG texturou — fyzická velikost v metrech podle
+              // nativních rozměrů SVG (konvence ČÚZK Katalog: 1 SVG-px =
+              // 0,01 mm na papíře × 1:500 = 0,005 m v terénu).
+              //
+              // Texture loader je asynchronní; při prvním vytvoření spritu
+              // textura ještě nemá rozměry. Použijeme proto fallback scale
+              // (0.5 m) a po načtení texturu callback v `getSvgTexture`
+              // přepočítá sprity se shodným `jvfSpriteTexKey`.
+              //
+              // depthTest=true: sprite respektuje hloubku scény (nepřekrývá
+              // všechno jako dřív s depthTest=false).
               const tex = getSvgTexture(s.pointSvg);
               const mat = new THREE.SpriteMaterial({
                 map: tex,
@@ -302,10 +334,14 @@ function buildSceneObjects(
               });
               const sprite = new THREE.Sprite(mat);
               sprite.position.set(x, y3, z3);
-              // Velikost ~ 2 m (SVG ikony reprezentují šachty/sloupy ~ 1–3 m).
-              sprite.scale.set(2, 2, 1);
-              // Tag pro adaptivní visibility v `updateSpriteVisibility`.
+              const img = (tex.image as HTMLImageElement | undefined);
+              if (img && img.width > 0 && img.height > 0) {
+                sprite.scale.set(img.width * SVG_PX_TO_METERS, img.height * SVG_PX_TO_METERS, 1);
+              } else {
+                sprite.scale.set(0.5, 0.5, 1); // placeholder, přepíše se po načtení
+              }
               sprite.userData['jvfSprite'] = true;
+              sprite.userData['jvfSpriteTexKey'] = s.pointSvg;
               obj = sprite;
             } else {
               const geomPt = new THREE.BufferGeometry();
