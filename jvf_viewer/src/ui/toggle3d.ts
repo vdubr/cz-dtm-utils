@@ -37,15 +37,21 @@ let resizeObserver: ResizeObserver | null = null;
  * zavření postranního error panelu), protože `ResizeObserver` u některých
  * prohlížečů nestřílí spolehlivě, když se sourozenecký flex element
  * skryje/zobrazí přes `display: none`. No-op když 3D není aktivní.
+ *
+ * Resize odkládáme do dalšího animation frame, jinak `clientWidth` ještě
+ * vrací rozměry před reflowem (panel zatím nezabral / nevyklidil místo).
  */
 export function notifyMapAreaResized(): void {
   if (!is3dActive) return;
   const canvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
   const mapArea = document.getElementById('map-area');
   if (!canvas || !mapArea) return;
-  canvas.width = mapArea.clientWidth;
-  canvas.height = mapArea.clientHeight;
-  resizeThreeScene(canvas);
+  requestAnimationFrame(() => {
+    if (!is3dActive) return;
+    canvas.width = mapArea.clientWidth;
+    canvas.height = mapArea.clientHeight;
+    resizeThreeScene(canvas);
+  });
 }
 
 /**
