@@ -13,5 +13,7 @@ export type { CommonAttributes, DoprovodneInformace, Geometry, GmlLineString, Gm
 export { ENTITY_CATALOG } from './generated/entities.js';
 export type { EntityMeta, EntityAttrsMap, GeomKind, } from './generated/entities.js';
 export * from './generated/enums.js';
+export { SUPPORTED_VERSIONS, DEFAULT_VERSION, isSupportedVersion, } from 'jvf-dtm-types';
+export type { JvfVersion } from 'jvf-dtm-types';
 export type { SharedAttrsZPS, SharedAttrsDefBod, SharedAttrsTI, SharedAttrsPasemTI, SharedAttrsZPS_TI, SharedAttrsDI, SharedAttrsPasemDI, SharedAttrsZameru, } from './generated/shared-attrs.js';
 //# sourceMappingURL=index.d.ts.map

@@ -15,6 +15,7 @@ import { setup3dToggle, getIs3dActive, reloadThreeSceneData } from './ui/toggle3
 import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
 import { initHighlightLayer } from './map/highlight.js';
 import { setupInfoModal } from './ui/infoModal.js';
+import { setupVersionSelect } from './ui/versionSelect.js';
 import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -86,6 +87,43 @@ btnValidate.addEventListener('click', () => {
 setupFileUpload((data: JvfDtm) => {
   onJvfLoaded(data);
 });
+
+// Setup version selector — pokud uživatel přepne verzi a má nahraná data,
+// confirm modal vyzve ke ztrátě dat. Po potvrzení voláme `clearLoadedData`.
+setupVersionSelect({
+  hasData: () => currentDtm !== null,
+  onClearData: () => clearLoadedData(),
+});
+
+/**
+ * Vrátí aplikaci do stavu "žádný soubor není nahraný" — odstraní JVF
+ * vrstvy z mapy, vyčistí 3D scénu (pokud je aktivní), zavře error panel
+ * a vrátí tlačítka Zoom/Validate do disabled stavu.
+ */
+function clearLoadedData(): void {
+  removeJvfLayersFromMap(olMap, currentJvfLayers);
+  resetThreeLayerVisibility();
+
+  currentJvfLayers = [];
+  currentObjekty = [];
+  currentExtent = createEmpty();
+  currentDtm = null;
+
+  renderLayerPanel([], {
+    onVisibilityChange: () => { /* no-op — žádné vrstvy */ },
+  });
+
+  if (getIs3dActive()) {
+    reloadThreeSceneData([]);
+  }
+
+  if (isPanelVisible()) hideErrors();
+
+  btnZoom.disabled = true;
+  btnZoom.title = 'Nejprve nahrajte JVF soubor';
+  btnValidate.disabled = true;
+  btnValidate.title = 'Nejprve nahrajte JVF soubor';
+}
 
 function onJvfLoaded(data: JvfDtm): void {
   // Remove previous JVF layers

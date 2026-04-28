@@ -17,4 +17,8 @@ export { parseJvfDtm } from './parser.js';
 // ---------------------------------------------------------------------------
 export { ENTITY_CATALOG } from './generated/entities.js';
 export * from './generated/enums.js';
+// ---------------------------------------------------------------------------
+// Re-export verzí (z jvf-dtm-types) — viewer importuje verze přes parser
+// ---------------------------------------------------------------------------
+export { SUPPORTED_VERSIONS, DEFAULT_VERSION, isSupportedVersion, } from 'jvf-dtm-types';
 //# sourceMappingURL=index.js.map

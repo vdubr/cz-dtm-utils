@@ -6,4 +6,5 @@
  * (validace typovaných objektů).
  */
 export * from './1.4.3/types.js';
+export * from './versions.js';
 //# sourceMappingURL=index.js.map

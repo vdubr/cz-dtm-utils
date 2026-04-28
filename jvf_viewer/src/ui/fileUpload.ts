@@ -1,5 +1,46 @@
 import { parseJvfDtm } from 'jvf-parser';
 import type { JvfDtm } from 'jvf-parser';
+import { getActiveVersion } from '../state/activeVersion.js';
+import { showConfirm } from './confirmModal.js';
+
+/**
+ * Validace verze: pokud parsovaný soubor má `verze ≠ aktivní`, ukáže
+ * blokující modal a vrátí `false`. Soubor se v tom případě nenačte.
+ */
+async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<boolean> {
+  const fileVersion = data.verze.trim();
+  const activeVersion = getActiveVersion();
+
+  if (fileVersion === activeVersion) return true;
+
+  const fileVersionDisplay = fileVersion === '' ? '(nezadána)' : fileVersion;
+  await showConfirm({
+    title: 'Nesoulad verze JVF DTM',
+    bodyHtml: `
+      <p>
+        Soubor <strong>${escapeHtml(sourceLabel)}</strong> deklaruje verzi
+        JVF DTM <strong>${escapeHtml(fileVersionDisplay)}</strong>, ale
+        aplikace je aktuálně v režimu verze <strong>${activeVersion}</strong>.
+      </p>
+      <p>
+        Načítat lze pouze soubory odpovídající aktivní verzi. Přepněte
+        aktivní verzi v hlavičce na <strong>${escapeHtml(fileVersionDisplay)}</strong>
+        a načtěte soubor znovu.
+      </p>
+    `,
+    buttons: [{ label: 'Rozumím', variant: 'primary' }],
+  });
+
+  return false;
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
 export function setupFileUpload(
   onLoad: (data: JvfDtm) => void
@@ -21,10 +62,12 @@ export function setupFileUpload(
     loadingOverlay.style.display = 'flex';
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const xml = e.target?.result as string;
         const data = parseJvfDtm(xml);
+        const ok = await validateFileVersion(data, file.name);
+        if (!ok) return;
         onLoad(data);
       } catch (err) {
         console.error('Failed to parse JVF file:', err);
@@ -108,6 +151,8 @@ async function loadSample(
     }
     const xml = await resp.text();
     const data = parseJvfDtm(xml);
+    const ok = await validateFileVersion(data, name);
+    if (!ok) return;
     onLoad(data);
   } catch (err) {
     console.error('Failed to load sample:', err);

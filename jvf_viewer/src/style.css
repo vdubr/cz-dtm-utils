@@ -55,6 +55,54 @@ html, body {
   letter-spacing: 0.02em;
 }
 
+.version-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  padding: 3px 8px;
+  background: rgba(88, 166, 255, 0.08);
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  border-radius: 4px;
+  font-size: 11px;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.version-select-wrap:has(select:disabled) {
+  cursor: default;
+}
+
+.version-select-label {
+  font-weight: 600;
+}
+
+.version-select {
+  background: transparent;
+  border: none;
+  color: #58a6ff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  text-transform: none;
+}
+
+.version-select:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.version-select:focus-visible {
+  outline: 1px solid #58a6ff;
+  outline-offset: 2px;
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -1441,4 +1489,35 @@ html, body {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
   color: #e6edf3;
+}
+
+/* Confirm modal — menší dialog s patičkou pro tlačítka. */
+.modal-dialog-sm {
+  max-width: 460px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid #21262d;
+  flex-shrink: 0;
+}
+
+.btn-danger {
+  background: #b62324;
+  border: 1px solid #b62324;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-danger:hover {
+  background: #d12d2e;
+  border-color: #d12d2e;
 }

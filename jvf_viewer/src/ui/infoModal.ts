@@ -1,11 +1,16 @@
 // Info modal — zobrazí README o aplikaci v překryvném dialogu.
 // Obsah je staticky vložený HTML (bez závislosti na markdown parseru).
 
+import { SUPPORTED_VERSIONS } from 'jvf-parser';
+
+const VERSIONS_DISPLAY = SUPPORTED_VERSIONS.join(', ');
+
 const INFO_CONTENT_HTML = `
   <h3>Co to je</h3>
   <p>
     Webový prohlížeč souborů <strong>JVF DTM</strong> (Jednotný výměnný formát
-    Digitální technické mapy ČR) podle specifikace verze <strong>1.4.3</strong>.
+    Digitální technické mapy ČR). Podporované verze specifikace:
+    <strong>${VERSIONS_DISPLAY}</strong> (aktivní verzi lze přepnout v hlavičce).
     Umožňuje načíst JVF XML soubor a prohlédnout si jeho obsah ve 2D mapě i ve
     3D pohledu. Načtený soubor se zpracovává <strong>lokálně v prohlížeči</strong>
     — nic se neodesílá na server.

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Testovací JVF s nepodporovanou verzí — slouží k ověření UI mismatch modalu. -->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.5.0</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2026-04-28T12:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">kompletní zápis</TypZapisu>
+    <Data>
+      <PodrobnyBodZPS>
+        <ObjektovyTypNazev code_base="0100000218" code_suffix="01" xmlns="pobzps">podrobný bod ZPS</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="pobzps">Geodetické prvky</KategorieObjektu>
+        <SkupinaObjektu xmlns="pobzps">Podrobný bod</SkupinaObjektu>
+        <ObsahovaCast xmlns="pobzps">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="pobzps">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">r</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <DatumVkladu>2026-04-28T12:00:00</DatumVkladu>
+                <DatumZmeny>0001-01-01T00:00:00</DatumZmeny>
+                <ID>99000000000000001</ID>
+                <IDEditora>SUBJ-TEST</IDEditora>
+                <IDZmeny>CZ000-TEST</IDZmeny>
+                <VkladOsoba>test</VkladOsoba>
+                <ZmenaOsoba/>
+              </SpolecneAtributyVsechObjektu>
+              <UrovenUmisteniObjektuZPS xmlns="atr">0</UrovenUmisteniObjektuZPS>
+              <TridaPresnostiPoloha xmlns="atr">3</TridaPresnostiPoloha>
+              <TridaPresnostiVyska xmlns="atr">3</TridaPresnostiVyska>
+              <ZpusobPorizeniPB_ZPS xmlns="atr">1</ZpusobPorizeniPB_ZPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <gml:Point gml:id="bod1" srsName="EPSG:5514" srsDimension="3">
+                <gml:pos>-743000 -1043000 230.50</gml:pos>
+              </gml:Point>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </PodrobnyBodZPS>
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>
