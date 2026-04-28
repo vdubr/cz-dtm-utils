@@ -71,7 +71,7 @@ export function setupFileUpload(
         onLoad(data);
       } catch (err) {
         console.error('Failed to parse JVF file:', err);
-        alert(`Chyba pri nacteni souboru: ${String(err)}`);
+        alert(`Chyba při načtení souboru: ${String(err)}`);
       } finally {
         loadingOverlay.style.display = 'none';
         fileInput.value = '';
@@ -80,7 +80,7 @@ export function setupFileUpload(
 
     reader.onerror = () => {
       loadingOverlay.style.display = 'none';
-      alert('Chyba pri cteni souboru.');
+      alert('Chyba při čtení souboru.');
       fileInput.value = '';
     };
 

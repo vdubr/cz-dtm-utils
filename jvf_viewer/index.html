@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JVF DTM Prohlizec</title>
+  <title>JVF DTM Prohlížeč</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
@@ -14,7 +14,7 @@
     <header id="app-header">
       <div class="header-left">
         <span class="app-logo">&#11041;</span>
-        <h1>JVF DTM Prohlizec</h1>
+        <h1>JVF DTM Prohlížeč</h1>
         <label class="version-select-wrap" title="Aktivní verze specifikace JVF DTM. Načítat lze pouze soubory odpovídající této verzi.">
           <span class="version-select-label">verze</span>
           <select id="version-select" class="version-select" aria-label="Aktivní verze JVF DTM"></select>
@@ -23,7 +23,7 @@
       <div class="header-right">
         <div class="upload-wrapper">
           <button id="btn-upload" class="btn btn-primary" title="Vybrat a načíst JVF DTM soubor (XML)">
-            <span class="btn-icon">&#8593;</span> Nahrat soubor
+            <span class="btn-icon">&#8593;</span> Nahrát soubor
           </button>
           <button id="btn-upload-menu" class="btn btn-primary btn-upload-menu" title="Načíst ukázkový soubor" aria-haspopup="true" aria-expanded="false">
             <span class="material-symbols-outlined">expand_more</span>
@@ -49,9 +49,9 @@
     <div id="app-body">
       <aside id="layer-panel">
         <div class="panel-section">
-          <div class="panel-section-title">Podkladove mapy</div>
+          <div class="panel-section-title">Podkladové mapy</div>
           <div id="base-layer-btns" class="base-layer-btns">
-            <button class="base-btn active" data-layer="zm" title="Zobrazit ČÚZK Základní mapu jako podklad">Zakladni mapa</button>
+            <button class="base-btn active" data-layer="zm" title="Zobrazit ČÚZK Základní mapu jako podklad">Základní mapa</button>
             <button class="base-btn" data-layer="ortofoto" title="Zobrazit ČÚZK Ortofoto (letecké snímky) jako podklad">Ortofoto</button>
           </div>
         </div>
@@ -126,7 +126,7 @@
         </div>
         <div id="loading-overlay" style="display:none">
           <div class="spinner"></div>
-          <span>Nacitam...</span>
+          <span>Načítám…</span>
         </div>
       </main>
       <aside id="error-panel" style="display:none">
