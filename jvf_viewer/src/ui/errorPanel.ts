@@ -4,7 +4,7 @@ import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { findFeature } from '../map/jvfLayers.js';
 import { highlightFeature, clearHighlight, zoomToFeature } from '../map/highlight.js';
 import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature } from '../viewer3d/threeScene.js';
-import { getIs3dActive } from './toggle3d.js';
+import { getIs3dActive, notifyMapAreaResized } from './toggle3d.js';
 
 type FilterType = 'all' | 'error' | 'warning';
 
@@ -221,6 +221,9 @@ export function showErrors(errors: TopologyError[]): void {
   renderSummary();
   renderRows();
   panel.style.display = '';
+  // 3D canvas musí přepočítat svůj framebuffer — ResizeObserver někdy
+  // nevystřelí, když se mění velikost přes display: none/'' sourozence.
+  notifyMapAreaResized();
 }
 
 export function hideErrors(): void {
@@ -230,6 +233,8 @@ export function hideErrors(): void {
   if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
   activeError = null;
   onHideCallback?.();
+  // Stejně tak při zavření — viz showErrors.
+  notifyMapAreaResized();
 }
 
 export function isPanelVisible(): boolean {

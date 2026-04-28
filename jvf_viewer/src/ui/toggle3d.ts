@@ -31,6 +31,24 @@ export function getIs3dActive(): boolean {
 let resizeObserver: ResizeObserver | null = null;
 
 /**
+ * Vynutí resize 3D canvasu na aktuální velikost `#map-area`.
+ *
+ * Volá se z míst, kde se layout změní v synchronní cestě (např. otevření /
+ * zavření postranního error panelu), protože `ResizeObserver` u některých
+ * prohlížečů nestřílí spolehlivě, když se sourozenecký flex element
+ * skryje/zobrazí přes `display: none`. No-op když 3D není aktivní.
+ */
+export function notifyMapAreaResized(): void {
+  if (!is3dActive) return;
+  const canvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
+  const mapArea = document.getElementById('map-area');
+  if (!canvas || !mapArea) return;
+  canvas.width = mapArea.clientWidth;
+  canvas.height = mapArea.clientHeight;
+  resizeThreeScene(canvas);
+}
+
+/**
  * Reload 3D scene with new data. Called after JVF upload while the user is
  * already in 3D mode — without this, the scene keeps the empty state.
  * No-op when 3D is inactive.
