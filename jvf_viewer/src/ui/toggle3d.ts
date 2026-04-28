@@ -38,8 +38,14 @@ let resizeObserver: ResizeObserver | null = null;
  * prohlížečů nestřílí spolehlivě, když se sourozenecký flex element
  * skryje/zobrazí přes `display: none`. No-op když 3D není aktivní.
  *
- * Resize odkládáme do dalšího animation frame, jinak `clientWidth` ještě
- * vrací rozměry před reflowem (panel zatím nezabral / nevyklidil místo).
+ * Double-rAF: první rAF nás dostane za style/layout fázi, druhý za paint —
+ * teprve potom má `clientWidth` opravdu nové rozměry. Single rAF občas
+ * vrací staré hodnoty (Chrome batchuje reflow).
+ *
+ * Canvas má v CSS `width/height: 100%` a `renderer.setSize(.., .., false)`
+ * (ne-style mode), takže prohlížeč mu po reflowu sám přidělí cílovou
+ * velikost. Atribut canvas.width/.height jen synchronizuje framebuffer
+ * s display velikostí.
  */
 export function notifyMapAreaResized(): void {
   if (!is3dActive) return;
@@ -47,10 +53,15 @@ export function notifyMapAreaResized(): void {
   const mapArea = document.getElementById('map-area');
   if (!canvas || !mapArea) return;
   requestAnimationFrame(() => {
-    if (!is3dActive) return;
-    canvas.width = mapArea.clientWidth;
-    canvas.height = mapArea.clientHeight;
-    resizeThreeScene(canvas);
+    requestAnimationFrame(() => {
+      if (!is3dActive) return;
+      const w = mapArea.clientWidth;
+      const h = mapArea.clientHeight;
+      if (w === 0 || h === 0) return;
+      canvas.width = w;
+      canvas.height = h;
+      resizeThreeScene(canvas);
+    });
   });
 }
 

@@ -395,7 +395,11 @@ export function initThreeScene(
 
   const camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000000);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setSize(width, height);
+  // updateStyle = false: nech CSS (`width/height: 100%`) řídit display rozměr
+  // canvasu. setSize jinak přepíše inline style a canvas se přestane chovat
+  // responzivně — drží si první velikost a po zúžení rodiče vyčuhuje pod
+  // sousedy. Synchronizujeme jen framebuffer (atributy width/height).
+  renderer.setSize(width, height, false);
   renderer.setPixelRatio(window.devicePixelRatio);
 
   // Ambient + directional light
@@ -777,9 +781,10 @@ export function resizeThreeScene(canvas: HTMLCanvasElement): void {
   if (!state) return;
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
+  if (width === 0 || height === 0) return;
   state.camera.aspect = width / height;
   state.camera.updateProjectionMatrix();
-  state.renderer.setSize(width, height);
+  state.renderer.setSize(width, height, false);
 }
 
 // ── Highlight & zoom ─────────────────────────────────────────────────────────
