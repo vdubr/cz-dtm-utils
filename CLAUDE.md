@@ -10,10 +10,73 @@
 
 ## Nasazení
 
-**`git push origin main` = automatické nasazení.** Vercel sleduje repozitář přes hook a nasadí aplikaci sám. Žádné další kroky nejsou potřeba.
+**Produkční větev: `main`. Vývojová větev: `develop`.**
+
+Vercel auto-deployuje pouze `main`. Vývoj probíhá v `develop` (a feature
+větvích z něj). Merge `develop → main` se dělá **pouze řízeně** v okamžiku
+nasazení nové verze — nikdy ne průběžně.
+
+### Workflow nasazení nové verze
+
+1. Práce probíhá v `develop` (commity, PR z feature větví do `develop`).
+2. Když je nová verze připravená:
+   a. Z `develop` vyčerpat plánované změny (smoke test, build, tests).
+   b. Aktualizovat `CHANGELOG.md` v rootu — přidat sekci pro novou verzi.
+      Formát: viz níže (Keep a Changelog, česky).
+   c. Bumpnout `version` ve všech `package.json` (root + 4 workspace
+      balíčky) na novou verzi (viz Verzování).
+   d. Commit `chore(release): vYYYY.MM.DD` v `develop`.
+   e. Merge `develop → main` (`git checkout main && git merge --no-ff develop`).
+   f. Vytvořit tag `git tag vYYYY.MM.DD` na `main`.
+   g. `git push origin main --tags`.
+   h. **GitHub release**: `gh release create vYYYY.MM.DD --notes-file <(...)`
+      — notes vyplnit z odpovídající sekce `CHANGELOG.md` (česky).
+   i. Vercel auto-deployne `main`.
 
 - Produkční URL: **https://cz-dtm-utils.vercel.app/jvf_viewer/** (přímý odkaz)
 - Také dostupné na: **https://cz-dtm-utils.vercel.app/** (root redirect)
+
+### Verzování — CalVer
+
+Formát **`YYYY.MM.DD`** (např. `2026.04.30`). Pokud v jednom dni vyjde víc
+verzí, suffix `.N`: `2026.04.30.2`. Git tagy s prefixem `v`: `v2026.04.30`.
+
+Verze se synchronizuje napříč všemi 5 `package.json` (root + 4 workspaces).
+
+### Changelog — formát a propagace do UI
+
+**Soubor:** `CHANGELOG.md` v rootu repozitáře. Formát [Keep a Changelog](https://keepachangelog.com/cs/),
+česky, sekce `Přidáno / Změněno / Opraveno / Odstraněno`:
+
+```md
+## [2026.04.30] - 2026-04-30
+### Přidáno
+- Legenda všech ~360 typů DTM z Katalogu
+
+### Opraveno
+- Nesmyslná `strokeWidth` u cyklostezky
+```
+
+**Build-time propagace do `infoModal.ts`:**
+- `CHANGELOG.md` se importuje raw přes `?raw` Vite suffix:
+  `import changelogRaw from '../../../CHANGELOG.md?raw'`.
+- Parser v `ui/changelog.ts` převede markdown na HTML (jednoduchý regex
+  parser pro headings, lists, bold/code) a vloží do nové sekce „Historie
+  verzí" v info modalu — typicky jen několik posledních verzí, starší
+  pod expand toggle.
+- Žádný runtime fetch, žádné CORS, vždy v sync s deployem.
+
+**`CHANGELOG.md` je single source of truth** — z něj se generuje:
+1. Sekce v info modalu aplikace.
+2. Release notes pro `gh release create` (kopírovat odpovídající sekci).
+
+### Pravidla pro Claude při releasu
+
+- Nikdy nemergovat `develop → main` bez explicitního pokynu uživatele.
+- Při každé změně funkcionality přidávat řádek do **„[Unreleased]"** sekce
+  `CHANGELOG.md` (na začátku souboru, nad poslední vydanou verzí).
+- Při releasu uživatel potvrdí číslo verze; `[Unreleased]` se přejmenuje
+  na `[YYYY.MM.DD] - YYYY-MM-DD` a vznikne nová prázdná `[Unreleased]`.
 
 ## Struktura projektu
 

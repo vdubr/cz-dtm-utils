@@ -2,6 +2,7 @@
 // Obsah je staticky vložený HTML (bez závislosti na markdown parseru).
 
 import { SUPPORTED_VERSIONS } from 'jvf-parser';
+import { buildChangelogHtml } from './changelog.js';
 
 const VERSIONS_DISPLAY = SUPPORTED_VERSIONS.join(', ');
 
@@ -193,6 +194,9 @@ const INFO_CONTENT_HTML = `
     (odkaz najdete v patičce levého panelu) nebo
     <a href="https://github.com/vdubr/cz-dtm-utils/issues" target="_blank" rel="noopener noreferrer">založit issue na GitHubu</a>.
   </p>
+
+  <h3>Historie verzí</h3>
+  ${buildChangelogHtml()}
 `;
 
 export function setupInfoModal(): void {

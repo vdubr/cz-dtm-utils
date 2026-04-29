@@ -91,11 +91,20 @@ html, body {
   padding: 0;
   outline: none;
   text-transform: none;
+  min-width: 38px;
+  text-align: left;
 }
 
+/* Skryj nativní chevron, dokud máme jen 1 verzi (select je disabled).
+   Až přibude více verzí a select se povolí, chevron se zobrazí zpátky. */
 .version-select:disabled {
   cursor: default;
   opacity: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  padding-right: 4px;
 }
 
 .version-select:focus-visible {
@@ -1759,4 +1768,77 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ============================================================
+   Changelog — sekce „Historie verzí" v info modalu.
+   ============================================================ */
+
+.changelog-version {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #21262d;
+}
+
+.changelog-version:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.changelog-version-heading {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #58a6ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.changelog .modal-body h4,
+.changelog h4 {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8b949e;
+}
+
+.changelog ul {
+  margin: 4px 0 0;
+  padding-left: 20px;
+}
+
+.changelog li {
+  margin: 2px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #c9d1d9;
+}
+
+.changelog-older {
+  margin-top: 16px;
+}
+
+.changelog-older > summary {
+  cursor: pointer;
+  padding: 6px 8px;
+  color: #8b949e;
+  font-size: 12px;
+  user-select: none;
+  border-radius: 4px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  transition: background 0.15s, color 0.15s;
+}
+
+.changelog-older > summary:hover {
+  background: #1f242c;
+  color: #e6edf3;
+}
+
+.changelog-older[open] > summary {
+  margin-bottom: 12px;
 }
