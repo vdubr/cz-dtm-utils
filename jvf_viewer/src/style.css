@@ -362,6 +362,41 @@ html, body {
   color: #8b949e;
 }
 
+.panel-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 8px;
+}
+
+.panel-section-title-row .panel-section-title {
+  flex: 1;
+  padding-bottom: 8px;
+}
+
+.section-icon-btn {
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.section-icon-btn:hover {
+  background: #21262d;
+  color: #e6edf3;
+}
+
+.section-icon-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
 .toggle-row {
   display: flex;
   align-items: center;
@@ -1561,4 +1596,167 @@ html, body {
 .btn-danger:hover {
   background: #d12d2e;
   border-color: #d12d2e;
+}
+
+/* ============================================================
+   Legend modal — kompletní legenda všech objektových typů DTM.
+   ============================================================ */
+
+.modal-dialog-lg {
+  max-width: 1100px;
+}
+
+.legend-search {
+  flex: 1;
+  margin: 0 12px;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: #161b22;
+  color: #e6edf3;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.legend-search:focus {
+  border-color: #58a6ff;
+}
+
+.legend-search::placeholder {
+  color: #6e7681;
+}
+
+#legend-modal-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.legend-cast-group {
+  margin-bottom: 24px;
+}
+
+.legend-cast-group:last-child {
+  margin-bottom: 0;
+}
+
+.legend-cast-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 10px;
+  border-bottom: 1px solid #21262d;
+  margin-bottom: 12px;
+  position: sticky;
+  top: -16px;
+  background: #0d1117;
+  z-index: 1;
+}
+
+.legend-cast-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #e6edf3;
+}
+
+.legend-cast-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: #8b949e;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 10px;
+  padding: 1px 8px;
+}
+
+.legend-kat-group {
+  margin-bottom: 16px;
+}
+
+.legend-kat-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8b949e;
+  padding: 4px 0 8px;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 6px 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  min-height: 36px;
+}
+
+.legend-swatch {
+  flex-shrink: 0;
+  width: 28px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.legend-swatch .layer-symbol-img,
+.legend-swatch .layer-symbol-line-svg {
+  display: block;
+}
+
+.legend-swatch .layer-symbol-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-swatch .layer-symbol-line {
+  width: 24px;
+  height: 3px;
+  display: inline-block;
+  border-radius: 1px;
+}
+
+.legend-swatch .layer-symbol-polygon {
+  width: 18px;
+  height: 14px;
+  display: inline-block;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 2px;
+}
+
+.legend-item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.legend-name {
+  font-size: 12px;
+  color: #e6edf3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.legend-meta {
+  font-size: 10px;
+  color: #6e7681;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }

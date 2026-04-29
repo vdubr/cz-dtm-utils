@@ -56,7 +56,12 @@
           </div>
         </div>
         <div class="panel-section panel-section-jvf">
-          <div class="panel-section-title">JVF vrstvy</div>
+          <div class="panel-section-title-row">
+            <div class="panel-section-title">JVF vrstvy</div>
+            <button id="btn-legend" class="section-icon-btn" title="Zobrazit legendu všech typů DTM">
+              <span class="material-symbols-outlined">legend_toggle</span>
+            </button>
+          </div>
           <div id="jvf-layers-list" class="jvf-layers-list">
             <div class="empty-hint">Nahrajte JVF soubor</div>
           </div>
@@ -160,6 +165,18 @@
         </button>
       </div>
       <div class="modal-body" id="info-modal-body"></div>
+    </div>
+  </div>
+  <div id="legend-modal" class="modal-overlay" style="display:none">
+    <div class="modal-dialog modal-dialog-lg" role="dialog" aria-modal="true" aria-labelledby="legend-modal-title">
+      <div class="modal-header">
+        <h2 id="legend-modal-title">Legenda DTM</h2>
+        <input type="text" id="legend-modal-search" class="legend-search" placeholder="Hledat (název, kód, kategorie)…" />
+        <button id="legend-modal-close" class="modal-close" title="Zavřít">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body" id="legend-modal-body"></div>
     </div>
   </div>
   <div id="confirm-modal" class="modal-overlay" style="display:none">

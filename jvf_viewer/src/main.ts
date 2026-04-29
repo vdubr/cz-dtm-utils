@@ -15,6 +15,7 @@ import { setup3dToggle, getIs3dActive, reloadThreeSceneData } from './ui/toggle3
 import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
 import { initHighlightLayer } from './map/highlight.js';
 import { setupInfoModal } from './ui/infoModal.js';
+import { setupLegendModal } from './ui/legendModal.js';
 import { setupVersionSelect } from './ui/versionSelect.js';
 import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
@@ -55,6 +56,7 @@ setup3dToggle(olMap, () => currentObjekty);
 
 // Setup info modal (footer)
 setupInfoModal();
+setupLegendModal();
 
 // Setup zoom-to-data button
 const btnZoom = document.getElementById('btn-zoom') as HTMLButtonElement;

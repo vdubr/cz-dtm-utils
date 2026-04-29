@@ -180,7 +180,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'cyklostezka',
     containsPart: 'ZPS',
     geometryType: 'plocha',
-    strokeWidth: 246236222.0,
+    strokeWidth: 0.25,
     pointSvg: 'ZPS_db.svg',
   },
   '0100000011': {

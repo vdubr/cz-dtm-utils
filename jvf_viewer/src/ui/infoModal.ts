@@ -66,6 +66,21 @@ const INFO_CONTENT_HTML = `
       Varování</em>). Kliknutím na nález dojde k přiblížení na postižený
       objekt.
     </li>
+    <li>
+      <strong>Legenda DTM</strong> — kompletní seznam všech ~360 objektových
+      typů specifikace s reprezentativními symboly a barvami podle
+      <em>Katalogu kartografických symbolů DTM ČR</em>. Otevře se ikonou
+      <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">legend_toggle</span>
+      vedle nadpisu <em>JVF vrstvy</em>. Lze fulltextově filtrovat podle
+      názvu, kódu nebo kategorie.
+      <br>
+      <em style="color:#8b949e;font-size:11px">
+        Pozn.: Barvy a styly vycházejí z Katalogu DTM 1.4.3, hodnoty však
+        nebyly verifikovány kus po kuse oproti oficiálnímu zdroji ČÚZK.
+        Skupinové barvy ZPS / TI / DI / GAD / OPL v záhlaví sekcí jsou
+        volbou autora a neodpovídají žádné specifikaci.
+      </em>
+    </li>
   </ul>
 
   <h3>Co topologická validace kontroluje</h3>
