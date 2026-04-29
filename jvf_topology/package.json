@@ -2,6 +2,13 @@
   "name": "jvf-topology",
   "version": "1.0.0",
   "description": "Topological validation for JVF DTM (Jednotný Výměnný Formát - Digital Technical Map)",
+  "license": "MIT",
+  "author": "Vojtěch Dubrovský",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vdubr/cz-dtm-utils.git",
+    "directory": "jvf_topology"
+  },
   "type": "module",
   "main": "./dist/1.4.3/index.js",
   "types": "./dist/1.4.3/index.d.ts",

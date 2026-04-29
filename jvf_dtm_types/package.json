@@ -2,6 +2,13 @@
   "name": "jvf-dtm-types",
   "version": "1.0.0",
   "description": "Shared TypeScript domain types for JVF DTM (Jednotný Výměnný Formát - Digital Technical Map)",
+  "license": "MIT",
+  "author": "Vojtěch Dubrovský",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vdubr/cz-dtm-utils.git",
+    "directory": "jvf_dtm_types"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1491,6 +1491,47 @@ html, body {
   color: #e6edf3;
 }
 
+.modal-body a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.modal-body a:hover {
+  text-decoration: underline;
+}
+
+.modal-body .linkedin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #58a6ff;
+  vertical-align: baseline;
+}
+
+.modal-body .linkedin-icon {
+  color: #0a66c2;
+  flex-shrink: 0;
+  vertical-align: -2px;
+}
+
+.footer-text .linkedin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer-text .linkedin-link:hover {
+  color: #58a6ff;
+}
+
+.footer-text .linkedin-icon {
+  color: #0a66c2;
+  flex-shrink: 0;
+  vertical-align: -2px;
+}
+
 /* Confirm modal — menší dialog s patičkou pro tlačítka. */
 .modal-dialog-sm {
   max-width: 460px;

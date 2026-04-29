@@ -2,6 +2,13 @@
   "name": "jvf-viewer",
   "version": "1.0.0",
   "description": "Web viewer for JVF DTM (Czech Digital Technical Map) files",
+  "license": "MIT",
+  "author": "Vojtěch Dubrovský",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vdubr/cz-dtm-utils.git",
+    "directory": "jvf_viewer"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
