@@ -7,6 +7,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+### Přidáno
+
+- README v rootu repozitáře a v každém ze čtyř workspace balíčků
+  (`jvf-dtm-types`, `jvf-parser`, `jvf-topology`, `jvf-viewer`). Anglicky,
+  zaměřené na vývojáře — popis veřejného API, architektury, vývojového
+  workflow a jednotlivých kontrol topologie.
+
 ## [2026.4.29] - 2026-04-29
 
 První veřejné vydání aplikace JVF DTM Prohlížeč.
