@@ -25,23 +25,25 @@ nasazení nové verze — nikdy ne průběžně.
       Formát: viz níže (Keep a Changelog, česky).
    c. Bumpnout `version` ve všech `package.json` (root + 4 workspace
       balíčky) na novou verzi (viz Verzování).
-   d. Commit `chore(release): vYYYY.MM.DD` v `develop`.
+   d. Commit `chore(release): vYYYY.M.D` v `develop`.
    e. Merge `develop → main` (`git checkout main && git merge --no-ff develop`).
-   f. Vytvořit tag `git tag vYYYY.MM.DD` na `main`.
+   f. Vytvořit tag `git tag vYYYY.M.D` na `main`.
    g. `git push origin main --tags`.
-   h. **GitHub release**: `gh release create vYYYY.MM.DD --notes-file <(...)`
+   h. **GitHub release**: `gh release create vYYYY.M.D --notes-file <(...)`
       — notes vyplnit z odpovídající sekce `CHANGELOG.md` (česky).
    i. Vercel auto-deployne `main`.
 
 - Produkční URL: **https://cz-dtm-utils.vercel.app/jvf_viewer/** (přímý odkaz)
 - Také dostupné na: **https://cz-dtm-utils.vercel.app/** (root redirect)
 
-### Verzování — CalVer
+### Verzování — CalVer (semver-kompatibilní)
 
-Formát **`YYYY.MM.DD`** (např. `2026.04.30`). Pokud v jednom dni vyjde víc
-verzí, suffix `.N`: `2026.04.30.2`. Git tagy s prefixem `v`: `v2026.04.30`.
+Formát **`YYYY.M.D`** (bez leading zeros, např. `2026.4.29`, `2026.11.3`).
+Důvod: npm/semver leading zeros nedovoluje. Pokud v jednom dni vyjde víc
+verzí, suffix `.N`: `2026.4.29.2`. Git tagy s prefixem `v`: `v2026.4.29`.
 
-Verze se synchronizuje napříč všemi 5 `package.json` (root + 4 workspaces).
+Verze se synchronizuje napříč všemi 4 workspace `package.json` (root nemá
+`version` field, jen `private: true`).
 
 ### Changelog — formát a propagace do UI
 
@@ -76,7 +78,8 @@ Verze se synchronizuje napříč všemi 5 `package.json` (root + 4 workspaces).
 - Při každé změně funkcionality přidávat řádek do **„[Unreleased]"** sekce
   `CHANGELOG.md` (na začátku souboru, nad poslední vydanou verzí).
 - Při releasu uživatel potvrdí číslo verze; `[Unreleased]` se přejmenuje
-  na `[YYYY.MM.DD] - YYYY-MM-DD` a vznikne nová prázdná `[Unreleased]`.
+  na `[YYYY.M.D] - YYYY-MM-DD` (verze bez leading zeros, datum dle ISO 8601)
+  a vznikne nová prázdná `[Unreleased]`.
 
 ## Struktura projektu
 

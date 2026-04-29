@@ -7,6 +7,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.4.29] - 2026-04-29
+
+První veřejné vydání aplikace JVF DTM Prohlížeč.
+
 ### Přidáno
 
 - Vercel Web Analytics (cookieless, GDPR-friendly) a Speed Insights pro
