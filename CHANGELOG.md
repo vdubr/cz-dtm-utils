@@ -7,8 +7,21 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.4.29] - 2026-04-29
+
+První veřejné vydání aplikace JVF DTM Prohlížeč.
+
 ### Přidáno
 
+- Vercel Web Analytics (cookieless, GDPR-friendly) a Speed Insights pro
+  měření návštěvnosti a Core Web Vitals (LCP, INP, CLS, TTFB). Aktivní pouze
+  na produkčním Vercel hostu, lokálně se neodesílá nic.
+- SEO meta tagy v `index.html` — title, description, keywords, robots,
+  canonical URL, Open Graph (Facebook, LinkedIn), Twitter Card a JSON-LD
+  structured data (`WebApplication`) pro vyhledávače.
+- Favicon ve formátu SVG s motivem DTM (půdorys budovy s vrcholy a definičním
+  bodem).
+- `robots.txt` a `sitemap.xml` ve veřejné cestě `/jvf_viewer/` pro crawlery.
 - Legenda všech ~360 objektových typů DTM 1.4.3 v novém modalu (ikona
   `legend_toggle` vedle nadpisu „JVF vrstvy" v levém panelu). Reprezentativní
   swatch pro každý typ (bod / linie / polygon), fulltext filtr podle názvu,

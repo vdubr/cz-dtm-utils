@@ -1,6 +1,6 @@
 {
   "name": "jvf-viewer",
-  "version": "1.0.0",
+  "version": "2026.4.29",
   "description": "Web viewer for JVF DTM (Czech Digital Technical Map) files",
   "license": "MIT",
   "author": "Vojtěch Dubrovský",
@@ -17,6 +17,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "geotiff": "^3.0.5",
     "jvf-parser": "file:../jvf_parser",
     "jvf-topology": "file:../jvf_topology",

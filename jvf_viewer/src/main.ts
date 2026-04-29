@@ -1,4 +1,6 @@
 import 'ol/ol.css';
+import { inject as injectAnalytics } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import type { JvfDtm, ObjektovyTyp } from 'jvf-parser';
 import { runAllChecks } from 'jvf-topology';
 import { createOlMap } from './map/olMap.js';
@@ -57,6 +59,11 @@ setup3dToggle(olMap, () => currentObjekty);
 // Setup info modal (footer)
 setupInfoModal();
 setupLegendModal();
+
+// Vercel Web Analytics + Speed Insights — pageviews a Core Web Vitals.
+// Cookieless, GDPR-compliant; aktivní jen na produkčním Vercel hostu (auto-detect).
+injectAnalytics();
+injectSpeedInsights();
 
 // Setup zoom-to-data button
 const btnZoom = document.getElementById('btn-zoom') as HTMLButtonElement;
