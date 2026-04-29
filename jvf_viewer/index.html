@@ -3,11 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JVF DTM Prohlížeč</title>
+
+  <!-- Primary Meta Tags -->
+  <title>JVF DTM Prohlížeč — vizualizace a validace JVF souborů Digitální technické mapy ČR</title>
+  <meta name="description" content="Webový prohlížeč souborů JVF DTM (Jednotný výměnný formát Digitální technické mapy ČR). 2D mapa, 3D pohled s terénem ČÚZK DMR5G, topologická validace. Soubory se zpracovávají lokálně v prohlížeči — nic se neodesílá na server." />
+  <meta name="keywords" content="JVF, DTM, Digitální technická mapa, ČR, ČÚZK, DMVS, prohlížeč, viewer, validace, S-JTSK, GIS, IS DMVS" />
+  <meta name="author" content="Vojtěch Dubrovský" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://cz-dtm-utils.vercel.app/jvf_viewer/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://cz-dtm-utils.vercel.app/jvf_viewer/" />
+  <meta property="og:title" content="JVF DTM Prohlížeč" />
+  <meta property="og:description" content="Vizualizace a validace souborů JVF DTM (Digitální technická mapa ČR) přímo v prohlížeči. 2D + 3D, topologická validace, podklady ČÚZK." />
+  <meta property="og:locale" content="cs_CZ" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="JVF DTM Prohlížeč" />
+  <meta name="twitter:description" content="Vizualizace a validace souborů JVF DTM (Digitální technická mapa ČR) přímo v prohlížeči." />
+
+  <!-- Theme color (mobile browser chrome) -->
+  <meta name="theme-color" content="#0d1117" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Fonts & styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
   <link rel="stylesheet" href="/src/style.css" />
+
+  <!-- Structured data (JSON-LD) — pomáhá Googlu pochopit, co aplikace dělá -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "JVF DTM Prohlížeč",
+      "description": "Webový prohlížeč souborů JVF DTM (Jednotný výměnný formát Digitální technické mapy ČR) s 2D mapou, 3D pohledem a topologickou validací.",
+      "url": "https://cz-dtm-utils.vercel.app/jvf_viewer/",
+      "applicationCategory": "GIS",
+      "operatingSystem": "Web (any)",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "cs",
+      "author": {
+        "@type": "Person",
+        "name": "Vojtěch Dubrovský",
+        "url": "https://www.linkedin.com/in/vojtechdubrovsky/"
+      }
+    }
+  </script>
 </head>
 <body>
   <div id="app">

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Pozadí -->
+  <rect width="64" height="64" rx="10" fill="#0d1117"/>
+
+  <!-- Půdorys budovy (DTM motiv) -->
+  <path d="M14 18 L42 18 L42 30 L50 30 L50 48 L14 48 Z"
+        fill="#1f6feb"
+        fill-opacity="0.25"
+        stroke="#58a6ff"
+        stroke-width="2.5"
+        stroke-linejoin="round"/>
+
+  <!-- Vrcholy polygonu (charakteristické pro DTM/katastr) -->
+  <circle cx="14" cy="18" r="2.5" fill="#f78166"/>
+  <circle cx="42" cy="18" r="2.5" fill="#f78166"/>
+  <circle cx="42" cy="30" r="2.5" fill="#f78166"/>
+  <circle cx="50" cy="30" r="2.5" fill="#f78166"/>
+  <circle cx="50" cy="48" r="2.5" fill="#f78166"/>
+  <circle cx="14" cy="48" r="2.5" fill="#f78166"/>
+
+  <!-- Definiční bod uvnitř plochy -->
+  <circle cx="30" cy="35" r="2.5" fill="#3fb950"/>
+</svg>

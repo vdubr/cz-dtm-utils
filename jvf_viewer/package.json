@@ -17,6 +17,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "geotiff": "^3.0.5",
     "jvf-parser": "file:../jvf_parser",
     "jvf-topology": "file:../jvf_topology",
