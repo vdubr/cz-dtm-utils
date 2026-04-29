@@ -7,6 +7,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.4.30] - 2026-04-30
+
 ### Přidáno
 
 - README v rootu repozitáře a v každém ze čtyř workspace balíčků
