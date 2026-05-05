@@ -7,6 +7,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+### Přidáno
+
+- Sdílená konfigurace OpenCode v repozitáři: `opencode.json` v rootu
+  (instructions z `CLAUDE.md`/`README.md`/`CHANGELOG.md`, watcher ignore
+  patterns, LSP TypeScript) a adresář `.opencode/` se třemi specializovanými
+  agenty (`parser-specialist`, `topology-specialist`, `viewer-ui`) a čtyřmi
+  slash commandy (`/check`, `/smoke-test`, `/changelog-add`, `/release`).
+- `.gitignore` rozšířen o `.claude/worktrees/` a vitest cache.
+
 ## [2026.4.30] - 2026-04-30
 
 ### Přidáno
