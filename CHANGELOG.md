@@ -32,17 +32,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   geometrie vykreslí sytě červeně ve 2D i 3D, po odškrtnutí se skryjí.
   Default je zaškrtnuto — uživatel po nahrání changesetu hned vidí, co se
   bude rušit.
-- Testovací fixture `jvf_parser/samples/1.4.3/changeset-cimer.xml` (extrakt
-  z reálného souboru Silnice II/128 Číměř) a 23 testů
-  (`tests/1.4.3/parser/changeset.test.ts`), které ověřují, že parser
-  správně rozlišuje `ZapisObjektu` `'i'`, `'u'`, `'d'` a propaguje atribut
-  bez fallbacku do `ZaznamObjektu.zapisObjektu`.
-- Sdílená konfigurace OpenCode v repozitáři: `opencode.json` v rootu
-  (instructions z `CLAUDE.md`/`README.md`/`CHANGELOG.md`, watcher ignore
-  patterns, LSP TypeScript) a adresář `.opencode/` se třemi specializovanými
-  agenty (`parser-specialist`, `topology-specialist`, `viewer-ui`) a čtyřmi
-  slash commandy (`/check`, `/smoke-test`, `/changelog-add`, `/release`).
-- `.gitignore` rozšířen o `.claude/worktrees/` a vitest cache.
 
 ## [2026.4.30] - 2026-04-30
 
