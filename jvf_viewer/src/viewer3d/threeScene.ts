@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { ObjektovyTyp, Geometry } from 'jvf-parser';
 import { resolveStyle } from '../map/jvfLayers.js';
+import { isShowDeleted } from '../state/deletedToggle.js';
 import {
   loadTerrainMesh,
   updateTerrainZExaggeration,
@@ -16,6 +17,55 @@ const HIGHLIGHT_TAG = 'jvfHighlight';
 /** Tag pro terén — zůstává ve scéně i při rebuildSceneGeometry. */
 const TERRAIN_TAG = 'terrain';
 const HIGHLIGHT_COLOR = 0x39ff14;
+
+/**
+ * Barva pro vizualizaci mazaných záznamů (`ZapisObjektu='d'`) ve 3D scéně.
+ * Sytě červená — záměrně shodná s 2D variantou v `map/jvfLayers.ts`, aby
+ * uživatel poznal stejné objekty napříč režimy.
+ */
+const DELETED_COLOR_HEX = 0xe02020;
+
+/**
+ * Aplikovat červenou barvu mazaného záznamu na materiál objektu. Three.js
+ * Sprite (SVG ikona) má `SpriteMaterial` bez color — pro něj musíme zhasnout
+ * texturu a obarvit; Line / LineLoop / Points mají `*BasicMaterial.color`.
+ */
+function applyDeletedColorToObject(obj: THREE.Object3D): void {
+  const withMat = obj as THREE.Object3D & { material?: unknown };
+  const mat = withMat.material as
+    | THREE.Material
+    | THREE.Material[]
+    | undefined;
+  if (!mat) return;
+  const apply = (m: THREE.Material): void => {
+    const colored = m as THREE.Material & { color?: THREE.Color };
+    if (colored.color) colored.color.setHex(DELETED_COLOR_HEX);
+  };
+  if (Array.isArray(mat)) mat.forEach(apply);
+  else apply(mat);
+}
+
+/**
+ * Vrátit objektu jeho původní barvu uloženou v `userData['jvfOrigColorHex']`
+ * při buildu. Volá se, když uživatel odškrtne checkbox „Zobrazit mazané"
+ * a `applyDeletedHighlight` chce vrátit červené objekty zpět na ČÚZK barvy.
+ */
+function restoreOriginalColor(obj: THREE.Object3D): void {
+  const orig = obj.userData['jvfOrigColorHex'];
+  if (typeof orig !== 'number') return;
+  const withMat = obj as THREE.Object3D & { material?: unknown };
+  const mat = withMat.material as
+    | THREE.Material
+    | THREE.Material[]
+    | undefined;
+  if (!mat) return;
+  const apply = (m: THREE.Material): void => {
+    const colored = m as THREE.Material & { color?: THREE.Color };
+    if (colored.color) colored.color.setHex(orig);
+  };
+  if (Array.isArray(mat)) mat.forEach(apply);
+  else apply(mat);
+}
 
 /** Buffer kolem JVF dat pro stahovaný terén (m). */
 const TERRAIN_BUFFER_M = 300;
@@ -303,6 +353,13 @@ function buildSceneObjects(
 
     for (const zaz of ot.zaznamy) {
       const objectId = zaz.commonAttributes?.id ?? null;
+      const zapisObjektu = zaz.zapisObjektu;
+      // Při buildu uložíme původní barvu vrstvy do userData — `applyDeletedHighlight`
+      // ji potřebuje pro vrácení mazaných objektů zpět na původní vzhled,
+      // když uživatel checkbox odškrtne. Bez toho bychom po flipu znali jen
+      // aktuální (případně červenou) barvu materiálu.
+      const origLineColor = color;
+      const origFillColor = fillColor;
       for (const geom of zaz.geometrie) {
         let obj: THREE.Object3D | null = null;
 
@@ -405,7 +462,12 @@ function buildSceneObjects(
                 const lineObj = new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
                 lineObj.userData[DATA_TAG] = key;
                 lineObj.userData['jvfObjectId'] = objectId;
-                lineObj.visible = layerVisible;
+                lineObj.userData['jvfZapisObjektu'] = zapisObjektu;
+                lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
+                lineObj.visible = layerVisible && (zapisObjektu !== 'd' || isShowDeleted());
+                if (zapisObjektu === 'd' && isShowDeleted()) {
+                  lineObj.material.color.set(DELETED_COLOR_HEX);
+                }
                 scene.add(lineObj);
               }
             }
@@ -416,7 +478,15 @@ function buildSceneObjects(
         if (obj) {
           obj.userData[DATA_TAG] = key;
           obj.userData['jvfObjectId'] = objectId;
-          obj.visible = layerVisible;
+          obj.userData['jvfZapisObjektu'] = zapisObjektu;
+          // Polygon používá fillColor, ostatní geometrie používají strokeColor —
+          // pro restoraci po toggle off potřebujeme znát ten správný.
+          const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
+          obj.userData['jvfOrigColorHex'] = origColor.getHex();
+          obj.visible = layerVisible && (zapisObjektu !== 'd' || isShowDeleted());
+          if (zapisObjektu === 'd' && isShowDeleted()) {
+            applyDeletedColorToObject(obj);
+          }
           scene.add(obj);
         }
       }
@@ -661,6 +731,35 @@ export function resetThreeLayerVisibility(): void {
   hiddenLayers.clear();
 }
 
+/**
+ * Aplikovat na 3D scénu aktuální stav „zobrazit mazané záznamy". Pro každý
+ * objekt s `userData['jvfZapisObjektu']==='d'` nastaví viditelnost a barvu
+ * podle `showDeleted`:
+ *
+ *   showDeleted = true  → obj.visible = layerVisible, materiál červený
+ *   showDeleted = false → obj.visible = false (skryje), barva nezáleží
+ *
+ * Funkce respektuje per-vrstvu skrytí (`hiddenLayers`) — když uživatel
+ * skrývá celou vrstvu, mazaný objekt z ní zůstává skrytý i když je
+ * `showDeleted=true`.
+ *
+ * No-op když 3D scéna není inicializovaná.
+ */
+export function applyDeletedHighlight(showDeleted: boolean): void {
+  if (!state) return;
+  state.scene.traverse((obj) => {
+    if (obj.userData['jvfZapisObjektu'] !== 'd') return;
+    const elementName = obj.userData[DATA_TAG] as string | undefined;
+    const layerVisible = elementName ? !hiddenLayers.has(elementName) : true;
+    obj.visible = layerVisible && showDeleted;
+    if (showDeleted) {
+      applyDeletedColorToObject(obj);
+    } else {
+      restoreOriginalColor(obj);
+    }
+  });
+}
+
 export function disposeThreeScene(): void {
   if (!state) return;
   if (state.animFrameId !== null) {
@@ -820,6 +919,44 @@ export function pickPointFromClient(clientX: number, clientY: number): THREE.Vec
   scene.traverse((o) => { if (o.userData[DATA_TAG] !== undefined) targets.push(o); });
   const hits = raycaster.intersectObjects(targets, false);
   return hits[0]?.point.clone() ?? null;
+}
+
+/**
+ * Raycast z klienta obrazovky do scény a vrátí JVF feature (elementName + objectId)
+ * prvního zasaženého objektu, nebo null. Hledá se po předkovi (line/sprite jsou
+ * leaf objekty bez `jvfObjectId` — ten je na rodiči).
+ */
+export function pickFeatureFromClient(
+  clientX: number,
+  clientY: number,
+): { elementName: string; objectId: string } | null {
+  if (!state) return null;
+  const { scene, camera, renderer, orbit } = state;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -(((clientY - rect.top) / rect.height) * 2 - 1)
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Line = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.params.Points = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.setFromCamera(ndc, camera);
+  const targets: THREE.Object3D[] = [];
+  scene.traverse((o) => { if (o.userData[DATA_TAG] !== undefined) targets.push(o); });
+  const hits = raycaster.intersectObjects(targets, false);
+  for (const hit of hits) {
+    // Prošplhej po předcích, dokud nenajdeš jvfObjectId (sprity/podelementy ho nemusí mít)
+    let cur: THREE.Object3D | null = hit.object;
+    while (cur) {
+      const objectId = cur.userData['jvfObjectId'];
+      const elementName = cur.userData[DATA_TAG];
+      if (typeof objectId === 'string' && objectId && typeof elementName === 'string') {
+        return { elementName, objectId };
+      }
+      cur = cur.parent;
+    }
+  }
+  return null;
 }
 
 export function zoom3d(direction: 'in' | 'out'): void {

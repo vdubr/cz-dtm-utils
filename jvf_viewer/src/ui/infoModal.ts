@@ -27,6 +27,9 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní
       mapa nebo Ortofoto), přepínání jednotlivých vrstev v levém panelu.
+      Druhý klik na aktivní podkladové tlačítko podklad <em>vypne</em> —
+      JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
+      kontrolu geometrie bez vizuálního šumu).
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).
@@ -81,6 +84,26 @@ const INFO_CONTENT_HTML = `
         Skupinové barvy ZPS / TI / DI / GAD / OPL v záhlaví sekcí jsou
         volbou autora a neodpovídají žádné specifikaci.
       </em>
+    </li>
+    <li>
+      <strong>Zobrazit mazané (červeně)</strong> — přepínač pod seznamem
+      vrstev, který se objeví jen u změnových vět obsahujících záznamy
+      ke smazání (<code>ZapisObjektu = d</code>). Po zaškrtnutí se mazané
+      geometrie vykreslí sytě červeně ve 2D i 3D, takže rovnou vidíte, co
+      přijetím dávky zmizí. Po odškrtnutí se skryjí, zůstanou jen vkládané
+      a aktualizované záznamy. Default je zaškrtnuto.
+    </li>
+    <li>
+      <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
+      seznamem všech načtených objektů seskupených podle typu. Lze
+      filtrovat podle obsahové části (ZPS / TI / DI / GAD / OPL) a hledat
+      v názvu, <code>elementName</code> nebo ID. Klik na záznam zoomuje
+      mapu (2D i 3D) a rozbalí tabulku všech atributů. Funguje to i opačně:
+      klik na prvek v mapě se synchronně promítne do panelu — rozbalí jeho
+      skupinu, scrollne na řádek a označí ho jako vybraný. ZapisObjektu se
+      v changeset souborech rozlišuje barevným badge
+      (<strong>I</strong> zelená / <strong>U</strong> žlutá /
+      <strong>D</strong> červená).
     </li>
   </ul>
 

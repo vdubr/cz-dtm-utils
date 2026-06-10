@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Minimální changeset JVF DTM 1.4.3 fixture pro testy parsování `ZapisObjektu`.
+
+  Pochází z reálného souboru `cimer.jvf.xml` (Silnice II/128 Číměř,
+  SUBJ-00004290) — extrakt 5 záznamů `HraniceDopravniStavbyPlochy` a
+  3 záznamů `PodrobnyBodZPS` pokrývající všechny varianty `i` / `u` / `d`.
+
+  Účel: ověřit, že parser správně přiřadí `zapisObjektu` na každém záznamu
+  a že `i` / `u` / `d` propustí beze změny (žádný cast na 'r' fallback).
+-->
+<objtyp:JVFDTM
+  xmlns:gml="http://www.opengis.net/gml/3.2"
+  xmlns:objtyp="objtyp"
+  xmlns:cmn="cmn"
+  xmlns:atr="atr"
+  xmlns:hradsp="hradsp"
+  xmlns:pobzps="pobzps">
+  <objtyp:DataJVFDTM>
+    <cmn:VerzeJVFDTM>1.4.3</cmn:VerzeJVFDTM>
+    <cmn:DatumZapisu>2026-06-08T11:55:21</cmn:DatumZapisu>
+    <cmn:TypZapisu>změnové věty</cmn:TypZapisu>
+    <objtyp:Data>
+      <objtyp:HraniceDopravniStavbyPlochy>
+        <hradsp:ObjektovyTypNazev code_base="0100000304" code_suffix="02">hranice dopravní stavby nebo plochy</hradsp:ObjektovyTypNazev>
+        <hradsp:KategorieObjektu>Konstrukční prvky objektů</hradsp:KategorieObjektu>
+        <hradsp:SkupinaObjektu>Základní konstrukční prvek</hradsp:SkupinaObjektu>
+        <hradsp:ObsahovaCast>ZPS</hradsp:ObsahovaCast>
+        <hradsp:ZaznamyObjektu>
+          <hradsp:ZaznamObjektu>
+            <cmn:ZapisObjektu>d</cmn:ZapisObjektu>
+            <hradsp:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID>31000190001146044</atr:ID>
+                <atr:IDEditora>SUBJ-00004290</atr:IDEditora>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:SpolecneAtributyObjektuZPS>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+                <atr:ZpusobPorizeniZPS>3</atr:ZpusobPorizeniZPS>
+              </atr:SpolecneAtributyObjektuZPS>
+              <atr:TypDopravniStavbyNeboPlochy>1</atr:TypDopravniStavbyNeboPlochy>
+            </hradsp:AtributyObjektu>
+            <hradsp:GeometrieObjektu>
+              <gml:curveProperty>
+                <gml:LineString gml:id="ID31000190001146044_02" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-711696.48 -1162057.29 548.14 -711696.23 -1162057.5 548.11 -711696.0 -1162057.67 548.08</gml:posList>
+                </gml:LineString>
+              </gml:curveProperty>
+            </hradsp:GeometrieObjektu>
+          </hradsp:ZaznamObjektu>
+          <hradsp:ZaznamObjektu>
+            <cmn:ZapisObjektu>d</cmn:ZapisObjektu>
+            <hradsp:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID>31000190001146042</atr:ID>
+                <atr:IDEditora>SUBJ-00004290</atr:IDEditora>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:SpolecneAtributyObjektuZPS>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+                <atr:ZpusobPorizeniZPS>3</atr:ZpusobPorizeniZPS>
+              </atr:SpolecneAtributyObjektuZPS>
+              <atr:TypDopravniStavbyNeboPlochy>1</atr:TypDopravniStavbyNeboPlochy>
+            </hradsp:AtributyObjektu>
+            <hradsp:GeometrieObjektu>
+              <gml:curveProperty>
+                <gml:LineString gml:id="ID31000190001146042_02" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-711672.81 -1162061.48 546.61 -711672.74 -1162060.78 546.66</gml:posList>
+                </gml:LineString>
+              </gml:curveProperty>
+            </hradsp:GeometrieObjektu>
+          </hradsp:ZaznamObjektu>
+          <hradsp:ZaznamObjektu>
+            <cmn:ZapisObjektu>u</cmn:ZapisObjektu>
+            <hradsp:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID>31000190001146126</atr:ID>
+                <atr:IDEditora>SUBJ-00004290</atr:IDEditora>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:SpolecneAtributyObjektuZPS>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+                <atr:ZpusobPorizeniZPS>3</atr:ZpusobPorizeniZPS>
+              </atr:SpolecneAtributyObjektuZPS>
+              <atr:TypDopravniStavbyNeboPlochy>1</atr:TypDopravniStavbyNeboPlochy>
+            </hradsp:AtributyObjektu>
+            <hradsp:GeometrieObjektu>
+              <gml:curveProperty>
+                <gml:LineString gml:id="ID31000190001146126_02" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-711667.7 -1162060.0 546.52 -711670.65 -1162060.83 546.63 -711673.91 -1162062.56 546.62</gml:posList>
+                </gml:LineString>
+              </gml:curveProperty>
+            </hradsp:GeometrieObjektu>
+          </hradsp:ZaznamObjektu>
+          <hradsp:ZaznamObjektu>
+            <cmn:ZapisObjektu>i</cmn:ZapisObjektu>
+            <hradsp:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID/>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:SpolecneAtributyObjektuZPS>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+                <atr:ZpusobPorizeniZPS>1</atr:ZpusobPorizeniZPS>
+              </atr:SpolecneAtributyObjektuZPS>
+              <atr:TypDopravniStavbyNeboPlochy>1</atr:TypDopravniStavbyNeboPlochy>
+            </hradsp:AtributyObjektu>
+            <hradsp:GeometrieObjektu>
+              <gml:curveProperty>
+                <gml:LineString gml:id="ID1_02" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-711686.09 -1162076.5 546.59 -711677.4 -1162088.96 545.62 -711669.03 -1162100.11 544.66</gml:posList>
+                </gml:LineString>
+              </gml:curveProperty>
+            </hradsp:GeometrieObjektu>
+          </hradsp:ZaznamObjektu>
+          <hradsp:ZaznamObjektu>
+            <cmn:ZapisObjektu>i</cmn:ZapisObjektu>
+            <hradsp:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID/>
+                <atr:IDEditora>SUBJ-00004290</atr:IDEditora>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:SpolecneAtributyObjektuZPS>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+                <atr:ZpusobPorizeniZPS>3</atr:ZpusobPorizeniZPS>
+              </atr:SpolecneAtributyObjektuZPS>
+              <atr:TypDopravniStavbyNeboPlochy>1</atr:TypDopravniStavbyNeboPlochy>
+            </hradsp:AtributyObjektu>
+            <hradsp:GeometrieObjektu>
+              <gml:curveProperty>
+                <gml:LineString gml:id="ID2_02" srsDimension="3" srsName="EPSG:5514">
+                  <gml:posList>-711550.79 -1162044.45 541.15 -711553.4 -1162053.55 540.4 -711556.39 -1162052.67 540.61</gml:posList>
+                </gml:LineString>
+              </gml:curveProperty>
+            </hradsp:GeometrieObjektu>
+          </hradsp:ZaznamObjektu>
+        </hradsp:ZaznamyObjektu>
+      </objtyp:HraniceDopravniStavbyPlochy>
+      <objtyp:PodrobnyBodZPS>
+        <pobzps:ObjektovyTypNazev code_base="0100000218" code_suffix="01">podrobný bod ZPS</pobzps:ObjektovyTypNazev>
+        <pobzps:KategorieObjektu>Geodetické prvky</pobzps:KategorieObjektu>
+        <pobzps:SkupinaObjektu>Podrobný bod</pobzps:SkupinaObjektu>
+        <pobzps:ObsahovaCast>ZPS</pobzps:ObsahovaCast>
+        <pobzps:ZaznamyObjektu>
+          <pobzps:ZaznamObjektu>
+            <cmn:ZapisObjektu>d</cmn:ZapisObjektu>
+            <pobzps:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID>31000330007092952</atr:ID>
+                <atr:IDEditora>SUBJ-00004290</atr:IDEditora>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+              <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+              <atr:CisloBodu>733505</atr:CisloBodu>
+              <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+              <atr:ZpusobPorizeniPB_ZPS>3</atr:ZpusobPorizeniPB_ZPS>
+            </pobzps:AtributyObjektu>
+            <pobzps:GeometrieObjektu>
+              <gml:pointProperty>
+                <gml:Point gml:id="ID31000330007092952_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:pos>-711525.28 -1162055.32 538.6</gml:pos>
+                </gml:Point>
+              </gml:pointProperty>
+            </pobzps:GeometrieObjektu>
+          </pobzps:ZaznamObjektu>
+          <pobzps:ZaznamObjektu>
+            <cmn:ZapisObjektu>d</cmn:ZapisObjektu>
+            <pobzps:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID>31000330007092871</atr:ID>
+                <atr:IDEditora>SUBJ-00004290</atr:IDEditora>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+              <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+              <atr:CisloBodu>733873</atr:CisloBodu>
+              <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+              <atr:ZpusobPorizeniPB_ZPS>3</atr:ZpusobPorizeniPB_ZPS>
+            </pobzps:AtributyObjektu>
+            <pobzps:GeometrieObjektu>
+              <gml:pointProperty>
+                <gml:Point gml:id="ID31000330007092871_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:pos>-711400.28 -1162171.39 528</gml:pos>
+                </gml:Point>
+              </gml:pointProperty>
+            </pobzps:GeometrieObjektu>
+          </pobzps:ZaznamObjektu>
+          <pobzps:ZaznamObjektu>
+            <cmn:ZapisObjektu>i</cmn:ZapisObjektu>
+            <pobzps:AtributyObjektu>
+              <atr:SpolecneAtributyVsechObjektu>
+                <atr:ID/>
+              </atr:SpolecneAtributyVsechObjektu>
+              <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+              <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+              <atr:CisloBodu>471</atr:CisloBodu>
+              <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+              <atr:ZpusobPorizeniPB_ZPS>1</atr:ZpusobPorizeniPB_ZPS>
+            </pobzps:AtributyObjektu>
+            <pobzps:GeometrieObjektu>
+              <gml:pointProperty>
+                <gml:Point gml:id="ID62_01" srsDimension="3" srsName="EPSG:5514">
+                  <gml:pos>-711691.86 -1162039.6 547.43</gml:pos>
+                </gml:Point>
+              </gml:pointProperty>
+            </pobzps:GeometrieObjektu>
+          </pobzps:ZaznamObjektu>
+        </pobzps:ZaznamyObjektu>
+      </objtyp:PodrobnyBodZPS>
+    </objtyp:Data>
+  </objtyp:DataJVFDTM>
+</objtyp:JVFDTM>

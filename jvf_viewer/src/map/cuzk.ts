@@ -80,11 +80,20 @@ export function setupBaseLayerSwitcher(
   const btns = document.querySelectorAll<HTMLButtonElement>('#base-layer-btns .base-btn');
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      btns.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
       const layer = btn.dataset['layer'];
-      zmLayer.setVisible(layer === 'zm');
-      ortofotoLayer.setVisible(layer === 'ortofoto');
+      // Toggle: kliknutí na aktivní tlačítko podkladovou vrstvu vypne
+      // (žádný podklad — vidíme jen JVF vrstvy nad pozadím mapy). Druhým
+      // klikem se vrstva opět zapne.
+      const wasActive = btn.classList.contains('active');
+      btns.forEach((b) => b.classList.remove('active'));
+      if (wasActive) {
+        zmLayer.setVisible(false);
+        ortofotoLayer.setVisible(false);
+      } else {
+        btn.classList.add('active');
+        zmLayer.setVisible(layer === 'zm');
+        ortofotoLayer.setVisible(layer === 'ortofoto');
+      }
     });
   });
 }

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "instructions": [
+    "CLAUDE.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      ".vercel/**",
+      "**/.vite/**",
+      ".claude/worktrees/**",
+      "jvf_viewer/public/fixtures/**",
+      "jvf_viewer/public/symboly/**",
+      "jvf_parser/docs/1.4.3/xsd/**",
+      "**/generated/**",
+      "*.log"
+    ]
+  },
+
+  "lsp": {
+    "typescript": {}
+  },
+
+  "formatter": false,
+
+  "permission": {
+    "edit": "allow",
+    "write": "allow",
+    "bash": "allow"
+  },
+
+  "share": "manual",
+
+  "snapshot": true,
+
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  }
+}

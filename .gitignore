@@ -9,3 +9,13 @@ dist/
 *.d.ts.map
 package-lock.json
 .vercel
+
+# OpenCode / Claude session worktrees (per-user, never commit)
+.claude/worktrees/
+
+# Vitest result cache
+**/.vite/vitest/results.json
+
+# VS Code Local History plugin
+.history/
+

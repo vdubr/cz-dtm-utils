@@ -94,6 +94,9 @@
         <button id="btn-validate" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           Zkontrolovat
         </button>
+        <button id="btn-features" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
+          Přehled prvků
+        </button>
         <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>
       </div>
     </header>
@@ -102,8 +105,8 @@
         <div class="panel-section">
           <div class="panel-section-title">Podkladové mapy</div>
           <div id="base-layer-btns" class="base-layer-btns">
-            <button class="base-btn active" data-layer="zm" title="Zobrazit ČÚZK Základní mapu jako podklad">Základní mapa</button>
-            <button class="base-btn" data-layer="ortofoto" title="Zobrazit ČÚZK Ortofoto (letecké snímky) jako podklad">Ortofoto</button>
+            <button class="base-btn active" data-layer="zm" title="Přepnout ČÚZK Základní mapu (kliknutí na aktivní tlačítko podklad vypne)">Základní mapa</button>
+            <button class="base-btn" data-layer="ortofoto" title="Přepnout ČÚZK Ortofoto (kliknutí na aktivní tlačítko podklad vypne)">Ortofoto</button>
           </div>
         </div>
         <div class="panel-section panel-section-jvf">
@@ -115,6 +118,12 @@
           </div>
           <div id="jvf-layers-list" class="jvf-layers-list">
             <div class="empty-hint">Nahrajte JVF soubor</div>
+          </div>
+          <div id="deleted-options-section" class="three-options-footer" style="display:none">
+            <label class="toggle-row" title="Zobrazit objekty se ZapisObjektu='d' (změnové věty — záznamy ke smazání) sytě červeně">
+              <input type="checkbox" id="toggle-show-deleted" />
+              <span>Zobrazit mazané (červeně)</span>
+            </label>
           </div>
           <div id="three-options-section" class="three-options-footer" style="display:none">
             <label class="toggle-row" title="Renderovat bodové objekty jako SVG ikony (stejné jako 2D) místo jednoduchých puntíků">
@@ -204,6 +213,25 @@
           </div>
         </div>
         <div id="error-list" class="error-list"></div>
+      </aside>
+      <aside id="features-panel" style="display:none">
+        <div class="panel-resize-handle" id="features-panel-resize"></div>
+        <div class="panel-header features-panel-header">
+          <span>Přehled prvků</span>
+        </div>
+        <div class="features-panel-toolbar">
+          <div id="features-summary" class="features-summary"></div>
+          <div class="features-filters">
+            <button class="features-filter-btn active" data-filter="all" title="Zobrazit všechny obsahové části">Vše</button>
+            <button class="features-filter-btn" data-filter="ZPS" title="Základní prostorová situace">ZPS</button>
+            <button class="features-filter-btn" data-filter="TI" title="Technická infrastruktura">TI</button>
+            <button class="features-filter-btn" data-filter="DI" title="Dopravní infrastruktura">DI</button>
+            <button class="features-filter-btn" data-filter="GAD" title="Geodetické a administrativní údaje">GAD</button>
+            <button class="features-filter-btn" data-filter="OPL" title="Ostatní prvky a linie">OPL</button>
+          </div>
+          <input id="features-search" class="features-search" type="search" placeholder="Filtrovat podle názvu nebo ID…" />
+        </div>
+        <div id="features-list" class="features-list"></div>
       </aside>
     </div>
   </div>
