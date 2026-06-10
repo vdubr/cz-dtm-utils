@@ -16,3 +16,6 @@ package-lock.json
 # Vitest result cache
 **/.vite/vitest/results.json
 
+# VS Code Local History plugin
+.history/
+

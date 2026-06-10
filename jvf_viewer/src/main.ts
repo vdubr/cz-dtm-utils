@@ -19,6 +19,10 @@ import { initHighlightLayer } from './map/highlight.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupVersionSelect } from './ui/versionSelect.js';
+import {
+  setupDeletedToggle,
+  updateDeletedToggleVisibility,
+} from './ui/deletedToggle.js';
 import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -59,6 +63,10 @@ setup3dToggle(olMap, () => currentObjekty);
 // Setup info modal (footer)
 setupInfoModal();
 setupLegendModal();
+
+// Wiring checkboxu „Zobrazit mazané (červeně)" — sekce se zobrazí jen pro
+// JVF obsahující záznamy se `ZapisObjektu='d'` (changeset).
+setupDeletedToggle(() => currentJvfLayers);
 
 // Vercel Web Analytics + Speed Insights — pageviews a Core Web Vitals.
 // Cookieless, GDPR-compliant; aktivní jen na produkčním Vercel hostu (auto-detect).
@@ -122,6 +130,9 @@ function clearLoadedData(): void {
     onVisibilityChange: () => { /* no-op — žádné vrstvy */ },
   });
 
+  // Schovat „Zobrazit mazané" sekci — žádná data nejsou nahraná
+  updateDeletedToggleVisibility(null);
+
   if (getIs3dActive()) {
     reloadThreeSceneData([]);
   }
@@ -158,6 +169,11 @@ function onJvfLoaded(data: JvfDtm): void {
       setThreeLayerVisible(elementName, visible);
     },
   });
+
+  // Po nahrání nového souboru obnovit viditelnost sekce „Zobrazit mazané":
+  // změnové věty s alespoň jedním `d` záznamem → sekce viditelná, checkbox
+  // default ON; jinak schovat a flag resetovat.
+  updateDeletedToggleVisibility(data);
 
   // Enable zoom + validate buttons now that data is loaded
   btnZoom.disabled = false;

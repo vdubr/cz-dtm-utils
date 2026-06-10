@@ -82,6 +82,14 @@ const INFO_CONTENT_HTML = `
         volbou autora a neodpovídají žádné specifikaci.
       </em>
     </li>
+    <li>
+      <strong>Zobrazit mazané (červeně)</strong> — přepínač pod seznamem
+      vrstev, který se objeví jen u změnových vět obsahujících záznamy
+      ke smazání (<code>ZapisObjektu = d</code>). Po zaškrtnutí se mazané
+      geometrie vykreslí sytě červeně ve 2D i 3D, takže rovnou vidíte, co
+      přijetím dávky zmizí. Po odškrtnutí se skryjí, zůstanou jen vkládané
+      a aktualizované záznamy. Default je zaškrtnuto.
+    </li>
   </ul>
 
   <h3>Co topologická validace kontroluje</h3>
