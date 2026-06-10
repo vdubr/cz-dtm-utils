@@ -27,6 +27,9 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní
       mapa nebo Ortofoto), přepínání jednotlivých vrstev v levém panelu.
+      Druhý klik na aktivní podkladové tlačítko podklad <em>vypne</em> —
+      JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
+      kontrolu geometrie bez vizuálního šumu).
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).

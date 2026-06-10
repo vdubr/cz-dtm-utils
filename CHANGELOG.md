@@ -7,6 +7,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.6.10] - 2026-06-10
+
 ### Přidáno
 
 - Panel **„Přehled prvků"** (tlačítko v hlavičce vedle „Zkontrolovat") —
