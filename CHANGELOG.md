@@ -9,6 +9,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- Tlačítka výběru podkladové mapy (*Základní mapa* / *Ortofoto*) lze nyní
+  kliknutím na aktivní volbu vypnout — JVF vrstvy zůstanou viditelné nad
+  prázdným pozadím mapy. Druhý klik podklad opět zapne.
 - Přepínač **„Zobrazit mazané (červeně)"** v levém panelu vieweru. Sekce se
   zobrazí jen u změnových vět (`TypZapisu='změnové věty'`) obsahujících
   alespoň jeden záznam s `ZapisObjektu='d'`. Po zaškrtnutí se mazané
