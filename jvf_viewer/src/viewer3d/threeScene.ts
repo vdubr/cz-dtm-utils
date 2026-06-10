@@ -921,6 +921,44 @@ export function pickPointFromClient(clientX: number, clientY: number): THREE.Vec
   return hits[0]?.point.clone() ?? null;
 }
 
+/**
+ * Raycast z klienta obrazovky do scény a vrátí JVF feature (elementName + objectId)
+ * prvního zasaženého objektu, nebo null. Hledá se po předkovi (line/sprite jsou
+ * leaf objekty bez `jvfObjectId` — ten je na rodiči).
+ */
+export function pickFeatureFromClient(
+  clientX: number,
+  clientY: number,
+): { elementName: string; objectId: string } | null {
+  if (!state) return null;
+  const { scene, camera, renderer, orbit } = state;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -(((clientY - rect.top) / rect.height) * 2 - 1)
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Line = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.params.Points = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.setFromCamera(ndc, camera);
+  const targets: THREE.Object3D[] = [];
+  scene.traverse((o) => { if (o.userData[DATA_TAG] !== undefined) targets.push(o); });
+  const hits = raycaster.intersectObjects(targets, false);
+  for (const hit of hits) {
+    // Prošplhej po předcích, dokud nenajdeš jvfObjectId (sprity/podelementy ho nemusí mít)
+    let cur: THREE.Object3D | null = hit.object;
+    while (cur) {
+      const objectId = cur.userData['jvfObjectId'];
+      const elementName = cur.userData[DATA_TAG];
+      if (typeof objectId === 'string' && objectId && typeof elementName === 'string') {
+        return { elementName, objectId };
+      }
+      cur = cur.parent;
+    }
+  }
+  return null;
+}
+
 export function zoom3d(direction: 'in' | 'out'): void {
   if (!state) return;
   const factor = direction === 'in' ? 0.85 : 1.18;

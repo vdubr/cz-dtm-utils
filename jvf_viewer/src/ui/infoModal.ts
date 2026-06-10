@@ -90,6 +90,18 @@ const INFO_CONTENT_HTML = `
       přijetím dávky zmizí. Po odškrtnutí se skryjí, zůstanou jen vkládané
       a aktualizované záznamy. Default je zaškrtnuto.
     </li>
+    <li>
+      <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
+      seznamem všech načtených objektů seskupených podle typu. Lze
+      filtrovat podle obsahové části (ZPS / TI / DI / GAD / OPL) a hledat
+      v názvu, <code>elementName</code> nebo ID. Klik na záznam zoomuje
+      mapu (2D i 3D) a rozbalí tabulku všech atributů. Funguje to i opačně:
+      klik na prvek v mapě se synchronně promítne do panelu — rozbalí jeho
+      skupinu, scrollne na řádek a označí ho jako vybraný. ZapisObjektu se
+      v changeset souborech rozlišuje barevným badge
+      (<strong>I</strong> zelená / <strong>U</strong> žlutá /
+      <strong>D</strong> červená).
+    </li>
   </ul>
 
   <h3>Co topologická validace kontroluje</h3>

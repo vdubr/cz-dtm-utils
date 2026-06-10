@@ -94,6 +94,9 @@
         <button id="btn-validate" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           Zkontrolovat
         </button>
+        <button id="btn-features" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
+          Přehled prvků
+        </button>
         <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>
       </div>
     </header>
@@ -210,6 +213,25 @@
           </div>
         </div>
         <div id="error-list" class="error-list"></div>
+      </aside>
+      <aside id="features-panel" style="display:none">
+        <div class="panel-resize-handle" id="features-panel-resize"></div>
+        <div class="panel-header features-panel-header">
+          <span>Přehled prvků</span>
+        </div>
+        <div class="features-panel-toolbar">
+          <div id="features-summary" class="features-summary"></div>
+          <div class="features-filters">
+            <button class="features-filter-btn active" data-filter="all" title="Zobrazit všechny obsahové části">Vše</button>
+            <button class="features-filter-btn" data-filter="ZPS" title="Základní prostorová situace">ZPS</button>
+            <button class="features-filter-btn" data-filter="TI" title="Technická infrastruktura">TI</button>
+            <button class="features-filter-btn" data-filter="DI" title="Dopravní infrastruktura">DI</button>
+            <button class="features-filter-btn" data-filter="GAD" title="Geodetické a administrativní údaje">GAD</button>
+            <button class="features-filter-btn" data-filter="OPL" title="Ostatní prvky a linie">OPL</button>
+          </div>
+          <input id="features-search" class="features-search" type="search" placeholder="Filtrovat podle názvu nebo ID…" />
+        </div>
+        <div id="features-list" class="features-list"></div>
       </aside>
     </div>
   </div>

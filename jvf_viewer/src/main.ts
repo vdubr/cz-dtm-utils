@@ -15,7 +15,14 @@ import { setupFileUpload } from './ui/fileUpload.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
 import { setup3dToggle, getIs3dActive, reloadThreeSceneData } from './ui/toggle3d.js';
 import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
-import { initHighlightLayer } from './map/highlight.js';
+import {
+  initFeaturesPanel,
+  showFeatures,
+  hideFeatures,
+  isFeaturesPanelVisible,
+  selectFeatureInPanel,
+} from './ui/featuresPanel.js';
+import { initHighlightLayer, highlightFeature } from './map/highlight.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupVersionSelect } from './ui/versionSelect.js';
@@ -23,7 +30,7 @@ import {
   setupDeletedToggle,
   updateDeletedToggleVisibility,
 } from './ui/deletedToggle.js';
-import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility } from './viewer3d/threeScene.js';
+import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility, highlightThreeFeature, pickFeatureFromClient } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
 import { createEmpty } from 'ol/extent.js';
@@ -50,6 +57,9 @@ const olMap = createOlMap('map-container');
 initHighlightLayer(olMap);
 initErrorPanel(olMap, () => currentJvfLayers, {
   onHide: () => btnValidate.classList.remove('active'),
+});
+initFeaturesPanel(olMap, () => currentJvfLayers, {
+  onHide: () => btnFeatures.classList.remove('active'),
 });
 
 // Add CUZK base layers
@@ -94,9 +104,25 @@ btnValidate.addEventListener('click', () => {
     hideErrors();
   } else {
     if (!currentDtm) return;
+    // Mutual exclusion — pokud je otevřený features panel, zavři ho.
+    if (isFeaturesPanelVisible()) hideFeatures();
     const errors = runAllChecks(currentDtm);
     showErrors(errors);
     btnValidate.classList.add('active');
+  }
+});
+
+// Setup features button — toggle „Přehled prvků" panel
+const btnFeatures = document.getElementById('btn-features') as HTMLButtonElement;
+btnFeatures.addEventListener('click', () => {
+  if (isFeaturesPanelVisible()) {
+    hideFeatures();
+  } else {
+    if (!currentDtm) return;
+    // Mutual exclusion — pokud je otevřený error panel, zavři ho.
+    if (isPanelVisible()) hideErrors();
+    showFeatures(currentDtm.objekty);
+    btnFeatures.classList.add('active');
   }
 });
 
@@ -138,11 +164,14 @@ function clearLoadedData(): void {
   }
 
   if (isPanelVisible()) hideErrors();
+  if (isFeaturesPanelVisible()) hideFeatures();
 
   btnZoom.disabled = true;
   btnZoom.title = 'Nejprve nahrajte JVF soubor';
   btnValidate.disabled = true;
   btnValidate.title = 'Nejprve nahrajte JVF soubor';
+  btnFeatures.disabled = true;
+  btnFeatures.title = 'Nejprve nahrajte JVF soubor';
 }
 
 function onJvfLoaded(data: JvfDtm): void {
@@ -175,11 +204,13 @@ function onJvfLoaded(data: JvfDtm): void {
   // default ON; jinak schovat a flag resetovat.
   updateDeletedToggleVisibility(data);
 
-  // Enable zoom + validate buttons now that data is loaded
+  // Enable zoom + validate + features buttons now that data is loaded
   btnZoom.disabled = false;
   btnZoom.title = 'Přiblížit pohled na rozsah načtených JVF dat';
   btnValidate.disabled = false;
   btnValidate.title = 'Spustit topologickou validaci dat a zobrazit panel s nálezy';
+  btnFeatures.disabled = false;
+  btnFeatures.title = 'Zobrazit přehled všech načtených objektů (klik na řádek = zoom + atributy)';
 
   // Pokud je aktivní 3D, přebuduj scénu s novými daty (a zacentruj kameru).
   // Bez toho by scéna zůstala prázdná, protože `initThreeScene` se volá jen
@@ -197,3 +228,50 @@ function onJvfLoaded(data: JvfDtm): void {
     });
   }
 }
+
+// ── Map → panel: klik na 2D / 3D vybere prvek v otevřeném "Přehledu prvků" ──
+// 2D: OL singleclick → forEachFeatureAtPixel hledá první feature s jvfElementName.
+olMap.on('singleclick', (evt) => {
+  if (!isFeaturesPanelVisible()) return;
+  let picked: { elementName: string; objectId: string } | null = null;
+  olMap.forEachFeatureAtPixel(
+    evt.pixel,
+    (feat) => {
+      const elementName = feat.get('jvfElementName');
+      const objectId = feat.get('jvfObjectId');
+      if (typeof elementName === 'string' && typeof objectId === 'string' && objectId) {
+        picked = { elementName, objectId };
+        return true; // stop iteration
+      }
+      return false;
+    },
+    { hitTolerance: 4 },
+  );
+  if (!picked) return;
+  const { elementName, objectId } = picked;
+  // Highlight v mapě (bez zoomu — uživatel už klikl, neztrácet kontext)
+  const feature = (() => {
+    for (const { olLayer } of currentJvfLayers) {
+      const src = olLayer.getSource();
+      if (!src) continue;
+      const f = src.getFeatures().find(
+        (x) => x.get('jvfElementName') === elementName && x.get('jvfObjectId') === objectId,
+      );
+      if (f) return f;
+    }
+    return null;
+  })();
+  if (feature) highlightFeature(feature);
+  selectFeatureInPanel(elementName, objectId);
+});
+
+// 3D: canvas click → raycaster → najde elementName + objectId přes pickFeatureFromClient.
+const threeCanvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
+threeCanvas?.addEventListener('click', (e) => {
+  if (!getIs3dActive()) return;
+  if (!isFeaturesPanelVisible()) return;
+  const picked = pickFeatureFromClient(e.clientX, e.clientY);
+  if (!picked) return;
+  highlightThreeFeature(picked.elementName, picked.objectId);
+  selectFeatureInPanel(picked.elementName, picked.objectId);
+});

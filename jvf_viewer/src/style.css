@@ -1842,3 +1842,271 @@ html, body {
 .changelog-older[open] > summary {
   margin-bottom: 12px;
 }
+
+/* ===== Features Panel ("Přehled prvků") ===== */
+#features-panel {
+  position: relative;
+  width: 33%;
+  min-width: 280px;
+  max-width: 60vw;
+  background: #161b22;
+  border-left: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.features-panel-header {
+  padding: 10px 14px;
+  background: #0d1117;
+  border-bottom: 1px solid #30363d;
+  font-weight: 600;
+  font-size: 13px;
+  color: #e6edf3;
+}
+
+.features-panel-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #1c2128;
+  border-bottom: 1px solid #30363d;
+}
+
+.features-summary {
+  font-size: 12px;
+  color: #c9d1d9;
+}
+
+.features-summary.summary-empty { color: #8b949e; font-style: italic; }
+.features-summary.summary-ok    { color: #c9d1d9; }
+
+.features-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.features-filter-btn {
+  padding: 3px 8px;
+  font-size: 11px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #c9d1d9;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.features-filter-btn:hover { background: #1f242c; border-color: #484f58; }
+.features-filter-btn.active {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #fff;
+}
+
+.features-search {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 3px;
+  color: #e6edf3;
+  outline: none;
+}
+.features-search:focus { border-color: #1f6feb; }
+
+.features-list {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 12px;
+}
+
+.features-list::-webkit-scrollbar { width: 8px; }
+.features-list::-webkit-scrollbar-track { background: #0d1117; }
+.features-list::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.features-list-empty {
+  padding: 20px;
+  text-align: center;
+  color: #8b949e;
+  font-style: italic;
+}
+
+.feature-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #1c2128;
+  border-bottom: 1px solid #30363d;
+  border-top: 1px solid #30363d;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  color: #c9d1d9;
+}
+.feature-group-header:first-child { border-top: none; }
+.feature-group-header:hover { background: #22272e; }
+
+.feature-group-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feature-group-element {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  color: #8b949e;
+}
+
+.group-count-features {
+  background: #30363d;
+  color: #c9d1d9;
+}
+
+/* Obsahová část — barevné pruhy/badge (návaznost na ZPS/TI/DI/GAD/OPL) */
+.part-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.5px;
+}
+.part-badge.part-ZPS { background: #5e8b3a; color: #fff; }
+.part-badge.part-TI  { background: #b8722f; color: #fff; }
+.part-badge.part-DI  { background: #5b6cb3; color: #fff; }
+.part-badge.part-GAD { background: #8e5ba6; color: #fff; }
+.part-badge.part-OPL { background: #555; color: #fff; }
+
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 28px;
+  border-bottom: 1px solid #21262d;
+  color: #c9d1d9;
+}
+.feature-row.has-target { cursor: pointer; }
+.feature-row.has-target:hover { background: #1f242c; }
+.feature-row.no-target {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.feature-row.active {
+  background: #1f6feb33;
+  border-left: 3px solid #1f6feb;
+  padding-left: 25px;
+}
+.feature-row.no-target .feature-zoom-icon { opacity: 0.3; }
+
+.feature-zoom-icon {
+  font-size: 13px;
+  color: #1f6feb;
+  width: 14px;
+  text-align: center;
+}
+
+.zapis-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  flex-shrink: 0;
+}
+.zapis-badge.zapis-i { background: #2da44e; color: #fff; }
+.zapis-badge.zapis-u { background: #bf8700; color: #fff; }
+.zapis-badge.zapis-d { background: #cf222e; color: #fff; }
+.zapis-badge.zapis-r { background: #57606a; color: #fff; }
+
+.feature-row-id {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  max-width: 50%;
+}
+
+.feature-row-popis {
+  flex: 1;
+  font-size: 11px;
+  color: #8b949e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feature-detail {
+  background: #0d1117;
+  border-bottom: 1px solid #21262d;
+  padding: 10px 16px 12px 28px;
+}
+
+.feature-detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feature-detail-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8b949e;
+  margin-top: 4px;
+}
+
+.feature-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.feature-detail-table tr { border-bottom: 1px solid #21262d; }
+.feature-detail-table tr:last-child { border-bottom: none; }
+.feature-detail-table td {
+  padding: 3px 6px;
+  vertical-align: top;
+}
+.feature-detail-table td.kv-key {
+  color: #8b949e;
+  font-weight: 500;
+  width: 38%;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10.5px;
+}
+.feature-detail-table td.kv-value {
+  color: #e6edf3;
+  word-break: break-word;
+}
+
+.feature-detail-meta {
+  font-size: 10.5px;
+  color: #8b949e;
+  font-style: italic;
+}
+
+.feature-detail-empty {
+  font-size: 11px;
+  color: #8b949e;
+  font-style: italic;
+}

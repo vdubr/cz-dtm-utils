@@ -20,6 +20,7 @@ import {
 } from '../viewer3d/threeScene.js';
 import { clearHighlight } from '../map/highlight.js';
 import { reapplyActiveHighlight } from './errorPanel.js';
+import { reapplyActiveFeatureHighlight } from './featuresPanel.js';
 
 let is3dActive = false;
 let currentZExaggeration = 1;
@@ -344,6 +345,7 @@ function switchTo3d(
 
   // Přenést výběr z 2D → 3D (highlight + zoom na objekt)
   reapplyActiveHighlight();
+  reapplyActiveFeatureHighlight();
 }
 
 function switchTo2d(
@@ -380,5 +382,6 @@ function switchTo2d(
   setTimeout(() => {
     olMap.updateSize();
     reapplyActiveHighlight();
+    reapplyActiveFeatureHighlight();
   }, 50);
 }

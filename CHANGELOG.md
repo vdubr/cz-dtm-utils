@@ -9,6 +9,18 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- Panel **„Přehled prvků"** (tlačítko v hlavičce vedle „Zkontrolovat") —
+  vypisuje všechny načtené záznamy seskupené podle objektového typu, s
+  filtrováním podle obsahové části (Vše / ZPS / TI / DI / GAD / OPL) a
+  fulltext vyhledáváním v názvu / `elementName` / ID. Klik na záznam
+  zoomuje (2D i 3D) a rozbalí inline detail s tabulkou společných i
+  specifických atributů. U malých souborů (≤ 8 typů) se skupiny
+  automaticky rozbalí. ZapisObjektu je odlišen barevným badge
+  (I = zelená, U = žlutá, D = červená). Druhý klik na aktivní řádek
+  zruší výběr. Panel je vzájemně exkluzivní s panelem topologické
+  validace. Klik na prvek v mapě (2D i 3D) při otevřeném panelu
+  prvek vyhledá v seznamu, rozbalí jeho skupinu a detail, scrollne
+  k němu a zvýrazní ho.
 - Tlačítka výběru podkladové mapy (*Základní mapa* / *Ortofoto*) lze nyní
   kliknutím na aktivní volbu vypnout — JVF vrstvy zůstanou viditelné nad
   prázdným pozadím mapy. Druhý klik podklad opět zapne.
