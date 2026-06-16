@@ -1,6 +1,6 @@
 {
   "name": "jvf-topology",
-  "version": "2026.6.10",
+  "version": "2026.6.16",
   "description": "Topological validation for JVF DTM (Jednotný Výměnný Formát - Digital Technical Map)",
   "license": "MIT",
   "author": "Vojtěch Dubrovský",

@@ -7,6 +7,17 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.6.16] - 2026-06-16
+
+### Opraveno
+
+- 3D scéna byla severo-jižně zrcadlená proti 2D mapě — sever vycházel dole
+  na obrazovce. Three.js kamera při pohledu shora má +Z na obrazovce dole,
+  takže JVF Northing (`Y`) je při mapování do scene Z nutné invertovat
+  (`cy − Y` místo `Y − cy`). Oprava platí stejně pro JVF geometrii i pro
+  podkladový terén DMR5G, takže obě vrstvy nadále sedí. Žádná změna v
+  parseru ani v topologii.
+
 ## [2026.6.10] - 2026-06-10
 
 ### Přidáno
