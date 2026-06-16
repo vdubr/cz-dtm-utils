@@ -293,11 +293,12 @@ function buildMeshFromRaster(raster: CachedRaster, opts: TerrainOptions): THREE.
       const worldX = realBbox.minX + col * dx;
       const elev = (h === NODATA || !Number.isFinite(h)) ? minH : h;
 
-      // Scene coords: x = X-cx, z = Y-cy (pozor na mapping — threeScene používá
-      // y-up a z-depth; pro shodu s JVF geometrií je tedy (worldX-cx, (elev-cz)*zExag, worldY-cy))
+      // Scene coords: x = X-cx, z = cy-Y (Y-osa invertovaná, viz threeScene.ts —
+      // Three.js kamera shora má +Z dolů na obrazovce, takže pro sever-nahoru
+      // musíme JVF Northing flipnout). Y-up zůstává (worldX-cx, (elev-cz)*zExag, cy-worldY).
       positions[idx * 3] = worldX - cx;
       positions[idx * 3 + 1] = (elev - cz) * zExag;
-      positions[idx * 3 + 2] = worldY - cy;
+      positions[idx * 3 + 2] = cy - worldY;
 
       const t = invRange > 0 ? (elev - minH) * invRange : 0;
       const [r, g, b] = hypsometricColor(t);
@@ -383,7 +384,7 @@ function extractContourSegments(
     return (realBbox.minX + col * dxM) - cx;
   }
   function sz(row: number): number {
-    return (realBbox.maxY - row * dyM) - cy;
+    return cy - (realBbox.maxY - row * dyM);
   }
 
   for (let row = 0; row < height - 1; row++) {

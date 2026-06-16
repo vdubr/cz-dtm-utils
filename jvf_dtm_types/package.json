@@ -1,6 +1,6 @@
 {
   "name": "jvf-dtm-types",
-  "version": "2026.6.10",
+  "version": "2026.6.16",
   "description": "Shared TypeScript domain types for JVF DTM (Jednotný Výměnný Formát - Digital Technical Map)",
   "license": "MIT",
   "author": "Vojtěch Dubrovský",

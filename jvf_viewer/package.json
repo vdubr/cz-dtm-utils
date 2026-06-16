@@ -1,6 +1,6 @@
 {
   "name": "jvf-viewer",
-  "version": "2026.6.10",
+  "version": "2026.6.16",
   "description": "Web viewer for JVF DTM (Czech Digital Technical Map) files",
   "license": "MIT",
   "author": "Vojtěch Dubrovský",

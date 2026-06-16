@@ -367,7 +367,10 @@ function buildSceneObjects(
           case 'Point': {
             const c = geom.data.coordinates;
             const x = (c[0] ?? 0) - cx;
-            const z3 = (c[1] ?? 0) - cy;
+            // Sever-jih invertujeme: Three.js kamera při pohledu shora má +Z
+            // směrem dolů na obrazovce. JVF Y (Northing) roste na sever, takže
+            // bez inverze by sever vyšel dole. `cy - Y` srovná orientaci s 2D mapou.
+            const z3 = cy - (c[1] ?? 0);
             const y3 = ((c[2] ?? 0) - cz) * zExaggeration;
 
             if (useSvgSymbols && s.pointSvg) {
@@ -418,7 +421,7 @@ function buildSceneObjects(
               pts.push(
                 (geom.data.coordinates[i] ?? 0) - cx,
                 dim >= 3 ? ((geom.data.coordinates[i + 2] ?? 0) - cz) * zExaggeration : 0,
-                (geom.data.coordinates[i + 1] ?? 0) - cy
+                cy - (geom.data.coordinates[i + 1] ?? 0)
               );
             }
             if (pts.length >= 6) {
@@ -435,7 +438,7 @@ function buildSceneObjects(
               pts.push(
                 (geom.data.exterior[i] ?? 0) - cx,
                 dim >= 3 ? ((geom.data.exterior[i + 2] ?? 0) - cz) * zExaggeration : 0,
-                (geom.data.exterior[i + 1] ?? 0) - cy
+                cy - (geom.data.exterior[i + 1] ?? 0)
               );
             }
             if (pts.length >= 9) {
@@ -453,7 +456,7 @@ function buildSceneObjects(
                 pts.push(
                   (curve.coordinates[i] ?? 0) - cx,
                   dim >= 3 ? ((curve.coordinates[i + 2] ?? 0) - cz) * zExaggeration : 0,
-                  (curve.coordinates[i + 1] ?? 0) - cy
+                  cy - (curve.coordinates[i + 1] ?? 0)
                 );
               }
               if (pts.length >= 6) {
