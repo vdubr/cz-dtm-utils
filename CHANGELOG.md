@@ -7,6 +7,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.6.16.2] - 2026-06-16
+
+### Přidáno
+
+- V panelu **„Přehled prvků"** se v detailu záznamu nově zobrazuje
+  **nadmořská výška** (Z-souřadnice z geometrie) — u bodu jedna hodnota,
+  u linií a ploch rozsah `min–max`. Zobrazí se jen u 3D geometrií
+  (`srsDimension ≥ 3`).
+
 ## [2026.6.16] - 2026-06-16
 
 ### Opraveno

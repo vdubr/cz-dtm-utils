@@ -138,6 +138,49 @@ export function reapplyActiveFeatureHighlight(): void {
   applyHighlight(activeTarget.elementName, activeTarget.objectId);
 }
 
+/**
+ * Vytáhne Z-souřadnice (nadmořské výšky) ze všech geometrií záznamu. Z je
+ * 3. složka souřadnic (index i+2) u geometrií s `srsDimension >= 3`. Plochy
+ * mají dvojí geometrii (2D Polygon + 3D MultiCurve) — Polygon je obvykle 2D,
+ * takže výšky pocházejí hlavně z MultiCurve/linií/bodů. Vrací jen konečné
+ * hodnoty (bez NaN/Infinity).
+ */
+function extractElevations(z: ZaznamObjektu): number[] {
+  const out: number[] = [];
+  const fromFlat = (coords: number[], srsDim: number): void => {
+    const dim = srsDim > 0 ? srsDim : 2;
+    if (dim < 3) return;
+    for (let i = 0; i < coords.length; i += dim) {
+      const zv = coords[i + 2];
+      if (zv !== undefined && Number.isFinite(zv)) out.push(zv);
+    }
+  };
+  for (const geom of z.geometrie ?? []) {
+    switch (geom.type) {
+      case 'Point': {
+        const zv = geom.data.coordinates[2];
+        if (zv !== undefined && Number.isFinite(zv)) out.push(zv);
+        break;
+      }
+      case 'LineString':
+        fromFlat(geom.data.coordinates, geom.data.srsDimension);
+        break;
+      case 'Polygon':
+        fromFlat(geom.data.exterior, geom.data.srsDimension);
+        break;
+      case 'MultiCurve':
+        for (const c of geom.data.curves) fromFlat(c.coordinates, c.srsDimension);
+        break;
+    }
+  }
+  return out;
+}
+
+/** Formát výšky na 2 desetinná místa, česká desetinná čárka. */
+function fmtElevation(v: number): string {
+  return v.toFixed(2).replace('.', ',');
+}
+
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderAttributes(z: ZaznamObjektu): HTMLElement {
   const wrap = document.createElement('div');
@@ -176,6 +219,21 @@ function renderAttributes(z: ZaznamObjektu): HTMLElement {
     geomLine.textContent = `${geomCount} ${geomCount === 1 ? 'geometrie' : 'geometrie'} (${types})`;
   }
   wrap.appendChild(geomLine);
+
+  // Nadmořská výška (Z) — z geometrie záznamu. Bod má jednu hodnotu, linie/plochy
+  // rozsah. Zobrazí se jen pokud má geometrie Z-složku (3D).
+  const elevations = extractElevations(z);
+  if (elevations.length > 0) {
+    const min = Math.min(...elevations);
+    const max = Math.max(...elevations);
+    const elevLine = document.createElement('div');
+    elevLine.className = 'feature-detail-meta';
+    elevLine.textContent =
+      min === max
+        ? `Nadmořská výška: ${fmtElevation(min)} m`
+        : `Nadmořská výška: ${fmtElevation(min)}–${fmtElevation(max)} m`;
+    wrap.appendChild(elevLine);
+  }
 
   if (commonEntries.length === 0 && attrEntries.length === 0 && geomCount === 0) {
     const empty = document.createElement('div');
