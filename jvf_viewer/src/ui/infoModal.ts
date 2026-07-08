@@ -47,7 +47,7 @@ const INFO_CONTENT_HTML = `
       (<code>R</code>). Otáčení a náklon kamery se ovládají tlačítky ve spodní
       liště, kterou lze sbalit. Kliknutím do scény se nastaví <em>střed
       otáčení (pivot)</em> na zvolené místo. Volitelné převýšení výšky
-      (1× / 2× / 5× / 10×), světlé nebo tmavé pozadí a možnost renderovat
+      (1× / 2× / 5× / 10×), světlé (výchozí) nebo tmavé pozadí a možnost renderovat
       body jako SVG symboly (shodné s 2D). Viditelnost vrstev se zachovává
       mezi 2D a 3D režimem.
     </li>

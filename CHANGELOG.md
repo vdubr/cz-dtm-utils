@@ -7,6 +7,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+### Změněno
+
+- 3D scéna má nově **výchozí světlé pozadí** (dříve tmavé) — barvy prvků
+  z Katalogu ČÚZK počítají se světlým podkladem stejně jako 2D mapa.
+  Tmavé pozadí zůstává dostupné přepínačem, pomocná mřížka se barevně
+  přizpůsobuje zvolenému pozadí.
+
 ## [2026.6.16.2] - 2026-06-16
 
 ### Přidáno
