@@ -5,6 +5,7 @@ import { findFeature } from '../map/jvfLayers.js';
 import { highlightFeature, clearHighlight, zoomToFeature } from '../map/highlight.js';
 import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature } from '../viewer3d/threeScene.js';
 import { getIs3dActive, notifyMapAreaResized } from './toggle3d.js';
+import { resolveZaznamId } from '../state/zaznamId.js';
 
 type ContentFilter = 'all' | 'ZPS' | 'TI' | 'DI' | 'GAD' | 'OPL';
 
@@ -269,9 +270,16 @@ function renderRows(): void {
   // Ponecháme activeRow null jen pokud cíl už není v listu
   activeRow = null;
 
+  // Index záznamu držíme z původního pole `ot.zaznamy` (před search filtrem),
+  // aby syntetické klíče (`resolveZaznamId`) seděly s 2D vrstvami a 3D scénou.
   const filtered = currentObjekty
     .filter(matchesFilter)
-    .map((ot) => ({ ot, zaznamy: ot.zaznamy.filter((z) => matchesSearch(ot, z)) }))
+    .map((ot) => ({
+      ot,
+      zaznamy: ot.zaznamy
+        .map((z, idx) => ({ z, idx }))
+        .filter(({ z }) => matchesSearch(ot, z)),
+    }))
     .filter(({ zaznamy }) => zaznamy.length > 0);
 
   if (filtered.length === 0) {
@@ -320,9 +328,13 @@ function renderRows(): void {
     if (!expanded) continue;
 
     // Detail rows
-    for (const z of zaznamy) {
-      const objectId = z.commonAttributes?.id ?? '';
-      const hasTarget = !!objectId;
+    for (const { z, idx } of zaznamy) {
+      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez
+      // ID (nové prvky `ZapisObjektu='i'`) — i ty jsou plnohodnotně
+      // klikatelné (zoom, highlight, detail atributů).
+      const objectId = resolveZaznamId(ot.elementName, z, idx);
+      const hasDtmId = !!z.commonAttributes?.id;
+      const hasTarget = (z.geometrie?.length ?? 0) > 0;
       const key = recordKey(ot.elementName, objectId);
       const isActive = activeTarget !== null
         && activeTarget.elementName === ot.elementName
@@ -336,7 +348,7 @@ function renderRows(): void {
       const zoomIcon = document.createElement('span');
       zoomIcon.className = 'feature-zoom-icon';
       zoomIcon.textContent = '⌖';
-      zoomIcon.title = hasTarget ? 'Zoom na objekt' : 'Objekt nelze lokalizovat (chybí ID)';
+      zoomIcon.title = hasTarget ? 'Zoom na objekt' : 'Objekt nelze lokalizovat (chybí geometrie)';
 
       const zapis = zapisLabel(z.zapisObjektu);
       const zapisBadge = document.createElement('span');
@@ -346,7 +358,7 @@ function renderRows(): void {
 
       const idSpan = document.createElement('span');
       idSpan.className = 'feature-row-id';
-      idSpan.textContent = objectId || '— bez ID —';
+      idSpan.textContent = hasDtmId ? objectId : `bez ID (#${idx + 1})`;
 
       const popisSpan = document.createElement('span');
       popisSpan.className = 'feature-row-popis';
@@ -431,7 +443,9 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
     }
     if (currentSearch) {
       // Zkontroluj, jestli se objekt projde aktuálním filtrem; pokud ne, vyčisti
-      const z = ot.zaznamy.find((z) => z.commonAttributes?.id === objectId);
+      const z = ot.zaznamy.find(
+        (zz, idx) => resolveZaznamId(elementName, zz, idx) === objectId,
+      );
       if (z && !matchesSearch(ot, z)) {
         currentSearch = '';
         searchInput.value = '';

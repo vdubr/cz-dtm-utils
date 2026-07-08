@@ -1,7 +1,12 @@
 import * as THREE from 'three';
 import type { ObjektovyTyp, Geometry } from 'jvf-parser';
 import { resolveStyle } from '../map/jvfLayers.js';
-import { isShowDeleted } from '../state/deletedToggle.js';
+import {
+  isShowZapis,
+  isChangesetZapis,
+  type ChangesetZapisType,
+} from '../state/changesetToggle.js';
+import { resolveZaznamId } from '../state/zaznamId.js';
 import {
   loadTerrainMesh,
   updateTerrainZExaggeration,
@@ -19,18 +24,23 @@ const TERRAIN_TAG = 'terrain';
 const HIGHLIGHT_COLOR = 0x39ff14;
 
 /**
- * Barva pro vizualizaci mazaných záznamů (`ZapisObjektu='d'`) ve 3D scéně.
- * Sytě červená — záměrně shodná s 2D variantou v `map/jvfLayers.ts`, aby
+ * Barvy pro vizualizaci changeset záznamů (`ZapisObjektu` ∈ {i, u, d})
+ * ve 3D scéně: 'i' — nové zeleně, 'u' — editované oranžově, 'd' — mazané
+ * sytě červeně. Záměrně shodné s 2D variantou v `map/jvfLayers.ts`, aby
  * uživatel poznal stejné objekty napříč režimy.
  */
-const DELETED_COLOR_HEX = 0xe02020;
+const ZAPIS_HIGHLIGHT_HEX: Record<ChangesetZapisType, number> = {
+  i: 0x2da44e,
+  u: 0xbf8700,
+  d: 0xe02020,
+};
 
 /**
- * Aplikovat červenou barvu mazaného záznamu na materiál objektu. Three.js
+ * Aplikovat barvu changeset záznamu na materiál objektu. Three.js
  * Sprite (SVG ikona) má `SpriteMaterial` bez color — pro něj musíme zhasnout
  * texturu a obarvit; Line / LineLoop / Points mají `*BasicMaterial.color`.
  */
-function applyDeletedColorToObject(obj: THREE.Object3D): void {
+function applyZapisColorToObject(obj: THREE.Object3D, colorHex: number): void {
   const withMat = obj as THREE.Object3D & { material?: unknown };
   const mat = withMat.material as
     | THREE.Material
@@ -39,7 +49,7 @@ function applyDeletedColorToObject(obj: THREE.Object3D): void {
   if (!mat) return;
   const apply = (m: THREE.Material): void => {
     const colored = m as THREE.Material & { color?: THREE.Color };
-    if (colored.color) colored.color.setHex(DELETED_COLOR_HEX);
+    if (colored.color) colored.color.setHex(colorHex);
   };
   if (Array.isArray(mat)) mat.forEach(apply);
   else apply(mat);
@@ -47,8 +57,8 @@ function applyDeletedColorToObject(obj: THREE.Object3D): void {
 
 /**
  * Vrátit objektu jeho původní barvu uloženou v `userData['jvfOrigColorHex']`
- * při buildu. Volá se, když uživatel odškrtne checkbox „Zobrazit mazané"
- * a `applyDeletedHighlight` chce vrátit červené objekty zpět na ČÚZK barvy.
+ * při buildu. Volá se, když uživatel odškrtne changeset checkbox
+ * a `applyChangesetHighlight` chce vrátit obarvené objekty zpět na ČÚZK barvy.
  */
 function restoreOriginalColor(obj: THREE.Object3D): void {
   const orig = obj.userData['jvfOrigColorHex'];
@@ -386,13 +396,15 @@ function buildSceneObjects(
     const key = layerKey(ot);
     const layerVisible = !hiddenLayers.has(key);
 
-    for (const zaz of ot.zaznamy) {
-      const objectId = zaz.commonAttributes?.id ?? null;
+    for (const [zaznamIndex, zaz] of ot.zaznamy.entries()) {
+      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
+      // (nové prvky `ZapisObjektu='i'` — bez něj by nešly pickovat/zvýraznit).
+      const objectId = resolveZaznamId(ot.elementName, zaz, zaznamIndex);
       const zapisObjektu = zaz.zapisObjektu;
-      // Při buildu uložíme původní barvu vrstvy do userData — `applyDeletedHighlight`
-      // ji potřebuje pro vrácení mazaných objektů zpět na původní vzhled,
+      // Při buildu uložíme původní barvu vrstvy do userData — `applyChangesetHighlight`
+      // ji potřebuje pro vrácení changeset objektů zpět na původní vzhled,
       // když uživatel checkbox odškrtne. Bez toho bychom po flipu znali jen
-      // aktuální (případně červenou) barvu materiálu.
+      // aktuální (případně přebarvenou) barvu materiálu.
       const origLineColor = color;
       const origFillColor = fillColor;
       for (const geom of zaz.geometrie) {
@@ -502,9 +514,10 @@ function buildSceneObjects(
                 lineObj.userData['jvfObjectId'] = objectId;
                 lineObj.userData['jvfZapisObjektu'] = zapisObjektu;
                 lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
-                lineObj.visible = layerVisible && (zapisObjektu !== 'd' || isShowDeleted());
-                if (zapisObjektu === 'd' && isShowDeleted()) {
-                  lineObj.material.color.set(DELETED_COLOR_HEX);
+                lineObj.visible =
+                  layerVisible && (!isChangesetZapis(zapisObjektu) || isShowZapis(zapisObjektu));
+                if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
+                  lineObj.material.color.setHex(ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
                 }
                 scene.add(lineObj);
               }
@@ -521,9 +534,10 @@ function buildSceneObjects(
           // pro restoraci po toggle off potřebujeme znát ten správný.
           const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
           obj.userData['jvfOrigColorHex'] = origColor.getHex();
-          obj.visible = layerVisible && (zapisObjektu !== 'd' || isShowDeleted());
-          if (zapisObjektu === 'd' && isShowDeleted()) {
-            applyDeletedColorToObject(obj);
+          obj.visible =
+            layerVisible && (!isChangesetZapis(zapisObjektu) || isShowZapis(zapisObjektu));
+          if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
+            applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
           }
           scene.add(obj);
         }
@@ -771,28 +785,30 @@ export function resetThreeLayerVisibility(): void {
 }
 
 /**
- * Aplikovat na 3D scénu aktuální stav „zobrazit mazané záznamy". Pro každý
- * objekt s `userData['jvfZapisObjektu']==='d'` nastaví viditelnost a barvu
- * podle `showDeleted`:
+ * Aplikovat na 3D scénu aktuální stav changeset přepínačů (nové / editované /
+ * mazané). Pro každý objekt s `userData['jvfZapisObjektu']` ∈ {i, u, d}
+ * nastaví viditelnost a barvu podle `isShowZapis(typ)`:
  *
- *   showDeleted = true  → obj.visible = layerVisible, materiál červený
- *   showDeleted = false → obj.visible = false (skryje), barva nezáleží
+ *   flag = true  → obj.visible = layerVisible, materiál v barvě typu změny
+ *   flag = false → obj.visible = false (skryje), barva se vrací na původní
  *
  * Funkce respektuje per-vrstvu skrytí (`hiddenLayers`) — když uživatel
- * skrývá celou vrstvu, mazaný objekt z ní zůstává skrytý i když je
- * `showDeleted=true`.
+ * skrývá celou vrstvu, changeset objekt z ní zůstává skrytý i když je
+ * jeho flag zapnutý.
  *
  * No-op když 3D scéna není inicializovaná.
  */
-export function applyDeletedHighlight(showDeleted: boolean): void {
+export function applyChangesetHighlight(): void {
   if (!state) return;
   state.scene.traverse((obj) => {
-    if (obj.userData['jvfZapisObjektu'] !== 'd') return;
+    const zapis = obj.userData['jvfZapisObjektu'];
+    if (!isChangesetZapis(zapis)) return;
     const elementName = obj.userData[DATA_TAG] as string | undefined;
     const layerVisible = elementName ? !hiddenLayers.has(elementName) : true;
-    obj.visible = layerVisible && showDeleted;
-    if (showDeleted) {
-      applyDeletedColorToObject(obj);
+    const show = isShowZapis(zapis);
+    obj.visible = layerVisible && show;
+    if (show) {
+      applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapis]);
     } else {
       restoreOriginalColor(obj);
     }

@@ -119,8 +119,16 @@
           <div id="jvf-layers-list" class="jvf-layers-list">
             <div class="empty-hint">Nahrajte JVF soubor</div>
           </div>
-          <div id="deleted-options-section" class="three-options-footer" style="display:none">
-            <label class="toggle-row" title="Zobrazit objekty se ZapisObjektu='d' (změnové věty — záznamy ke smazání) sytě červeně">
+          <div id="changeset-options-section" class="three-options-footer" style="display:none">
+            <label class="toggle-row" id="row-show-inserted" style="display:none" title="Zobrazit objekty se ZapisObjektu='i' (nové záznamy, teprve se budou do DTM vkládat) zeleně">
+              <input type="checkbox" id="toggle-show-inserted" />
+              <span>Zobrazit nové (zeleně)</span>
+            </label>
+            <label class="toggle-row" id="row-show-updated" style="display:none" title="Zobrazit objekty se ZapisObjektu='u' (editované záznamy) oranžově">
+              <input type="checkbox" id="toggle-show-updated" />
+              <span>Zobrazit editované (oranžově)</span>
+            </label>
+            <label class="toggle-row" id="row-show-deleted" style="display:none" title="Zobrazit objekty se ZapisObjektu='d' (změnové věty — záznamy ke smazání) sytě červeně">
               <input type="checkbox" id="toggle-show-deleted" />
               <span>Zobrazit mazané (červeně)</span>
             </label>

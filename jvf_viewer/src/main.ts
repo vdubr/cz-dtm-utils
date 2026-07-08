@@ -28,9 +28,9 @@ import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupVersionSelect } from './ui/versionSelect.js';
 import {
-  setupDeletedToggle,
-  updateDeletedToggleVisibility,
-} from './ui/deletedToggle.js';
+  setupChangesetToggle,
+  updateChangesetToggleVisibility,
+} from './ui/changesetToggle.js';
 import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility, highlightThreeFeature, pickFeatureFromClient } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -75,9 +75,10 @@ setup3dToggle(olMap, () => currentObjekty);
 setupInfoModal();
 setupLegendModal();
 
-// Wiring checkboxu „Zobrazit mazané (červeně)" — sekce se zobrazí jen pro
-// JVF obsahující záznamy se `ZapisObjektu='d'` (changeset).
-setupDeletedToggle(() => currentJvfLayers);
+// Wiring checkboxů „Zobrazit nové / editované / mazané" — sekce se zobrazí
+// jen pro JVF obsahující záznamy se `ZapisObjektu` ∈ {i, u, d} (changeset
+// nebo nově vytvořený soubor).
+setupChangesetToggle(() => currentJvfLayers);
 
 // Vercel Web Analytics + Speed Insights — pageviews a Core Web Vitals.
 // Cookieless, GDPR-compliant; aktivní jen na produkčním Vercel hostu (auto-detect).
@@ -163,8 +164,8 @@ function clearLoadedData(): void {
     onVisibilityChange: () => { /* no-op — žádné vrstvy */ },
   });
 
-  // Schovat „Zobrazit mazané" sekci — žádná data nejsou nahraná
-  updateDeletedToggleVisibility(null);
+  // Schovat changeset sekci — žádná data nejsou nahraná
+  updateChangesetToggleVisibility(null);
 
   if (getIs3dActive()) {
     reloadThreeSceneData([]);
@@ -206,10 +207,10 @@ function onJvfLoaded(data: JvfDtm): void {
     },
   });
 
-  // Po nahrání nového souboru obnovit viditelnost sekce „Zobrazit mazané":
-  // změnové věty s alespoň jedním `d` záznamem → sekce viditelná, checkbox
-  // default ON; jinak schovat a flag resetovat.
-  updateDeletedToggleVisibility(data);
+  // Po nahrání nového souboru obnovit viditelnost changeset sekce: soubor
+  // s alespoň jedním `i`/`u`/`d` záznamem → sekce viditelná, checkboxy
+  // přítomných typů default ON; jinak schovat a flagy resetovat.
+  updateChangesetToggleVisibility(data);
 
   // Enable zoom + validate + features buttons now that data is loaded
   btnZoom.disabled = false;
