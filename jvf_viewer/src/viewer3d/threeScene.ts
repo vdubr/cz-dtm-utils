@@ -95,6 +95,8 @@ interface SceneState {
   objekty: ObjektovyTyp[];
   orbit: OrbitState;
   pivotMarker: THREE.Object3D;
+  /** Pomocná mřížka — vyměňuje se při změně pozadí (jiné barvy pro světlé/tmavé). */
+  grid: THREE.GridHelper;
   /** Aktuální terénní skupina (mesh + vrstevnice) nebo null. Žije napříč rebuildSceneGeometry. */
   terrainMesh: THREE.Group | null;
   /** AbortController pro odstranění všech DOM event listenerů při dispose */
@@ -112,8 +114,10 @@ let state: SceneState | null = null;
 const hiddenLayers = new Set<string>();
 
 /** Aktuální barva pozadí 3D scény. Uchovává se mimo `state`, aby volba
- *  přežila re-init při přepnutí 2D ↔ 3D a při rebuildu geometrie. */
-let currentBackground = '#0a0a0f';
+ *  přežila re-init při přepnutí 2D ↔ 3D a při rebuildu geometrie.
+ *  Výchozí je světlé pozadí — barvy prvků z Katalogu ČÚZK počítají se
+ *  světlým podkladem (stejně jako 2D mapa). */
+let currentBackground = '#f5f5f5';
 
 /** Přepínač: renderovat Point features jako SVG sprity (true) nebo jako
  *  `THREE.Points` (false, původní chování). Platí jen pro 3D. */
@@ -171,9 +175,40 @@ function getSvgTexture(svgFile: string): THREE.Texture {
   return tex;
 }
 
+/** Je barva vnímaná jako světlá? (relativní luminance přes práh 0,5) */
+function isLightColor(color: string): boolean {
+  const c = new THREE.Color(color);
+  return 0.299 * c.r + 0.587 * c.g + 0.114 * c.b > 0.5;
+}
+
+/**
+ * Barvy mřížky (centerLine, grid) podle jasu pozadí. Mřížka má být jemná —
+ * tmavě modrá varianta na tmavém pozadí by na světlém působila jako výrazné
+ * černé čáry, proto na světlém pozadí používáme světle šedou.
+ */
+function gridColorsFor(background: string): [number, number] {
+  return isLightColor(background)
+    ? [0xb8b8c0, 0xd6d6dd]
+    : [0x222244, 0x1a1a2e];
+}
+
+function createGrid(background: string): THREE.GridHelper {
+  const [center, grid] = gridColorsFor(background);
+  return new THREE.GridHelper(200000, 20, center, grid);
+}
+
 export function setThreeBackground(color: string): void {
   currentBackground = color;
-  if (state) state.scene.background = new THREE.Color(color);
+  if (state) {
+    state.scene.background = new THREE.Color(color);
+    // Vyměnit mřížku za variantu čitelnou na novém pozadí (GridHelper má
+    // barvy zapečené ve vertex colors — nelze je změnit na existující instanci).
+    state.scene.remove(state.grid);
+    state.grid.geometry.dispose();
+    (state.grid.material as THREE.Material).dispose();
+    state.grid = createGrid(color);
+    state.scene.add(state.grid);
+  }
 }
 
 export function getUseSvgSymbols(): boolean {
@@ -553,8 +588,8 @@ export function initThreeScene(
   dirLight.position.set(1, 2, 1);
   scene.add(dirLight);
 
-  // Grid helper
-  const grid = new THREE.GridHelper(200000, 20, 0x222244, 0x1a1a2e);
+  // Grid helper — barvy podle aktuálního pozadí (světlé/tmavé)
+  const grid = createGrid(currentBackground);
   scene.add(grid);
 
   // Compute centroid AND bbox from all points
@@ -682,6 +717,7 @@ export function initThreeScene(
     objekty,
     orbit,
     pivotMarker,
+    grid,
     terrainMesh: null,
     controlsAbort,
   };
