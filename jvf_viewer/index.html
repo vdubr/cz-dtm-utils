@@ -200,6 +200,14 @@
             <button class="btn btn-secondary btn-bg" data-bg="dark" title="Tmavé pozadí"><span class="material-symbols-outlined">dark_mode</span></button>
             <button class="btn btn-secondary btn-bg active" data-bg="light" title="Světlé pozadí (výchozí)"><span class="material-symbols-outlined">light_mode</span></button>
           </div>
+          <div id="basemap3d-toolbar" class="toolbar-panel">
+            <span class="toolbar-label">Podklad:</span>
+            <button class="btn btn-secondary btn-basemap3d active" data-basemap="none" title="Bez podkladové mapy — hypsometrické obarvení terénu">Žádný</button>
+            <button class="btn btn-secondary btn-basemap3d" data-basemap="zm" title="ČÚZK Základní mapa jako textura na povrchu terénu (automaticky zapne terén)">Základní mapa</button>
+            <button class="btn btn-secondary btn-basemap3d" data-basemap="ortofoto" title="ČÚZK Ortofoto jako textura na povrchu terénu (automaticky zapne terén)">Ortofoto</button>
+            <input type="range" id="basemap3d-opacity" min="10" max="100" value="85" title="Sytost podkladu — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
+            <span id="basemap3d-spinner" class="terrain-spinner" hidden></span>
+          </div>
           </div>
         </div>
         <div id="loading-overlay" style="display:none">

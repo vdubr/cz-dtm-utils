@@ -17,6 +17,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   (`'i'`, zeleně) a **editované** záznamy (`'u'`, oranžově) — samostatné
   přepínače pod seznamem vrstev, ve 2D i 3D. Přepínač se zobrazí jen pro
   typy zápisu obsažené v nahraném souboru.
+- **Podkladová mapa na 3D terénu** — na povrch DMR (ČÚZK DMR5G) lze ve 3D
+  scéně namapovat jako texturu **Základní mapu** nebo **Ortofoto ČÚZK**
+  (stejné vrstvy jako ve 2D, dlaždice nativně v S-JTSK / EPSG:5514).
+  Ovládání ve spodní liště 3D: volba podkladu (Žádný / Základní mapa /
+  Ortofoto) + posuvník průhlednosti, aby vykreslené prvky zůstaly čitelné.
+  Volba podkladu automaticky zapne terén; načítání běží asynchronně
+  s indikátorem a selhání sítě scénu nerozbije.
 
 ### Změněno
 
