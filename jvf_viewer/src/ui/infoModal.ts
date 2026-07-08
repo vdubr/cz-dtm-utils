@@ -86,12 +86,17 @@ const INFO_CONTENT_HTML = `
       </em>
     </li>
     <li>
-      <strong>Zobrazit mazané (červeně)</strong> — přepínač pod seznamem
-      vrstev, který se objeví jen u změnových vět obsahujících záznamy
-      ke smazání (<code>ZapisObjektu = d</code>). Po zaškrtnutí se mazané
-      geometrie vykreslí sytě červeně ve 2D i 3D, takže rovnou vidíte, co
-      přijetím dávky zmizí. Po odškrtnutí se skryjí, zůstanou jen vkládané
-      a aktualizované záznamy. Default je zaškrtnuto.
+      <strong>Barevné rozlišení změn (nové / editované / mazané)</strong> —
+      přepínače pod seznamem vrstev, které se objeví jen pro typy
+      <code>ZapisObjektu</code> obsažené v nahraném souboru:
+      <strong>nové</strong> (<code>i</code>) zeleně,
+      <strong>editované</strong> (<code>u</code>) oranžově,
+      <strong>mazané</strong> (<code>d</code>) sytě červeně. Po zaškrtnutí
+      se geometrie daného typu vykreslí příslušnou barvou ve 2D i 3D, takže
+      rovnou vidíte, co přijetím dávky do DTM přibude, změní se nebo zmizí.
+      Po odškrtnutí se záznamy daného typu skryjí. Default je vše zaškrtnuto.
+      Funguje i pro nově vytvořené JVF soubory DI/TI, jejichž prvky ještě
+      nemají přidělená DTM ID.
     </li>
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
@@ -105,7 +110,10 @@ const INFO_CONTENT_HTML = `
       skupinu, scrollne na řádek a označí ho jako vybraný. ZapisObjektu se
       v changeset souborech rozlišuje barevným badge
       (<strong>I</strong> zelená / <strong>U</strong> žlutá /
-      <strong>D</strong> červená).
+      <strong>D</strong> červená). Prvky bez přiděleného DTM ID (nové
+      záznamy, které se teprve budou vkládat) jsou identifikovány
+      syntetickým klíčem — klikání, zoom i detail atributů pro ně fungují
+      stejně jako pro prvky s ID.
     </li>
   </ul>
 

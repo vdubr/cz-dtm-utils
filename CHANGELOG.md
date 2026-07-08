@@ -7,6 +7,22 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+### Přidáno
+
+- **Barevné rozlišení changeset záznamů**: kromě mazaných (`ZapisObjektu='d'`,
+  červeně) se nyní dají zvýraznit a vypínat/zapínat i **nové** záznamy
+  (`'i'`, zeleně) a **editované** záznamy (`'u'`, oranžově) — samostatné
+  přepínače pod seznamem vrstev, ve 2D i 3D. Přepínač se zobrazí jen pro
+  typy zápisu obsažené v nahraném souboru.
+
+### Opraveno
+
+- Prvky bez přiděleného DTM ID (nově vytvořené JVF soubory DI/TI, jejichž
+  záznamy se teprve budou do DTM vkládat) jsou nyní plnohodnotně
+  identifikovatelné pomocí syntetického klíče — funguje pro ně klik v mapě
+  (2D i 3D), zoom, zvýraznění i detail atributů v Přehledu prvků. Dříve byly
+  řádky bez ID neklikatelné a výběr prvku v mapě je ignoroval.
+
 ## [2026.6.16.2] - 2026-06-16
 
 ### Přidáno

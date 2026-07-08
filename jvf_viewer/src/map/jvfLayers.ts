@@ -21,17 +21,30 @@ import {
   type SymbolVariant,
 } from './symbology.js';
 import { VARIANT_ATTR } from './variantAttrMap.js';
-import { isShowDeleted } from '../state/deletedToggle.js';
+import {
+  isShowZapis,
+  isChangesetZapis,
+  type ChangesetZapisType,
+} from '../state/changesetToggle.js';
+import { resolveZaznamId } from '../state/zaznamId.js';
 
 // Re-export for consumers that previously imported LAYER_COLORS from here
 export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
 
 /**
- * Barva pro vizualizaci mazaných objektů (`ZapisObjektu='d'`). Záměrně sytě
- * červená, aby šly na první pohled odlišit od stávajících i vkládaných.
+ * Barvy pro vizualizaci changeset záznamů podle `ZapisObjektu`:
+ *   'i' — nové (zeleně), 'u' — editované (oranžově), 'd' — mazané (červeně).
+ * Záměrně syté, aby šly typy změn na první pohled odlišit. Fill má 20 % alpha.
+ * Barvy odpovídají badge barvám I/U/D v Přehledu prvků (style.css).
  */
-const DELETED_COLOR = '#e02020';
-const DELETED_FILL = '#e0202033'; // 20 % alpha
+export const ZAPIS_HIGHLIGHT_COLORS: Record<
+  ChangesetZapisType,
+  { stroke: string; fill: string }
+> = {
+  i: { stroke: '#2da44e', fill: '#2da44e33' },
+  u: { stroke: '#bf8700', fill: '#bf870033' },
+  d: { stroke: '#e02020', fill: '#e0202033' },
+};
 
 /** Base path for SVG symbols served from public/symboly/ */
 const SVG_BASE = './symboly/';
@@ -331,8 +344,11 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
   for (const ot of objekty) {
     const features: Feature[] = [];
 
-    for (const zaznam of ot.zaznamy) {
+    for (const [zaznamIndex, zaznam] of ot.zaznamy.entries()) {
       const sFeature = resolveStyleForZaznam(ot, zaznam);
+      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
+      // (nové prvky `ZapisObjektu='i'`, které se teprve budou do DTM vkládat).
+      const objectId = resolveZaznamId(ot.elementName, zaznam, zaznamIndex);
       for (const geom of zaznam.geometrie) {
         let feature: Feature | null = null;
 
@@ -373,7 +389,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfResolvedStyle', sFeature);
                 mcFeature.set('jvfGeomType', 'LineString');
                 mcFeature.set('jvfElementName', ot.elementName);
-                mcFeature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
+                mcFeature.set('jvfObjectId', objectId);
                 mcFeature.set('jvfZapisObjektu', zaznam.zapisObjektu);
                 features.push(mcFeature);
               }
@@ -386,7 +402,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfResolvedStyle', sFeature);
           feature.set('jvfGeomType', geom.type);
           feature.set('jvfElementName', ot.elementName);
-          feature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
+          feature.set('jvfObjectId', objectId);
           feature.set('jvfZapisObjektu', zaznam.zapisObjektu);
           features.push(feature);
         }
@@ -417,21 +433,24 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
         const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
         if (!s || !geomType) return undefined;
-        // Mazané záznamy (ZapisObjektu='d') — buď skryjeme úplně, nebo
-        // přebarvíme na sytě červenou. Globální flag řídí checkbox v UI.
+        // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — buď skryjeme úplně,
+        // nebo přebarvíme podle typu změny (zelená/oranžová/červená).
+        // Globální flagy řídí checkboxy v UI.
         const zo = feature.get('jvfZapisObjektu') as string | undefined;
-        if (zo === 'd') {
-          if (!isShowDeleted()) return undefined;
-          const deletedStyle: ResolvedStyle = {
+        if (isChangesetZapis(zo)) {
+          if (!isShowZapis(zo)) return undefined;
+          const hl = ZAPIS_HIGHLIGHT_COLORS[zo];
+          const zapisStyle: ResolvedStyle = {
             ...s,
-            fillColor: DELETED_FILL,
-            strokeColor: DELETED_COLOR,
+            fillColor: hl.fill,
+            strokeColor: hl.stroke,
             strokeWidthPx: Math.max(s.strokeWidthPx, 2),
-            // Bez SVG ikony — mazané body chceme červenou tečkou, ne SVG symbol
-            // (jinak by uživatel barvu nepoznal — symbol kreslí ČÚZK barvami).
+            // Bez SVG ikony — changeset body chceme barevnou tečkou, ne SVG
+            // symbol (jinak by uživatel barvu nepoznal — symbol kreslí ČÚZK
+            // barvami).
             pointSvg: undefined,
           };
-          return createStyleForGeom(geomType, deletedStyle, resolution);
+          return createStyleForGeom(geomType, zapisStyle, resolution);
         }
         return createStyleForGeom(geomType, s, resolution);
       },
