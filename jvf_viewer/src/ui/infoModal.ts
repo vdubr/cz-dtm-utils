@@ -58,7 +58,11 @@ const INFO_CONTENT_HTML = `
       rozsahu výšek (tmavě zelená → žlutá → hnědá → bílá) a překryt
       <em>vrstevnicemi po 1 m</em> (zvýrazněnými každých 10 m). Terénní mesh
       i vrstevnice reagují na nastavené převýšení výšky a pomáhají zasadit
-      geometrie do reliéfu krajiny.
+      geometrie do reliéfu krajiny. Ve spodní liště lze místo hypsometrie
+      namapovat na povrch terénu <strong>podkladovou mapu ČÚZK</strong>
+      (<em>Základní mapa</em> nebo <em>Ortofoto</em> — stejné vrstvy jako
+      ve 2D); volba podkladu automaticky zapne terén. Posuvníkem se řídí
+      průhlednost podkladu, aby vykreslené prvky zůstaly čitelné.
     </li>
     <li>
       <strong>Zoom na data</strong> — přiblíží pohled na rozsah načteného JVF

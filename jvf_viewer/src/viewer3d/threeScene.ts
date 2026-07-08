@@ -7,8 +7,17 @@ import {
   updateTerrainZExaggeration,
   disposeTerrainMesh,
   clearTerrainCache,
+  getTerrainRealBbox,
+  applyBasemapToTerrain,
+  removeBasemapFromTerrain,
+  setBasemapOpacityOnTerrain,
   type BBox,
 } from './terrain.js';
+import {
+  loadBasemapTexture,
+  clearBasemapTextureCache,
+  type BasemapKind,
+} from './basemapTexture.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
@@ -125,6 +134,16 @@ let useSvgSymbols = false;
 
 /** Přepínač zobrazení terénu (ČÚZK DMR5G). Persistuje přes re-init scény. */
 let terrainVisible = false;
+
+/** Zvolený podklad na terénu ('none' = hypsometrie). Persistuje přes re-init. */
+let currentBasemap: BasemapKind | 'none' = 'none';
+
+/** Průhlednost podkladové textury (0–1). Persistuje přes re-init. */
+let basemapOpacity = 0.85;
+
+/** Čítač requestů podkladu — zahazuje zastaralé asynchronní výsledky
+ *  při rychlém přepínání vrstev. */
+let basemapRequestId = 0;
 
 /** Cache SVG textur: klíč = název SVG souboru. Sdíleno napříč scénami. */
 const svgTextureCache = new Map<string, THREE.Texture>();
@@ -862,6 +881,59 @@ async function ensureTerrainLoaded(): Promise<void> {
   // Pro pick nechceme terén jako target (nemá jvfObjectId), takže DATA_TAG nepřidáme.
   state.scene.add(mesh);
   state.terrainMesh = mesh;
+  // Byl-li v předchozí relaci zvolen podklad, aplikuj ho i na nový mesh.
+  // Fire-and-forget: selhání podkladu nesmí rozbít terén ani scénu.
+  if (currentBasemap !== 'none') {
+    void applyCurrentBasemap().catch((err) => {
+      console.error('[basemap] načtení podkladu selhalo', err);
+    });
+  }
+}
+
+// ── Podkladová mapa na terénu (ČÚZK ZM / Ortofoto) ──────────────────────────
+
+export function getBasemap(): BasemapKind | 'none' {
+  return currentBasemap;
+}
+
+export function getBasemapOpacity(): number {
+  return basemapOpacity;
+}
+
+/**
+ * Zvolí podkladovou mapu texturovanou na terén DMR. `'none'` vrátí
+ * hypsometrické obarvení. Volba persistuje přes re-init scény; texturu
+ * aplikuje, jakmile je terén načtený (viz `ensureTerrainLoaded`).
+ *
+ * @throws při síťové chybě (žádná dlaždice) — volající handluje UI stav.
+ */
+export async function setBasemap(kind: BasemapKind | 'none'): Promise<void> {
+  currentBasemap = kind;
+  await applyCurrentBasemap();
+}
+
+/** Aplikuje aktuálně zvolený podklad na existující terénní mesh. */
+async function applyCurrentBasemap(): Promise<void> {
+  const reqId = ++basemapRequestId;
+  if (!state?.terrainMesh) return;
+  if (currentBasemap === 'none') {
+    removeBasemapFromTerrain(state.terrainMesh);
+    return;
+  }
+  const bbox = getTerrainRealBbox(state.terrainMesh);
+  if (!bbox) return;
+  const texture = await loadBasemapTexture(bbox, currentBasemap);
+  // Mezitím mohl uživatel přepnout vrstvu nebo scéna zanikla — zahodit.
+  if (reqId !== basemapRequestId || !state?.terrainMesh) return;
+  applyBasemapToTerrain(state.terrainMesh, texture, basemapOpacity);
+}
+
+/** Nastaví průhlednost podkladové textury (0–1). */
+export function setBasemapOpacity(value: number): void {
+  basemapOpacity = Math.max(0, Math.min(1, value));
+  if (state?.terrainMesh) {
+    setBasemapOpacityOnTerrain(state.terrainMesh, basemapOpacity);
+  }
 }
 
 /**
@@ -870,6 +942,7 @@ async function ensureTerrainLoaded(): Promise<void> {
  */
 export function invalidateTerrainCache(): void {
   clearTerrainCache();
+  clearBasemapTextureCache();
   if (state?.terrainMesh) {
     state.scene.remove(state.terrainMesh);
     disposeTerrainMesh(state.terrainMesh);

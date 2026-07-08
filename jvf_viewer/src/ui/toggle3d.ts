@@ -17,6 +17,10 @@ import {
   setTerrainVisible,
   isTerrainVisible,
   invalidateTerrainCache,
+  setBasemap,
+  getBasemap,
+  setBasemapOpacity,
+  getBasemapOpacity,
 } from '../viewer3d/threeScene.js';
 import { clearHighlight } from '../map/highlight.js';
 import { reapplyActiveHighlight } from './errorPanel.js';
@@ -176,6 +180,57 @@ export function setup3dToggle(
       } else {
         await setTerrainVisible(false);
       }
+    });
+  }
+
+  // Podklad na terénu (ČÚZK ZM / Ortofoto jako textura na DMR) — jen 3D
+  const basemapBtns = document.querySelectorAll<HTMLButtonElement>('.btn-basemap3d');
+  const basemapSpinner = document.getElementById('basemap3d-spinner') as HTMLElement | null;
+  const basemapOpacitySlider = document.getElementById('basemap3d-opacity') as HTMLInputElement | null;
+
+  function syncBasemapButtons(): void {
+    const active = getBasemap();
+    basemapBtns.forEach((b) => {
+      b.classList.toggle('active', (b.dataset['basemap'] ?? 'none') === active);
+    });
+  }
+  syncBasemapButtons();
+
+  basemapBtns.forEach((bmBtn) => {
+    bmBtn.addEventListener('click', async () => {
+      const kind = (bmBtn.dataset['basemap'] ?? 'none') as 'none' | 'zm' | 'ortofoto';
+      if (kind === getBasemap()) return;
+      basemapSpinner?.removeAttribute('hidden');
+      basemapBtns.forEach((b) => { b.disabled = true; });
+      try {
+        // Podklad se mapuje na povrch DMR — bez terénu není kam texturu
+        // položit. Zapneme ho tedy automaticky (vč. synchronizace checkboxu).
+        if (kind !== 'none' && is3dActive && !isTerrainVisible()) {
+          await setTerrainVisible(true);
+          if (terrainCheckbox) terrainCheckbox.checked = true;
+        }
+        await setBasemap(kind);
+        syncBasemapButtons();
+      } catch (err) {
+        console.error('[basemap] načtení podkladu selhalo', err);
+        alert(
+          'Nepodařilo se načíst podkladovou mapu ČÚZK:\n' +
+          (err as Error).message
+        );
+        // Vrátit stav na hypsometrii, aby UI odpovídalo scéně
+        await setBasemap('none').catch(() => { /* už jen úklid */ });
+        syncBasemapButtons();
+      } finally {
+        basemapSpinner?.setAttribute('hidden', '');
+        basemapBtns.forEach((b) => { b.disabled = false; });
+      }
+    });
+  });
+
+  if (basemapOpacitySlider) {
+    basemapOpacitySlider.value = String(Math.round(getBasemapOpacity() * 100));
+    basemapOpacitySlider.addEventListener('input', () => {
+      setBasemapOpacity(Number(basemapOpacitySlider.value) / 100);
     });
   }
 
