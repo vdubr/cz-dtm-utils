@@ -12,6 +12,7 @@ import {
   type JvfVectorLayer,
 } from './map/jvfLayers.js';
 import { setupFileUpload } from './ui/fileUpload.js';
+import { setupDragAndDrop } from './ui/dragDrop.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
 import { setup3dToggle, getIs3dActive, reloadThreeSceneData } from './ui/toggle3d.js';
 import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
@@ -128,6 +129,12 @@ btnFeatures.addEventListener('click', () => {
 
 // Setup file upload
 setupFileUpload((data: JvfDtm) => {
+  onJvfLoaded(data);
+});
+
+// Setup drag & drop — přetažení JVF souboru kamkoli nad okno aplikace
+// načte soubor stejnou cestou jako file input.
+setupDragAndDrop((data: JvfDtm) => {
   onJvfLoaded(data);
 });
 

@@ -20,9 +20,11 @@ const INFO_CONTENT_HTML = `
   <h3>Hlavní funkce</h3>
   <ul>
     <li>
-      <strong>Nahrát soubor</strong> — výběr JVF XML souboru z disku. Parsování
-      probíhá v prohlížeči. Vedle tlačítka je šipka s rychlým výběrem
-      přiložených <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL).
+      <strong>Nahrát soubor</strong> — výběr JVF XML souboru z disku, nebo
+      jednoduše <strong>přetažení souboru myší</strong> (drag &amp; drop)
+      kamkoli nad okno aplikace. Parsování probíhá v prohlížeči. Vedle
+      tlačítka je šipka s rychlým výběrem přiložených
+      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL).
     </li>
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní

@@ -7,6 +7,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+### Přidáno
+
+- JVF soubor lze nově načíst **přetažením myší (drag & drop)** kamkoli nad
+  okno aplikace — při přetahování se zobrazí vizuální nápověda, upuštění
+  souboru ho načte stejně jako výběr přes tlačítko „Nahrát soubor".
+
 ### Změněno
 
 - 3D scéna má nově **výchozí světlé pozadí** (dříve tmavé) — barvy prvků
