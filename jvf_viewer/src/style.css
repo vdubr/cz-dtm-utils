@@ -861,6 +861,44 @@ html, body {
   backdrop-filter: blur(2px);
 }
 
+/* ===== Drop Overlay (drag & drop JVF souboru) ===== */
+#drop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 17, 23, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+  backdrop-filter: blur(2px);
+  /* Overlay nesmí krást drag eventy — počítadlo dragenter/dragleave
+     v dragDrop.ts se řídí eventy na window */
+  pointer-events: none;
+}
+
+#drop-overlay[hidden] {
+  display: none;
+}
+
+.drop-overlay-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 56px;
+  border: 3px dashed #58a6ff;
+  border-radius: 12px;
+  background: rgba(22, 27, 34, 0.85);
+  color: #e6edf3;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.drop-overlay-box .material-symbols-outlined {
+  font-size: 44px;
+  color: #58a6ff;
+}
+
 /* ===== Spinner ===== */
 .spinner {
   width: 26px;

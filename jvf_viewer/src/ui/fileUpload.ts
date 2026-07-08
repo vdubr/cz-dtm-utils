@@ -42,6 +42,38 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * Načte lokální soubor (z file inputu nebo drag & drop) a zpracuje ho
+ * parserem — jediný sdílený kód-path pro oba způsoby načtení.
+ */
+export function loadJvfFile(file: File, onLoad: (data: JvfDtm) => void): void {
+  const loadingOverlay = document.getElementById('loading-overlay') as HTMLDivElement;
+  loadingOverlay.style.display = 'flex';
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const xml = e.target?.result as string;
+      const data = parseJvfDtm(xml);
+      const ok = await validateFileVersion(data, file.name);
+      if (!ok) return;
+      onLoad(data);
+    } catch (err) {
+      console.error('Failed to parse JVF file:', err);
+      alert(`Chyba při načtení souboru: ${String(err)}`);
+    } finally {
+      loadingOverlay.style.display = 'none';
+    }
+  };
+
+  reader.onerror = () => {
+    loadingOverlay.style.display = 'none';
+    alert('Chyba při čtení souboru.');
+  };
+
+  reader.readAsText(file, 'UTF-8');
+}
+
 export function setupFileUpload(
   onLoad: (data: JvfDtm) => void
 ): void {
@@ -58,33 +90,9 @@ export function setupFileUpload(
   fileInput.addEventListener('change', () => {
     const file = fileInput.files?.[0];
     if (!file) return;
-
-    loadingOverlay.style.display = 'flex';
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const xml = e.target?.result as string;
-        const data = parseJvfDtm(xml);
-        const ok = await validateFileVersion(data, file.name);
-        if (!ok) return;
-        onLoad(data);
-      } catch (err) {
-        console.error('Failed to parse JVF file:', err);
-        alert(`Chyba při načtení souboru: ${String(err)}`);
-      } finally {
-        loadingOverlay.style.display = 'none';
-        fileInput.value = '';
-      }
-    };
-
-    reader.onerror = () => {
-      loadingOverlay.style.display = 'none';
-      alert('Chyba při čtení souboru.');
-      fileInput.value = '';
-    };
-
-    reader.readAsText(file, 'UTF-8');
+    loadJvfFile(file, onLoad);
+    // Reset, aby šel stejný soubor vybrat znovu
+    fileInput.value = '';
   });
 
   // Dropdown s ukázkovými soubory (fixtures) — fetchne XML ze statického

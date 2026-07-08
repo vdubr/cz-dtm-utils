@@ -7,6 +7,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+### Přidáno
+
+- JVF soubor lze nově načíst **přetažením myší (drag & drop)** kamkoli nad
+  okno aplikace — při přetahování se zobrazí vizuální nápověda, upuštění
+  souboru ho načte stejně jako výběr přes tlačítko „Nahrát soubor".
+
 ## [2026.6.16.2] - 2026-06-16
 
 ### Přidáno
