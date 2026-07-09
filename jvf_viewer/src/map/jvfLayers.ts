@@ -27,6 +27,7 @@ import {
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
 import { resolveZaznamId } from '../state/zaznamId.js';
+import { isLevelVisible, resolveLevelKey, type LevelKey } from '../state/featureFilter.js';
 
 // Re-export for consumers that previously imported LAYER_COLORS from here
 export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
@@ -349,6 +350,8 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
       // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
       // (nové prvky `ZapisObjektu='i'`, které se teprve budou do DTM vkládat).
       const objectId = resolveZaznamId(ot.elementName, zaznam, zaznamIndex);
+      // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
+      const levelKey = resolveLevelKey(zaznam);
       for (const geom of zaznam.geometrie) {
         let feature: Feature | null = null;
 
@@ -391,6 +394,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfElementName', ot.elementName);
                 mcFeature.set('jvfObjectId', objectId);
                 mcFeature.set('jvfZapisObjektu', zaznam.zapisObjektu);
+                mcFeature.set('jvfLevel', levelKey);
                 features.push(mcFeature);
               }
             }
@@ -404,6 +408,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfElementName', ot.elementName);
           feature.set('jvfObjectId', objectId);
           feature.set('jvfZapisObjektu', zaznam.zapisObjektu);
+          feature.set('jvfLevel', levelKey);
           features.push(feature);
         }
       }
@@ -433,6 +438,11 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
         const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
         if (!s || !geomType) return undefined;
+        // Filtr prvků (úroveň umístění) — odfiltrované záznamy se nekreslí.
+        // Při neaktivním filtru `isLevelVisible` vrací vždy true → chování
+        // beze změny.
+        const levelKey = feature.get('jvfLevel') as LevelKey | undefined;
+        if (!isLevelVisible(levelKey)) return undefined;
         // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — buď skryjeme úplně,
         // nebo přebarvíme podle typu změny (zelená/oranžová/červená).
         // Globální flagy řídí checkboxy v UI.
