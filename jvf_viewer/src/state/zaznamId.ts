@@ -1,4 +1,5 @@
 import type { ZaznamObjektu } from 'jvf-parser';
+import { getProjectPrefix } from './projects.js';
 
 /**
  * Identifikace záznamu napříč viewerem (2D vrstvy, 3D scéna, Přehled prvků).
@@ -13,20 +14,26 @@ import type { ZaznamObjektu } from 'jvf-parser';
  * Klíč je stabilní v rámci jednoho nahraného souboru — všechny části vieweru
  * iterují stejné pole `zaznamy`, takže index je konzistentní. Formát
  * `{elementName}#{N}` nekoliduje s reálnými DTM ID (ta znak `#` neobsahují).
+ *
+ * **Více projektů**: při ≥2 načtených souborech se klíč kvalifikuje
+ * prefixem `{projectId}:` (viz `state/projects.ts`) — stejné DTM ID nebo
+ * stejný syntetický klíč ve dvou projektech tak nekolidují. Při jednom
+ * projektu je prefix prázdný a formát klíčů se nemění (zpětná
+ * kompatibilita single-souborového režimu).
  */
 
 /**
  * Vrátí identifikátor záznamu: DTM ID pokud existuje, jinak syntetický
- * klíč `{elementName}#{index+1}`.
+ * klíč `{elementName}#{index+1}`. Při více projektech s prefixem
+ * `{projectId}:`.
  */
 export function resolveZaznamId(
   elementName: string,
   zaznam: ZaznamObjektu,
   index: number,
 ): string {
-  const id = zaznam.commonAttributes?.id;
-  if (id) return id;
-  return `${elementName}#${index + 1}`;
+  const base = zaznam.commonAttributes?.id ?? `${elementName}#${index + 1}`;
+  return getProjectPrefix(zaznam) + base;
 }
 
 /** Je identifikátor syntetický (záznam bez přiděleného DTM ID)? */

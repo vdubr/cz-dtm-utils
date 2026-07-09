@@ -1,5 +1,6 @@
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { LAYER_COLORS, resolveStyle } from '../map/jvfLayers.js';
+import { getProject, isMultiProject } from '../state/projects.js';
 
 const SVG_BASE = './symboly/';
 
@@ -54,7 +55,12 @@ function buildSymbolEl(layer: JvfVectorLayer): HTMLElement {
 }
 
 export interface LayerPanelCallbacks {
-  onVisibilityChange?: (elementName: string, visible: boolean) => void;
+  /**
+   * Volá se po přepnutí viditelnosti vrstvy. Předává celou vrstvu —
+   * volající si z ní odvodí klíč pro 3D scénu (`resolveLayerKey`,
+   * při více projektech kvalifikovaný projektem).
+   */
+  onVisibilityChange?: (layer: JvfVectorLayer, visible: boolean) => void;
 }
 
 export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanelCallbacks = {}): void {
@@ -98,6 +104,19 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
       leftEl.className = 'layer-item-left';
       leftEl.appendChild(symbolEl);
 
+      // Při více projektech: barevná tečka projektu pro odlišení stejných
+      // objektových typů z různých souborů.
+      if (isMultiProject() && layer.projectId) {
+        const project = getProject(layer.projectId);
+        if (project) {
+          const projectDot = document.createElement('span');
+          projectDot.className = 'project-dot';
+          projectDot.style.background = project.color;
+          projectDot.title = `Projekt: ${project.nazev}`;
+          leftEl.appendChild(projectDot);
+        }
+      }
+
       const infoEl = document.createElement('div');
       infoEl.className = 'layer-item-info';
       infoEl.innerHTML = `
@@ -119,7 +138,7 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
         layer.olLayer.setVisible(newVisible);
         item.classList.toggle('active', newVisible);
         item.classList.toggle('inactive', !newVisible);
-        callbacks.onVisibilityChange?.(layer.objektovyTyp.elementName, newVisible);
+        callbacks.onVisibilityChange?.(layer, newVisible);
       });
 
       groupEl.appendChild(item);

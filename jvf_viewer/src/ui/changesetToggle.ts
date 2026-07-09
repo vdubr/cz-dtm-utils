@@ -71,22 +71,23 @@ export function setupChangesetToggle(getLayers: () => JvfVectorLayer[]): void {
 }
 
 /**
- * Vyhodnotit, které typy `ZapisObjektu` (i/u/d) parsovaný JVF obsahuje,
- * a podle toho zobrazit / skrýt sekci i jednotlivé řádky s checkboxy.
- * Volat z `onJvfLoaded` po každém načtení souboru.
+ * Vyhodnotit, které typy `ZapisObjektu` (i/u/d) načtené JVF soubory
+ * obsahují (**sjednocení přes všechny projekty**), a podle toho zobrazit /
+ * skrýt sekci i jednotlivé řádky s checkboxy. Volat po každé změně
+ * načtených dat (přidání / odebrání projektu); prázdné pole = žádná data.
  *
  * Default chování:
- *  - soubor s i/u/d záznamy → sekce viditelná, přítomné typy mají řádek
- *    a checkbox zaškrtnutý (záznamy se hned zobrazí barevně),
- *  - typ v souboru chybí → jeho řádek skrytý a flag resetovaný na `false`,
- *    aby nezůstal aktivní z předchozího souboru.
+ *  - aspoň jeden soubor s i/u/d záznamy → sekce viditelná, přítomné typy
+ *    mají řádek a checkbox zaškrtnutý (záznamy se hned zobrazí barevně),
+ *  - typ v datech chybí → jeho řádek skrytý a flag resetovaný na `false`,
+ *    aby nezůstal aktivní z předchozích dat.
  */
-export function updateChangesetToggleVisibility(dtm: JvfDtm | null): void {
+export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
   const section = document.getElementById('changeset-options-section');
   if (!section) return;
 
   const present = new Set<ChangesetZapisType>();
-  if (dtm !== null) {
+  for (const dtm of dtms) {
     for (const ot of dtm.objekty) {
       for (const z of ot.zaznamy) {
         if (z.zapisObjektu === 'i' || z.zapisObjektu === 'u' || z.zapisObjektu === 'd') {

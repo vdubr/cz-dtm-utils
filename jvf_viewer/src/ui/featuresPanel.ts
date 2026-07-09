@@ -9,13 +9,21 @@ import { resolveZaznamId } from '../state/zaznamId.js';
 import {
   LEVEL_NONE,
   isLevelVisible,
+  isProjectVisible,
   levelKeyLabel,
   matchesFeatureFilter,
   resolveLevelKey,
   setLevelVisible,
+  setProjectVisible,
   subscribeFeatureFilter,
   type LevelKey,
 } from '../state/featureFilter.js';
+import {
+  getProject,
+  getProjects,
+  isMultiProject,
+  resolveProjectKey,
+} from '../state/projects.js';
 
 type ContentFilter = 'all' | 'ZPS' | 'TI' | 'DI' | 'GAD' | 'OPL';
 
@@ -26,6 +34,7 @@ const list         = document.getElementById('features-list')          as HTMLDi
 const summaryEl    = document.getElementById('features-summary')       as HTMLDivElement;
 const searchInput  = document.getElementById('features-search')        as HTMLInputElement;
 const levelFilterEl = document.getElementById('features-level-filter') as HTMLDivElement;
+const projectFilterEl = document.getElementById('features-project-filter') as HTMLDivElement;
 const filterBtns   = panel.querySelectorAll<HTMLButtonElement>('.features-filter-btn');
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -43,6 +52,16 @@ const expandedRecords = new Set<string>();
 // ── Utils ─────────────────────────────────────────────────────────────────────
 function recordKey(elementName: string, objectId: string): string {
   return `${elementName}::${objectId}`;
+}
+
+/**
+ * Klíč skupiny v seznamu — elementName kvalifikovaný projektem, aby při
+ * více projektech šly skupiny stejného typu rozbalovat nezávisle.
+ * Při jednom projektu je klíč čistý elementName (beze změny chování).
+ */
+function groupKey(ot: ObjektovyTyp): string {
+  const projectId = isMultiProject() ? resolveProjectKey(ot) : null;
+  return projectId ? `${projectId}:${ot.elementName}` : ot.elementName;
 }
 
 function zapisLabel(z: ZapisObjektuType): { label: string; cls: string } {
@@ -124,6 +143,51 @@ function renderLevelChips(): void {
   }
 }
 
+// ── Filtr projektů ────────────────────────────────────────────────────────────
+
+/**
+ * Vykreslí chips filtru projektů — zobrazí se jen při ≥2 načtených
+ * projektech (stejný vzor jako level chips). Aktivní chip = projekt
+ * viditelný; klik přepíná. Filtr se promítá do tabulky, 2D mapy i 3D
+ * scény přes `state/featureFilter.ts` (dimenze projekt).
+ */
+function renderProjectChips(): void {
+  const projects = getProjects();
+  if (!isMultiProject()) {
+    projectFilterEl.style.display = 'none';
+    projectFilterEl.innerHTML = '';
+    return;
+  }
+  projectFilterEl.style.display = '';
+  projectFilterEl.innerHTML = '';
+
+  const label = document.createElement('span');
+  label.className = 'features-level-label';
+  label.textContent = 'Projekt:';
+  projectFilterEl.appendChild(label);
+
+  for (const project of projects) {
+    const chip = document.createElement('button');
+    const visible = isProjectVisible(project.id);
+    chip.className = `level-chip project-chip${visible ? ' active' : ''}`;
+    chip.title = `Zobrazit / skrýt prvky projektu „${project.nazev}"`;
+
+    const dot = document.createElement('span');
+    dot.className = 'project-dot';
+    dot.style.background = project.color;
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'project-chip-name';
+    nameEl.textContent = project.nazev;
+
+    chip.append(dot, nameEl);
+    chip.addEventListener('click', () => {
+      setProjectVisible(project.id, !isProjectVisible(project.id));
+    });
+    projectFilterEl.appendChild(chip);
+  }
+}
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 function renderSummary(): void {
   const totalTypes = currentObjekty.length;
@@ -138,11 +202,11 @@ function renderSummary(): void {
 }
 
 // ── Group toggle ──────────────────────────────────────────────────────────────
-function toggleGroup(elementName: string): void {
-  if (expandedGroups.has(elementName)) {
-    expandedGroups.delete(elementName);
+function toggleGroup(key: string): void {
+  if (expandedGroups.has(key)) {
+    expandedGroups.delete(key);
   } else {
-    expandedGroups.add(elementName);
+    expandedGroups.add(key);
   }
   renderRows();
 }
@@ -362,13 +426,19 @@ function renderRows(): void {
   }
 
   for (const { ot, zaznamy } of filtered) {
-    const expanded = expandedGroups.has(ot.elementName);
+    const gKey = groupKey(ot);
+    const expanded = expandedGroups.has(gKey);
+    const project = isMultiProject()
+      ? getProject(resolveProjectKey(ot) ?? '')
+      : undefined;
 
     // Group header
     const header = document.createElement('div');
     header.className = `feature-group-header part-${ot.obsahovaCast}`;
     header.dataset['element'] = ot.elementName;
-    header.title = `${ot.nazev} — ${ot.obsahovaCast} (klikni pro rozbalení)`;
+    header.title = project
+      ? `${ot.nazev} — ${ot.obsahovaCast} · projekt ${project.nazev} (klikni pro rozbalení)`
+      : `${ot.nazev} — ${ot.obsahovaCast} (klikni pro rozbalení)`;
 
     const chevron = document.createElement('span');
     chevron.className = `group-chevron${expanded ? ' expanded' : ''}`;
@@ -390,8 +460,18 @@ function renderRows(): void {
     countBadge.className = 'group-count-badge group-count-features';
     countBadge.textContent = String(zaznamy.length);
 
-    header.append(chevron, partBadge, nameSpan, elSpan, countBadge);
-    header.addEventListener('click', () => toggleGroup(ot.elementName));
+    header.append(chevron, partBadge);
+    // Barevná tečka projektu — jen při více projektech (odlišení stejných
+    // objektových typů z různých souborů).
+    if (project) {
+      const projectDot = document.createElement('span');
+      projectDot.className = 'project-dot';
+      projectDot.style.background = project.color;
+      projectDot.title = `Projekt: ${project.nazev}`;
+      header.appendChild(projectDot);
+    }
+    header.append(nameSpan, elSpan, countBadge);
+    header.addEventListener('click', () => toggleGroup(gKey));
     list.appendChild(header);
 
     if (!expanded) continue;
@@ -427,7 +507,9 @@ function renderRows(): void {
 
       const idSpan = document.createElement('span');
       idSpan.className = 'feature-row-id';
-      idSpan.textContent = hasDtmId ? objectId : `bez ID (#${idx + 1})`;
+      // Zobrazujeme surové DTM ID (bez případného projektového prefixu
+      // v `objectId`) — projekt identifikuje tečka v hlavičce skupiny.
+      idSpan.textContent = hasDtmId ? z.commonAttributes!.id! : `bez ID (#${idx + 1})`;
 
       const popisSpan = document.createElement('span');
       popisSpan.className = 'feature-row-popis';
@@ -465,10 +547,11 @@ export function showFeatures(objekty: ObjektovyTyp[]): void {
   currentObjekty = objekty;
   if (!expandedGroups.size && objekty.length > 0 && objekty.length <= 8) {
     // Auto-expand u malých souborů
-    for (const ot of objekty) expandedGroups.add(ot.elementName);
+    for (const ot of objekty) expandedGroups.add(groupKey(ot));
   }
   renderSummary();
   renderLevelChips();
+  renderProjectChips();
   renderRows();
   panel.style.display = '';
   notifyMapAreaResized();
@@ -500,31 +583,49 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
   if (!isFeaturesPanelVisible()) return;
   if (!objectId) return;
 
-  // Zajistit, že daná grupa je rozbalená
-  expandedGroups.add(elementName);
   const key = recordKey(elementName, objectId);
   expandedRecords.add(key);
 
-  // Pokud filtr / search skryje typ, zruš filtr (uživatel klikl, chce vidět)
-  const ot = currentObjekty.find((o) => o.elementName === elementName);
-  if (ot) {
-    if (currentFilter !== 'all' && ot.obsahovaCast !== currentFilter) {
-      setFilter('all');
-    }
+  // Najít objektový typ obsahující záznam — při více projektech může
+  // existovat víc typů se stejným elementName; rozhoduje shoda objectId
+  // (ten je kvalifikovaný projektem).
+  let found: { ot: ObjektovyTyp; z: ZaznamObjektu } | null = null;
+  for (const ot of currentObjekty) {
+    if (ot.elementName !== elementName) continue;
     const z = ot.zaznamy.find(
       (zz, idx) => resolveZaznamId(elementName, zz, idx) === objectId,
     );
+    if (z) {
+      found = { ot, z };
+      break;
+    }
+  }
+
+  // Zajistit, že daná grupa je rozbalená
+  expandedGroups.add(found ? groupKey(found.ot) : elementName);
+
+  // Pokud filtr / search skryje typ, zruš filtr (uživatel klikl, chce vidět)
+  if (found) {
+    const { ot, z } = found;
+    if (currentFilter !== 'all' && ot.obsahovaCast !== currentFilter) {
+      setFilter('all');
+    }
     if (currentSearch) {
       // Zkontroluj, jestli se objekt projde aktuálním filtrem; pokud ne, vyčisti
-      if (z && !matchesSearch(ot, z)) {
+      if (!matchesSearch(ot, z)) {
         currentSearch = '';
         searchInput.value = '';
       }
     }
-    // Pokud je záznam skrytý filtrem úrovní, zviditelni jeho úroveň —
-    // uživatel na prvek klikl, chce ho vidět (stejná logika jako u search).
-    if (z && !matchesFeatureFilter(z)) {
+    // Pokud je záznam skrytý filtrem prvků (úroveň / projekt), zviditelni
+    // jeho hodnoty — uživatel na prvek klikl, chce ho vidět (stejná logika
+    // jako u search).
+    if (!matchesFeatureFilter(z)) {
       setLevelVisible(resolveLevelKey(z), true);
+      const projectKey = resolveProjectKey(z);
+      if (projectKey && !isProjectVisible(projectKey)) {
+        setProjectVisible(projectKey, true);
+      }
     }
   }
 
@@ -584,6 +685,7 @@ export function initFeaturesPanel(
   //   4. 3D scény (přepočet visibility per objekt).
   subscribeFeatureFilter(() => {
     renderLevelChips();
+    renderProjectChips();
     renderRows();
     if (getJvfLayers) {
       for (const { olLayer } of getJvfLayers()) olLayer.changed();

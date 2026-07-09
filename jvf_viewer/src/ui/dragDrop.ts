@@ -1,15 +1,16 @@
-import type { JvfDtm } from 'jvf-parser';
-import { loadJvfFile } from './fileUpload.js';
+import { loadJvfFile, type JvfLoadCallback } from './fileUpload.js';
 
 /**
- * Drag & drop načtení JVF souboru — drop zóna je celé okno aplikace.
+ * Drag & drop načtení JVF souborů — drop zóna je celé okno aplikace.
  *
  * Při přetahování souboru nad oknem se zobrazí overlay s rámečkem a výzvou;
- * po upuštění se soubor předá stejnému kód-path jako file input
+ * po upuštění se soubory předají stejnému kód-path jako file input
  * (`loadJvfFile`), takže platí stejná validace verze i chybové stavy.
- * Drop nahradí aktuálně načtený soubor (stejně jako výběr přes file input).
+ * Drop **přidává** soubory jako další projekty k již načteným
+ * (do limitu `MAX_PROJECTS`) — nenahrazuje je. Více souborů naráz se
+ * zpracuje sekvenčně.
  */
-export function setupDragAndDrop(onLoad: (data: JvfDtm) => void): void {
+export function setupDragAndDrop(onLoad: JvfLoadCallback): void {
   const overlay = document.getElementById('drop-overlay') as HTMLDivElement;
 
   // Počítadlo vnořených dragenter/dragleave — eventy bublají z child
@@ -60,23 +61,20 @@ export function setupDragAndDrop(onLoad: (data: JvfDtm) => void): void {
     const files = Array.from(e.dataTransfer?.files ?? []);
     if (files.length === 0) return;
 
-    if (files.length > 1) {
-      alert(
-        `Přetaženo ${files.length} souborů — načte se pouze první ` +
-        `(${files[0]!.name}). Podpora více projektů se připravuje.`
-      );
-    }
-
-    const file = files[0]!;
-    if (!isXmlFile(file)) {
-      alert(
-        `Soubor „${file.name}" nevypadá jako JVF XML — očekává se ` +
-        `přípona .xml nebo .jvf.`
-      );
-      return;
-    }
-
-    loadJvfFile(file, onLoad);
+    // Každý přetažený soubor = nový projekt. Sekvenčně (await), aby se
+    // loading overlay a případné modaly (nesoulad verze) nepřekrývaly.
+    void (async () => {
+      for (const file of files) {
+        if (!isXmlFile(file)) {
+          alert(
+            `Soubor „${file.name}" nevypadá jako JVF XML — očekává se ` +
+            `přípona .xml nebo .jvf.`
+          );
+          continue;
+        }
+        await loadJvfFile(file, onLoad);
+      }
+    })();
   });
 }
 

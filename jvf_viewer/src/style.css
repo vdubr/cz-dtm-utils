@@ -2210,3 +2210,84 @@ html, body {
   color: #8b949e;
   font-style: italic;
 }
+
+/* ── Projekty (více načtených JVF souborů) ─────────────────────────────── */
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  color: #c9d1d9;
+}
+.project-item:hover {
+  background: #1f242c;
+}
+
+.project-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.project-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-count {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: #8b949e;
+  background: #21262d;
+  border-radius: 8px;
+  padding: 1px 6px;
+}
+
+.project-remove-btn {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: #8b949e;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 3px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.project-remove-btn:hover {
+  color: #f85149;
+  background: #21262d;
+}
+
+.projects-limit-hint {
+  font-size: 10px;
+  color: #8b949e;
+  font-style: italic;
+  padding: 2px 6px;
+}
+
+/* Chip projektu ve filtru Přehledu prvků — rozšiřuje .level-chip */
+.project-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 160px;
+}
+.project-chip .project-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

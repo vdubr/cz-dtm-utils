@@ -42,40 +42,49 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/** Callback po úspěšném parsování — dostává i název souboru (nový projekt). */
+export type JvfLoadCallback = (data: JvfDtm, fileName: string) => void;
+
 /**
  * Načte lokální soubor (z file inputu nebo drag & drop) a zpracuje ho
- * parserem — jediný sdílený kód-path pro oba způsoby načtení.
+ * parserem — jediný sdílený kód-path pro oba způsoby načtení. Vrací
+ * Promise, aby šlo více souborů (multi-výběr / multi-drop) zpracovat
+ * sekvenčně bez závodění o loading overlay.
  */
-export function loadJvfFile(file: File, onLoad: (data: JvfDtm) => void): void {
+export function loadJvfFile(file: File, onLoad: JvfLoadCallback): Promise<void> {
   const loadingOverlay = document.getElementById('loading-overlay') as HTMLDivElement;
   loadingOverlay.style.display = 'flex';
 
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const xml = e.target?.result as string;
-      const data = parseJvfDtm(xml);
-      const ok = await validateFileVersion(data, file.name);
-      if (!ok) return;
-      onLoad(data);
-    } catch (err) {
-      console.error('Failed to parse JVF file:', err);
-      alert(`Chyba při načtení souboru: ${String(err)}`);
-    } finally {
+  return new Promise<void>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const xml = e.target?.result as string;
+        const data = parseJvfDtm(xml);
+        const ok = await validateFileVersion(data, file.name);
+        if (!ok) return;
+        onLoad(data, file.name);
+      } catch (err) {
+        console.error('Failed to parse JVF file:', err);
+        alert(`Chyba při načtení souboru: ${String(err)}`);
+      } finally {
+        loadingOverlay.style.display = 'none';
+        resolve();
+      }
+    };
+
+    reader.onerror = () => {
       loadingOverlay.style.display = 'none';
-    }
-  };
+      alert('Chyba při čtení souboru.');
+      resolve();
+    };
 
-  reader.onerror = () => {
-    loadingOverlay.style.display = 'none';
-    alert('Chyba při čtení souboru.');
-  };
-
-  reader.readAsText(file, 'UTF-8');
+    reader.readAsText(file, 'UTF-8');
+  });
 }
 
 export function setupFileUpload(
-  onLoad: (data: JvfDtm) => void
+  onLoad: JvfLoadCallback
 ): void {
   const btnUpload = document.getElementById('btn-upload') as HTMLButtonElement;
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -87,12 +96,15 @@ export function setupFileUpload(
     fileInput.click();
   });
 
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files?.[0];
-    if (!file) return;
-    loadJvfFile(file, onLoad);
-    // Reset, aby šel stejný soubor vybrat znovu
+  fileInput.addEventListener('change', async () => {
+    // Multi-výběr: každý soubor se přidá jako samostatný projekt.
+    // Sekvenčně — loading overlay a případné modaly se nesmí překrývat.
+    const files = Array.from(fileInput.files ?? []);
+    // Reset hned, aby šel stejný soubor vybrat znovu
     fileInput.value = '';
+    for (const file of files) {
+      await loadJvfFile(file, onLoad);
+    }
   });
 
   // Dropdown s ukázkovými soubory (fixtures) — fetchne XML ze statického
@@ -147,7 +159,7 @@ export function setupFileUpload(
  */
 async function loadSample(
   name: string,
-  onLoad: (data: JvfDtm) => void,
+  onLoad: JvfLoadCallback,
   loadingOverlay: HTMLDivElement
 ): Promise<void> {
   loadingOverlay.style.display = 'flex';
@@ -161,7 +173,7 @@ async function loadSample(
     const data = parseJvfDtm(xml);
     const ok = await validateFileVersion(data, name);
     if (!ok) return;
-    onLoad(data);
+    onLoad(data, name);
   } catch (err) {
     console.error('Failed to load sample:', err);
     alert(`Chyba při načtení ukázky ${name}: ${String(err)}`);

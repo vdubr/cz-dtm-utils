@@ -20,11 +20,29 @@ const INFO_CONTENT_HTML = `
   <h3>Hlavní funkce</h3>
   <ul>
     <li>
-      <strong>Nahrát soubor</strong> — výběr JVF XML souboru z disku, nebo
-      jednoduše <strong>přetažení souboru myší</strong> (drag &amp; drop)
+      <strong>Nahrát soubor</strong> — výběr JVF XML souboru z disku (lze
+      vybrat i více souborů naráz), nebo jednoduše
+      <strong>přetažení souborů myší</strong> (drag &amp; drop)
       kamkoli nad okno aplikace. Parsování probíhá v prohlížeči. Vedle
       tlačítka je šipka s rychlým výběrem přiložených
       <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL).
+    </li>
+    <li>
+      <strong>Více projektů naráz</strong> — každý načtený soubor se přidá
+      jako samostatný <em>projekt</em> (další výběr souboru nebo drag &amp;
+      drop načtená data <em>nenahrazuje</em>, ale přidává — až do
+      8 projektů). Hodí se pro navazující projekty, které chcete vidět
+      společně v jedné mapě. Levý panel zobrazuje sekci
+      <em>Projekty</em> se seznamem souborů (barevná tečka, počet záznamů)
+      a tlačítkem × pro odebrání; odebráním posledního projektu se viewer
+      vrátí do prázdného stavu. Při ≥2 projektech přibude v Přehledu prvků
+      řádek <em>Projekt</em> s přepínatelnými chipy — odškrtnutý projekt se
+      skryje v tabulce i ve 2D a 3D mapě. Vrstvy a skupiny stejného typu
+      z různých projektů jsou odlišené barevnou tečkou projektu. Všechny
+      soubory musí odpovídat aktivní verzi JVF DTM (soubor s jinou verzí
+      se nenačte); topologická validace běží pro každý projekt zvlášť,
+      zoom na data a 3D terén pracují se sjednoceným rozsahem všech
+      projektů.
     </li>
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní
