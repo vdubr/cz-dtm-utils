@@ -10,7 +10,12 @@ export declare function parseCoordinates(text: string | undefined | null): numbe
  */
 export declare function extractGmlId(obj: Record<string, unknown>): string | undefined;
 export declare function parsePoint(pointEl: Record<string, unknown>): GmlPoint;
-export declare function parseLineString(lsEl: Record<string, unknown>): GmlLineString;
+/**
+ * @param inheritedDim srsDimension zděděná z rodičovské geometrie (GML
+ *   sémantika: atribut platí i pro potomky, dokud ho nepřepíšou). Členské
+ *   LineString v MultiCurve atribut typicky nemají — nese ho MultiCurve.
+ */
+export declare function parseLineString(lsEl: Record<string, unknown>, inheritedDim?: number): GmlLineString;
 export declare function parsePolygon(polygonEl: Record<string, unknown>): GmlPolygon;
 export declare function parseMultiCurve(mcEl: Record<string, unknown>): GmlMultiCurve;
 //# sourceMappingURL=geometry-primitives.d.ts.map
