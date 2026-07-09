@@ -14,6 +14,7 @@ import {
 import { setupFileUpload } from './ui/fileUpload.js';
 import { setupDragAndDrop } from './ui/dragDrop.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
+import { renderProjectsPanel } from './ui/projectsPanel.js';
 import { setup3dToggle, getIs3dActive, reloadThreeSceneData } from './ui/toggle3d.js';
 import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
 import {
@@ -23,7 +24,7 @@ import {
   isFeaturesPanelVisible,
   selectFeatureInPanel,
 } from './ui/featuresPanel.js';
-import { initHighlightLayer, highlightFeature } from './map/highlight.js';
+import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupVersionSelect } from './ui/versionSelect.js';
@@ -32,16 +33,34 @@ import {
   updateChangesetToggleVisibility,
 } from './ui/changesetToggle.js';
 import { resetFeatureFilter } from './state/featureFilter.js';
-import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility, highlightThreeFeature, pickFeatureFromClient } from './viewer3d/threeScene.js';
-import { isEmpty } from 'ol/extent.js';
+import {
+  addProject,
+  clearProjects,
+  getProjectCount,
+  getProjects,
+  isMultiProject,
+  MAX_PROJECTS,
+  removeProject,
+  resolveLayerKey,
+} from './state/projects.js';
+import {
+  resetThreeCamera,
+  setThreeLayerVisible,
+  resetThreeLayerVisibility,
+  clearThreeHighlight,
+  highlightThreeFeature,
+  pickFeatureFromClient,
+} from './viewer3d/threeScene.js';
+import { isEmpty, extend } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
 import { createEmpty } from 'ol/extent.js';
 
-// Current state
+// Current state — odvozený stav z kolekce projektů (state/projects.ts).
+// Zdrojem pravdy je kolekce projektů; tyto proměnné se přepočítávají
+// v `rebuildAll()` po každé změně (přidání / odebrání projektu).
 let currentJvfLayers: JvfVectorLayer[] = [];
 let currentObjekty: ObjektovyTyp[] = [];
 let currentExtent: Extent = createEmpty();
-let currentDtm: JvfDtm | null = null;
 
 // Build info
 const buildInfoEl = document.getElementById('build-info');
@@ -69,7 +88,7 @@ const zmLayer = createZmLayer();
 const ortofotoLayer = createOrtofotoLayer();
 setupBaseLayerSwitcher(olMap, zmLayer, ortofotoLayer);
 
-// Setup 3D toggle — getObjekty returns current loaded data
+// Setup 3D toggle — getObjekty returns current loaded data (union všech projektů)
 setup3dToggle(olMap, () => currentObjekty);
 
 // Setup info modal (footer)
@@ -100,16 +119,27 @@ btnZoom.addEventListener('click', () => {
   }
 });
 
-// Setup validate button — toggle panel
+// Setup validate button — toggle panel. Validace běží **per projekt**
+// (každý JVF soubor je samostatná dávka pro IS DMVS; meziprojektové
+// kontroly by hlásily false positives na sdílených hranicích navazujících
+// projektů). Nálezy všech projektů se slijí do jednoho panelu; při více
+// projektech se `objectId` prefixuje `{projectId}:`, aby zoom na objekt
+// našel správný prvek a nález nesl provenienci.
 const btnValidate = document.getElementById('btn-validate') as HTMLButtonElement;
 btnValidate.addEventListener('click', () => {
   if (isPanelVisible()) {
     hideErrors();
   } else {
-    if (!currentDtm) return;
+    const projects = getProjects();
+    if (projects.length === 0) return;
     // Mutual exclusion — pokud je otevřený features panel, zavři ho.
     if (isFeaturesPanelVisible()) hideFeatures();
-    const errors = runAllChecks(currentDtm);
+    const multi = isMultiProject();
+    const errors = projects.flatMap((p) =>
+      runAllChecks(p.dtm).map((e) =>
+        multi && e.objectId ? { ...e, objectId: `${p.id}:${e.objectId}` } : e,
+      ),
+    );
     showErrors(errors);
     btnValidate.classList.add('active');
   }
@@ -121,128 +151,144 @@ btnFeatures.addEventListener('click', () => {
   if (isFeaturesPanelVisible()) {
     hideFeatures();
   } else {
-    if (!currentDtm) return;
+    if (getProjectCount() === 0) return;
     // Mutual exclusion — pokud je otevřený error panel, zavři ho.
     if (isPanelVisible()) hideErrors();
-    showFeatures(currentDtm.objekty);
+    showFeatures(currentObjekty);
     btnFeatures.classList.add('active');
   }
 });
 
-// Setup file upload
-setupFileUpload((data: JvfDtm) => {
-  onJvfLoaded(data);
+// Setup file upload — každý vybraný soubor se přidá jako nový projekt
+setupFileUpload((data: JvfDtm, fileName: string) => {
+  onJvfLoaded(data, fileName);
 });
 
-// Setup drag & drop — přetažení JVF souboru kamkoli nad okno aplikace
-// načte soubor stejnou cestou jako file input.
-setupDragAndDrop((data: JvfDtm) => {
-  onJvfLoaded(data);
+// Setup drag & drop — přetažení JVF souborů kamkoli nad okno aplikace
+// PŘIDÁ projekty stejnou cestou jako file input (nenahrazuje načtené).
+setupDragAndDrop((data: JvfDtm, fileName: string) => {
+  onJvfLoaded(data, fileName);
 });
 
 // Setup version selector — pokud uživatel přepne verzi a má nahraná data,
-// confirm modal vyzve ke ztrátě dat. Po potvrzení voláme `clearLoadedData`.
+// confirm modal vyzve ke ztrátě dat. Po potvrzení se odeberou všechny
+// projekty (všechny prošly validací proti staré aktivní verzi).
 setupVersionSelect({
-  hasData: () => currentDtm !== null,
-  onClearData: () => clearLoadedData(),
+  hasData: () => getProjectCount() > 0,
+  onClearData: () => {
+    clearProjects();
+    rebuildAll();
+  },
 });
 
 /**
- * Vrátí aplikaci do stavu "žádný soubor není nahraný" — odstraní JVF
- * vrstvy z mapy, vyčistí 3D scénu (pokud je aktivní), zavře error panel
- * a vrátí tlačítka Zoom/Validate do disabled stavu.
+ * Přepočítá odvozený stav vieweru z aktuální kolekce projektů — jediné
+ * místo, kde se z projektů staví 2D vrstvy, union extent, panely a 3D
+ * scéna. Volá se po každém přidání / odebrání projektu (i posledního —
+ * prázdná kolekce vrací viewer do prázdného stavu).
+ *
+ * @param opts.fitView Po rebuildů přiblížit pohled na union extent
+ *                     všech projektů (používá se po přidání projektu).
  */
-function clearLoadedData(): void {
+function rebuildAll(opts: { fitView?: boolean } = {}): void {
+  // 1. Odklidit předchozí stav — vrstvy, highlighty, per-data přepínače.
   removeJvfLayersFromMap(olMap, currentJvfLayers);
+  clearHighlight();
+  clearThreeHighlight();
   resetThreeLayerVisibility();
-
-  // Reset filtru prvků (úrovně umístění) — žádná data, žádný filtr
+  // Filtr prvků (úrovně + projekty) — filtr z předchozích dat nemá
+  // ovlivňovat nová data.
   resetFeatureFilter();
 
-  currentJvfLayers = [];
-  currentObjekty = [];
-  currentExtent = createEmpty();
-  currentDtm = null;
-
-  renderLayerPanel([], {
-    onVisibilityChange: () => { /* no-op — žádné vrstvy */ },
-  });
-
-  // Schovat changeset sekci — žádná data nejsou nahraná
-  updateChangesetToggleVisibility(null);
-
-  if (getIs3dActive()) {
-    reloadThreeSceneData([]);
+  // 2. Postavit vrstvy per projekt; extent = union přes všechny projekty.
+  const projects = getProjects();
+  const allLayers: JvfVectorLayer[] = [];
+  const totalExtent = createEmpty();
+  const allObjekty: ObjektovyTyp[] = [];
+  for (const project of projects) {
+    const { layers, extent } = buildJvfLayers(project.dtm.objekty);
+    allLayers.push(...layers);
+    if (!isEmpty(extent)) extend(totalExtent, extent);
+    allObjekty.push(...project.dtm.objekty);
   }
 
-  if (isPanelVisible()) hideErrors();
-  if (isFeaturesPanelVisible()) hideFeatures();
+  currentJvfLayers = allLayers;
+  currentObjekty = allObjekty;
+  currentExtent = totalExtent;
 
-  btnZoom.disabled = true;
-  btnZoom.title = 'Nejprve nahrajte JVF soubor';
-  btnValidate.disabled = true;
-  btnValidate.title = 'Nejprve nahrajte JVF soubor';
-  btnFeatures.disabled = true;
-  btnFeatures.title = 'Nejprve nahrajte JVF soubor';
-}
+  addJvfLayersToMap(olMap, allLayers);
 
-function onJvfLoaded(data: JvfDtm): void {
-  // Remove previous JVF layers
-  removeJvfLayersFromMap(olMap, currentJvfLayers);
-
-  // Reset persisted 3D layer visibility — nový soubor, jiné vrstvy.
-  resetThreeLayerVisibility();
-
-  // Reset filtru prvků (úrovně umístění) — filtr z předchozího souboru
-  // nemá ovlivňovat nová data.
-  resetFeatureFilter();
-
-  // Build new layers
-  const { layers, extent } = buildJvfLayers(data.objekty);
-
-  currentJvfLayers = layers;
-  currentObjekty = data.objekty;
-  currentExtent = extent;
-  currentDtm = data;
-
-  // Add to map
-  addJvfLayersToMap(olMap, layers);
-
-  // Render layer panel
-  renderLayerPanel(layers, {
-    onVisibilityChange: (elementName, visible) => {
-      setThreeLayerVisible(elementName, visible);
+  // 3. UI panely.
+  renderProjectsPanel({
+    onRemove: (projectId) => {
+      removeProject(projectId);
+      rebuildAll();
+    },
+  });
+  renderLayerPanel(allLayers, {
+    onVisibilityChange: (layer, visible) => {
+      // Klíč vrstvy pro 3D — při více projektech kvalifikovaný projektem,
+      // aby skrytí vrstvy jednoho projektu neskrylo stejný typ v ostatních.
+      setThreeLayerVisible(resolveLayerKey(layer.objektovyTyp), visible);
     },
   });
 
-  // Po nahrání nového souboru obnovit viditelnost changeset sekce: soubor
-  // s alespoň jedním `i`/`u`/`d` záznamem → sekce viditelná, checkboxy
-  // přítomných typů default ON; jinak schovat a flagy resetovat.
-  updateChangesetToggleVisibility(data);
+  // Changeset sekce: sjednocení typů zápisu (i/u/d) přes všechny projekty.
+  updateChangesetToggleVisibility(projects.map((p) => p.dtm));
 
-  // Enable zoom + validate + features buttons now that data is loaded
-  btnZoom.disabled = false;
-  btnZoom.title = 'Přiblížit pohled na rozsah načtených JVF dat';
-  btnValidate.disabled = false;
-  btnValidate.title = 'Spustit topologickou validaci dat a zobrazit panel s nálezy';
-  btnFeatures.disabled = false;
-  btnFeatures.title = 'Zobrazit přehled všech načtených objektů (klik na řádek = zoom + atributy)';
+  // 4. Tlačítka v hlavičce.
+  const hasData = projects.length > 0;
+  btnZoom.disabled = !hasData;
+  btnZoom.title = hasData
+    ? 'Přiblížit pohled na rozsah načtených JVF dat'
+    : 'Nejprve nahrajte JVF soubor';
+  btnValidate.disabled = !hasData;
+  btnValidate.title = hasData
+    ? 'Spustit topologickou validaci dat a zobrazit panel s nálezy'
+    : 'Nejprve nahrajte JVF soubor';
+  btnFeatures.disabled = !hasData;
+  btnFeatures.title = hasData
+    ? 'Zobrazit přehled všech načtených objektů (klik na řádek = zoom + atributy)'
+    : 'Nejprve nahrajte JVF soubor';
 
-  // Pokud je aktivní 3D, přebuduj scénu s novými daty (a zacentruj kameru).
-  // Bez toho by scéna zůstala prázdná, protože `initThreeScene` se volá jen
-  // při přepnutí 2D → 3D.
-  if (getIs3dActive()) {
-    reloadThreeSceneData(data.objekty);
+  // 5. Otevřené panely: validace se musí spustit znovu nad novými daty →
+  // zavřít; Přehled prvků překreslit (nebo zavřít, když nezbyla data).
+  if (isPanelVisible()) hideErrors();
+  if (isFeaturesPanelVisible()) {
+    if (hasData) showFeatures(currentObjekty);
+    else hideFeatures();
   }
 
-  // Fit map to loaded data extent
-  if (!isEmpty(extent)) {
-    olMap.getView().fit(extent, {
+  // 6. 3D scéna — rebuild s union dat (terén se stáhne pro union bbox).
+  if (getIs3dActive()) {
+    reloadThreeSceneData(allObjekty);
+  }
+
+  // 7. Volitelně přiblížit na union extent všech projektů.
+  if (opts.fitView && !isEmpty(totalExtent)) {
+    olMap.getView().fit(totalExtent, {
       padding: [40, 40, 40, 40],
       maxZoom: 18,
       duration: 600,
     });
   }
+}
+
+/**
+ * Zpracování naparsovaného JVF souboru — přidá ho jako nový projekt
+ * ke stávajícím (do limitu `MAX_PROJECTS`) a přestaví viewer.
+ */
+function onJvfLoaded(data: JvfDtm, fileName: string): void {
+  const project = addProject(fileName, data);
+  if (!project) {
+    alert(
+      `Je načteno maximum ${MAX_PROJECTS} projektů. ` +
+      `Pro přidání souboru „${fileName}" nejprve některý projekt odeberte ` +
+      `(sekce Projekty v levém panelu).`
+    );
+    return;
+  }
+  rebuildAll({ fitView: true });
 }
 
 // ── Map → panel: klik na 2D / 3D vybere prvek v otevřeném "Přehledu prvků" ──

@@ -27,7 +27,13 @@ import {
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
 import { resolveZaznamId } from '../state/zaznamId.js';
-import { isLevelVisible, resolveLevelKey, type LevelKey } from '../state/featureFilter.js';
+import {
+  isLevelVisible,
+  isProjectVisible,
+  resolveLevelKey,
+  type LevelKey,
+} from '../state/featureFilter.js';
+import { resolveProjectKey } from '../state/projects.js';
 
 // Re-export for consumers that previously imported LAYER_COLORS from here
 export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
@@ -333,6 +339,8 @@ export interface JvfVectorLayer {
   olLayer: VectorLayer;
   objektovyTyp: ObjektovyTyp;
   featureCount: number;
+  /** Id projektu, ze kterého vrstva pochází (null bez provenience). */
+  projectId: string | null;
 }
 
 export function buildJvfLayers(objekty: ObjektovyTyp[]): {
@@ -344,6 +352,9 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
 
   for (const ot of objekty) {
     const features: Feature[] = [];
+    // Provenience: id projektu, ze kterého objektový typ pochází — dimenze
+    // filtru prvků (state/featureFilter.ts) při více načtených projektech.
+    const projectId = resolveProjectKey(ot);
 
     for (const [zaznamIndex, zaznam] of ot.zaznamy.entries()) {
       const sFeature = resolveStyleForZaznam(ot, zaznam);
@@ -395,6 +406,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfObjectId', objectId);
                 mcFeature.set('jvfZapisObjektu', zaznam.zapisObjektu);
                 mcFeature.set('jvfLevel', levelKey);
+                mcFeature.set('jvfProjectId', projectId);
                 features.push(mcFeature);
               }
             }
@@ -409,6 +421,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfObjectId', objectId);
           feature.set('jvfZapisObjektu', zaznam.zapisObjektu);
           feature.set('jvfLevel', levelKey);
+          feature.set('jvfProjectId', projectId);
           features.push(feature);
         }
       }
@@ -438,11 +451,13 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
         const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
         if (!s || !geomType) return undefined;
-        // Filtr prvků (úroveň umístění) — odfiltrované záznamy se nekreslí.
-        // Při neaktivním filtru `isLevelVisible` vrací vždy true → chování
-        // beze změny.
+        // Filtr prvků (úroveň umístění + projekt) — odfiltrované záznamy se
+        // nekreslí. Při neaktivním filtru obě funkce vrací vždy true →
+        // chování beze změny.
         const levelKey = feature.get('jvfLevel') as LevelKey | undefined;
         if (!isLevelVisible(levelKey)) return undefined;
+        const projectKey = feature.get('jvfProjectId') as string | null | undefined;
+        if (!isProjectVisible(projectKey)) return undefined;
         // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — buď skryjeme úplně,
         // nebo přebarvíme podle typu změny (zelená/oranžová/červená).
         // Globální flagy řídí checkboxy v UI.
@@ -469,7 +484,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     olLayer.set('jvfNazev', ot.nazev);
     olLayer.set('jvfObsahova', ot.obsahovaCast);
 
-    layers.push({ olLayer, objektovyTyp: ot, featureCount: features.length });
+    layers.push({ olLayer, objektovyTyp: ot, featureCount: features.length, projectId });
   }
 
   return { layers, extent: totalExtent };

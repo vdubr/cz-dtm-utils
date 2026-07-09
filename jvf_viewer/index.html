@@ -87,7 +87,7 @@
             <button class="upload-menu-item" data-sample="ukazka_OPL.xml" role="menuitem" title="Ochranná pásma a linie">ukazka_OPL.xml</button>
           </div>
         </div>
-        <input type="file" id="file-input" accept=".xml" style="display:none" />
+        <input type="file" id="file-input" accept=".xml,.jvf" multiple style="display:none" />
         <button id="btn-zoom" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           <span class="btn-icon">&#8982;</span> Zoom na data
         </button>
@@ -108,6 +108,10 @@
             <button class="base-btn active" data-layer="zm" title="Přepnout ČÚZK Základní mapu (kliknutí na aktivní tlačítko podklad vypne)">Základní mapa</button>
             <button class="base-btn" data-layer="ortofoto" title="Přepnout ČÚZK Ortofoto (kliknutí na aktivní tlačítko podklad vypne)">Ortofoto</button>
           </div>
+        </div>
+        <div class="panel-section" id="projects-section" style="display:none">
+          <div class="panel-section-title">Projekty</div>
+          <div id="projects-list" class="projects-list"></div>
         </div>
         <div class="panel-section panel-section-jvf">
           <div class="panel-section-title-row">
@@ -251,6 +255,7 @@
             <button class="features-filter-btn" data-filter="GAD" title="Geodetické a administrativní údaje">GAD</button>
             <button class="features-filter-btn" data-filter="OPL" title="Ostatní prvky a linie">OPL</button>
           </div>
+          <div id="features-project-filter" class="features-level-filter" style="display:none"></div>
           <div id="features-level-filter" class="features-level-filter" style="display:none"></div>
           <input id="features-search" class="features-search" type="search" placeholder="Filtrovat podle názvu nebo ID…" />
         </div>

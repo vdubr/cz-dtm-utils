@@ -7,7 +7,13 @@ import {
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
 import { resolveZaznamId } from '../state/zaznamId.js';
-import { isLevelVisible, resolveLevelKey, type LevelKey } from '../state/featureFilter.js';
+import {
+  isLevelVisible,
+  isProjectVisible,
+  resolveLevelKey,
+  type LevelKey,
+} from '../state/featureFilter.js';
+import { resolveLayerKey, resolveProjectKey } from '../state/projects.js';
 import {
   loadTerrainMesh,
   updateTerrainZExaggeration,
@@ -27,6 +33,10 @@ import {
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
+// Klíč vrstvy pro viditelnost (`hiddenLayers`) — elementName kvalifikovaný
+// projektem při více načtených projektech (viz resolveLayerKey). DATA_TAG
+// zůstává čistý elementName kvůli identifikaci prvků (highlight, pick).
+const LAYER_KEY_TAG = 'jvfLayerKey';
 // Tag for highlight objects (exclude from clearSceneObjects — they live in a parallel group)
 const HIGHLIGHT_TAG = 'jvfHighlight';
 /** Tag pro terén — zůstává ve scéně i při rebuildSceneGeometry. */
@@ -137,9 +147,12 @@ const hiddenLayers = new Set<string>();
  * Vypočítá cílovou viditelnost datového objektu scény jako průnik (AND)
  * všech nezávislých přepínačů:
  *
- *   1. viditelnost vrstvy (`hiddenLayers`, layer panel),
+ *   1. viditelnost vrstvy (`hiddenLayers`, layer panel; klíč vrstvy je při
+ *      více projektech kvalifikovaný projektem — viz `resolveLayerKey`
+ *      ve `state/projects.ts`),
  *   2. changeset přepínače (`isShowZapis` pro `ZapisObjektu` ∈ {i, u, d}),
- *   3. filtr prvků — úroveň umístění (`isLevelVisible`).
+ *   3. filtr prvků — úroveň umístění (`isLevelVisible`) a projekt
+ *      (`isProjectVisible`).
  *
  * Jediné místo, kde se viditelnost skládá — používají ho build scény,
  * `setThreeLayerVisible`, `applyChangesetHighlight` i `applyFeatureFilter`,
@@ -148,12 +161,14 @@ const hiddenLayers = new Set<string>();
  * (`updateSpriteVisibility`), které se s tímto výsledkem také kombinuje AND.
  */
 function computeObjectVisibility(obj: THREE.Object3D): boolean {
-  const elementName = obj.userData[DATA_TAG] as string | undefined;
-  if (elementName !== undefined && hiddenLayers.has(elementName)) return false;
+  const layerKey = obj.userData[LAYER_KEY_TAG] as string | undefined;
+  if (layerKey !== undefined && hiddenLayers.has(layerKey)) return false;
   const zapis = obj.userData['jvfZapisObjektu'];
   if (isChangesetZapis(zapis) && !isShowZapis(zapis)) return false;
   const levelKey = obj.userData['jvfLevel'] as LevelKey | undefined;
   if (!isLevelVisible(levelKey)) return false;
+  const projectKey = obj.userData['jvfProjectId'] as string | null | undefined;
+  if (!isProjectVisible(projectKey)) return false;
   return true;
 }
 
@@ -440,6 +455,10 @@ function buildSceneObjects(
       : s.fillColor.length === 9 ? s.fillColor.slice(0, 7) : s.fillColor;
     const fillColor = new THREE.Color(fillHex);
     const key = layerKey(ot);
+    // Klíč viditelnosti vrstvy (kvalifikovaný projektem při ≥2 projektech)
+    // + provenience projektu pro filtr prvků.
+    const layerVisKey = resolveLayerKey(ot);
+    const projectKey = resolveProjectKey(ot);
 
     for (const [zaznamIndex, zaz] of ot.zaznamy.entries()) {
       // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
@@ -558,9 +577,11 @@ function buildSceneObjects(
                 g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
                 const lineObj = new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
                 lineObj.userData[DATA_TAG] = key;
+                lineObj.userData[LAYER_KEY_TAG] = layerVisKey;
                 lineObj.userData['jvfObjectId'] = objectId;
                 lineObj.userData['jvfZapisObjektu'] = zapisObjektu;
                 lineObj.userData['jvfLevel'] = levelKey;
+                lineObj.userData['jvfProjectId'] = projectKey;
                 lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
                 lineObj.visible = computeObjectVisibility(lineObj);
                 if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
@@ -575,9 +596,11 @@ function buildSceneObjects(
 
         if (obj) {
           obj.userData[DATA_TAG] = key;
+          obj.userData[LAYER_KEY_TAG] = layerVisKey;
           obj.userData['jvfObjectId'] = objectId;
           obj.userData['jvfZapisObjektu'] = zapisObjektu;
           obj.userData['jvfLevel'] = levelKey;
+          obj.userData['jvfProjectId'] = projectKey;
           // Polygon používá fillColor, ostatní geometrie používají strokeColor —
           // pro restoraci po toggle off potřebujeme znát ten správný.
           const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
@@ -812,13 +835,17 @@ export function rebuildSceneGeometry(zExaggeration: number): void {
 // Show/hide all 3D objects belonging to a layer. Vždy aktualizuje persistentní
 // `hiddenLayers` — tak zůstane viditelnost konzistentní i přes re-init scény
 // (přepnutí 2D ↔ 3D).
-export function setThreeLayerVisible(elementName: string, visible: boolean): void {
-  if (visible) hiddenLayers.delete(elementName);
-  else hiddenLayers.add(elementName);
+//
+// `layerKey` = klíč vrstvy z `resolveLayerKey` (elementName, při více
+// projektech kvalifikovaný `{projectId}:`) — skrytí vrstvy jednoho projektu
+// neskryje stejný objektový typ v ostatních projektech.
+export function setThreeLayerVisible(layerKey: string, visible: boolean): void {
+  if (visible) hiddenLayers.delete(layerKey);
+  else hiddenLayers.add(layerKey);
   if (!state) return;
   const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
-    if (obj.userData[DATA_TAG] === elementName) {
+    if (obj.userData[LAYER_KEY_TAG] === layerKey) {
       // AND s changeset přepínači a filtrem prvků — zobrazení vrstvy nesmí
       // od-skrýt objekt skrytý jiným přepínačem.
       obj.visible =

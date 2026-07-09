@@ -9,6 +9,18 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Více JVF souborů (projektů) naráz** — další výběr souboru nebo drag &
+  drop načtená data nenahrazuje, ale **přidává jako samostatný projekt**
+  (až 8 projektů; hodí se pro navazující projekty v jedné mapě). Levý panel
+  má novou sekci **Projekty** (název souboru, barevná tečka, počet záznamů,
+  tlačítko × pro odebrání); odebráním posledního projektu se viewer vrátí
+  do prázdného stavu. Při ≥2 projektech přibude v Přehledu prvků filtr
+  **Projekt** (chips) promítající se do tabulky i 2D/3D mapy; vrstvy
+  a skupiny stejného typu z různých projektů odlišuje tečka projektu.
+  Topologická validace běží per projekt, zoom na data a 3D terén pracují
+  se sjednoceným rozsahem; identifikátory záznamů se při více projektech
+  kvalifikují projektem, takže stejná DTM ID ve dvou souborech nekolidují.
+  S jedním načteným souborem se chování vieweru nemění.
 - JVF soubor lze nově načíst **přetažením myší (drag & drop)** kamkoli nad
   okno aplikace — při přetahování se zobrazí vizuální nápověda, upuštění
   souboru ho načte stejně jako výběr přes tlačítko „Nahrát soubor".

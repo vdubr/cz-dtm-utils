@@ -1,4 +1,5 @@
 import type { ZaznamObjektu } from 'jvf-parser';
+import { resolveProjectKey } from './projects.js';
 
 /**
  * Globální filtr prvků — jednotný stav filtrovacích dimenzí, které se
@@ -8,13 +9,15 @@ import type { ZaznamObjektu } from 'jvf-parser';
  * Aktuální dimenze:
  *   - **úroveň umístění (LEVEL)** — hodnoty −3..+3 z atributů
  *     `UrovenUmisteniObjektuZPS/TI/DI` + skupina „bez úrovně" pro záznamy,
- *     které atribut nemají.
+ *     které atribut nemají,
+ *   - **projekt** — při ≥2 načtených JVF souborech lze skrýt záznamy
+ *     jednotlivých projektů (chips v Přehledu prvků). Klíčem je id
+ *     projektu (`state/projects.ts`).
  *
- * Architektura je záměrně rozšiřitelná: filtr je průnik (AND) dimenzí,
- * `matchesFeatureFilter` je jediné místo, kde se dimenze vyhodnocují.
- * Budoucí dimenze (např. filtr podle projektu při multi-souborové podpoře)
- * přidají vlastní stav + podmínku tamtéž — konzumenti (style fn, 3D
- * visibility, tabulka) se nemění.
+ * Architektura: filtr je průnik (AND) dimenzí, `matchesFeatureFilter` je
+ * jediné místo, kde se dimenze vyhodnocují. Nové dimenze přidají vlastní
+ * stav + podmínku tamtéž — konzumenti (style fn, 3D visibility, tabulka)
+ * se nemění.
  *
  * Stav je modul-level singleton (jeden viewer = jedna sada filtrů),
  * konzistentní se vzorem `state/changesetToggle.ts`. Reprezentace přes
@@ -41,6 +44,9 @@ export type FeatureFilterListener = () => void;
 
 /** Skryté úrovně. Prázdná množina = filtr neaktivní (vše viditelné). */
 const hiddenLevels = new Set<LevelKey>();
+
+/** Skryté projekty (id projektu). Prázdná množina = dimenze neaktivní. */
+const hiddenProjects = new Set<string>();
 
 const listeners = new Set<FeatureFilterListener>();
 
@@ -96,26 +102,51 @@ export function setLevelVisible(key: LevelKey, visible: boolean): void {
 }
 
 /**
+ * Je daný projekt viditelný (není odfiltrovaný)? Klíč `null` (záznam bez
+ * zaregistrované provenience) se nikdy neskrývá.
+ */
+export function isProjectVisible(key: string | null | undefined): boolean {
+  if (hiddenProjects.size === 0) return true;
+  if (key == null) return true;
+  return !hiddenProjects.has(key);
+}
+
+/** Zobrazit / skrýt daný projekt. Notifikuje posluchače jen při změně. */
+export function setProjectVisible(key: string, visible: boolean): void {
+  const changed = visible
+    ? hiddenProjects.delete(key)
+    : !hiddenProjects.has(key);
+  if (!visible) hiddenProjects.add(key);
+  if (changed) notify();
+}
+
+/**
  * Prochází záznam všemi dimenzemi filtru? Jediné místo vyhodnocení —
- * 2D style fn i 3D visibility používají per-feature uložený `LevelKey`
- * (viz `isLevelVisible`), tabulka Přehledu prvků volá tuto funkci.
+ * 2D style fn i 3D visibility používají per-feature uložené klíče
+ * (viz `isLevelVisible` / `isProjectVisible`), tabulka Přehledu prvků
+ * volá tuto funkci.
  */
 export function matchesFeatureFilter(zaznam: ZaznamObjektu): boolean {
-  return isLevelVisible(resolveLevelKey(zaznam));
+  return (
+    isLevelVisible(resolveLevelKey(zaznam)) &&
+    isProjectVisible(resolveProjectKey(zaznam))
+  );
 }
 
 /** Je filtr aktivní (aspoň jedna hodnota skrytá)? */
 export function isFeatureFilterActive(): boolean {
-  return hiddenLevels.size > 0;
+  return hiddenLevels.size > 0 || hiddenProjects.size > 0;
 }
 
 /**
- * Reset filtru do neaktivního stavu (vše viditelné). Volat při načtení
- * nového JVF souboru — filtr z předchozích dat nemá nová data ovlivňovat.
+ * Reset filtru do neaktivního stavu (vše viditelné). Volat při každé změně
+ * načtených dat (přidání / odebrání projektu) — filtr z předchozích dat
+ * nemá nová data ovlivňovat.
  */
 export function resetFeatureFilter(): void {
-  if (hiddenLevels.size === 0) return;
+  if (hiddenLevels.size === 0 && hiddenProjects.size === 0) return;
   hiddenLevels.clear();
+  hiddenProjects.clear();
   notify();
 }
 
