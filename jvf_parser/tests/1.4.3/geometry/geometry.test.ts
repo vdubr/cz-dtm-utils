@@ -153,4 +153,32 @@ describe('parseMultiCurve', () => {
     expect(mc.curves).toHaveLength(2);
     expect(mc.curves[1]?.coordinates).toHaveLength(6);
   });
+
+  // Regresní test: srsDimension nese jen MultiCurve, členské LineString ho
+  // dědí (varianta zápisu z ukazka_OPL.xml). Bez dědění by dostaly default 2
+  // a 3D souřadnice by se interpretovaly po dvojicích.
+  it('inherits srsDimension from MultiCurve into member LineStrings', () => {
+    const el = {
+      '@_gml:id': 'ID72003010000458805_05',
+      '@_srsDimension': 3,
+      '@_srsName': 'EPSG:5514',
+      curveMember: [
+        { LineString: { posList: '-520786.10 -1164233.30 275.40 -520786.30 -1164236.60 275.20' } },
+      ],
+    };
+    const mc = parseMultiCurve(el);
+    expect(mc.srsDimension).toBe(3);
+    expect(mc.curves[0]?.srsDimension).toBe(3);
+  });
+
+  it('member LineString own srsDimension wins over inherited one', () => {
+    const el = {
+      '@_srsDimension': 3,
+      curveMember: [
+        { LineString: { '@_srsDimension': 2, posList: '1.0 2.0 3.0 4.0' } },
+      ],
+    };
+    const mc = parseMultiCurve(el);
+    expect(mc.curves[0]?.srsDimension).toBe(2);
+  });
 });
