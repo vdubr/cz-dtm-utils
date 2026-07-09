@@ -3,9 +3,19 @@ import type OlMap from 'ol/Map.js';
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { findFeature } from '../map/jvfLayers.js';
 import { highlightFeature, clearHighlight, zoomToFeature } from '../map/highlight.js';
-import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature } from '../viewer3d/threeScene.js';
+import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature, applyFeatureFilter } from '../viewer3d/threeScene.js';
 import { getIs3dActive, notifyMapAreaResized } from './toggle3d.js';
 import { resolveZaznamId } from '../state/zaznamId.js';
+import {
+  LEVEL_NONE,
+  isLevelVisible,
+  levelKeyLabel,
+  matchesFeatureFilter,
+  resolveLevelKey,
+  setLevelVisible,
+  subscribeFeatureFilter,
+  type LevelKey,
+} from '../state/featureFilter.js';
 
 type ContentFilter = 'all' | 'ZPS' | 'TI' | 'DI' | 'GAD' | 'OPL';
 
@@ -15,6 +25,7 @@ const resizeHandle = document.getElementById('features-panel-resize')  as HTMLEl
 const list         = document.getElementById('features-list')          as HTMLDivElement;
 const summaryEl    = document.getElementById('features-summary')       as HTMLDivElement;
 const searchInput  = document.getElementById('features-search')        as HTMLInputElement;
+const levelFilterEl = document.getElementById('features-level-filter') as HTMLDivElement;
 const filterBtns   = panel.querySelectorAll<HTMLButtonElement>('.features-filter-btn');
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -56,6 +67,61 @@ function matchesSearch(ot: ObjektovyTyp, z: ZaznamObjektu): boolean {
   const id = z.commonAttributes?.id ?? '';
   if (id.toLowerCase().includes(q)) return true;
   return false;
+}
+
+// ── Filtr úrovní umístění (LEVEL) ─────────────────────────────────────────────
+
+/**
+ * Zjistí úrovně umístění přítomné v datech, seřazené vzestupně; skupina
+ * „bez úrovně" (`LEVEL_NONE`) je vždy poslední.
+ */
+function collectPresentLevelKeys(objekty: ObjektovyTyp[]): LevelKey[] {
+  const present = new Set<LevelKey>();
+  for (const ot of objekty) {
+    for (const z of ot.zaznamy) present.add(resolveLevelKey(z));
+  }
+  const numeric = [...present]
+    .filter((k) => k !== LEVEL_NONE)
+    .sort((a, b) => Number(a) - Number(b));
+  if (present.has(LEVEL_NONE)) numeric.push(LEVEL_NONE);
+  return numeric;
+}
+
+/**
+ * Vykreslí chips filtru úrovní umístění podle aktuálních dat. Když je
+ * v datech jen jedna skupina úrovní (nebo žádná), filtr nedává smysl —
+ * řádek se skryje. Aktivní chip = úroveň viditelná; klik přepíná.
+ * Filtr se promítá do tabulky, 2D mapy i 3D scény (viz subscribe
+ * v `initFeaturesPanel`).
+ */
+function renderLevelChips(): void {
+  const keys = collectPresentLevelKeys(currentObjekty);
+  if (keys.length < 2) {
+    levelFilterEl.style.display = 'none';
+    levelFilterEl.innerHTML = '';
+    return;
+  }
+  levelFilterEl.style.display = '';
+  levelFilterEl.innerHTML = '';
+
+  const label = document.createElement('span');
+  label.className = 'features-level-label';
+  label.textContent = 'Úroveň:';
+  levelFilterEl.appendChild(label);
+
+  for (const key of keys) {
+    const chip = document.createElement('button');
+    const visible = isLevelVisible(key);
+    chip.className = `level-chip${visible ? ' active' : ''}`;
+    chip.textContent = levelKeyLabel(key);
+    chip.title = key === LEVEL_NONE
+      ? 'Záznamy bez atributu úrovně umístění'
+      : `Úroveň umístění ${levelKeyLabel(key)} (UrovenUmisteniObjektuZPS/TI/DI)`;
+    chip.addEventListener('click', () => {
+      setLevelVisible(key, !isLevelVisible(key));
+    });
+    levelFilterEl.appendChild(chip);
+  }
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────
@@ -278,7 +344,10 @@ function renderRows(): void {
       ot,
       zaznamy: ot.zaznamy
         .map((z, idx) => ({ z, idx }))
-        .filter(({ z }) => matchesSearch(ot, z)),
+        // Odfiltrované záznamy (filtr úrovní) se skrývají úplně — stejné
+        // chování jako filtr obsahové části a fulltext, a konzistentní
+        // s mapou, kde odfiltrovaný prvek také zmizí.
+        .filter(({ z }) => matchesSearch(ot, z) && matchesFeatureFilter(z)),
     }))
     .filter(({ zaznamy }) => zaznamy.length > 0);
 
@@ -399,6 +468,7 @@ export function showFeatures(objekty: ObjektovyTyp[]): void {
     for (const ot of objekty) expandedGroups.add(ot.elementName);
   }
   renderSummary();
+  renderLevelChips();
   renderRows();
   panel.style.display = '';
   notifyMapAreaResized();
@@ -441,15 +511,20 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
     if (currentFilter !== 'all' && ot.obsahovaCast !== currentFilter) {
       setFilter('all');
     }
+    const z = ot.zaznamy.find(
+      (zz, idx) => resolveZaznamId(elementName, zz, idx) === objectId,
+    );
     if (currentSearch) {
       // Zkontroluj, jestli se objekt projde aktuálním filtrem; pokud ne, vyčisti
-      const z = ot.zaznamy.find(
-        (zz, idx) => resolveZaznamId(elementName, zz, idx) === objectId,
-      );
       if (z && !matchesSearch(ot, z)) {
         currentSearch = '';
         searchInput.value = '';
       }
+    }
+    // Pokud je záznam skrytý filtrem úrovní, zviditelni jeho úroveň —
+    // uživatel na prvek klikl, chce ho vidět (stejná logika jako u search).
+    if (z && !matchesFeatureFilter(z)) {
+      setLevelVisible(resolveLevelKey(z), true);
     }
   }
 
@@ -499,6 +574,21 @@ export function initFeaturesPanel(
   searchInput.addEventListener('input', () => {
     currentSearch = searchInput.value.trim();
     renderRows();
+  });
+
+  // Filtr prvků (úrovně umístění) — při každé změně promítnout do:
+  //   1. chips UI (sync active tříd),
+  //   2. tabulky Přehledu prvků,
+  //   3. 2D mapy (`layer.changed()` → style fn se přepočítá, vzor
+  //      changesetToggle),
+  //   4. 3D scény (přepočet visibility per objekt).
+  subscribeFeatureFilter(() => {
+    renderLevelChips();
+    renderRows();
+    if (getJvfLayers) {
+      for (const { olLayer } of getJvfLayers()) olLayer.changed();
+    }
+    applyFeatureFilter();
   });
 
   // Klik na row detail vnitřek by neměl zavírat

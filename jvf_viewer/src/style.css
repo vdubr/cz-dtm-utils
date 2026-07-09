@@ -1944,6 +1944,37 @@ html, body {
   color: #fff;
 }
 
+/* Filtr úrovní umístění (LEVEL) — chips v toolbaru Přehledu prvků */
+.features-level-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.features-level-label {
+  font-size: 11px;
+  color: #8b949e;
+  margin-right: 2px;
+}
+
+.level-chip {
+  padding: 3px 8px;
+  font-size: 11px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #8b949e;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.level-chip:hover { background: #1f242c; border-color: #484f58; }
+.level-chip.active {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #fff;
+}
+
 .features-search {
   width: 100%;
   padding: 4px 8px;

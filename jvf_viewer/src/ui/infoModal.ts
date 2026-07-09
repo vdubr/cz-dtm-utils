@@ -104,7 +104,13 @@ const INFO_CONTENT_HTML = `
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
       seznamem všech načtených objektů seskupených podle typu. Lze
       filtrovat podle obsahové části (ZPS / TI / DI / GAD / OPL) a hledat
-      v názvu, <code>elementName</code> nebo ID. Klik na záznam zoomuje
+      v názvu, <code>elementName</code> nebo ID. Pokud data obsahují víc
+      <em>úrovní umístění</em> (LEVEL −3 až +3 z atributů
+      <code>UrovenUmisteniObjektu*</code>), zobrazí se navíc řádek
+      <em>Úroveň</em> s přepínatelnými chipy — odškrtnuté úrovně se skryjí
+      v tabulce i ve 2D a 3D mapě (kombinuje se s viditelností vrstev
+      a changeset přepínači). Filtr se resetuje při načtení nového souboru.
+      Klik na záznam zoomuje
       mapu (2D i 3D) a rozbalí tabulku všech atributů včetně
       <em>nadmořské výšky</em> (Z ze geometrie — u bodu jedna hodnota,
       u linií a ploch rozsah min–max). Funguje to i opačně:

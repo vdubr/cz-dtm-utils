@@ -12,6 +12,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 - JVF soubor lze nově načíst **přetažením myší (drag & drop)** kamkoli nad
   okno aplikace — při přetahování se zobrazí vizuální nápověda, upuštění
   souboru ho načte stejně jako výběr přes tlačítko „Nahrát soubor".
+- **Filtrování prvků podle úrovně umístění (LEVEL)** v Přehledu prvků —
+  pokud data obsahují víc úrovní (−3 až +3 z atributů
+  `UrovenUmisteniObjektuZPS/TI/DI`, plus skupina „bez úrovně"), zobrazí se
+  v panelu řádek chipů **Úroveň**. Odškrtnuté úrovně se skryjí v tabulce
+  i ve **2D a 3D mapě**; filtr se kombinuje (AND) s viditelností vrstev
+  a changeset přepínači a resetuje se při načtení nového souboru.
 - **Barevné rozlišení changeset záznamů**: kromě mazaných (`ZapisObjektu='d'`,
   červeně) se nyní dají zvýraznit a vypínat/zapínat i **nové** záznamy
   (`'i'`, zeleně) a **editované** záznamy (`'u'`, oranžově) — samostatné

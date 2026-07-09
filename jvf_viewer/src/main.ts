@@ -31,6 +31,7 @@ import {
   setupChangesetToggle,
   updateChangesetToggleVisibility,
 } from './ui/changesetToggle.js';
+import { resetFeatureFilter } from './state/featureFilter.js';
 import { resetThreeCamera, setThreeLayerVisible, resetThreeLayerVisibility, highlightThreeFeature, pickFeatureFromClient } from './viewer3d/threeScene.js';
 import { isEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -155,6 +156,9 @@ function clearLoadedData(): void {
   removeJvfLayersFromMap(olMap, currentJvfLayers);
   resetThreeLayerVisibility();
 
+  // Reset filtru prvků (úrovně umístění) — žádná data, žádný filtr
+  resetFeatureFilter();
+
   currentJvfLayers = [];
   currentObjekty = [];
   currentExtent = createEmpty();
@@ -188,6 +192,10 @@ function onJvfLoaded(data: JvfDtm): void {
 
   // Reset persisted 3D layer visibility — nový soubor, jiné vrstvy.
   resetThreeLayerVisibility();
+
+  // Reset filtru prvků (úrovně umístění) — filtr z předchozího souboru
+  // nemá ovlivňovat nová data.
+  resetFeatureFilter();
 
   // Build new layers
   const { layers, extent } = buildJvfLayers(data.objekty);

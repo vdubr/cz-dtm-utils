@@ -7,6 +7,7 @@ import {
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
 import { resolveZaznamId } from '../state/zaznamId.js';
+import { isLevelVisible, resolveLevelKey, type LevelKey } from '../state/featureFilter.js';
 import {
   loadTerrainMesh,
   updateTerrainZExaggeration,
@@ -122,6 +123,30 @@ let state: SceneState | null = null;
  * musíme držet mimo něj.
  */
 const hiddenLayers = new Set<string>();
+
+/**
+ * Vypočítá cílovou viditelnost datového objektu scény jako průnik (AND)
+ * všech nezávislých přepínačů:
+ *
+ *   1. viditelnost vrstvy (`hiddenLayers`, layer panel),
+ *   2. changeset přepínače (`isShowZapis` pro `ZapisObjektu` ∈ {i, u, d}),
+ *   3. filtr prvků — úroveň umístění (`isLevelVisible`).
+ *
+ * Jediné místo, kde se viditelnost skládá — používají ho build scény,
+ * `setThreeLayerVisible`, `applyChangesetHighlight` i `applyFeatureFilter`,
+ * takže žádný přepínač nemůže omylem „od-skrýt" objekt skrytý jiným.
+ * Pozn.: SVG sprity mají navíc pravidlo vzdálenosti kamery
+ * (`updateSpriteVisibility`), které se s tímto výsledkem také kombinuje AND.
+ */
+function computeObjectVisibility(obj: THREE.Object3D): boolean {
+  const elementName = obj.userData[DATA_TAG] as string | undefined;
+  if (elementName !== undefined && hiddenLayers.has(elementName)) return false;
+  const zapis = obj.userData['jvfZapisObjektu'];
+  if (isChangesetZapis(zapis) && !isShowZapis(zapis)) return false;
+  const levelKey = obj.userData['jvfLevel'] as LevelKey | undefined;
+  if (!isLevelVisible(levelKey)) return false;
+  return true;
+}
 
 /** Aktuální barva pozadí 3D scény. Uchovává se mimo `state`, aby volba
  *  přežila re-init při přepnutí 2D ↔ 3D a při rebuildu geometrie.
@@ -280,10 +305,12 @@ function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void 
  * přiblížení.
  */
 function updateSpriteVisibility(scene: THREE.Scene, radius: number): void {
-  const visible = radius < SPRITE_HIDE_RADIUS;
+  const radiusOk = radius < SPRITE_HIDE_RADIUS;
   scene.traverse((obj) => {
     if (obj.userData['jvfSprite'] === true) {
-      obj.visible = visible;
+      // AND s ostatními přepínači (vrstvy / changeset / filtr prvků) —
+      // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý sprite.
+      obj.visible = radiusOk && computeObjectVisibility(obj);
     }
   });
 }
@@ -394,13 +421,14 @@ function buildSceneObjects(
       : s.fillColor.length === 9 ? s.fillColor.slice(0, 7) : s.fillColor;
     const fillColor = new THREE.Color(fillHex);
     const key = layerKey(ot);
-    const layerVisible = !hiddenLayers.has(key);
 
     for (const [zaznamIndex, zaz] of ot.zaznamy.entries()) {
       // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
       // (nové prvky `ZapisObjektu='i'` — bez něj by nešly pickovat/zvýraznit).
       const objectId = resolveZaznamId(ot.elementName, zaz, zaznamIndex);
       const zapisObjektu = zaz.zapisObjektu;
+      // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
+      const levelKey = resolveLevelKey(zaz);
       // Při buildu uložíme původní barvu vrstvy do userData — `applyChangesetHighlight`
       // ji potřebuje pro vrácení changeset objektů zpět na původní vzhled,
       // když uživatel checkbox odškrtne. Bez toho bychom po flipu znali jen
@@ -513,9 +541,9 @@ function buildSceneObjects(
                 lineObj.userData[DATA_TAG] = key;
                 lineObj.userData['jvfObjectId'] = objectId;
                 lineObj.userData['jvfZapisObjektu'] = zapisObjektu;
+                lineObj.userData['jvfLevel'] = levelKey;
                 lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
-                lineObj.visible =
-                  layerVisible && (!isChangesetZapis(zapisObjektu) || isShowZapis(zapisObjektu));
+                lineObj.visible = computeObjectVisibility(lineObj);
                 if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
                   lineObj.material.color.setHex(ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
                 }
@@ -530,12 +558,12 @@ function buildSceneObjects(
           obj.userData[DATA_TAG] = key;
           obj.userData['jvfObjectId'] = objectId;
           obj.userData['jvfZapisObjektu'] = zapisObjektu;
+          obj.userData['jvfLevel'] = levelKey;
           // Polygon používá fillColor, ostatní geometrie používají strokeColor —
           // pro restoraci po toggle off potřebujeme znát ten správný.
           const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
           obj.userData['jvfOrigColorHex'] = origColor.getHex();
-          obj.visible =
-            layerVisible && (!isChangesetZapis(zapisObjektu) || isShowZapis(zapisObjektu));
+          obj.visible = computeObjectVisibility(obj);
           if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
             applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
           }
@@ -769,9 +797,14 @@ export function setThreeLayerVisible(elementName: string, visible: boolean): voi
   if (visible) hiddenLayers.delete(elementName);
   else hiddenLayers.add(elementName);
   if (!state) return;
+  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     if (obj.userData[DATA_TAG] === elementName) {
-      obj.visible = visible;
+      // AND s changeset přepínači a filtrem prvků — zobrazení vrstvy nesmí
+      // od-skrýt objekt skrytý jiným přepínačem.
+      obj.visible =
+        computeObjectVisibility(obj) &&
+        (obj.userData['jvfSprite'] !== true || radiusOk);
     }
   });
 }
@@ -800,18 +833,40 @@ export function resetThreeLayerVisibility(): void {
  */
 export function applyChangesetHighlight(): void {
   if (!state) return;
+  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     const zapis = obj.userData['jvfZapisObjektu'];
     if (!isChangesetZapis(zapis)) return;
-    const elementName = obj.userData[DATA_TAG] as string | undefined;
-    const layerVisible = elementName ? !hiddenLayers.has(elementName) : true;
     const show = isShowZapis(zapis);
-    obj.visible = layerVisible && show;
+    // Viditelnost = AND všech přepínačů (vrstvy / changeset / filtr prvků)
+    obj.visible =
+      computeObjectVisibility(obj) &&
+      (obj.userData['jvfSprite'] !== true || radiusOk);
     if (show) {
       applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapis]);
     } else {
       restoreOriginalColor(obj);
     }
+  });
+}
+
+/**
+ * Aplikovat na 3D scénu aktuální stav filtru prvků (`state/featureFilter.ts`,
+ * dimenze úroveň umístění). Pro každý datový objekt přepočítá viditelnost
+ * jako AND všech přepínačů (`computeObjectVisibility`) — filtr tedy
+ * respektuje skryté vrstvy i changeset flagy a naopak.
+ *
+ * No-op když 3D scéna není inicializovaná (stav filtru je globální —
+ * uplatní se při příštím buildu scény).
+ */
+export function applyFeatureFilter(): void {
+  if (!state) return;
+  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
+  state.scene.traverse((obj) => {
+    if (obj.userData[DATA_TAG] === undefined) return;
+    obj.visible =
+      computeObjectVisibility(obj) &&
+      (obj.userData['jvfSprite'] !== true || radiusOk);
   });
 }
 
