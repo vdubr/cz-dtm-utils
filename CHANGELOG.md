@@ -47,6 +47,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Sjednocené ovládání podkladové mapy**: volba Základní mapa / Ortofoto
+  v levém panelu nově řídí 2D mapu i texturu na 3D terénu (jeden zdroj
+  pravdy); separátní panel „Podklad" ze spodní 3D lišty byl odstraněn.
+  Pod tlačítky přibyl posuvník **Sytost** (10–100 %, výchozí 100 %) —
+  průhlednost podkladu platí shodně pro 2D i 3D. Volba podkladu při
+  aktivním 3D nadále automaticky zapíná terén; po přepnutí do 3D se
+  aplikuje aktuální volba z panelu.
 - 3D scéna má nově **výchozí světlé pozadí** (dříve tmavé) — barvy prvků
   z Katalogu ČÚZK počítají se světlým podkladem stejně jako 2D mapa.
   Tmavé pozadí zůstává dostupné přepínačem, pomocná mřížka se barevně

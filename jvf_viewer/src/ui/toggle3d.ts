@@ -20,14 +20,56 @@ import {
   setBasemap,
   getBasemap,
   setBasemapOpacity,
-  getBasemapOpacity,
 } from '../viewer3d/threeScene.js';
 import { clearHighlight } from '../map/highlight.js';
 import { reapplyActiveHighlight } from './errorPanel.js';
 import { reapplyActiveFeatureHighlight } from './featuresPanel.js';
+import {
+  getBasemapChoice,
+  getBasemapChoiceOpacity,
+  subscribeBasemapChoice,
+} from '../state/basemapChoice.js';
 
 let is3dActive = false;
 let currentZExaggeration = 1;
+
+/**
+ * Aplikuje volbu podkladu z levého panelu (sdílený stav basemapChoice)
+ * na 3D texturu terénu. Volá se při změně volby/sytosti a při přepnutí
+ * do 3D — scéna tak vždy odpovídá panelu.
+ */
+async function apply3dBasemapFromChoice(): Promise<void> {
+  if (!is3dActive) return;
+  const kind = getBasemapChoice();
+  // Změna jen sytosti (slider) — nepřenačítat texturu.
+  if (kind === getBasemap()) {
+    setBasemapOpacity(getBasemapChoiceOpacity());
+    return;
+  }
+  const spinner = document.getElementById('basemap-spinner');
+  spinner?.removeAttribute('hidden');
+  try {
+    // Podklad se mapuje na povrch DMR — bez terénu není kam texturu
+    // položit. Zapneme ho tedy automaticky (vč. synchronizace checkboxu).
+    if (kind !== 'none' && !isTerrainVisible()) {
+      await setTerrainVisible(true);
+      const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
+      if (terrainCheckbox) terrainCheckbox.checked = true;
+    }
+    setBasemapOpacity(getBasemapChoiceOpacity());
+    await setBasemap(kind);
+  } catch (err) {
+    console.error('[basemap] načtení podkladu selhalo', err);
+    alert(
+      'Nepodařilo se načíst podkladovou mapu ČÚZK pro 3D terén:\n' +
+      (err as Error).message
+    );
+    // 3D vrátíme na hypsometrii; volba v panelu zůstává (2D funguje dál).
+    await setBasemap('none').catch(() => { /* už jen úklid */ });
+  } finally {
+    spinner?.setAttribute('hidden', '');
+  }
+}
 let currentObjekty: ObjektovyTyp[] = [];
 
 export function getIs3dActive(): boolean {
@@ -183,56 +225,12 @@ export function setup3dToggle(
     });
   }
 
-  // Podklad na terénu (ČÚZK ZM / Ortofoto jako textura na DMR) — jen 3D
-  const basemapBtns = document.querySelectorAll<HTMLButtonElement>('.btn-basemap3d');
-  const basemapSpinner = document.getElementById('basemap3d-spinner') as HTMLElement | null;
-  const basemapOpacitySlider = document.getElementById('basemap3d-opacity') as HTMLInputElement | null;
-
-  function syncBasemapButtons(): void {
-    const active = getBasemap();
-    basemapBtns.forEach((b) => {
-      b.classList.toggle('active', (b.dataset['basemap'] ?? 'none') === active);
-    });
-  }
-  syncBasemapButtons();
-
-  basemapBtns.forEach((bmBtn) => {
-    bmBtn.addEventListener('click', async () => {
-      const kind = (bmBtn.dataset['basemap'] ?? 'none') as 'none' | 'zm' | 'ortofoto';
-      if (kind === getBasemap()) return;
-      basemapSpinner?.removeAttribute('hidden');
-      basemapBtns.forEach((b) => { b.disabled = true; });
-      try {
-        // Podklad se mapuje na povrch DMR — bez terénu není kam texturu
-        // položit. Zapneme ho tedy automaticky (vč. synchronizace checkboxu).
-        if (kind !== 'none' && is3dActive && !isTerrainVisible()) {
-          await setTerrainVisible(true);
-          if (terrainCheckbox) terrainCheckbox.checked = true;
-        }
-        await setBasemap(kind);
-        syncBasemapButtons();
-      } catch (err) {
-        console.error('[basemap] načtení podkladu selhalo', err);
-        alert(
-          'Nepodařilo se načíst podkladovou mapu ČÚZK:\n' +
-          (err as Error).message
-        );
-        // Vrátit stav na hypsometrii, aby UI odpovídalo scéně
-        await setBasemap('none').catch(() => { /* už jen úklid */ });
-        syncBasemapButtons();
-      } finally {
-        basemapSpinner?.setAttribute('hidden', '');
-        basemapBtns.forEach((b) => { b.disabled = false; });
-      }
-    });
+  // Podklad na terénu (ČÚZK ZM / Ortofoto jako textura na DMR): volbu i
+  // sytost řídí sdílený stav basemapChoice z levého panelu (jeden zdroj
+  // pravdy pro 2D vrstvy i 3D texturu) — tady jsme jen konzument.
+  subscribeBasemapChoice(() => {
+    void apply3dBasemapFromChoice();
   });
-
-  if (basemapOpacitySlider) {
-    basemapOpacitySlider.value = String(Math.round(getBasemapOpacity() * 100));
-    basemapOpacitySlider.addEventListener('input', () => {
-      setBasemapOpacity(Number(basemapOpacitySlider.value) / 100);
-    });
-  }
 
   // Z exaggeration buttons
   const exaggerationBtns = document.querySelectorAll<HTMLButtonElement>('.btn-z-exag');
@@ -401,6 +399,9 @@ function switchTo3d(
   // Přenést výběr z 2D → 3D (highlight + zoom na objekt)
   reapplyActiveHighlight();
   reapplyActiveFeatureHighlight();
+
+  // Promítnout volbu podkladu z levého panelu do 3D (textura na terénu).
+  void apply3dBasemapFromChoice();
 }
 
 function switchTo2d(

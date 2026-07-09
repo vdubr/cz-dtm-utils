@@ -49,7 +49,9 @@ const INFO_CONTENT_HTML = `
       mapa nebo Ortofoto), přepínání jednotlivých vrstev v levém panelu.
       Druhý klik na aktivní podkladové tlačítko podklad <em>vypne</em> —
       JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
-      kontrolu geometrie bez vizuálního šumu).
+      kontrolu geometrie bez vizuálního šumu). Posuvník <em>Sytost</em>
+      pod tlačítky řídí průhlednost podkladu — platí pro 2D mapu i pro
+      texturu na 3D terénu; volba podkladu je společná pro oba režimy.
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).
@@ -78,11 +80,12 @@ const INFO_CONTENT_HTML = `
       rozsahu výšek (tmavě zelená → žlutá → hnědá → bílá) a překryt
       <em>vrstevnicemi po 1 m</em> (zvýrazněnými každých 10 m). Terénní mesh
       i vrstevnice reagují na nastavené převýšení výšky a pomáhají zasadit
-      geometrie do reliéfu krajiny. Ve spodní liště lze místo hypsometrie
-      namapovat na povrch terénu <strong>podkladovou mapu ČÚZK</strong>
-      (<em>Základní mapa</em> nebo <em>Ortofoto</em> — stejné vrstvy jako
-      ve 2D); volba podkladu automaticky zapne terén. Posuvníkem se řídí
-      průhlednost podkladu, aby vykreslené prvky zůstaly čitelné.
+      geometrie do reliéfu krajiny. Je-li v levém panelu zvolená podkladová
+      mapa (<em>Základní mapa</em> nebo <em>Ortofoto</em>), namapuje se místo
+      hypsometrie jako <strong>textura na povrch terénu</strong> — stejná
+      volba i sytost jako ve 2D, jedno ovládání pro oba režimy; volba
+      podkladu ve 3D automaticky zapne terén. Vypnutím podkladu se terén
+      vrátí k hypsometrickému obarvení.
     </li>
     <li>
       <strong>Zoom na data</strong> — přiblíží pohled na rozsah načteného JVF
