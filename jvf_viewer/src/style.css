@@ -793,9 +793,65 @@ html, body {
 #basemap-opacity {
   flex: 1 1 auto;
   min-width: 0;
-  height: 20px;
-  accent-color: #1f6feb;
+  height: 14px;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+/* Minimalistický slider: tenká linka + malý palec (WebKit / Firefox) */
+#basemap-opacity::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 1px;
+  background: #30363d;
+}
+
+#basemap-opacity::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: #8b949e;
+  border: none;
+  transition: background 0.15s;
+}
+
+#basemap-opacity:hover::-webkit-slider-thumb {
+  background: #1f6feb;
+}
+
+#basemap-opacity::-moz-range-track {
+  height: 2px;
+  border-radius: 1px;
+  background: #30363d;
+}
+
+#basemap-opacity::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8b949e;
+  border: none;
+  transition: background 0.15s;
+}
+
+#basemap-opacity:hover::-moz-range-thumb {
+  background: #1f6feb;
+}
+
+#basemap-opacity:focus {
+  outline: none;
+}
+
+#basemap-opacity:focus-visible::-webkit-slider-thumb {
+  background: #1f6feb;
+}
+
+#basemap-opacity:focus-visible::-moz-range-thumb {
+  background: #1f6feb;
 }
 
 .basemap-opacity-row .terrain-spinner {
