@@ -54,6 +54,14 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- Obvodové linie ploch (MultiCurve) se ve 2D mapě mohly vykreslovat jako
+  obří pruhy přes celou mapu (pozorováno u `BudovaPlocha` z ukázkových OPL
+  dat). Příčina v parseru: atribut `srsDimension="3"` nese element
+  `gml:MultiCurve`, ale členské `LineString` ho nemají — parser jim místo
+  zdědění hodnoty z rodiče (GML sémantika) přiřadil default 2, takže se 3D
+  souřadnice četly po dvojicích a výšky se interpretovaly jako polohy.
+  Oprava propaguje `srsDimension` z MultiCurve do členských křivek — platí
+  pro 2D mapu, 3D scénu i topologické kontroly.
 - Půlpixelová registrace DMR terénu ve 3D: rastr z ČÚZK `exportImage` je
   pixel-is-area (hodnota patří středu buňky), ale terén vzorkoval buňky na
   hrany extentu — na okrajích scény to posouvalo terén až o ±půl buňky

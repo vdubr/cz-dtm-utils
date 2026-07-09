@@ -30,11 +30,11 @@ function extractSrsName(obj: Record<string, unknown>): string {
   return typeof v === 'string' ? v : '';
 }
 
-function extractSrsDimension(obj: Record<string, unknown>): number {
+function extractSrsDimension(obj: Record<string, unknown>): number | undefined {
   const v = obj['@_srsDimension'];
   if (typeof v === 'number') return v;
   if (typeof v === 'string') return parseInt(v, 10);
-  return 2;
+  return undefined;
 }
 
 /**
@@ -58,7 +58,7 @@ export function parsePoint(pointEl: Record<string, unknown>): GmlPoint {
   return {
     id: extractGmlId(pointEl) ?? '',
     srsName: extractSrsName(pointEl),
-    srsDimension: extractSrsDimension(pointEl),
+    srsDimension: extractSrsDimension(pointEl) ?? 2,
     coordinates: parseCoordinates(getPosList(pointEl)),
   };
 }
@@ -67,11 +67,19 @@ export function parsePoint(pointEl: Record<string, unknown>): GmlPoint {
 // LineString
 // ---------------------------------------------------------------------------
 
-export function parseLineString(lsEl: Record<string, unknown>): GmlLineString {
+/**
+ * @param inheritedDim srsDimension zděděná z rodičovské geometrie (GML
+ *   sémantika: atribut platí i pro potomky, dokud ho nepřepíšou). Členské
+ *   LineString v MultiCurve atribut typicky nemají — nese ho MultiCurve.
+ */
+export function parseLineString(
+  lsEl: Record<string, unknown>,
+  inheritedDim?: number
+): GmlLineString {
   return {
     id: extractGmlId(lsEl),
     srsName: extractSrsName(lsEl),
-    srsDimension: extractSrsDimension(lsEl),
+    srsDimension: extractSrsDimension(lsEl) ?? inheritedDim ?? 2,
     coordinates: parseCoordinates(getPosList(lsEl)),
   };
 }
@@ -114,7 +122,7 @@ export function parsePolygon(polygonEl: Record<string, unknown>): GmlPolygon {
   return {
     id: extractGmlId(polygonEl),
     srsName: extractSrsName(polygonEl),
-    srsDimension: extractSrsDimension(polygonEl),
+    srsDimension: extractSrsDimension(polygonEl) ?? 2,
     exterior,
     interiors,
   };
@@ -126,6 +134,10 @@ export function parsePolygon(polygonEl: Record<string, unknown>): GmlPolygon {
 
 export function parseMultiCurve(mcEl: Record<string, unknown>): GmlMultiCurve {
   const curves: GmlLineString[] = [];
+  // srsDimension nese typicky element MultiCurve; členské LineString ho
+  // dědí (bez propagace by dostaly default 2 a 3D souřadnice by se četly
+  // s krokem 2 — vrcholy by „létaly" přes celou mapu).
+  const mcDim = extractSrsDimension(mcEl);
 
   const memberRaw = mcEl['curveMember'];
   if (memberRaw != null) {
@@ -139,7 +151,7 @@ export function parseMultiCurve(mcEl: Record<string, unknown>): GmlMultiCurve {
         for (const key of ['LineString', 'gml:LineString']) {
           const ls = memberObj[key];
           if (ls != null && typeof ls === 'object') {
-            curves.push(parseLineString(ls as Record<string, unknown>));
+            curves.push(parseLineString(ls as Record<string, unknown>, mcDim));
             break;
           }
         }
@@ -150,7 +162,7 @@ export function parseMultiCurve(mcEl: Record<string, unknown>): GmlMultiCurve {
   return {
     id: extractGmlId(mcEl),
     srsName: extractSrsName(mcEl),
-    srsDimension: extractSrsDimension(mcEl),
+    srsDimension: mcDim ?? 2,
     curves,
   };
 }
