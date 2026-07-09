@@ -51,9 +51,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   v levém panelu nově řídí 2D mapu i texturu na 3D terénu (jeden zdroj
   pravdy); separátní panel „Podklad" ze spodní 3D lišty byl odstraněn.
   Pod tlačítky přibyl posuvník **sytosti** (ikona kapky, 10–100 %, výchozí
-  100 %) — průhlednost podkladu platí shodně pro 2D i 3D. Volba podkladu
-  při aktivním 3D nadále automaticky zapíná terén; po přepnutí do 3D se
-  aplikuje aktuální volba z panelu.
+  100 %) — průhlednost podkladu platí shodně pro 2D i 3D. Aktivní volba
+  podkladu během 3D automaticky zapne terén; samotné přepnutí do 3D ale
+  terén nevnucuje — textura se nanese, až když je (nebo se stane) terén
+  zapnutý.
 - **Přepínač světlý/tmavý režim** je nově jediné toggle tlačítko ☀️/🌙
   v hlavičce (dříve dvojice tlačítek ve spodní 3D liště) a funguje i ve
   **2D** — mění barvu plochy pod vrstvami, viditelnou při vypnutém

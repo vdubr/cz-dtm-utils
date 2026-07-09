@@ -35,15 +35,25 @@ let currentZExaggeration = 1;
 
 /**
  * Aplikuje volbu podkladu z levého panelu (sdílený stav basemapChoice)
- * na 3D texturu terénu. Volá se při změně volby/sytosti a při přepnutí
- * do 3D — scéna tak vždy odpovídá panelu.
+ * na 3D texturu terénu. Volá se při změně volby/sytosti, při přepnutí
+ * do 3D a po zapnutí terénu — scéna tak odpovídá panelu.
+ *
+ * @param autoEnableTerrain Zapnout terén automaticky, když je zvolený
+ *   podklad a terén vypnutý. `true` jen při AKTIVNÍ změně volby uživatelem
+ *   (klik v panelu během 3D) — samotné přepnutí do 3D terén nevnucuje,
+ *   jinak by vstup do 3D vždy „rozsvítil" scénu světlou mapou.
  */
-async function apply3dBasemapFromChoice(): Promise<void> {
+async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<void> {
   if (!is3dActive) return;
   const kind = getBasemapChoice();
   // Změna jen sytosti (slider) — nepřenačítat texturu.
   if (kind === getBasemap()) {
     setBasemapOpacity(getBasemapChoiceOpacity());
+    return;
+  }
+  if (kind !== 'none' && !isTerrainVisible() && !autoEnableTerrain) {
+    // Terén je vypnutý a nejde o aktivní volbu — texturu nanést až poté,
+    // co uživatel terén zapne (viz handler checkboxu Terén).
     return;
   }
   const spinner = document.getElementById('basemap-spinner');
@@ -220,6 +230,8 @@ export function setup3dToggle(
         terrainCheckbox.disabled = true;
         try {
           await setTerrainVisible(true);
+          // Po zapnutí terénu nanést podklad zvolený v levém panelu.
+          await apply3dBasemapFromChoice(false);
         } catch (err) {
           console.error('[terrain] načtení selhalo', err);
           alert(
@@ -243,7 +255,8 @@ export function setup3dToggle(
   // sytost řídí sdílený stav basemapChoice z levého panelu (jeden zdroj
   // pravdy pro 2D vrstvy i 3D texturu) — tady jsme jen konzument.
   subscribeBasemapChoice(() => {
-    void apply3dBasemapFromChoice();
+    // Aktivní volba uživatele → smí automaticky zapnout terén.
+    void apply3dBasemapFromChoice(true);
   });
 
   // Z exaggeration buttons
@@ -414,8 +427,9 @@ function switchTo3d(
   reapplyActiveHighlight();
   reapplyActiveFeatureHighlight();
 
-  // Promítnout volbu podkladu z levého panelu do 3D (textura na terénu).
-  void apply3dBasemapFromChoice();
+  // Promítnout volbu podkladu z levého panelu do 3D (textura na terénu) —
+  // jen pokud je terén zapnutý; vstup do 3D ho sám nezapíná.
+  void apply3dBasemapFromChoice(false);
 }
 
 function switchTo2d(
