@@ -9,6 +9,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- Klik na projekt v sekci **Projekty** přiblíží pohled na jeho rozsah —
+  ve 2D mapě i ve 3D scéně (animovaný přesun kamery).
 - **Více JVF souborů (projektů) naráz** — další výběr souboru nebo drag &
   drop načtená data nenahrazuje, ale **přidává jako samostatný projekt**
   (až 8 projektů; hodí se pro navazující projekty v jedné mapě). Levý panel

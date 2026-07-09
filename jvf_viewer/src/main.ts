@@ -50,6 +50,7 @@ import {
   clearThreeHighlight,
   highlightThreeFeature,
   pickFeatureFromClient,
+  zoomToThreeExtent,
 } from './viewer3d/threeScene.js';
 import { isEmpty, extend } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -61,6 +62,23 @@ import { createEmpty } from 'ol/extent.js';
 let currentJvfLayers: JvfVectorLayer[] = [];
 let currentObjekty: ObjektovyTyp[] = [];
 let currentExtent: Extent = createEmpty();
+// Extenty jednotlivých projektů (S-JTSK) pro zoom kliknutím v sekci Projekty.
+const projectExtents = new Map<string, Extent>();
+
+/** Přiblíží pohled (2D i 3D podle aktivního zobrazení) na extent projektu. */
+function zoomToProjectExtent(projectId: string): void {
+  const extent = projectExtents.get(projectId);
+  if (!extent || isEmpty(extent)) return;
+  if (getIs3dActive()) {
+    zoomToThreeExtent(extent[0]!, extent[1]!, extent[2]!, extent[3]!);
+  } else {
+    olMap.getView().fit(extent, {
+      padding: [40, 40, 40, 40],
+      maxZoom: 18,
+      duration: 600,
+    });
+  }
+}
 
 // Build info
 const buildInfoEl = document.getElementById('build-info');
@@ -205,10 +223,14 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
   const allLayers: JvfVectorLayer[] = [];
   const totalExtent = createEmpty();
   const allObjekty: ObjektovyTyp[] = [];
+  projectExtents.clear();
   for (const project of projects) {
     const { layers, extent } = buildJvfLayers(project.dtm.objekty);
     allLayers.push(...layers);
-    if (!isEmpty(extent)) extend(totalExtent, extent);
+    if (!isEmpty(extent)) {
+      extend(totalExtent, extent);
+      projectExtents.set(project.id, extent);
+    }
     allObjekty.push(...project.dtm.objekty);
   }
 
@@ -223,6 +245,9 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
     onRemove: (projectId) => {
       removeProject(projectId);
       rebuildAll();
+    },
+    onZoom: (projectId) => {
+      zoomToProjectExtent(projectId);
     },
   });
   renderLayerPanel(allLayers, {

@@ -1354,6 +1354,36 @@ function createRingMarker(radius: number): THREE.Object3D {
 }
 
 /**
+ * Animovaný zoom 3D kamery na extent v S-JTSK (minX/minY/maxX/maxY).
+ * Používá se pro zoom na projekt — extent se převede do scene souřadnic
+ * stejnou konvencí jako geometrie (x = X−cx, z = cy−Y, tedy osa Z
+ * převrací min/max Northingu).
+ */
+export function zoomToThreeExtent(
+  minX: number,
+  minY: number,
+  maxX: number,
+  maxY: number
+): void {
+  if (!state) return;
+  const box = new THREE.Box3(
+    new THREE.Vector3(minX - state.cx, 0, state.cy - maxY),
+    new THREE.Vector3(maxX - state.cx, 0, state.cy - minY)
+  );
+
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+
+  const maxDim = Math.max(size.x, size.z);
+  const fov = (state.camera.fov * Math.PI) / 180;
+  const fitRadius = Math.max(10, (maxDim * 0.6) / Math.tan(fov / 2) + maxDim * 0.5);
+
+  animateCameraTo(center, fitRadius);
+}
+
+/**
  * Animovaný zoom 3D kamery na bounding box objektu. Nastavuje orbit.center
  * do středu bboxu a upravuje radius dle velikosti.
  */

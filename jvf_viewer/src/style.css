@@ -2227,6 +2227,7 @@ html, body {
   border-radius: 4px;
   font-size: 11.5px;
   color: #c9d1d9;
+  cursor: pointer;
 }
 .project-item:hover {
   background: #1f242c;

@@ -18,6 +18,8 @@ import {
 export interface ProjectsPanelCallbacks {
   /** Volá se po kliknutí na × u projektu. Orchestraci (rebuild) řeší volající. */
   onRemove: (projectId: string) => void;
+  /** Volá se po kliknutí na řádek projektu — zoom na extent projektu (2D i 3D). */
+  onZoom: (projectId: string) => void;
 }
 
 export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
@@ -33,7 +35,10 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
   for (const project of projects) {
     const row = document.createElement('div');
     row.className = 'project-item';
-    row.title = project.nazev;
+    row.title = `${project.nazev} — klik přiblíží pohled na rozsah projektu`;
+    row.addEventListener('click', () => {
+      callbacks.onZoom(project.id);
+    });
 
     const dot = document.createElement('span');
     dot.className = 'project-dot';
