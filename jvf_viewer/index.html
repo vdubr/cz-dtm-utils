@@ -98,6 +98,7 @@
           Přehled prvků
         </button>
         <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>
+        <button id="btn-theme" class="btn btn-secondary btn-theme" data-theme="light" title="Přepnout na tmavý režim (pozadí 2D mapy i 3D scény)"><span class="material-symbols-outlined">dark_mode</span></button>
       </div>
     </header>
     <div id="app-body">
@@ -112,11 +113,6 @@
             <span class="material-symbols-outlined basemap-opacity-icon" title="Sytost podkladové mapy (2D i 3D textura na terénu)">opacity</span>
             <input type="range" id="basemap-opacity" min="10" max="100" value="100" title="Sytost podkladové mapy (2D i 3D textura na terénu) — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
             <span id="basemap-spinner" class="terrain-spinner" hidden></span>
-          </div>
-          <div class="bg-choice-row">
-            <span class="material-symbols-outlined basemap-opacity-icon" title="Barva pozadí pod vrstvami (2D mapa i 3D scéna)">contrast</span>
-            <button class="btn btn-secondary btn-bg" data-bg="dark" title="Tmavé pozadí (2D i 3D)"><span class="material-symbols-outlined">dark_mode</span></button>
-            <button class="btn btn-secondary btn-bg active" data-bg="light" title="Světlé pozadí (výchozí, 2D i 3D)"><span class="material-symbols-outlined">light_mode</span></button>
           </div>
         </div>
         <div class="panel-section" id="projects-section" style="display:none">

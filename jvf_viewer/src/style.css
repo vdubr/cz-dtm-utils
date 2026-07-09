@@ -762,24 +762,16 @@ html, body {
   justify-content: center;
 }
 
-.btn-bg {
-  padding: 2px 5px !important;
-  min-width: 26px;
-  height: 24px;
-  line-height: 1;
+/* ===== Přepínač světlý/tmavý režim (hlavička) ===== */
+.btn-theme {
+  padding: 4px 8px !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.btn-bg .material-symbols-outlined {
-  font-size: 16px;
-}
-
-.btn-bg.active {
-  background: #1f6feb !important;
-  border-color: #1f6feb !important;
-  color: #fff !important;
+.btn-theme .material-symbols-outlined {
+  font-size: 18px;
 }
 
 /* ===== Sytost podkladové mapy (levý panel, řídí 2D i 3D texturu) ===== */
@@ -796,32 +788,6 @@ html, body {
   flex: 0 0 auto;
   font-size: 16px !important;
   color: #8b949e;
-}
-
-.bg-choice-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.bg-choice-row .btn-bg {
-  padding: 2px 8px !important;
-  height: 22px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bg-choice-row .btn-bg .material-symbols-outlined {
-  font-size: 15px;
-}
-
-.bg-choice-row .btn-bg.active {
-  background: #1f6feb !important;
-  border-color: #1f6feb !important;
-  color: #fff !important;
 }
 
 #basemap-opacity {

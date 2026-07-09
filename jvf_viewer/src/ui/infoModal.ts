@@ -50,9 +50,10 @@ const INFO_CONTENT_HTML = `
       Druhý klik na aktivní podkladové tlačítko podklad <em>vypne</em> —
       JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
       kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
-      tlačítky řídí průhlednost podkladu a přepínač
-      <em>světlé (výchozí) / tmavé pozadí</em> barvu plochy pod vrstvami —
-      obojí platí společně pro 2D mapu i 3D scénu.
+      tlačítky řídí průhlednost podkladu — platí společně pro 2D mapu
+      i 3D scénu. Tlačítko ☀️/🌙 v hlavičce přepíná
+      <em>světlý (výchozí) / tmavý režim</em> — barvu pozadí pod vrstvami
+      ve 2D i 3D.
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).

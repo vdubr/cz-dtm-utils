@@ -54,9 +54,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   100 %) — průhlednost podkladu platí shodně pro 2D i 3D. Volba podkladu
   při aktivním 3D nadále automaticky zapíná terén; po přepnutí do 3D se
   aplikuje aktuální volba z panelu.
-- **Přepínač barvy pozadí** (světlé/tmavé) se přesunul ze spodní 3D lišty
-  do levého panelu pod sytost podkladu a nově funguje i ve **2D** — mění
-  barvu plochy pod vrstvami, viditelnou při vypnutém podkladu.
+- **Přepínač světlý/tmavý režim** je nově jediné toggle tlačítko ☀️/🌙
+  v hlavičce (dříve dvojice tlačítek ve spodní 3D liště) a funguje i ve
+  **2D** — mění barvu plochy pod vrstvami, viditelnou při vypnutém
+  podkladu, i pozadí 3D scény.
 - 3D scéna má nově **výchozí světlé pozadí** (dříve tmavé) — barvy prvků
   z Katalogu ČÚZK počítají se světlým podkladem stejně jako 2D mapa.
   Tmavé pozadí zůstává dostupné přepínačem, pomocná mřížka se barevně

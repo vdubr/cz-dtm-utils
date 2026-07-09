@@ -170,32 +170,35 @@ export function setup3dToggle(
     toolbarsEl?.classList.toggle('collapsed');
   });
 
-  // Přepínač barvy pozadí (levý panel) — platí pro 3D scénu i pro 2D mapu
-  // (pozadí #map-area viditelné pod vrstvami při vypnutém podkladu).
+  // Obecný přepínač světlý/tmavý režim (☀️/🌙 v hlavičce) — platí pro 3D
+  // scénu i pro 2D mapu (pozadí #map-area viditelné pod vrstvami při
+  // vypnutém podkladu). Ikona ukazuje režim, NA který se kliknutím přepne.
   const BG_COLORS: Record<string, string> = {
     dark: '#0a0a0f',
     light: '#f5f5f5',
   };
   const mapArea = document.getElementById('map-area') as HTMLElement | null;
-  const bgBtns = document.querySelectorAll<HTMLButtonElement>('.btn-bg');
+  const themeBtn = document.getElementById('btn-theme') as HTMLButtonElement | null;
 
-  function applyBackground(color: string): void {
-    setThreeBackground(color);
-    if (mapArea) mapArea.style.background = color;
+  function applyTheme(theme: 'light' | 'dark'): void {
+    setThreeBackground(BG_COLORS[theme]!);
+    if (mapArea) mapArea.style.background = BG_COLORS[theme]!;
+    if (themeBtn) {
+      themeBtn.dataset['theme'] = theme;
+      const icon = themeBtn.querySelector('.material-symbols-outlined');
+      if (icon) icon.textContent = theme === 'light' ? 'dark_mode' : 'light_mode';
+      themeBtn.title = theme === 'light'
+        ? 'Přepnout na tmavý režim (pozadí 2D mapy i 3D scény)'
+        : 'Přepnout na světlý režim (pozadí 2D mapy i 3D scény)';
+    }
   }
 
-  bgBtns.forEach((bgBtn) => {
-    bgBtn.addEventListener('click', () => {
-      const key = bgBtn.dataset['bg'] ?? 'dark';
-      applyBackground(BG_COLORS[key] ?? BG_COLORS['dark']!);
-      bgBtns.forEach((b) => b.classList.remove('active'));
-      bgBtn.classList.add('active');
-    });
+  themeBtn?.addEventListener('click', () => {
+    applyTheme(themeBtn.dataset['theme'] === 'light' ? 'dark' : 'light');
   });
 
-  // Aplikovat výchozí volbu (aktivní tlačítko) hned při startu — i ve 2D.
-  const activeBg = document.querySelector<HTMLButtonElement>('.btn-bg.active');
-  applyBackground(BG_COLORS[activeBg?.dataset['bg'] ?? 'light'] ?? BG_COLORS['light']!);
+  // Aplikovat výchozí (světlý) režim hned při startu — i ve 2D.
+  applyTheme((themeBtn?.dataset['theme'] as 'light' | 'dark') ?? 'light');
 
   // SVG symboly toggle (jen 3D)
   const svgCheckbox = document.getElementById('toggle-svg-symbols') as HTMLInputElement | null;
