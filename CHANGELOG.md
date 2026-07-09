@@ -34,6 +34,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- Půlpixelová registrace DMR terénu ve 3D: rastr z ČÚZK `exportImage` je
+  pixel-is-area (hodnota patří středu buňky), ale terén vzorkoval buňky na
+  hrany extentu — na okrajích scény to posouvalo terén až o ±půl buňky
+  (typicky 2–4 m). Nyní se vzorkují středy buněk; stejně opraveny vrstevnice
+  a UV mapování podkladové textury. Nalezeno při prověřování hlášeného
+  posunu DMR (~50 m západně), který se přitom nepotvrdil — skutečná odchylka
+  vůči referenčnímu vrcholu Sněžky byla do 4 m.
 - Prvky bez přiděleného DTM ID (nově vytvořené JVF soubory DI/TI, jejichž
   záznamy se teprve budou do DTM vkládat) jsou nyní plnohodnotně
   identifikovatelné pomocí syntetického klíče — funguje pro ně klik v mapě
