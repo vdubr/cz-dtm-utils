@@ -109,9 +109,14 @@
             <button class="base-btn" data-layer="ortofoto" title="Přepnout ČÚZK Ortofoto (kliknutí na aktivní tlačítko podklad vypne)">Ortofoto</button>
           </div>
           <div class="basemap-opacity-row">
-            <span class="basemap-opacity-label">Sytost:</span>
+            <span class="material-symbols-outlined basemap-opacity-icon" title="Sytost podkladové mapy (2D i 3D textura na terénu)">opacity</span>
             <input type="range" id="basemap-opacity" min="10" max="100" value="100" title="Sytost podkladové mapy (2D i 3D textura na terénu) — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
             <span id="basemap-spinner" class="terrain-spinner" hidden></span>
+          </div>
+          <div class="bg-choice-row">
+            <span class="material-symbols-outlined basemap-opacity-icon" title="Barva pozadí pod vrstvami (2D mapa i 3D scéna)">contrast</span>
+            <button class="btn btn-secondary btn-bg" data-bg="dark" title="Tmavé pozadí (2D i 3D)"><span class="material-symbols-outlined">dark_mode</span></button>
+            <button class="btn btn-secondary btn-bg active" data-bg="light" title="Světlé pozadí (výchozí, 2D i 3D)"><span class="material-symbols-outlined">light_mode</span></button>
           </div>
         </div>
         <div class="panel-section" id="projects-section" style="display:none">
@@ -203,11 +208,6 @@
             <button class="btn btn-secondary btn-z-exag" data-exag="2" title="Dvojnásobné převýšení (zvýraznění terénu)">2×</button>
             <button class="btn btn-secondary btn-z-exag" data-exag="5" title="Pětinásobné převýšení">5×</button>
             <button class="btn btn-secondary btn-z-exag" data-exag="10" title="Desetinásobné převýšení (silné zvýraznění)">10×</button>
-          </div>
-          <div id="bg-toolbar" class="toolbar-panel">
-            <span class="toolbar-label">Pozadí:</span>
-            <button class="btn btn-secondary btn-bg" data-bg="dark" title="Tmavé pozadí"><span class="material-symbols-outlined">dark_mode</span></button>
-            <button class="btn btn-secondary btn-bg active" data-bg="light" title="Světlé pozadí (výchozí)"><span class="material-symbols-outlined">light_mode</span></button>
           </div>
           </div>
         </div>

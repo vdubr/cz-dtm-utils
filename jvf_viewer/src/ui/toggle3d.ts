@@ -170,21 +170,32 @@ export function setup3dToggle(
     toolbarsEl?.classList.toggle('collapsed');
   });
 
-  // Background color picker (3D only)
+  // Přepínač barvy pozadí (levý panel) — platí pro 3D scénu i pro 2D mapu
+  // (pozadí #map-area viditelné pod vrstvami při vypnutém podkladu).
   const BG_COLORS: Record<string, string> = {
     dark: '#0a0a0f',
     light: '#f5f5f5',
   };
+  const mapArea = document.getElementById('map-area') as HTMLElement | null;
   const bgBtns = document.querySelectorAll<HTMLButtonElement>('.btn-bg');
+
+  function applyBackground(color: string): void {
+    setThreeBackground(color);
+    if (mapArea) mapArea.style.background = color;
+  }
+
   bgBtns.forEach((bgBtn) => {
     bgBtn.addEventListener('click', () => {
       const key = bgBtn.dataset['bg'] ?? 'dark';
-      const color = BG_COLORS[key] ?? BG_COLORS['dark']!;
-      setThreeBackground(color);
+      applyBackground(BG_COLORS[key] ?? BG_COLORS['dark']!);
       bgBtns.forEach((b) => b.classList.remove('active'));
       bgBtn.classList.add('active');
     });
   });
+
+  // Aplikovat výchozí volbu (aktivní tlačítko) hned při startu — i ve 2D.
+  const activeBg = document.querySelector<HTMLButtonElement>('.btn-bg.active');
+  applyBackground(BG_COLORS[activeBg?.dataset['bg'] ?? 'light'] ?? BG_COLORS['light']!);
 
   // SVG symboly toggle (jen 3D)
   const svgCheckbox = document.getElementById('toggle-svg-symbols') as HTMLInputElement | null;

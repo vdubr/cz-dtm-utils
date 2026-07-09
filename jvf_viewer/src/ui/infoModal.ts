@@ -49,9 +49,10 @@ const INFO_CONTENT_HTML = `
       mapa nebo Ortofoto), přepínání jednotlivých vrstev v levém panelu.
       Druhý klik na aktivní podkladové tlačítko podklad <em>vypne</em> —
       JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
-      kontrolu geometrie bez vizuálního šumu). Posuvník <em>Sytost</em>
-      pod tlačítky řídí průhlednost podkladu — platí pro 2D mapu i pro
-      texturu na 3D terénu; volba podkladu je společná pro oba režimy.
+      kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
+      tlačítky řídí průhlednost podkladu a přepínač
+      <em>světlé (výchozí) / tmavé pozadí</em> barvu plochy pod vrstvami —
+      obojí platí společně pro 2D mapu i 3D scénu.
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).
@@ -69,7 +70,7 @@ const INFO_CONTENT_HTML = `
       (<code>R</code>). Otáčení a náklon kamery se ovládají tlačítky ve spodní
       liště, kterou lze sbalit. Kliknutím do scény se nastaví <em>střed
       otáčení (pivot)</em> na zvolené místo. Volitelné převýšení výšky
-      (1× / 2× / 5× / 10×), světlé (výchozí) nebo tmavé pozadí a možnost renderovat
+      (1× / 2× / 5× / 10×) a možnost renderovat
       body jako SVG symboly (shodné s 2D). Viditelnost vrstev se zachovává
       mezi 2D a 3D režimem.
     </li>
