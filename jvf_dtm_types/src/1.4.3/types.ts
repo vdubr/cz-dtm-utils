@@ -146,8 +146,13 @@ export interface ObjektovyTyp {
  *   Pokud se uvnitř takové oblasti nachází plocha definičního bodu
  *   (viz `DEFBOD_PLOCHA_PAIRS`), dojde po přijetí ke zmenšení ZPS a objekt
  *   je potřeba nahlásit jako upozornění (`DEL_AREA_CONTAINS_DEFBOD_PLOCHA`).
+ * - `REF` — referenční oblast (jen 1.5.0.1, `TypZaznamuOKZPS=REF` ve
+ *   `DoprovodneInformaceVydejZPS`) — pouze referenční stav, žádná změna ZPS.
+ *
+ * V 1.4.3 se hodnota čte z `PopisObjektu` (`NEW`/`DEL`); v 1.5.0.1 z elementu
+ * `TypZaznamuOKZPS` (`NEW`/`DEL`/`REF`).
  */
-export type OblastKompletniZPSTyp = 'NEW' | 'DEL' | 'unknown';
+export type OblastKompletniZPSTyp = 'NEW' | 'DEL' | 'REF' | 'unknown';
 
 /**
  * Jeden záznam v `DoprovodneInformace/OblastiKompletniZPS`.

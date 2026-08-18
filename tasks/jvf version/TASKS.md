@@ -32,7 +32,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     `ukazka_PSPI_import.jvf.xml`; správné `zapisObjektu`/`recordKind`, správné
     typy geometrie; unit test `RECORD_KIND_MAP` (bezztrátovost).
 
-- [ ] **T4 — Parser: atributy + doprovodné info** — README §C
+- [x] **T4 — Parser: atributy + doprovodné info** — README §C
   - Flatten skupin ZPS/PSPI; `DoprovodneInformace{GAD,KAD,DTI,VydejZPS,VydejDTI}`;
     extrahovat `TypDatoveSady`; odstranit `parseOblastObjektuKI` (KI zrušeno).
   - **Závislosti:** T3. **Akceptace:** PSPI atributy (`IDExterni`,
