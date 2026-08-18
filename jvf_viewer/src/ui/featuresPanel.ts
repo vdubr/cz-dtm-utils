@@ -1,4 +1,6 @@
 import type { ObjektovyTyp, ZaznamObjektu, ZapisObjektuType } from 'jvf-parser';
+import { labelForAttribute } from 'jvf-parser';
+import { getActiveVersion } from '../state/activeVersion.js';
 import type OlMap from 'ol/Map.js';
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { findFeature } from '../map/jvfLayers.js';
@@ -336,7 +338,7 @@ function renderAttributes(z: ZaznamObjektu): HTMLElement {
     h.className = 'feature-detail-section-title';
     h.textContent = 'Atributy objektu';
     wrap.appendChild(h);
-    wrap.appendChild(buildKVTable(attrEntries));
+    wrap.appendChild(buildKVTable(attrEntries, true));
   }
 
   // Geometrie summary
@@ -376,10 +378,16 @@ function renderAttributes(z: ZaznamObjektu): HTMLElement {
   return wrap;
 }
 
-function buildKVTable(entries: [string, unknown][]): HTMLElement {
+/**
+ * @param translate Pokud `true`, u číselníkových atributů doplní za kód
+ *   český popisek z číselníku DTM (`kód — text`). Zapíná se jen pro sekci
+ *   „Atributy objektu" (A5), ne pro „Společné atributy" (identifikátory/data).
+ */
+function buildKVTable(entries: [string, unknown][], translate = false): HTMLElement {
   const tbl = document.createElement('table');
   tbl.className = 'feature-detail-table';
   const tbody = document.createElement('tbody');
+  const version = getActiveVersion();
   for (const [k, v] of entries) {
     const tr = document.createElement('tr');
     const tdK = document.createElement('td');
@@ -387,7 +395,8 @@ function buildKVTable(entries: [string, unknown][]): HTMLElement {
     tdK.textContent = k;
     const tdV = document.createElement('td');
     tdV.className = 'kv-value';
-    tdV.textContent = String(v);
+    const label = translate && v !== null ? labelForAttribute(k, v, version) : undefined;
+    tdV.textContent = label !== undefined ? `${String(v)} — ${label}` : String(v);
     tr.append(tdK, tdV);
     tbody.appendChild(tr);
   }

@@ -31,7 +31,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T1. **Akceptace:** `npm test -w jvf-parser` zelené; klíčové atributy
     přeložené; pokud ne, revidovat předpoklad shody názvů (README „load-bearing").
 
-- [ ] **T3 — Viewer: render s překladem** — README §C, A5
+- [x] **T3 — Viewer: render s překladem** — README §C, A5
   - `featuresPanel.ts`: `buildKVTable(entries, opts?)` + flag `translate` (default `false`).
     Zapnout jen pro „Atributy objektu" (`:339`), NE pro „Společné atributy" (`:328`).
   - Při `translate` a existujícím popisku: `String(v) + ' — ' + label`, jinak `String(v)`.

@@ -194,6 +194,20 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#legend-modal')).toBeHidden();
   });
 
+  test('panel prvku překládá číselníkové atributy (kód — text)', async ({ page }) => {
+    // Minimální fixture s osou PK (KategoriePozemniKomunikace=2). Detail prvku
+    // v sekci „Atributy objektu" doplní za kód český popisek z číselníku.
+    await page.setInputFiles('#file-input', fixturePath('test_ciselnik.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.locator('#btn-features').click();
+    await expect(page.locator('#features-panel')).toBeVisible();
+
+    // Malý soubor → skupina auto-rozbalená; klik na prvek rozbalí detail.
+    await page.locator('.feature-row').first().click();
+    const detail = page.locator('.feature-detail').first();
+    await expect(detail).toContainText('2 — dálnice II. třídy');
+  });
+
   test('protokol chyb (ServisJVFDTM) se zobrazí jako report modal', async ({ page }) => {
     // Soubor s protokolem chyb není mapová data → otevře se modal s reportem
     // (sekce DTI/ZPS, seznam kontrol a chyb), ne mapová vrstva.
