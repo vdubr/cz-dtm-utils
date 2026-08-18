@@ -44,7 +44,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T3, T4. **Akceptace:** 1.4.3 i 1.5.0.1 projdou stejným
     API; router testy (včetně strukturního sniffu a fallbacku).
 
-- [ ] **T6 — Protokol chyb: parser** — README §C/D, R5
+- [x] **T6 — Protokol chyb: parser** — README §C/D, R5
   - `parseErrorProtocol(xml): ErrorProtocol` pro kořen `ServisJVFDTM/ProtokolChyb`.
   - **Závislosti:** T1. **Akceptace:** `ukazka_protokol_chyb.jvf.xml`
     naparsován (DTI + ZPS kontroly a chyby).

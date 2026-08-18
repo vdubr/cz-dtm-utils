@@ -13,3 +13,7 @@ export {
   sniffVersionByStructure,
   isErrorProtocolXml,
 } from './router.js';
+
+// Protokol chyb (ServisJVFDTM/ProtokolChyb) — samostatný artefakt (R5).
+export { parseErrorProtocol } from './1.5.0.1/error-protocol.js';
+export type { ErrorProtocol, ProtokolKontrola, ProtokolChyba } from 'jvf-dtm-types';
