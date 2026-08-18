@@ -35,11 +35,14 @@ import {
  * - `DEFBOD_OUTSIDE_PLOCHA`   — bod leží mimo jakoukoliv plochu svého typu
  * - `DEFBOD_NO_PLOCHA`        — v JVF souboru není žádná plocha odpovídajícího typu
  */
-export function checkDefBodInPlocha(dtm: JvfDtm): TopologyError[] {
+export function checkDefBodInPlocha(
+  dtm: JvfDtm,
+  pairs: ReadonlyArray<{ defbod: string; plocha: string }> = DEFBOD_PLOCHA_PAIRS
+): TopologyError[] {
   const errors: TopologyError[] = [];
   const index = buildIndex(dtm);
 
-  for (const pair of DEFBOD_PLOCHA_PAIRS) {
+  for (const pair of pairs) {
     const defbodTyp = index.get(pair.defbod);
     const plochaTyp = index.get(pair.plocha);
 
@@ -100,11 +103,14 @@ export function checkDefBodInPlocha(dtm: JvfDtm): TopologyError[] {
  * - `OSA_OUTSIDE_OBVOD`  — bod osy leží mimo jakýkoliv obvod
  * - `OSA_NO_OBVOD`       — v JVF souboru není žádný obvod odpovídajícího typu
  */
-export function checkOsaInObvod(dtm: JvfDtm): TopologyError[] {
+export function checkOsaInObvod(
+  dtm: JvfDtm,
+  pairs: ReadonlyArray<{ osa: string; obvod: string }> = OSA_OBVOD_PAIRS
+): TopologyError[] {
   const errors: TopologyError[] = [];
   const index = buildIndex(dtm);
 
-  for (const pair of OSA_OBVOD_PAIRS) {
+  for (const pair of pairs) {
     const osaTyp = index.get(pair.osa);
     const obvodTyp = index.get(pair.obvod);
 

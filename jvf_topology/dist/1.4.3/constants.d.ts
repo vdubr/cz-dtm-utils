@@ -48,4 +48,20 @@ export declare const OSA_OBVOD_PAIRS: ReadonlyArray<{
     osa: string;
     obvod: string;
 }>;
+/**
+ * Páry definiční bod ↔ plocha pro JVF DTM 1.5.0.1 (66 párů).
+ *
+ * Odvozeno z katalogu 1.5.0.1 konvencí `{Kořen}DefinicniBod` +
+ * `{Kořen}Plocha` (validováno testem `pairs-integrity`). Oproti 1.4.3 (63)
+ * přibyly mj. `RozestavenaPlocha` (0100000381). PSPI objekty do párů nepatří.
+ */
+export declare const DEFBOD_PLOCHA_PAIRS_1501: ReadonlyArray<{
+    defbod: string;
+    plocha: string;
+}>;
+/** Páry Osa ↔ Obvod pro 1.5.0.1 (shodné s 1.4.3 — PK). */
+export declare const OSA_OBVOD_PAIRS_1501: ReadonlyArray<{
+    osa: string;
+    obvod: string;
+}>;
 //# sourceMappingURL=constants.d.ts.map

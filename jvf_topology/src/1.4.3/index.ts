@@ -11,8 +11,9 @@
  * IS DTM 3.6+3.8+3.9 (duplicitní linie/body, blízkost bodů)         → `duplicates.ts`
  */
 
-import type { JvfDtm } from 'jvf-dtm-types';
+import { TYP_DATOVE_SADY_VYDEJ_PSPI, type JvfDtm } from 'jvf-dtm-types';
 import type { TopologyCheck, TopologyError } from './types.js';
+import { DEFBOD_PLOCHA_PAIRS_1501, OSA_OBVOD_PAIRS_1501 } from './constants.js';
 
 import { checkGeometricValidity } from './validity.js';
 import { checkPolygonMultiCurveConsistency } from './consistency.js';
@@ -42,9 +43,11 @@ export type { TopologyCheck, TopologyError, TopologyErrorSeverity } from './type
 
 export {
   DEFBOD_PLOCHA_PAIRS,
+  DEFBOD_PLOCHA_PAIRS_1501,
   DUPLICATE_Z_TOLERANCE,
   MIN_DISTANCE_TOLERANCE,
   OSA_OBVOD_PAIRS,
+  OSA_OBVOD_PAIRS_1501,
   SJTSK_BOUNDS,
   SNAP_TOLERANCE,
   Z_BOUNDS_DEFBOD,
@@ -90,10 +93,43 @@ export type ValidationMode = 'complete' | 'changeset' | 'auto';
 
 /**
  * Rozhodne výsledný režim na základě `mode` a obsahu dokumentu.
+ *
+ * `TypDatoveSady=11` („Výdej PSPI", 1.5.0.1) se chová jako `complete` — jde
+ * o kompletní výdej PSPI; ZPS meziobjektové kontroly se PSPI objektů netýkají
+ * (nejsou v párech), takže complete nevytváří false positives.
  */
 function resolveMode(dtm: JvfDtm, mode: ValidationMode): 'complete' | 'changeset' {
   if (mode !== 'auto') return mode;
+  if (dtm.typDatoveSady === TYP_DATOVE_SADY_VYDEJ_PSPI) return 'complete';
   return dtm.typZapisu === 'změnové věty' ? 'changeset' : 'complete';
+}
+
+/** Volby validace: režim + explicitní verze (jinak se odvodí z `dtm.verze`). */
+export interface RunAllChecksOptions {
+  mode?: ValidationMode;
+  /** Verze specifikace; default = `dtm.verze`. Řídí výběr párové tabulky. */
+  version?: string;
+}
+
+/**
+ * Sestaví meziobjektové (Vrstva 3) kontroly pro danou verzi. Pro neznámou
+ * (nepodporovanou) verzi vrací prázdné pole — spustí se jen generické checky
+ * (R7: bezpečný default, žádné false positives).
+ */
+function crossObjectChecksForVersion(version: string | undefined): TopologyCheck[] {
+  if (version === '1.5.0.1') {
+    return [
+      (dtm) => checkDefBodInPlocha(dtm, DEFBOD_PLOCHA_PAIRS_1501),
+      (dtm) => checkOsaInObvod(dtm, OSA_OBVOD_PAIRS_1501),
+      checkDanglingEnds,
+    ];
+  }
+  // Prázdná/chybějící verze → DEFAULT_VERSION (1.4.3) — zpětná kompatibilita.
+  if (!version || version === '1.4.3') {
+    return CROSS_OBJECT_CHECKS;
+  }
+  // Známá, ale nepodporovaná verze (např. „9.9.9") — jen generické checky (R7).
+  return [];
 }
 
 /**
@@ -162,10 +198,14 @@ const CROSS_OBJECT_CHECKS: TopologyCheck[] = [
  */
 export function runAllChecks(
   dtm: JvfDtm,
-  mode: ValidationMode = 'auto'
+  modeOrOptions: ValidationMode | RunAllChecksOptions = 'auto'
 ): TopologyError[] {
+  const options: RunAllChecksOptions =
+    typeof modeOrOptions === 'string' ? { mode: modeOrOptions } : modeOrOptions;
+  const mode = options.mode ?? 'auto';
+  const version = options.version ?? dtm.verze;
+
   const resolved = resolveMode(dtm, mode);
-  const checks =
-    resolved === 'complete' ? [...BASE_CHECKS, ...CROSS_OBJECT_CHECKS] : BASE_CHECKS;
-  return runTopologyChecks(dtm, checks);
+  const crossChecks = resolved === 'complete' ? crossObjectChecksForVersion(version) : [];
+  return runTopologyChecks(dtm, [...BASE_CHECKS, ...crossChecks]);
 }

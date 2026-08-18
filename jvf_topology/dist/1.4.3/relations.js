@@ -18,10 +18,10 @@ import { buildIndex, dist3D, extractPolygons, getLevel, mkError, pointInPolygon,
  * - `DEFBOD_OUTSIDE_PLOCHA`   — bod leží mimo jakoukoliv plochu svého typu
  * - `DEFBOD_NO_PLOCHA`        — v JVF souboru není žádná plocha odpovídajícího typu
  */
-export function checkDefBodInPlocha(dtm) {
+export function checkDefBodInPlocha(dtm, pairs = DEFBOD_PLOCHA_PAIRS) {
     const errors = [];
     const index = buildIndex(dtm);
-    for (const pair of DEFBOD_PLOCHA_PAIRS) {
+    for (const pair of pairs) {
         const defbodTyp = index.get(pair.defbod);
         const plochaTyp = index.get(pair.plocha);
         if (defbodTyp === undefined || defbodTyp.zaznamy.length === 0)
@@ -64,10 +64,10 @@ export function checkDefBodInPlocha(dtm) {
  * - `OSA_OUTSIDE_OBVOD`  — bod osy leží mimo jakýkoliv obvod
  * - `OSA_NO_OBVOD`       — v JVF souboru není žádný obvod odpovídajícího typu
  */
-export function checkOsaInObvod(dtm) {
+export function checkOsaInObvod(dtm, pairs = OSA_OBVOD_PAIRS) {
     const errors = [];
     const index = buildIndex(dtm);
-    for (const pair of OSA_OBVOD_PAIRS) {
+    for (const pair of pairs) {
         const osaTyp = index.get(pair.osa);
         const obvodTyp = index.get(pair.obvod);
         if (osaTyp === undefined || osaTyp.zaznamy.length === 0)

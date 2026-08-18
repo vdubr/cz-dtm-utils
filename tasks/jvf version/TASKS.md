@@ -49,7 +49,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T1. **Akceptace:** `ukazka_protokol_chyb.jvf.xml`
     naparsován (DTI + ZPS kontroly a chyby).
 
-- [ ] **T7 — Topologie 1.5.0.1** — README §E, R7
+- [x] **T7 — Topologie 1.5.0.1** — README §E, R7
   - `DEFBOD_PLOCHA_PAIRS_1501`; `runAllChecks({version})`; `resolveMode`
     Výdej PSPI; `pairs-integrity` proti novému katalogu.
   - **Závislosti:** T2, T5. **Akceptace:** `npm test -w jvf-topology` zelené;
