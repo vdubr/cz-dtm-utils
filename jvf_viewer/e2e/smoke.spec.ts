@@ -194,6 +194,28 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#legend-modal')).toBeHidden();
   });
 
+  test('klik na prvek v mapě otevře zavřený panel Přehled prvků', async ({ page }) => {
+    // Fixture s jedním velkým polygonem → klik do středu mapy ho trefí.
+    await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    // Počkat, až se vrstva vykreslí (fitView + render dat).
+    await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
+    await page.waitForTimeout(700);
+
+    // Panel je ve výchozím stavu zavřený.
+    await expect(page.locator('#features-panel')).toBeHidden();
+
+    // Klik do středu 2D mapy na prvek → panel se automaticky otevře a vybere prvek.
+    // OL emituje `singleclick` ~250 ms po pointerup; toBeVisible retry to pokryje.
+    const map = page.locator('#map-container');
+    const box = (await map.boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+    await expect(page.locator('#features-panel')).toBeVisible();
+    await expect(page.locator('#btn-features')).toHaveClass(/active/);
+    await expect(page.locator('.feature-row.active')).toBeVisible();
+  });
+
   test('panel prvku překládá číselníkové atributy (kód — text)', async ({ page }) => {
     // Minimální fixture s osou PK (KategoriePozemniKomunikace=2). Detail prvku
     // v sekci „Atributy objektu" doplní za kód český popisek z číselníku.

@@ -299,10 +299,18 @@ function onJvfLoaded(data: JvfDtm, fileName: string): void {
   rebuildAll({ fitView: true });
 }
 
-// ── Map → panel: klik na 2D / 3D vybere prvek v otevřeném "Přehledu prvků" ──
+// ── Map → panel: klik na prvek v mapě (2D / 3D) vybere prvek v „Přehledu prvků" ──
+// Je-li panel zavřený, klik na prvek ho automaticky otevře (sjednocená otevírací
+// logika s tlačítkem btn-features — DRY, R1).
+function ensureFeaturesPanelOpen(): void {
+  if (isFeaturesPanelVisible()) return;
+  if (isPanelVisible()) hideErrors(); // mutual exclusion s error panelem
+  showFeatures(currentObjekty);
+  btnFeatures.classList.add('active');
+}
+
 // 2D: OL singleclick → forEachFeatureAtPixel hledá první feature s jvfElementName.
 olMap.on('singleclick', (evt) => {
-  if (!isFeaturesPanelVisible()) return;
   let picked: { elementName: string; objectId: string } | null = null;
   olMap.forEachFeatureAtPixel(
     evt.pixel,
@@ -319,6 +327,7 @@ olMap.on('singleclick', (evt) => {
   );
   if (!picked) return;
   const { elementName, objectId } = picked;
+  ensureFeaturesPanelOpen(); // otevřít panel, pokud byl zavřený (R2/R3)
   // Highlight v mapě (bez zoomu — uživatel už klikl, neztrácet kontext)
   const feature = (() => {
     for (const { olLayer } of currentJvfLayers) {
@@ -339,9 +348,9 @@ olMap.on('singleclick', (evt) => {
 const threeCanvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
 threeCanvas?.addEventListener('click', (e) => {
   if (!getIs3dActive()) return;
-  if (!isFeaturesPanelVisible()) return;
   const picked = pickFeatureFromClient(e.clientX, e.clientY);
   if (!picked) return;
+  ensureFeaturesPanelOpen(); // otevřít panel, pokud byl zavřený (R2/R3)
   highlightThreeFeature(picked.elementName, picked.objectId);
   selectFeatureInPanel(picked.elementName, picked.objectId);
 });
