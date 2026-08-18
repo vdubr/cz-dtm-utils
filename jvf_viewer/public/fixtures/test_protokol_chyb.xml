@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ukázka chybového protokolu DTI i ZPS -->
+<objtyp:JVFDTM xmlns:objtyp="objtyp" xmlns="servis" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <ServisJVFDTM>
+    <ProtokolChyb>
+      <ProtokolChybDTI>
+        <IDZmeny>ID10000001</IDZmeny>
+        <IDPozadavku>017de0b4-9d2b-4b6c-99df-34ec9f1e613c</IDPozadavku>
+        <Kontroly>
+          <Kontrola>
+            <IDBehuKontroly>IPR_1</IDBehuKontroly>
+            <Skupina>ATR</Skupina>
+            <KodKontroly>2.1</KodKontroly>
+            <DatumKontrolyZacatek>2025-04-15T10:00:00</DatumKontrolyZacatek>
+            <DatumKontrolyKonec>2025-04-15T10:10:00</DatumKontrolyKonec>
+            <StavKontrola>2</StavKontrola>
+            <SeznamChyb>
+              <Chyba>
+                <StavChyba>2</StavChyba>
+                <PopisChyby>Objekt typ:Stavby technické infrastruktury nevyplněna povinná hodnota IDExterni</PopisChyby>
+                <IDObjekt>100000006</IDObjekt>
+                <GmlID>ID00255561235</GmlID>
+              </Chyba>
+            </SeznamChyb>
+          </Kontrola>
+          <Kontrola>
+            <IDBehuKontroly>IPR_2</IDBehuKontroly>
+            <Skupina>ATR</Skupina>
+            <KodKontroly>1.7</KodKontroly>
+            <DatumKontrolyZacatek>2025-04-15T10:11:00</DatumKontrolyZacatek>
+            <DatumKontrolyKonec>2025-04-15T10:12:00</DatumKontrolyKonec>
+            <StavKontrola>2</StavKontrola>
+            <SeznamChyb>
+              <Chyba>
+                <StavChyba>2</StavChyba>
+                <PopisChyby>Data nejsou z jedné skupiny prvků DTI</PopisChyby>
+              </Chyba>
+            </SeznamChyb>
+          </Kontrola>
+          <Kontrola>
+            <IDBehuKontroly>IPR_2</IDBehuKontroly>
+            <Skupina>ATR</Skupina>
+            <KodKontroly>1.9</KodKontroly>
+            <DatumKontrolyZacatek>2025-04-15T10:11:00</DatumKontrolyZacatek>
+            <DatumKontrolyKonec>2025-04-15T10:12:00</DatumKontrolyKonec>
+            <StavKontrola>2</StavKontrola>
+            <SeznamChyb>
+              <Chyba>
+                <StavChyba>2</StavChyba>
+                <PopisChyby>VSP a editor v datech neodpovídají VSP a editorovi v RDTI</PopisChyby>
+              </Chyba>
+            </SeznamChyb>
+          </Kontrola>
+        </Kontroly>
+      </ProtokolChybDTI>
+      <ProtokolChybZPS>
+        <IDZmeny>ID10000001</IDZmeny>
+        <IDPozadavku>017de0b4-9d2b-4b6c-99df-34ec9f1e613c</IDPozadavku>
+        <Kontroly>
+          <Kontrola>
+            <IDBehuKontroly>IPR_1</IDBehuKontroly>
+            <Skupina>ATR</Skupina>
+            <KodKontroly>2.1</KodKontroly>
+            <DatumKontrolyZacatek>2025-04-15T10:00:00</DatumKontrolyZacatek>
+            <DatumKontrolyKonec>2025-04-15T10:10:00</DatumKontrolyKonec>
+            <StavKontrola>2</StavKontrola>
+            <SeznamChyb>
+              <Chyba>
+                <StavChyba>2</StavChyba>
+                <PopisChyby>Objekt typ:TrasaDomovniPripojkyVodovodniSite nevyplněna povinná hodnota atributu atr:Dimenze.</PopisChyby>
+                <IDObjekt>100000005</IDObjekt>
+                <GmlID>ID00255561232</GmlID>
+              </Chyba>
+              <Chyba>
+                <StavChyba>2</StavChyba>
+                <PopisChyby>Objekt typ:TrasaDomovniPripojkyVodovodniSite nevyplněna povinná hodnota atributu atr:StavObjektu.</PopisChyby>
+                <IDObjekt>100000006</IDObjekt>
+                <GmlID>ID00255561234</GmlID>
+              </Chyba>
+            </SeznamChyb>
+          </Kontrola>
+          <Kontrola>
+            <IDBehuKontroly>IPR_2</IDBehuKontroly>
+            <Skupina>TOP</Skupina>
+            <KodKontroly>3.7</KodKontroly>
+            <DatumKontrolyZacatek>2025-04-15T10:11:00</DatumKontrolyZacatek>
+            <DatumKontrolyKonec>2025-04-15T10:12:00</DatumKontrolyKonec>
+            <StavKontrola>2</StavKontrola>
+            <SeznamChyb>
+              <Chyba>
+                <StavChyba>2</StavChyba>
+                <PopisChyby>Volné konce linie.</PopisChyby>
+                <IDObjekt>100000007</IDObjekt>
+                <GmlID>ID00255561235</GmlID>
+                <LokalizaceChyby>
+                  <Linie>
+                    <gml:curveProperty>
+                      <gml:LineString srsName="EPGS:5514" srsDimension="3">
+                        <gml:posList>-730102.42 -1054556.06 323.69 -730096.90 -1054562.93 323.89</gml:posList>
+                      </gml:LineString>
+                    </gml:curveProperty>
+                  </Linie>
+                </LokalizaceChyby>
+              </Chyba>
+            </SeznamChyb>
+          </Kontrola>
+        </Kontroly>
+      </ProtokolChybZPS>
+    </ProtokolChyb>
+  </ServisJVFDTM>
+</objtyp:JVFDTM>

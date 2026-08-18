@@ -1,4 +1,8 @@
-import { loadJvfFile, type JvfLoadCallback } from './fileUpload.js';
+import {
+  loadJvfFile,
+  type JvfLoadCallback,
+  type JvfErrorProtocolCallback,
+} from './fileUpload.js';
 
 /**
  * Drag & drop načtení JVF souborů — drop zóna je celé okno aplikace.
@@ -10,7 +14,10 @@ import { loadJvfFile, type JvfLoadCallback } from './fileUpload.js';
  * (do limitu `MAX_PROJECTS`) — nenahrazuje je. Více souborů naráz se
  * zpracuje sekvenčně.
  */
-export function setupDragAndDrop(onLoad: JvfLoadCallback): void {
+export function setupDragAndDrop(
+  onLoad: JvfLoadCallback,
+  onErrorProtocol?: JvfErrorProtocolCallback
+): void {
   const overlay = document.getElementById('drop-overlay') as HTMLDivElement;
 
   // Počítadlo vnořených dragenter/dragleave — eventy bublají z child
@@ -72,7 +79,7 @@ export function setupDragAndDrop(onLoad: JvfLoadCallback): void {
           );
           continue;
         }
-        await loadJvfFile(file, onLoad);
+        await loadJvfFile(file, onLoad, onErrorProtocol);
       }
     })();
   });

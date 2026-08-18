@@ -67,7 +67,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T2. **Akceptace:** nové typy mají styl (ne jen fallback);
     legenda zobrazuje sekci PSPI.
 
-- [ ] **T10 — Viewer: UI protokolu chyb** — README §F, R5
+- [x] **T10 — Viewer: UI protokolu chyb** — README §F, R5
   - Panel/modal pro `ErrorProtocol`.
   - **Závislosti:** T6, T8. **Akceptace:** nahrání protokolu → zobrazí se
     seznam kontrol a chyb.

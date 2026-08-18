@@ -28,6 +28,7 @@ import { initHighlightLayer, highlightFeature, clearHighlight } from './map/high
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupVersionSelect } from './ui/versionSelect.js';
+import { showErrorProtocol } from './ui/errorProtocolModal.js';
 import {
   setupChangesetToggle,
   updateChangesetToggleVisibility,
@@ -161,16 +162,19 @@ btnFeatures.addEventListener('click', () => {
   }
 });
 
-// Setup file upload — každý vybraný soubor se přidá jako nový projekt
-setupFileUpload((data: JvfDtm, fileName: string) => {
-  onJvfLoaded(data, fileName);
-});
+// Setup file upload — každý vybraný soubor se přidá jako nový projekt.
+// Soubor s protokolem chyb (ServisJVFDTM) se místo mapy zobrazí jako report.
+setupFileUpload(
+  (data: JvfDtm, fileName: string) => onJvfLoaded(data, fileName),
+  (proto, fileName) => showErrorProtocol(proto, fileName),
+);
 
 // Setup drag & drop — přetažení JVF souborů kamkoli nad okno aplikace
 // PŘIDÁ projekty stejnou cestou jako file input (nenahrazuje načtené).
-setupDragAndDrop((data: JvfDtm, fileName: string) => {
-  onJvfLoaded(data, fileName);
-});
+setupDragAndDrop(
+  (data: JvfDtm, fileName: string) => onJvfLoaded(data, fileName),
+  (proto, fileName) => showErrorProtocol(proto, fileName),
+);
 
 // Setup version selector — pokud uživatel přepne verzi a má nahraná data,
 // confirm modal vyzve ke ztrátě dat. Po potvrzení se odeberou všechny

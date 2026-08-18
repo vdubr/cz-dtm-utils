@@ -1,5 +1,5 @@
-import { parseJvfDtm, isSupportedVersion } from 'jvf-parser';
-import type { JvfDtm } from 'jvf-parser';
+import { parseJvfDtm, isSupportedVersion, isErrorProtocolXml, parseErrorProtocol } from 'jvf-parser';
+import type { JvfDtm, ErrorProtocol } from 'jvf-parser';
 import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
 
@@ -56,13 +56,20 @@ function escapeHtml(s: string): string {
 /** Callback po úspěšném parsování — dostává i název souboru (nový projekt). */
 export type JvfLoadCallback = (data: JvfDtm, fileName: string) => void;
 
+/** Callback pro protokol chyb (ServisJVFDTM) — zobrazí se jako report, ne data. */
+export type JvfErrorProtocolCallback = (proto: ErrorProtocol, fileName: string) => void;
+
 /**
  * Načte lokální soubor (z file inputu nebo drag & drop) a zpracuje ho
  * parserem — jediný sdílený kód-path pro oba způsoby načtení. Vrací
  * Promise, aby šlo více souborů (multi-výběr / multi-drop) zpracovat
  * sekvenčně bez závodění o loading overlay.
  */
-export function loadJvfFile(file: File, onLoad: JvfLoadCallback): Promise<void> {
+export function loadJvfFile(
+  file: File,
+  onLoad: JvfLoadCallback,
+  onErrorProtocol?: JvfErrorProtocolCallback
+): Promise<void> {
   const loadingOverlay = document.getElementById('loading-overlay') as HTMLDivElement;
   loadingOverlay.style.display = 'flex';
 
@@ -71,6 +78,11 @@ export function loadJvfFile(file: File, onLoad: JvfLoadCallback): Promise<void> 
     reader.onload = async (e) => {
       try {
         const xml = e.target?.result as string;
+        // Protokol chyb (ServisJVFDTM) není mapová data — zobraz jako report.
+        if (onErrorProtocol && isErrorProtocolXml(xml)) {
+          onErrorProtocol(parseErrorProtocol(xml), file.name);
+          return;
+        }
         const data = parseJvfDtm(xml);
         const ok = await validateFileVersion(data, file.name);
         if (!ok) return;
@@ -95,7 +107,8 @@ export function loadJvfFile(file: File, onLoad: JvfLoadCallback): Promise<void> 
 }
 
 export function setupFileUpload(
-  onLoad: JvfLoadCallback
+  onLoad: JvfLoadCallback,
+  onErrorProtocol?: JvfErrorProtocolCallback
 ): void {
   const btnUpload = document.getElementById('btn-upload') as HTMLButtonElement;
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -114,7 +127,7 @@ export function setupFileUpload(
     // Reset hned, aby šel stejný soubor vybrat znovu
     fileInput.value = '';
     for (const file of files) {
-      await loadJvfFile(file, onLoad);
+      await loadJvfFile(file, onLoad, onErrorProtocol);
     }
   });
 
@@ -158,7 +171,7 @@ export function setupFileUpload(
         const sample = item.dataset['sample'];
         if (!sample) return;
         closeMenu();
-        await loadSample(sample, onLoad, loadingOverlay);
+        await loadSample(sample, onLoad, loadingOverlay, onErrorProtocol);
       });
     });
   }
@@ -171,7 +184,8 @@ export function setupFileUpload(
 async function loadSample(
   name: string,
   onLoad: JvfLoadCallback,
-  loadingOverlay: HTMLDivElement
+  loadingOverlay: HTMLDivElement,
+  onErrorProtocol?: JvfErrorProtocolCallback
 ): Promise<void> {
   loadingOverlay.style.display = 'flex';
   try {
@@ -181,6 +195,10 @@ async function loadSample(
       throw new Error(`HTTP ${resp.status} — soubor nenalezen`);
     }
     const xml = await resp.text();
+    if (onErrorProtocol && isErrorProtocolXml(xml)) {
+      onErrorProtocol(parseErrorProtocol(xml), name);
+      return;
+    }
     const data = parseJvfDtm(xml);
     const ok = await validateFileVersion(data, name);
     if (!ok) return;

@@ -194,6 +194,23 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#legend-modal')).toBeHidden();
   });
 
+  test('protokol chyb (ServisJVFDTM) se zobrazí jako report modal', async ({ page }) => {
+    // Soubor s protokolem chyb není mapová data → otevře se modal s reportem
+    // (sekce DTI/ZPS, seznam kontrol a chyb), ne mapová vrstva.
+    await page.setInputFiles('#file-input', fixturePath('test_protokol_chyb.xml'));
+
+    const modal = page.locator('#error-protocol-modal');
+    await expect(modal).toBeVisible();
+    await expect(modal).toContainText('Protokol chyb');
+    await expect(modal.locator('#error-protocol-modal-body')).toContainText('DTI');
+    await expect(modal.locator('#error-protocol-modal-body')).toContainText('ZPS');
+    // Konkrétní chyba z ukázky
+    await expect(modal.locator('#error-protocol-modal-body')).toContainText('Volné konce linie');
+
+    // Data se nenačetla jako mapová vrstva (žádný projekt).
+    await expect(page.locator('#btn-validate')).toBeDisabled();
+  });
+
   test('legenda po načtení 1.5.0.1 obsahuje sekci PSPI', async ({ page }) => {
     // Načtení 1.5.0.1 přepne aktivní verzi → legenda ukáže katalog 1.5.0.1
     // včetně sekce PSPI (plánované stavby infrastruktury).
