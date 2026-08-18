@@ -194,6 +194,19 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#legend-modal')).toBeHidden();
   });
 
+  test('legenda po načtení 1.5.0.1 obsahuje sekci PSPI', async ({ page }) => {
+    // Načtení 1.5.0.1 přepne aktivní verzi → legenda ukáže katalog 1.5.0.1
+    // včetně sekce PSPI (plánované stavby infrastruktury).
+    await page.setInputFiles('#file-input', fixturePath('test_verze_1.5.0.1.xml'));
+    await expect(page.locator('#btn-validate')).toBeEnabled();
+
+    await page.locator('#btn-legend').click();
+    await expect(page.locator('#legend-modal')).toBeVisible();
+    await expect(page.locator('.legend-cast-name', { hasText: 'PSPI' })).toBeVisible();
+
+    await page.locator('#legend-modal-close').click();
+  });
+
   test('přepínač světlého/tmavého režimu mění data-theme', async ({ page }) => {
     const btn = page.locator('#btn-theme');
     const before = await btn.getAttribute('data-theme');

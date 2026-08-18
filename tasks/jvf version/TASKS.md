@@ -61,7 +61,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T5. **Akceptace:** nahrání 1.5.0.1 i 1.4.3 souboru funguje
     (auto-switch); `npm run test:e2e` zelené.
 
-- [ ] **T9 — Viewer: styly/legenda** — README §F
+- [x] **T9 — Viewer: styly/legenda** — README §F
   - `symbology.ts` ~41 entries (20 DTM + 21 PSPI); `FALLBACK_COLORS`/`CAST_ORDER`
     += `PSPI`; SVG; přegenerovat `variantAttrMap.ts`.
   - **Závislosti:** T2. **Akceptace:** nové typy mají styl (ne jen fallback);

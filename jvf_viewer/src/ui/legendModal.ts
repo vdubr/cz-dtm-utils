@@ -1,10 +1,17 @@
 // Legend modal — zobrazí kompletní legendu všech objektových typů z ENTITY_CATALOG
 // s reprezentativním swatch (point/line/polygon) podle stylu z Katalogu DTM.
 
-import { ENTITY_CATALOG } from 'jvf-parser';
-import type { EntityMeta } from 'jvf-parser';
+import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
+import { getActiveVersion } from '../state/activeVersion.js';
 import { LAYER_COLORS, resolveStyle } from '../map/jvfLayers.js';
+
+/**
+ * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
+ * i `obsahovaCast: 'PSPI'`). Odvozeno z návratového typu `getEntityCatalog`,
+ * aby legenda přijala i PSPI/nové typy.
+ */
+type EntityMeta = ReturnType<typeof getEntityCatalog>[string];
 
 const SVG_BASE = './symboly/';
 
@@ -110,9 +117,10 @@ function buildLegendSwatch(meta: EntityMeta): HTMLElement {
 function renderLegendContent(container: HTMLElement, filter: string = ''): void {
   container.innerHTML = '';
 
-  // Seskup ENTITY_CATALOG podle obsahovaCast → kategorieObjektu → skupinaObjektu.
+  // Seskup katalog aktivní verze podle obsahovaCast → kategorieObjektu →
+  // skupinaObjektu. Verzně-vědomé — pro 1.5.0.1 obsahuje i PSPI a nové typy.
   const filterLower = filter.trim().toLowerCase();
-  const allEntities = Object.values(ENTITY_CATALOG);
+  const allEntities = Object.values(getEntityCatalog(getActiveVersion()));
   const filtered = filterLower
     ? allEntities.filter((m) => {
         return (
@@ -141,8 +149,8 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     catMap.get(kat)!.push(meta);
   }
 
-  // Stabilní pořadí: ZPS, TI, DI, GAD, OPL, ostatní (alfa).
-  const CAST_ORDER = ['ZPS', 'TI', 'DI', 'GAD', 'OPL'];
+  // Stabilní pořadí: ZPS, TI, DI, GAD, OPL, PSPI, ostatní (alfa).
+  const CAST_ORDER = ['ZPS', 'TI', 'DI', 'GAD', 'OPL', 'PSPI'];
   const sortedCasts = [...groups.keys()].sort((a, b) => {
     const ai = CAST_ORDER.indexOf(a);
     const bi = CAST_ORDER.indexOf(b);
