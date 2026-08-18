@@ -38,7 +38,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T3. **Akceptace:** PSPI atributy (`IDExterni`,
     `UrovenUmisteniObjektuPSPI`) čitelné; `typDatoveSady=11` u Výdeje PSPI.
 
-- [ ] **T5 — Router parseru** — README §D, R3, R4
+- [x] **T5 — Router parseru** — README §D, R3, R4
   - `parseJvfDtm(xml)` dispatcher (verze/kořen), `getEntityCatalog(version)`,
     back-compat `ENTITY_CATALOG`.
   - **Závislosti:** T3, T4. **Akceptace:** 1.4.3 i 1.5.0.1 projdou stejným
