@@ -81,6 +81,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Klik na prvek v mapě (2D i 3D) automaticky otevře „Přehled prvků"**, pokud
+  byl zavřený, a rovnou v něm prvek vybere, rozbalí jeho atributy a odscrolluje
+  na něj. Dříve klik do mapy fungoval jen při už otevřeném panelu; klik do
+  prázdné plochy i nadále nedělá nic.
 - **Přehled prvků** — hlavička kategorie zůstává při scrollování
   **přišpendlená nahoře** panelu; v dlouhém seznamu (např. stovky podrobných
   bodů v jedné kategorii) je tak stále vidět, ve které kategorii se nacházíte.

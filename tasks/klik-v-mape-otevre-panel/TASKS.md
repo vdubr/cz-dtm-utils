@@ -25,7 +25,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     klik do prázdna se zavřeným panelem nic neudělá; regrese s otevřeným panelem
     (klik na prvek, klik na řádek = zoom, toggle, Escape) funguje jako dřív.
 
-- [ ] **T2 — Info modal + changelog** — README §B (pravidlo `CLAUDE.md`!)
+- [x] **T2 — Info modal + changelog** — README §B (pravidlo `CLAUDE.md`!)
   - `jvf_viewer/src/ui/infoModal.ts`, sekce „Přehled prvků" (`:145-147`):
     doplnit, že je-li panel zavřený, klik na prvek v mapě ho automaticky otevře
     a prvek vybere.

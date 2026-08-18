@@ -147,8 +147,11 @@ const INFO_CONTENT_HTML = `
       u linií a ploch rozsah min–max). U <strong>číselníkových atributů</strong>
       se vedle číselného kódu zobrazí i <strong>český popisek</strong> z číselníku
       DTM (např. <code>2 — dálnice II. třídy</code>). Funguje to i opačně:
-      klik na prvek v mapě se synchronně promítne do panelu — rozbalí jeho
-      skupinu, scrollne na řádek a označí ho jako vybraný. ZapisObjektu se
+      klik na prvek v mapě (2D i 3D) se synchronně promítne do panelu — rozbalí
+      jeho skupinu, scrollne na řádek a označí ho jako vybraný.
+      <strong>Je-li panel „Přehled prvků" zavřený, klik na prvek v mapě ho
+      automaticky otevře</strong> a prvek rovnou vybere (klik do prázdné plochy
+      nedělá nic). ZapisObjektu se
       v changeset souborech rozlišuje barevným badge
       (<strong>I</strong> zelená / <strong>U</strong> žlutá /
       <strong>D</strong> červená). Prvky bez přiděleného DTM ID (nové
