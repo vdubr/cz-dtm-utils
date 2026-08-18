@@ -23,7 +23,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     zelený, voda modrý, kanalizace hnědý, teplovod oranžový — už ne jednotná
     `#ff9800`. Objekty s barvou v base beze změny.
 
-- [ ] **T2 — Oprava 27 poškozených `strokeWidth` (RGB → fillColor)** — README §B, R2
+- [x] **T2 — Oprava 27 poškozených `strokeWidth` (RGB → fillColor)** — README §B, R2
   - `jvf_viewer/src/map/symbology.ts`: každý `strokeWidth: DDDDDDDD.0`
     (7+ číslic, výskyty viz README/„Root cause B") převést na
     `fillColor: '#rrggbb'` z RGB tripletu a `strokeWidth` nastavit rozumně
