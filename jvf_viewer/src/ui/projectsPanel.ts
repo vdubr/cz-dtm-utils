@@ -11,6 +11,11 @@ import {
  * a tlačítko × pro odebrání. Sekce se zobrazuje jen pokud je načten
  * aspoň jeden projekt — bez dat se UI nemění (prázdný stav vieweru).
  *
+ * Hlavička sekce je sbalitelná (klik na „Projekty") — s více načtenými
+ * soubory seznam roste a zabírá místo, sbalením se schová. Počet projektů
+ * zůstává v hlavičce viditelný i ve sbaleném stavu. Stav je in-memory
+ * (přežije rerender, ne reload) — konzistentní s ostatními stavy vieweru.
+ *
  * Další projekt se přidává stávajícími cestami: tlačítko „Nahrát soubor"
  * (multi-výběr) nebo drag & drop kamkoli nad okno aplikace.
  */
@@ -22,6 +27,17 @@ export interface ProjectsPanelCallbacks {
   onZoom: (projectId: string) => void;
 }
 
+/** Sbalený stav sekce — in-memory, default rozbaleno. */
+let collapsed = false;
+/** Zaručí připojení click listeneru na hlavičku jen jednou. */
+let headerWired = false;
+
+function applyCollapsedState(section: HTMLElement): void {
+  section.classList.toggle('collapsed', collapsed);
+  const header = document.getElementById('projects-header');
+  header?.setAttribute('aria-expanded', String(!collapsed));
+}
+
 export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
   const section = document.getElementById('projects-section');
   const list = document.getElementById('projects-list');
@@ -31,6 +47,20 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
   section.style.display = projects.length > 0 ? '' : 'none';
   list.innerHTML = '';
   if (projects.length === 0) return;
+
+  // Sbalitelná hlavička — listener připojit jen jednou (hlavička je mimo
+  // list, přežívá rerender). Počet projektů ukázat i ve sbaleném stavu.
+  const header = document.getElementById('projects-header');
+  const countBadge = document.getElementById('projects-header-count');
+  if (countBadge) countBadge.textContent = String(projects.length);
+  if (header && !headerWired) {
+    header.addEventListener('click', () => {
+      collapsed = !collapsed;
+      applyCollapsedState(section);
+    });
+    headerWired = true;
+  }
+  applyCollapsedState(section);
 
   for (const project of projects) {
     const row = document.createElement('div');

@@ -2258,10 +2258,67 @@ html, body {
 
 /* ── Projekty (více načtených JVF souborů) ─────────────────────────────── */
 
+/* Sekce Projekty nesmí růst — .panel-section + .panel-section jí jinak dává
+   flex:1 a rozdělila by volný prostor s JVF vrstvami (velká mezera pod
+   seznamem). Má zabírat jen výšku obsahu; JVF vrstvy vyplní zbytek. */
+#projects-section {
+  flex: 0 0 auto;
+}
+
+/* Sbalitelná hlavička sekce — chová se jako .panel-section-title, ale je
+   klikací (button reset) a nese chevron + počet projektů. */
+.projects-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.projects-header:hover {
+  color: #c9d1d9;
+}
+
+.projects-chevron {
+  font-size: 16px;
+  color: #8b949e;
+  /* nutné — .panel-section-title dědí uppercase, což by rozbilo ligaturu ikony */
+  text-transform: none;
+  transition: transform 0.15s ease;
+}
+#projects-section.collapsed .projects-chevron {
+  transform: rotate(-90deg);
+}
+
+.projects-header-label {
+  flex: 1 1 auto;
+}
+
+.projects-header-count {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8b949e;
+  background: #21262d;
+  border-radius: 8px;
+  padding: 1px 6px;
+  letter-spacing: 0;
+}
+
+#projects-section.collapsed .projects-list {
+  display: none;
+}
+
 .projects-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  /* Pojistka při plném limitu projektů — seznam neroztlačí panel, scrolluje. */
+  max-height: 30vh;
+  overflow-y: auto;
 }
 
 .project-item {

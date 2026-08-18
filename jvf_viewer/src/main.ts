@@ -44,7 +44,6 @@ import {
   resolveLayerKey,
 } from './state/projects.js';
 import {
-  resetThreeCamera,
   setThreeLayerVisible,
   resetThreeLayerVisibility,
   clearThreeHighlight,
@@ -61,7 +60,6 @@ import { createEmpty } from 'ol/extent.js';
 // v `rebuildAll()` po každé změně (přidání / odebrání projektu).
 let currentJvfLayers: JvfVectorLayer[] = [];
 let currentObjekty: ObjektovyTyp[] = [];
-let currentExtent: Extent = createEmpty();
 // Extenty jednotlivých projektů (S-JTSK) pro zoom kliknutím v sekci Projekty.
 const projectExtents = new Map<string, Extent>();
 
@@ -122,20 +120,6 @@ setupChangesetToggle(() => currentJvfLayers);
 // Cookieless, GDPR-compliant; aktivní jen na produkčním Vercel hostu (auto-detect).
 injectAnalytics();
 injectSpeedInsights();
-
-// Setup zoom-to-data button
-const btnZoom = document.getElementById('btn-zoom') as HTMLButtonElement;
-btnZoom.addEventListener('click', () => {
-  if (getIs3dActive()) {
-    resetThreeCamera();
-  } else if (!isEmpty(currentExtent)) {
-    olMap.getView().fit(currentExtent, {
-      padding: [40, 40, 40, 40],
-      maxZoom: 18,
-      duration: 600,
-    });
-  }
-});
 
 // Setup validate button — toggle panel. Validace běží **per projekt**
 // (každý JVF soubor je samostatná dávka pro IS DMVS; meziprojektové
@@ -236,7 +220,6 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
 
   currentJvfLayers = allLayers;
   currentObjekty = allObjekty;
-  currentExtent = totalExtent;
 
   addJvfLayersToMap(olMap, allLayers);
 
@@ -263,10 +246,6 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
 
   // 4. Tlačítka v hlavičce.
   const hasData = projects.length > 0;
-  btnZoom.disabled = !hasData;
-  btnZoom.title = hasData
-    ? 'Přiblížit pohled na rozsah načtených JVF dat'
-    : 'Nejprve nahrajte JVF soubor';
   btnValidate.disabled = !hasData;
   btnValidate.title = hasData
     ? 'Spustit topologickou validaci dat a zobrazit panel s nálezy'

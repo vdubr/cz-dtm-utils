@@ -88,9 +88,6 @@
           </div>
         </div>
         <input type="file" id="file-input" accept=".xml,.jvf" multiple style="display:none" />
-        <button id="btn-zoom" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
-          <span class="btn-icon">&#8982;</span> Zoom na data
-        </button>
         <button id="btn-validate" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           Zkontrolovat
         </button>
@@ -116,7 +113,11 @@
           </div>
         </div>
         <div class="panel-section" id="projects-section" style="display:none">
-          <div class="panel-section-title">Projekty</div>
+          <button type="button" class="panel-section-title projects-header" id="projects-header" aria-expanded="true" title="Sbalit / rozbalit seznam projektů">
+            <span class="material-symbols-outlined projects-chevron">expand_more</span>
+            <span class="projects-header-label">Projekty</span>
+            <span class="projects-header-count" id="projects-header-count"></span>
+          </button>
           <div id="projects-list" class="projects-list"></div>
         </div>
         <div class="panel-section panel-section-jvf">

@@ -9,6 +9,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- Sekce **Projekty** v levém panelu je nově **sbalitelná** (klik na
+  hlavičku „Projekty") — s více načtenými soubory seznam narůstá a zabíral
+  místo; počet projektů zůstává v hlavičce vidět i ve sbaleném stavu.
 - Klik na projekt v sekci **Projekty** přiblíží pohled na jeho rozsah —
   ve 2D mapě i ve 3D scéně (animovaný přesun kamery).
 - **Více JVF souborů (projektů) naráz** — další výběr souboru nebo drag &
@@ -19,8 +22,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   do prázdného stavu. Při ≥2 projektech přibude v Přehledu prvků filtr
   **Projekt** (chips) promítající se do tabulky i 2D/3D mapy; vrstvy
   a skupiny stejného typu z různých projektů odlišuje tečka projektu.
-  Topologická validace běží per projekt a zoom na data pracuje se
-  sjednoceným rozsahem; **3D terén se při ≥2 projektech stahuje zvlášť
+  Topologická validace běží per projekt a klik na projekt v seznamu
+  přiblíží jeho rozsah; **3D terén se při ≥2 projektech stahuje zvlášť
   kolem každého projektu** (okolí 800 m místo společného bboxu), takže
   dva projekty daleko od sebe nestáhnou obří model přes prázdnou plochu
   mezi nimi. Identifikátory záznamů se při více projektech kvalifikují
@@ -132,6 +135,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   potřeby návaznosti na jinou.
 - Odstraněn mrtvý kód (`lineInPolygon`, `toXYFlat` v `geometry-math.ts`),
   nikde v monorepu nepoužívaný.
+
+### Odstraněno
+
+- Tlačítko **„Zoom na data"** v hlavičce — funkci nahradil **klik na projekt**
+  v sekci Projekty (přiblíží pohled na jeho rozsah ve 2D i 3D). Automatické
+  přiblížení na rozsah po načtení souboru zůstává beze změny.
 
 ## [2026.6.16.2] - 2026-06-16
 

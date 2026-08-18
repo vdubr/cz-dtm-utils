@@ -35,13 +35,16 @@ const INFO_CONTENT_HTML = `
       společně v jedné mapě. Levý panel zobrazuje sekci
       <em>Projekty</em> se seznamem souborů (barevná tečka, počet záznamů)
       a tlačítkem × pro odebrání; odebráním posledního projektu se viewer
-      vrátí do prázdného stavu. Při ≥2 projektech přibude v Přehledu prvků
-      řádek <em>Projekt</em> s přepínatelnými chipy — odškrtnutý projekt se
-      skryje v tabulce i ve 2D a 3D mapě. Vrstvy a skupiny stejného typu
-      z různých projektů jsou odlišené barevnou tečkou projektu. Všechny
-      soubory musí odpovídat aktivní verzi JVF DTM (soubor s jinou verzí
-      se nenačte); topologická validace běží pro každý projekt zvlášť
-      a zoom na data pracuje se sjednoceným rozsahem všech projektů. 3D
+      vrátí do prázdného stavu. <strong>Klikem na projekt</strong> v seznamu
+      přiblížíte pohled na jeho rozsah (ve 2D mapě i ve 3D scéně). Hlavičku
+      sekce lze <strong>sbalit</strong> (klik na „Projekty") — počet projektů
+      zůstává v hlavičce vidět i po sbalení. Při ≥2 projektech přibude
+      v Přehledu prvků řádek <em>Projekt</em> s přepínatelnými chipy —
+      odškrtnutý projekt se skryje v tabulce i ve 2D a 3D mapě. Vrstvy
+      a skupiny stejného typu z různých projektů jsou odlišené barevnou
+      tečkou projektu. Všechny soubory musí odpovídat aktivní verzi JVF DTM
+      (soubor s jinou verzí se nenačte); topologická validace běží pro každý
+      projekt zvlášť. 3D
       terén se při více projektech stahuje <strong>zvlášť kolem každého
       projektu</strong> (okolí 800&nbsp;m) — dva projekty daleko od sebe
       tak nestáhnou obří model přes prázdnou plochu mezi nimi.
@@ -91,10 +94,6 @@ const INFO_CONTENT_HTML = `
       volba i sytost jako ve 2D, jedno ovládání pro oba režimy; volba
       podkladu ve 3D automaticky zapne terén. Vypnutím podkladu se terén
       vrátí k hypsometrickému obarvení.
-    </li>
-    <li>
-      <strong>Zoom na data</strong> — přiblíží pohled na rozsah načteného JVF
-      souboru (ve 2D) nebo resetuje kameru (ve 3D).
     </li>
     <li>
       <strong>Topologická validace</strong> — spustí sadu kontrol nad

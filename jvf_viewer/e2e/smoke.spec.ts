@@ -13,7 +13,6 @@ test.describe('Základní stav aplikace', () => {
     // Bez načtených dat jsou datové akce zakázané.
     await expect(page.locator('#btn-validate')).toBeDisabled();
     await expect(page.locator('#btn-features')).toBeDisabled();
-    await expect(page.locator('#btn-zoom')).toBeDisabled();
 
     // Panel vrstev ukazuje výzvu k nahrání.
     await expect(page.locator('#jvf-layers-list .empty-hint')).toHaveText('Nahrajte JVF soubor');
@@ -34,7 +33,6 @@ test.describe('Načtení JVF souboru', () => {
 
     await expect(page.locator('#btn-validate')).toBeEnabled();
     await expect(page.locator('#btn-features')).toBeEnabled();
-    await expect(page.locator('#btn-zoom')).toBeEnabled();
     await expect(page.locator('#jvf-layers-list .layer-group').first()).toBeVisible();
   });
 
@@ -60,6 +58,55 @@ test.describe('Načtení JVF souboru', () => {
     await page.locator('#confirm-modal-footer button').click();
     await expect(page.locator('#confirm-modal')).toBeHidden();
     await expect(page.locator('#btn-validate')).toBeDisabled();
+  });
+});
+
+test.describe('Sekce Projekty', () => {
+  test('sekce se sbalí a rozbalí klikem na hlavičku', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+
+    const section = page.locator('#projects-section');
+    const header = page.locator('#projects-header');
+    const list = page.locator('#projects-list');
+
+    // Načtený projekt → sekce viditelná, seznam rozbalený, počet v hlavičce.
+    await expect(section).toBeVisible();
+    await expect(list).toBeVisible();
+    await expect(page.locator('#projects-list .project-item')).toHaveCount(1);
+    await expect(page.locator('#projects-header-count')).toHaveText('1');
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
+
+    // Sbalení → seznam skrytý, počet v hlavičce zůstává vidět.
+    await header.click();
+    await expect(section).toHaveClass(/collapsed/);
+    await expect(list).toBeHidden();
+    await expect(header).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#projects-header-count')).toBeVisible();
+    await expect(page.locator('#projects-header-count')).toHaveText('1');
+
+    // Rozbalení zpět.
+    await header.click();
+    await expect(section).not.toHaveClass(/collapsed/);
+    await expect(list).toBeVisible();
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('sekce Projekty neroztlačuje panel — vrstvy jdou hned pod ni', async ({ page }) => {
+    await loadSample(page, 'ukazka_DI.xml');
+
+    const projectsBox = await page.locator('#projects-section').boundingBox();
+    const jvfBox = await page.locator('.panel-section-jvf').boundingBox();
+    expect(projectsBox).not.toBeNull();
+    expect(jvfBox).not.toBeNull();
+
+    // Projekty se drží u obsahu (1 řádek + hlavička) — ne polovina panelu;
+    // veškerý volný prostor si bere sekce JVF vrstev.
+    expect(projectsBox!.height).toBeLessThan(120);
+    expect(jvfBox!.height).toBeGreaterThan(projectsBox!.height * 2);
+
+    // Vrstvy začínají těsně pod sekcí Projekty (žádná velká mezera).
+    const gap = jvfBox!.y - (projectsBox!.y + projectsBox!.height);
+    expect(gap).toBeLessThan(4);
   });
 });
 
