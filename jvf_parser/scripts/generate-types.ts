@@ -618,6 +618,44 @@ function makeEnumKey(value: string, doc: string): string {
   return `VALUE_${value.replace('-', 'MINUS_')}`;
 }
 
+/**
+ * Runtime tabulka `kód → český popisek` pro číselníkové atributy (A1).
+ *
+ * Na rozdíl od `enums.ts` (SLUG → kód) drží `ENUM_LABELS` mapu
+ * `název atributu → { kód → text }` z `xs:documentation`. Používá viewer
+ * k doplnění popisků číselníkových atributů v panelu prvku.
+ * Escaping přes `JSON.stringify` (A4 — české popisky s apostrofy/uvozovkami).
+ */
+function generateEnumLabelsFile(enums: EnumDef[]): string {
+  const lines: string[] = [
+    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    '// Run: npx tsx scripts/generate-types.ts <version>',
+    '//',
+    '// Mapa: název číselníkového atributu → { kód → český popisek }.',
+    '',
+    'export const ENUM_LABELS: Record<string, Record<string, string>> = {',
+  ];
+
+  const seen = new Set<string>();
+  for (const e of enums) {
+    if (seen.has(e.name)) {
+      console.warn(`  WARN: duplicitní číselník v ENUM_LABELS: ${e.name}`);
+      continue;
+    }
+    seen.add(e.name);
+    lines.push(`  ${JSON.stringify(e.name)}: {`);
+    for (const v of e.values) {
+      if (!v.doc) continue; // hodnoty bez popisku přeskočit (graceful, A3)
+      lines.push(`    ${JSON.stringify(v.value)}: ${JSON.stringify(v.doc)},`);
+    }
+    lines.push('  },');
+  }
+
+  lines.push('};');
+  lines.push('');
+  return lines.join('\n');
+}
+
 function generateSharedAttrsFile(
   elements: Map<string, ElementTypeDef>,
   enums: EnumDef[]
@@ -949,6 +987,10 @@ function main(): void {
   const enumsCode = generateEnumsFile(enums);
   writeFileSync(join(OUT_DIR, 'enums.ts'), enumsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enums.ts`);
+
+  const enumLabelsCode = generateEnumLabelsFile(enums);
+  writeFileSync(join(OUT_DIR, 'enum-labels.ts'), enumLabelsCode, 'utf-8');
+  console.log(`  Written ${OUT_DIR}/enum-labels.ts`);
 
   const sharedAttrsCode = IS_1501
     ? generateSharedAttrsFile1501(elements, enums, extractSharedGroups1501())

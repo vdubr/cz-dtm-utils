@@ -1,5 +1,5 @@
 // Auto-generated from JVF DTM 1.4.3 XSD — DO NOT EDIT
-// Run: npx tsx scripts/generate-types.ts
+// Run: npx tsx scripts/generate-types.ts <version>
 /** Catalog of all 358 JVF DTM entity types, keyed by XML element name */
 export const ENTITY_CATALOG = {
     "BPPlynovodniSite": {

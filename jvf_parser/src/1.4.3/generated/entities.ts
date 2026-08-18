@@ -1,5 +1,5 @@
 // Auto-generated from JVF DTM 1.4.3 XSD — DO NOT EDIT
-// Run: npx tsx scripts/generate-types.ts
+// Run: npx tsx scripts/generate-types.ts <version>
 
 import type { Geometry, GmlPolygon, CommonAttributes } from '../types.js';
 import type {

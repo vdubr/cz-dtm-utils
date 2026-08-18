@@ -1,5 +1,5 @@
 // Auto-generated from JVF DTM 1.4.3 XSD — DO NOT EDIT
-// Run: npx tsx scripts/generate-types.ts
+// Run: npx tsx scripts/generate-types.ts <version>
 /** UrovenUmisteniObjektuZPS */
 export const UrovenUmisteniObjektuZPS = {
     VALUE_MINUS_3: -3, // 3. úroveň pod povrchem (nejníže)
