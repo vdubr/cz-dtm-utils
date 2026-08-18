@@ -56,11 +56,14 @@ const ZAPIS_HIGHLIGHT_HEX: Record<ChangesetZapisType, number> = {
 };
 
 /**
- * Aplikovat barvu changeset záznamu na materiál objektu. Three.js
- * Sprite (SVG ikona) má `SpriteMaterial` bez color — pro něj musíme zhasnout
- * texturu a obarvit; Line / LineLoop / Points mají `*BasicMaterial.color`.
+ * Nastavit barvu materiálu(ů) objektu na `colorHex`. Sdílená implementace pro
+ * `applyZapisColorToObject` (changeset barva) i `restoreOriginalColor`
+ * (návrat na původní ČÚZK barvu) — obě jen zapisují hex do `material.color`.
+ * Three.js Sprite (SVG ikona) má `SpriteMaterial` bez viditelného efektu, pokud
+ * `color` chybí — proto `apply` bezpečně no-opuje, pokud materiál barvu nemá;
+ * Line / LineLoop / Points mají `*BasicMaterial.color`.
  */
-function applyZapisColorToObject(obj: THREE.Object3D, colorHex: number): void {
+function setObjectMaterialColor(obj: THREE.Object3D, colorHex: number): void {
   const withMat = obj as THREE.Object3D & { material?: unknown };
   const mat = withMat.material as
     | THREE.Material
@@ -75,6 +78,11 @@ function applyZapisColorToObject(obj: THREE.Object3D, colorHex: number): void {
   else apply(mat);
 }
 
+/** Aplikovat barvu changeset záznamu na materiál objektu. */
+function applyZapisColorToObject(obj: THREE.Object3D, colorHex: number): void {
+  setObjectMaterialColor(obj, colorHex);
+}
+
 /**
  * Vrátit objektu jeho původní barvu uloženou v `userData['jvfOrigColorHex']`
  * při buildu. Volá se, když uživatel odškrtne changeset checkbox
@@ -83,18 +91,7 @@ function applyZapisColorToObject(obj: THREE.Object3D, colorHex: number): void {
 function restoreOriginalColor(obj: THREE.Object3D): void {
   const orig = obj.userData['jvfOrigColorHex'];
   if (typeof orig !== 'number') return;
-  const withMat = obj as THREE.Object3D & { material?: unknown };
-  const mat = withMat.material as
-    | THREE.Material
-    | THREE.Material[]
-    | undefined;
-  if (!mat) return;
-  const apply = (m: THREE.Material): void => {
-    const colored = m as THREE.Material & { color?: THREE.Color };
-    if (colored.color) colored.color.setHex(orig);
-  };
-  if (Array.isArray(mat)) mat.forEach(apply);
-  else apply(mat);
+  setObjectMaterialColor(obj, orig);
 }
 
 /** Buffer kolem JVF dat pro stahovaný terén (m). */
@@ -131,6 +128,14 @@ interface SceneState {
   terrainMesh: THREE.Group | null;
   /** AbortController pro odstranění všech DOM event listenerů při dispose */
   controlsAbort: AbortController;
+  /**
+   * Seznam SVG sprite objektů (Point features s `useSvgSymbols`) aktuálně
+   * ve scéně. Udržuje se explicitně (naplňuje `buildSceneObjects`, maže
+   * `clearSceneObjects`), aby `updateSpriteVisibility` — volaná při KAŽDÉM
+   * pohybu kamery (orbit/pan/zoom) — nemusela dělat `scene.traverse` přes
+   * celou scénu, jen iterovat tuto malou podmnožinu.
+   */
+  spriteObjects: THREE.Object3D[];
 }
 
 let state: SceneState | null = null;
@@ -322,15 +327,19 @@ function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void 
     const s = spherical.radius * 0.015;
     state.pivotMarker.scale.setScalar(s);
     // Skrýt SVG sprity při velkém oddálení (čitelnost scény).
-    updateSpriteVisibility(state.scene, spherical.radius);
+    updateSpriteVisibility(state.spriteObjects, spherical.radius);
   }
 }
 
 /**
  * Skryje / zobrazí SVG sprity podle vzdálenosti kamery (resp. radiusu
- * orbitu). Volá se z `updateCamera` při každé změně kamery. Při větším
- * oddálení než `SPRITE_HIDE_RADIUS` se sprity skryjí, body zůstanou
- * reprezentovány barevnými puntíky, které renderujeme zvlášť (vždy).
+ * orbitu). Volá se z `updateCamera` při KAŽDÉ změně kamery (tedy i při
+ * každém mousemove během orbit/pan) — proto iterujeme jen přes
+ * `state.spriteObjects` (udržovaný seznam sprite objektů), NIKOLI
+ * `scene.traverse` přes celou scénu, které by bylo výrazně dražší na
+ * velkých souborech. Při větším oddálení než `SPRITE_HIDE_RADIUS` se
+ * sprity skryjí, body zůstanou reprezentovány barevnými puntíky, které
+ * renderujeme zvlášť (vždy).
  *
  * V současné implementaci nemáme paralelní vrstvu puntíků — sprite je
  * jediná reprezentace bodu při zapnutém SVG toggle. Skrytí spritu = bod
@@ -338,15 +347,13 @@ function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void 
  * silném oddálení vidět hlavně linie a plochy, body znovu uvidí po
  * přiblížení.
  */
-function updateSpriteVisibility(scene: THREE.Scene, radius: number): void {
+function updateSpriteVisibility(spriteObjects: THREE.Object3D[], radius: number): void {
   const radiusOk = radius < SPRITE_HIDE_RADIUS;
-  scene.traverse((obj) => {
-    if (obj.userData['jvfSprite'] === true) {
-      // AND s ostatními přepínači (vrstvy / changeset / filtr prvků) —
-      // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý sprite.
-      obj.visible = radiusOk && computeObjectVisibility(obj);
-    }
-  });
+  for (const obj of spriteObjects) {
+    // AND s ostatními přepínači (vrstvy / changeset / filtr prvků) —
+    // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý sprite.
+    obj.visible = radiusOk && computeObjectVisibility(obj);
+  }
 }
 
 function createPivotMarker(): THREE.Object3D {
@@ -438,15 +445,46 @@ function layerKey(ot: ObjektovyTyp): string {
   return ot.elementName;
 }
 
-// Add all data objects to the scene for given objekty, cx/cy/cz centroid, zExaggeration
+/**
+ * Materiálová cache pro jeden běh `buildSceneObjects` — klíč je kombinace
+ * druhu materiálu a barvy (resp. souboru textury u sprite). Objekty se
+ * stejnou barvou a stylem (typicky stovky záznamů stejného ObjektovyTyp) tak
+ * sdílejí JEDNU instanci materiálu místo `new *Material()` na každý záznam.
+ *
+ * Sdílet lze pouze materiály záznamů, jejichž barva se po vytvoření nikdy
+ * nemění (`!isChangesetZapis(zapisObjektu)`) — changeset záznamy (i/u/d)
+ * mají barvu měněnou za běhu (`applyZapisColorToObject`/`restoreOriginalColor`
+ * přes checkbox v panelu), takže dostávají vždy vlastní instanci, aby
+ * mutace barvy jednoho záznamu neovlivnila ostatní se stejnou původní barvou.
+ */
+function getOrCreateMaterial<T extends THREE.Material>(
+  cache: Map<string, THREE.Material>,
+  key: string,
+  factory: () => T
+): T {
+  const cached = cache.get(key);
+  if (cached) return cached as T;
+  const mat = factory();
+  cache.set(key, mat);
+  return mat;
+}
+
+// Add all data objects to the scene for given objekty, cx/cy/cz centroid, zExaggeration.
+// `spriteObjects` je výstupní pole — každý vytvořený SVG sprite se do něj přidá,
+// aby `updateSpriteVisibility` nemusela procházet celou scénu (viz jeho komentář).
 function buildSceneObjects(
   scene: THREE.Scene,
   objekty: ObjektovyTyp[],
   cx: number,
   cy: number,
   cz: number,
-  zExaggeration: number
+  zExaggeration: number,
+  spriteObjects: THREE.Object3D[]
 ): void {
+  // Fresh cache per build — sdílené materiály se zahodí spolu se starou scénou
+  // v `clearSceneObjects` (dispose je idempotentní i při vícenásobném volání
+  // na tutéž instanci) a znovu se založí zde.
+  const materialCache = new Map<string, THREE.Material>();
   for (const ot of objekty) {
     const s = resolveStyle(ot);
     const color = new THREE.Color(s.strokeColor);
@@ -465,6 +503,10 @@ function buildSceneObjects(
       // (nové prvky `ZapisObjektu='i'` — bez něj by nešly pickovat/zvýraznit).
       const objectId = resolveZaznamId(ot.elementName, zaz, zaznamIndex);
       const zapisObjektu = zaz.zapisObjektu;
+      // Changeset záznamy (i/u/d) mění barvu materiálu za běhu (viz komentář
+      // u `getOrCreateMaterial`) — pro ně vždy vytváříme vlastní instanci
+      // materiálu, aby přebarvení jednoho záznamu neovlivnilo ostatní.
+      const shareableMaterial = !isChangesetZapis(zapisObjektu);
       // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
       const levelKey = resolveLevelKey(zaz);
       // Při buildu uložíme původní barvu vrstvy do userData — `applyChangesetHighlight`
@@ -499,12 +541,15 @@ function buildSceneObjects(
               // depthTest=true: sprite respektuje hloubku scény (nepřekrývá
               // všechno jako dřív s depthTest=false).
               const tex = getSvgTexture(s.pointSvg);
-              const mat = new THREE.SpriteMaterial({
+              const makeSpriteMaterial = (): THREE.SpriteMaterial => new THREE.SpriteMaterial({
                 map: tex,
                 transparent: true,
                 depthTest: true,
                 sizeAttenuation: true,
               });
+              const mat = shareableMaterial
+                ? getOrCreateMaterial(materialCache, `sprite:${s.pointSvg}`, makeSpriteMaterial)
+                : makeSpriteMaterial();
               const sprite = new THREE.Sprite(mat);
               sprite.position.set(x, y3, z3);
               const img = (tex.image as HTMLImageElement | undefined);
@@ -522,7 +567,11 @@ function buildSceneObjects(
                 'position',
                 new THREE.Float32BufferAttribute([x, y3, z3], 3)
               );
-              const mat = new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
+              const makePointsMaterial = (): THREE.PointsMaterial =>
+                new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
+              const mat = shareableMaterial
+                ? getOrCreateMaterial(materialCache, `points:${color.getHex()}`, makePointsMaterial)
+                : makePointsMaterial();
               obj = new THREE.Points(geomPt, mat);
             }
             break;
@@ -540,7 +589,10 @@ function buildSceneObjects(
             if (pts.length >= 6) {
               const g = new THREE.BufferGeometry();
               g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-              obj = new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
+              const mat = shareableMaterial
+                ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
+                : new THREE.LineBasicMaterial({ color });
+              obj = new THREE.Line(g, mat);
             }
             break;
           }
@@ -557,7 +609,10 @@ function buildSceneObjects(
             if (pts.length >= 9) {
               const g = new THREE.BufferGeometry();
               g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-              obj = new THREE.LineLoop(g, new THREE.LineBasicMaterial({ color: fillColor }));
+              const mat = shareableMaterial
+                ? getOrCreateMaterial(materialCache, `line:${fillColor.getHex()}`, () => new THREE.LineBasicMaterial({ color: fillColor }))
+                : new THREE.LineBasicMaterial({ color: fillColor });
+              obj = new THREE.LineLoop(g, mat);
             }
             break;
           }
@@ -575,7 +630,10 @@ function buildSceneObjects(
               if (pts.length >= 6) {
                 const g = new THREE.BufferGeometry();
                 g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-                const lineObj = new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
+                const curveMat = shareableMaterial
+                  ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
+                  : new THREE.LineBasicMaterial({ color });
+                const lineObj = new THREE.Line(g, curveMat);
                 lineObj.userData[DATA_TAG] = key;
                 lineObj.userData[LAYER_KEY_TAG] = layerVisKey;
                 lineObj.userData['jvfObjectId'] = objectId;
@@ -610,6 +668,7 @@ function buildSceneObjects(
             applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
           }
           scene.add(obj);
+          if (obj.userData['jvfSprite'] === true) spriteObjects.push(obj);
         }
       }
     }
@@ -617,7 +676,13 @@ function buildSceneObjects(
 }
 
 // Remove all data objects from scene (leaves lights, grid, terrain) and release GPU resources.
-function clearSceneObjects(scene: THREE.Scene): void {
+// `spriteObjects` je udržovaný seznam sprite objektů (viz `SceneState.spriteObjects`)
+// — je potřeba ho vyprázdnit současně s odstraněním objektů ze scény, jinak by
+// `updateSpriteVisibility` po rebuildu operovala nad odpojenými (dispose'd) objekty.
+// Pozn.: materiály mohou být sdílené mezi více objekty (viz materialCache
+// v `buildSceneObjects`) — `Material.dispose()` je idempotentní, takže
+// vícenásobné volání na tutéž instanci je neškodné.
+function clearSceneObjects(scene: THREE.Scene, spriteObjects: THREE.Object3D[]): void {
   const toRemove: THREE.Object3D[] = [];
   scene.traverse((obj) => {
     // Terén má vlastní TERRAIN_TAG a NEMÁ DATA_TAG — nepromazat ho.
@@ -633,6 +698,7 @@ function clearSceneObjects(scene: THREE.Scene): void {
     if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
     else mat?.dispose();
   }
+  spriteObjects.length = 0;
 }
 
 export function initThreeScene(
@@ -732,7 +798,8 @@ export function initThreeScene(
   const cz = count > 0 ? sumZ / count : 0;
 
   lastZExaggeration = zExaggeration;
-  buildSceneObjects(scene, objekty, cx, cy, cz, zExaggeration);
+  const spriteObjects: THREE.Object3D[] = [];
+  buildSceneObjects(scene, objekty, cx, cy, cz, zExaggeration, spriteObjects);
 
   // Set initial camera radius from bounding box
   if (count > 0) {
@@ -804,6 +871,7 @@ export function initThreeScene(
     grid,
     terrainMesh: null,
     controlsAbort,
+    spriteObjects,
   };
   Object.defineProperty(state, 'animFrameId', {
     get() { return animFrameId; },
@@ -825,8 +893,8 @@ export function rebuildSceneGeometry(zExaggeration: number): void {
   if (!state) return;
   lastZExaggeration = zExaggeration;
   clearThreeHighlight();
-  clearSceneObjects(state.scene);
-  buildSceneObjects(state.scene, state.objekty, state.cx, state.cy, state.cz, zExaggeration);
+  clearSceneObjects(state.scene, state.spriteObjects);
+  buildSceneObjects(state.scene, state.objekty, state.cx, state.cy, state.cz, zExaggeration, state.spriteObjects);
   if (state.terrainMesh) {
     updateTerrainZExaggeration(state.terrainMesh, zExaggeration);
   }
@@ -926,7 +994,7 @@ export function disposeThreeScene(): void {
   // Uvolnit highlight overlay (má vlastní klonované geometrie/materiály)
   clearThreeHighlight();
   // Uvolnit geometrie + materiály všech datových objektů
-  clearSceneObjects(state.scene);
+  clearSceneObjects(state.scene, state.spriteObjects);
   // Uvolnit terénní mesh (cache rasteru zůstává — znovupoužitelné při re-initu)
   if (state.terrainMesh) {
     state.scene.remove(state.terrainMesh);
@@ -1078,16 +1146,6 @@ export function walk3d(direction: 'forward' | 'back' | 'left' | 'right' | 'up' |
   updateCamera(camera, orbit);
 }
 
-// Screen-space pan (kolmo na pohled) — pro myš (shift+drag / pravé tlačítko)
-// Zachováno kvůli kompatibilitě; z UI již nevoláme.
-export function pan3d(direction: 'up' | 'down' | 'left' | 'right'): void {
-  if (!state) return;
-  const step = 60;
-  const dx = direction === 'left' ? -step : direction === 'right' ? step : 0;
-  const dy = direction === 'up' ? -step : direction === 'down' ? step : 0;
-  panSceneByScreen(state.camera, state.orbit, dx, dy);
-}
-
 // Nastav nový pivot (bod, kolem kterého se orbit toci) — zachová polohu kamery
 // a jen přesměruje pohled + přepočítá sférické souřadnice.
 export function setPivot(worldX: number, worldY: number, worldZ: number): void {
@@ -1110,8 +1168,18 @@ export function setPivot(worldX: number, worldY: number, worldZ: number): void {
   state.pivotMarker.scale.setScalar(s);
 }
 
-// Raycast z klienta obrazovky do scény, vrátí první zásah nebo null.
-export function pickPointFromClient(clientX: number, clientY: number): THREE.Vector3 | null {
+/**
+ * Sdílený setup pro raycasting z klientských (obrazovkových) souřadnic myši
+ * do scény — používá ho `pickPointFromClient` i `pickFeatureFromClient`,
+ * které se lišily jen v tom, co dělají s výsledným seznamem zásahů. Vrací
+ * seřazené zásahy (nejbližší první) proti datovým objektům (`DATA_TAG` —
+ * grid/lights/terén jsou vyloučené), nebo `null`, pokud scéna není
+ * inicializovaná.
+ */
+function raycastDataObjectsFromClient(
+  clientX: number,
+  clientY: number
+): THREE.Intersection[] | null {
   if (!state) return null;
   const { scene, camera, renderer, orbit } = state;
   const rect = renderer.domElement.getBoundingClientRect();
@@ -1127,8 +1195,13 @@ export function pickPointFromClient(clientX: number, clientY: number): THREE.Vec
   // Filtruj jen data objekty (ne grid/lights)
   const targets: THREE.Object3D[] = [];
   scene.traverse((o) => { if (o.userData[DATA_TAG] !== undefined) targets.push(o); });
-  const hits = raycaster.intersectObjects(targets, false);
-  return hits[0]?.point.clone() ?? null;
+  return raycaster.intersectObjects(targets, false);
+}
+
+// Raycast z klienta obrazovky do scény, vrátí první zásah nebo null.
+export function pickPointFromClient(clientX: number, clientY: number): THREE.Vector3 | null {
+  const hits = raycastDataObjectsFromClient(clientX, clientY);
+  return hits?.[0]?.point.clone() ?? null;
 }
 
 /**
@@ -1140,20 +1213,8 @@ export function pickFeatureFromClient(
   clientX: number,
   clientY: number,
 ): { elementName: string; objectId: string } | null {
-  if (!state) return null;
-  const { scene, camera, renderer, orbit } = state;
-  const rect = renderer.domElement.getBoundingClientRect();
-  const ndc = new THREE.Vector2(
-    ((clientX - rect.left) / rect.width) * 2 - 1,
-    -(((clientY - rect.top) / rect.height) * 2 - 1)
-  );
-  const raycaster = new THREE.Raycaster();
-  raycaster.params.Line = { threshold: orbit.spherical.radius * 0.01 };
-  raycaster.params.Points = { threshold: orbit.spherical.radius * 0.01 };
-  raycaster.setFromCamera(ndc, camera);
-  const targets: THREE.Object3D[] = [];
-  scene.traverse((o) => { if (o.userData[DATA_TAG] !== undefined) targets.push(o); });
-  const hits = raycaster.intersectObjects(targets, false);
+  const hits = raycastDataObjectsFromClient(clientX, clientY);
+  if (!hits) return null;
   for (const hit of hits) {
     // Prošplhej po předcích, dokud nenajdeš jvfObjectId (sprity/podelementy ho nemusí mít)
     let cur: THREE.Object3D | null = hit.object;

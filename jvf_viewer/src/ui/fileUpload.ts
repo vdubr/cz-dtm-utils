@@ -66,7 +66,7 @@ export function loadJvfFile(file: File, onLoad: JvfLoadCallback): Promise<void> 
         onLoad(data, file.name);
       } catch (err) {
         console.error('Failed to parse JVF file:', err);
-        alert(`Chyba při načtení souboru: ${String(err)}`);
+        alert(`Soubor „${file.name}“ se nepodařilo načíst. Zkontrolujte, že jde o platný JVF DTM soubor.`);
       } finally {
         loadingOverlay.style.display = 'none';
         resolve();
@@ -176,7 +176,7 @@ async function loadSample(
     onLoad(data, name);
   } catch (err) {
     console.error('Failed to load sample:', err);
-    alert(`Chyba při načtení ukázky ${name}: ${String(err)}`);
+    alert(`Ukázkový soubor „${name}“ se nepodařilo načíst.`);
   } finally {
     loadingOverlay.style.display = 'none';
   }

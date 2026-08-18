@@ -87,10 +87,14 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
     const groupHeader = document.createElement('div');
     groupHeader.className = 'layer-group-header';
     const groupColor = LAYER_COLORS[obsahovaCast] ?? '#90a4ae';
-    groupHeader.innerHTML = `
-      <span class="layer-group-dot" style="background:${groupColor}"></span>
-      <span class="layer-group-name">${obsahovaCast}</span>
-    `;
+    const groupDot = document.createElement('span');
+    groupDot.className = 'layer-group-dot';
+    groupDot.style.background = groupColor;
+    const groupName = document.createElement('span');
+    groupName.className = 'layer-group-name';
+    groupName.textContent = obsahovaCast;
+    groupHeader.appendChild(groupDot);
+    groupHeader.appendChild(groupName);
     groupEl.appendChild(groupHeader);
 
     for (const layer of groupLayers) {
@@ -119,10 +123,14 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
 
       const infoEl = document.createElement('div');
       infoEl.className = 'layer-item-info';
-      infoEl.innerHTML = `
-        <span class="layer-name">${layer.objektovyTyp.nazev || layer.objektovyTyp.elementName}</span>
-        <span class="layer-meta">${layer.objektovyTyp.skupinaObjektu || layer.objektovyTyp.kategorieObjektu} &middot; ${obsahovaCast}</span>
-      `;
+      const nameEl = document.createElement('span');
+      nameEl.className = 'layer-name';
+      nameEl.textContent = layer.objektovyTyp.nazev || layer.objektovyTyp.elementName;
+      const metaEl = document.createElement('span');
+      metaEl.className = 'layer-meta';
+      metaEl.textContent = `${layer.objektovyTyp.skupinaObjektu || layer.objektovyTyp.kategorieObjektu} · ${obsahovaCast}`;
+      infoEl.appendChild(nameEl);
+      infoEl.appendChild(metaEl);
       leftEl.appendChild(infoEl);
 
       const countEl = document.createElement('span');
