@@ -13,7 +13,7 @@ import {
   resolveLevelKey,
   type LevelKey,
 } from '../state/featureFilter.js';
-import { resolveLayerKey, resolveProjectKey } from '../state/projects.js';
+import { resolveLayerKey, resolveProjectKey, getProjects } from '../state/projects.js';
 import {
   loadTerrainMesh,
   updateTerrainZExaggeration,
@@ -94,8 +94,16 @@ function restoreOriginalColor(obj: THREE.Object3D): void {
   setObjectMaterialColor(obj, orig);
 }
 
-/** Buffer kolem JVF dat pro stahovaný terén (m). */
+/** Buffer kolem JVF dat pro stahovaný terén (m) — režim jednoho projektu. */
 const TERRAIN_BUFFER_M = 300;
+/**
+ * Buffer kolem JVF dat pro stahovaný terén (m) — režim více projektů.
+ * Při ≥2 projektech se terén stahuje pro KAŽDÝ projekt zvlášť (jeho bbox +
+ * tohle okolí), nikoli pro společný bbox všech projektů. Dva projekty
+ * napříč republikou by jinak vytvořily obří společný bbox a stáhly by se
+ * megabajty rasteru přes prázdnou plochu mezi nimi.
+ */
+const TERRAIN_BUFFER_MULTI_M = 800;
 /** Rozlišení terénního meshe (vertexů na hranu). */
 const TERRAIN_RESOLUTION = 256;
 
@@ -119,13 +127,24 @@ interface SceneState {
   cz: number;
   /** Bbox JVF dat v S-JTSK (před aplikací centroidu). Null pokud scéna nemá data. */
   dataBbox: BBox | null;
+  /**
+   * Bboxy (S-JTSK), pro které se stahuje terén. Jeden projekt → `[dataBbox]`.
+   * Více projektů → jeden bbox PER projekt (viz `TERRAIN_BUFFER_MULTI_M`),
+   * takže se nestahuje prázdná plocha mezi vzdálenými projekty.
+   */
+  terrainBboxes: BBox[];
+  /** Buffer (okolí v m) přidaný ke každému `terrainBboxes` při stahování. */
+  terrainBuffer: number;
   objekty: ObjektovyTyp[];
   orbit: OrbitState;
   pivotMarker: THREE.Object3D;
   /** Pomocná mřížka — vyměňuje se při změně pozadí (jiné barvy pro světlé/tmavé). */
   grid: THREE.GridHelper;
-  /** Aktuální terénní skupina (mesh + vrstevnice) nebo null. Žije napříč rebuildSceneGeometry. */
-  terrainMesh: THREE.Group | null;
+  /**
+   * Terénní skupiny (mesh + vrstevnice) — jedna per `terrainBboxes`. Žijí
+   * napříč rebuildSceneGeometry. Prázdné pole = terén ještě nenačten / vypnut.
+   */
+  terrainMeshes: THREE.Group[];
   /** AbortController pro odstranění všech DOM event listenerů při dispose */
   controlsAbort: AbortController;
   /**
@@ -701,6 +720,67 @@ function clearSceneObjects(scene: THREE.Scene, spriteObjects: THREE.Object3D[]):
   spriteObjects.length = 0;
 }
 
+/**
+ * Projde všechny souřadnice geometrie a zavolá `add(x, y, z)` pro každý bod.
+ * Sdíleno výpočtem centroidu/bboxu scény i per-projekt bboxem terénu
+ * (`computeObjektyBbox`).
+ */
+function collectGeomCoords(geom: Geometry, add: (x: number, y: number, z: number) => void): void {
+  switch (geom.type) {
+    case 'Point': {
+      const c = geom.data.coordinates;
+      add(c[0] ?? 0, c[1] ?? 0, c[2] ?? 0);
+      break;
+    }
+    case 'LineString': {
+      const dim = geom.data.srsDimension > 0 ? geom.data.srsDimension : 2;
+      for (let i = 0; i < geom.data.coordinates.length; i += dim) {
+        add(geom.data.coordinates[i] ?? 0, geom.data.coordinates[i + 1] ?? 0, dim >= 3 ? (geom.data.coordinates[i + 2] ?? 0) : 0);
+      }
+      break;
+    }
+    case 'Polygon': {
+      const dim = geom.data.srsDimension > 0 ? geom.data.srsDimension : 2;
+      for (let i = 0; i < geom.data.exterior.length; i += dim) {
+        add(geom.data.exterior[i] ?? 0, geom.data.exterior[i + 1] ?? 0, dim >= 3 ? (geom.data.exterior[i + 2] ?? 0) : 0);
+      }
+      break;
+    }
+    case 'MultiCurve': {
+      for (const curve of geom.data.curves) {
+        const dim = curve.srsDimension > 0 ? curve.srsDimension : 2;
+        for (let i = 0; i < curve.coordinates.length; i += dim) {
+          add(curve.coordinates[i] ?? 0, curve.coordinates[i + 1] ?? 0, dim >= 3 ? (curve.coordinates[i + 2] ?? 0) : 0);
+        }
+      }
+      break;
+    }
+  }
+}
+
+/**
+ * Spočítá bbox (S-JTSK) ze všech geometrií daných objektových typů, nebo
+ * `null`, pokud neobsahují žádný bod. Používá se pro per-projekt terén při
+ * více načtených projektech.
+ */
+function computeObjektyBbox(objekty: ObjektovyTyp[]): BBox | null {
+  let minX = +Infinity, minY = +Infinity, maxX = -Infinity, maxY = -Infinity, n = 0;
+  for (const ot of objekty) {
+    for (const zaz of ot.zaznamy) {
+      for (const geom of zaz.geometrie) {
+        collectGeomCoords(geom, (x, y) => {
+          n++;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        });
+      }
+    }
+  }
+  return n > 0 ? { minX, minY, maxX, maxY } : null;
+}
+
 export function initThreeScene(
   canvas: HTMLCanvasElement,
   objekty: ObjektovyTyp[],
@@ -752,43 +832,10 @@ export function initThreeScene(
     if (y < minY) minY = y; if (y > maxY) maxY = y;
   }
 
-  function collectCoords(geom: Geometry): void {
-    switch (geom.type) {
-      case 'Point': {
-        const c = geom.data.coordinates;
-        addCoord(c[0] ?? 0, c[1] ?? 0, c[2] ?? 0);
-        break;
-      }
-      case 'LineString': {
-        const dim = geom.data.srsDimension > 0 ? geom.data.srsDimension : 2;
-        for (let i = 0; i < geom.data.coordinates.length; i += dim) {
-          addCoord(geom.data.coordinates[i] ?? 0, geom.data.coordinates[i + 1] ?? 0, dim >= 3 ? (geom.data.coordinates[i + 2] ?? 0) : 0);
-        }
-        break;
-      }
-      case 'Polygon': {
-        const dim = geom.data.srsDimension > 0 ? geom.data.srsDimension : 2;
-        for (let i = 0; i < geom.data.exterior.length; i += dim) {
-          addCoord(geom.data.exterior[i] ?? 0, geom.data.exterior[i + 1] ?? 0, dim >= 3 ? (geom.data.exterior[i + 2] ?? 0) : 0);
-        }
-        break;
-      }
-      case 'MultiCurve': {
-        for (const curve of geom.data.curves) {
-          const dim = curve.srsDimension > 0 ? curve.srsDimension : 2;
-          for (let i = 0; i < curve.coordinates.length; i += dim) {
-            addCoord(curve.coordinates[i] ?? 0, curve.coordinates[i + 1] ?? 0, dim >= 3 ? (curve.coordinates[i + 2] ?? 0) : 0);
-          }
-        }
-        break;
-      }
-    }
-  }
-
   for (const ot of objekty) {
     for (const zaz of ot.zaznamy) {
       for (const geom of zaz.geometrie) {
-        collectCoords(geom);
+        collectGeomCoords(geom, addCoord);
       }
     }
   }
@@ -855,6 +902,20 @@ export function initThreeScene(
     ? { minX, minY, maxX, maxY }
     : null;
 
+  // Terén: při ≥2 projektech stahuj zvlášť kolem KAŽDÉHO projektu (jeho bbox +
+  // TERRAIN_BUFFER_MULTI_M), ne přes společný bbox — dva projekty napříč
+  // republikou by jinak stáhly obří raster přes prázdnou plochu mezi nimi.
+  const projects = getProjects();
+  const terrainMulti = projects.length >= 2;
+  const terrainBboxes: BBox[] = terrainMulti
+    ? projects
+        .map((p) => computeObjektyBbox(p.dtm.objekty))
+        .filter((b): b is BBox => b !== null)
+    : dataBbox
+      ? [dataBbox]
+      : [];
+  const terrainBuffer = terrainMulti ? TERRAIN_BUFFER_MULTI_M : TERRAIN_BUFFER_M;
+
   state = {
     scene,
     camera,
@@ -865,11 +926,13 @@ export function initThreeScene(
     cy,
     cz,
     dataBbox,
+    terrainBboxes,
+    terrainBuffer,
     objekty,
     orbit,
     pivotMarker,
     grid,
-    terrainMesh: null,
+    terrainMeshes: [],
     controlsAbort,
     spriteObjects,
   };
@@ -880,9 +943,9 @@ export function initThreeScene(
   // Počáteční synchronizace kamery + markeru
   updateCamera(camera, orbit);
 
-  // Pokud byl terén zapnutý z předchozí relace, načti ho pro aktuální bbox.
+  // Pokud byl terén zapnutý z předchozí relace, načti ho pro aktuální bboxy.
   // Fire-and-forget — pokud selže, ukáže se error v konzoli, ale scéna zůstává funkční.
-  if (terrainVisible && dataBbox) {
+  if (terrainVisible && terrainBboxes.length > 0) {
     void ensureTerrainLoaded();
   }
 }
@@ -895,8 +958,8 @@ export function rebuildSceneGeometry(zExaggeration: number): void {
   clearThreeHighlight();
   clearSceneObjects(state.scene, state.spriteObjects);
   buildSceneObjects(state.scene, state.objekty, state.cx, state.cy, state.cz, zExaggeration, state.spriteObjects);
-  if (state.terrainMesh) {
-    updateTerrainZExaggeration(state.terrainMesh, zExaggeration);
+  for (const mesh of state.terrainMeshes) {
+    updateTerrainZExaggeration(mesh, zExaggeration);
   }
 }
 
@@ -995,12 +1058,12 @@ export function disposeThreeScene(): void {
   clearThreeHighlight();
   // Uvolnit geometrie + materiály všech datových objektů
   clearSceneObjects(state.scene, state.spriteObjects);
-  // Uvolnit terénní mesh (cache rasteru zůstává — znovupoužitelné při re-initu)
-  if (state.terrainMesh) {
-    state.scene.remove(state.terrainMesh);
-    disposeTerrainMesh(state.terrainMesh);
-    state.terrainMesh = null;
+  // Uvolnit terénní meshe (cache rasteru zůstává — znovupoužitelné při re-initu)
+  for (const mesh of state.terrainMeshes) {
+    state.scene.remove(mesh);
+    disposeTerrainMesh(mesh);
   }
+  state.terrainMeshes = [];
   state.renderer.dispose();
   state = null;
 }
@@ -1023,32 +1086,65 @@ export async function setTerrainVisible(visible: boolean): Promise<void> {
   if (!state) return;
   if (visible) {
     await ensureTerrainLoaded();
-  } else if (state.terrainMesh) {
-    state.terrainMesh.visible = false;
+  } else {
+    for (const mesh of state.terrainMeshes) mesh.visible = false;
   }
 }
 
-/** Načte terén, pokud ještě není ve scéně. Idempotentní. */
+/**
+ * Načte terén, pokud ještě není ve scéně. Idempotentní. Při více projektech
+ * načítá jednu terénní dlaždici PER projekt (viz `terrainBboxes`), jinak jednu
+ * pro celý bbox dat. Jednotlivé dlaždice se stahují paralelně a nezávisle —
+ * selhání jedné (např. jeden projekt mimo pokrytí DMR5G) neshodí ostatní.
+ */
 async function ensureTerrainLoaded(): Promise<void> {
-  if (!state || !state.dataBbox) return;
-  if (state.terrainMesh) {
-    state.terrainMesh.visible = true;
+  if (!state || state.terrainBboxes.length === 0) return;
+  if (state.terrainMeshes.length > 0) {
+    for (const mesh of state.terrainMeshes) mesh.visible = true;
     return;
   }
-  const mesh = await loadTerrainMesh(state.dataBbox, {
-    buffer: TERRAIN_BUFFER_M,
-    resolution: TERRAIN_RESOLUTION,
-    centroid: [state.cx, state.cy, state.cz],
-    zExaggeration: lastZExaggeration,
-  });
-  mesh.userData[TERRAIN_TAG] = true;
-  // Mesh dostává DATA_TAG jen kvůli `findSceneObjects` filtru v pickPointFromClient —
-  // ale pozor, `clearSceneObjects` testuje `TERRAIN_TAG` první a tu větu přeskočí.
-  // Pro pick nechceme terén jako target (nemá jvfObjectId), takže DATA_TAG nepřidáme.
-  state.scene.add(mesh);
-  state.terrainMesh = mesh;
-  // Byl-li v předchozí relaci zvolen podklad, aplikuj ho i na nový mesh.
-  // Fire-and-forget: selhání podkladu nesmí rozbít terén ani scénu.
+  const centroid: [number, number, number] = [state.cx, state.cy, state.cz];
+  const buffer = state.terrainBuffer;
+  const results = await Promise.allSettled(
+    state.terrainBboxes.map((bbox) =>
+      loadTerrainMesh(bbox, {
+        buffer,
+        resolution: TERRAIN_RESOLUTION,
+        centroid,
+        zExaggeration: lastZExaggeration,
+      })
+    )
+  );
+  // Scéna mohla mezitím zaniknout (přepnutí 2D/3D, nový soubor) — zahodit výsledky.
+  if (!state) {
+    for (const r of results) if (r.status === 'fulfilled') disposeTerrainMesh(r.value);
+    return;
+  }
+  const meshes: THREE.Group[] = [];
+  const failures: unknown[] = [];
+  for (const r of results) {
+    if (r.status === 'fulfilled') {
+      const mesh = r.value;
+      mesh.userData[TERRAIN_TAG] = true;
+      // Terén záměrně nedostává DATA_TAG — pro pick (pickPointFromClient) není
+      // cílem (nemá jvfObjectId), `clearSceneObjects` ho vynechá dle TERRAIN_TAG.
+      state.scene.add(mesh);
+      meshes.push(mesh);
+    } else {
+      failures.push(r.reason);
+    }
+  }
+  state.terrainMeshes = meshes;
+  // Selhaly-li VŠECHNY dlaždice, propaguj chybu — toggle3d ukáže alert a
+  // odškrtne checkbox. Uspěla-li aspoň jedna, jen zaloguj ty neúspěšné.
+  if (meshes.length === 0) {
+    throw failures[0] instanceof Error ? failures[0] : new Error('Terén se nepodařilo načíst.');
+  }
+  if (failures.length > 0) {
+    console.warn(`[terén] ${failures.length} z ${results.length} dlaždic terénu se nepodařilo načíst`, failures);
+  }
+  // Byl-li zvolen podklad, aplikuj ho na nové meshe. Fire-and-forget:
+  // selhání podkladu nesmí rozbít terén ani scénu.
   if (currentBasemap !== 'none') {
     void applyCurrentBasemap().catch((err) => {
       console.error('[basemap] načtení podkladu selhalo', err);
@@ -1078,42 +1174,53 @@ export async function setBasemap(kind: BasemapKind | 'none'): Promise<void> {
   await applyCurrentBasemap();
 }
 
-/** Aplikuje aktuálně zvolený podklad na existující terénní mesh. */
+/**
+ * Aplikuje aktuálně zvolený podklad na existující terénní meshe. Každá dlaždice
+ * má vlastní bbox → skládá se pro ni vlastní textura (viz `getTerrainRealBbox`).
+ * Dlaždice se zpracují paralelně; zastaralý výsledek zahodí `reqId`.
+ */
 async function applyCurrentBasemap(): Promise<void> {
   const reqId = ++basemapRequestId;
-  if (!state?.terrainMesh) return;
+  if (!state || state.terrainMeshes.length === 0) return;
   if (currentBasemap === 'none') {
-    removeBasemapFromTerrain(state.terrainMesh);
+    for (const mesh of state.terrainMeshes) removeBasemapFromTerrain(mesh);
     return;
   }
-  const bbox = getTerrainRealBbox(state.terrainMesh);
-  if (!bbox) return;
-  const texture = await loadBasemapTexture(bbox, currentBasemap);
-  // Mezitím mohl uživatel přepnout vrstvu nebo scéna zanikla — zahodit.
-  if (reqId !== basemapRequestId || !state?.terrainMesh) return;
-  applyBasemapToTerrain(state.terrainMesh, texture, basemapOpacity);
+  const kind = currentBasemap;
+  await Promise.all(
+    state.terrainMeshes.map(async (mesh) => {
+      const bbox = getTerrainRealBbox(mesh);
+      if (!bbox) return;
+      const texture = await loadBasemapTexture(bbox, kind);
+      // Mezitím mohl uživatel přepnout podklad nebo scéna zanikla — zahodit.
+      if (reqId !== basemapRequestId || !state) return;
+      applyBasemapToTerrain(mesh, texture, basemapOpacity);
+    })
+  );
 }
 
 /** Nastaví průhlednost podkladové textury (0–1). */
 export function setBasemapOpacity(value: number): void {
   basemapOpacity = Math.max(0, Math.min(1, value));
-  if (state?.terrainMesh) {
-    setBasemapOpacityOnTerrain(state.terrainMesh, basemapOpacity);
+  if (!state) return;
+  for (const mesh of state.terrainMeshes) {
+    setBasemapOpacityOnTerrain(mesh, basemapOpacity);
   }
 }
 
 /**
  * Zahodí cache rasterů (volat při nahrání nového JVF souboru).
- * Terénní mesh je v disposeThreeScene uvolněn automaticky při re-init scény.
+ * Terénní meshe jsou v disposeThreeScene uvolněny automaticky při re-init scény.
  */
 export function invalidateTerrainCache(): void {
   clearTerrainCache();
   clearBasemapTextureCache();
-  if (state?.terrainMesh) {
-    state.scene.remove(state.terrainMesh);
-    disposeTerrainMesh(state.terrainMesh);
-    state.terrainMesh = null;
+  if (!state) return;
+  for (const mesh of state.terrainMeshes) {
+    state.scene.remove(mesh);
+    disposeTerrainMesh(mesh);
   }
+  state.terrainMeshes = [];
 }
 
 // Walk-through: posune orbit.center (a tedy i kameru) podél horizontálního

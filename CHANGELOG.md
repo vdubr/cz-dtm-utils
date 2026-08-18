@@ -19,9 +19,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   do prázdného stavu. Při ≥2 projektech přibude v Přehledu prvků filtr
   **Projekt** (chips) promítající se do tabulky i 2D/3D mapy; vrstvy
   a skupiny stejného typu z různých projektů odlišuje tečka projektu.
-  Topologická validace běží per projekt, zoom na data a 3D terén pracují
-  se sjednoceným rozsahem; identifikátory záznamů se při více projektech
-  kvalifikují projektem, takže stejná DTM ID ve dvou souborech nekolidují.
+  Topologická validace běží per projekt a zoom na data pracuje se
+  sjednoceným rozsahem; **3D terén se při ≥2 projektech stahuje zvlášť
+  kolem každého projektu** (okolí 800 m místo společného bboxu), takže
+  dva projekty daleko od sebe nestáhnou obří model přes prázdnou plochu
+  mezi nimi. Identifikátory záznamů se při více projektech kvalifikují
+  projektem, takže stejná DTM ID ve dvou souborech nekolidují.
   S jedním načteným souborem se chování vieweru nemění.
 - JVF soubor lze nově načíst **přetažením myší (drag & drop)** kamkoli nad
   okno aplikace — při přetahování se zobrazí vizuální nápověda, upuštění

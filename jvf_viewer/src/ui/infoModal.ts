@@ -40,9 +40,11 @@ const INFO_CONTENT_HTML = `
       skryje v tabulce i ve 2D a 3D mapě. Vrstvy a skupiny stejného typu
       z různých projektů jsou odlišené barevnou tečkou projektu. Všechny
       soubory musí odpovídat aktivní verzi JVF DTM (soubor s jinou verzí
-      se nenačte); topologická validace běží pro každý projekt zvlášť,
-      zoom na data a 3D terén pracují se sjednoceným rozsahem všech
-      projektů.
+      se nenačte); topologická validace běží pro každý projekt zvlášť
+      a zoom na data pracuje se sjednoceným rozsahem všech projektů. 3D
+      terén se při více projektech stahuje <strong>zvlášť kolem každého
+      projektu</strong> (okolí 800&nbsp;m) — dva projekty daleko od sebe
+      tak nestáhnou obří model přes prázdnou plochu mezi nimi.
     </li>
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní
@@ -78,7 +80,8 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>3D terén</strong> — pod vektorovými daty se ve 3D scéně zobrazuje
       digitální model terénu <strong>ČÚZK DMR5G</strong> nad rozsahem načteného
-      JVF souboru. Povrch je obarven <em>hypsometricky</em> podle lokálního
+      JVF souboru (při více projektech kolem každého zvlášť — viz výše).
+      Povrch je obarven <em>hypsometricky</em> podle lokálního
       rozsahu výšek (tmavě zelená → žlutá → hnědá → bílá) a překryt
       <em>vrstevnicemi po 1 m</em> (zvýrazněnými každých 10 m). Terénní mesh
       i vrstevnice reagují na nastavené převýšení výšky a pomáhají zasadit
