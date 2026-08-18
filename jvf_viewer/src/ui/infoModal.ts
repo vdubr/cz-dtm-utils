@@ -42,9 +42,9 @@ const INFO_CONTENT_HTML = `
       v Přehledu prvků řádek <em>Projekt</em> s přepínatelnými chipy —
       odškrtnutý projekt se skryje v tabulce i ve 2D a 3D mapě. Vrstvy
       a skupiny stejného typu z různých projektů jsou odlišené barevnou
-      tečkou projektu. Všechny soubory musí odpovídat aktivní verzi JVF DTM
-      (soubor s jinou verzí se nenačte); topologická validace běží pro každý
-      projekt zvlášť. 3D
+      tečkou projektu. Verze každého souboru se detekuje automaticky
+      (podporované 1.4.3 i 1.5.0.1); topologická validace běží pro každý
+      projekt zvlášť dle jeho verze. 3D
       terén se při více projektech stahuje <strong>zvlášť kolem každého
       projektu</strong> (okolí 800&nbsp;m) — dva projekty daleko od sebe
       tak nestáhnou obří model přes prázdnou plochu mezi nimi.
@@ -154,6 +154,12 @@ const INFO_CONTENT_HTML = `
       syntetickým klíčem — klikání, zoom i detail atributů pro ně fungují
       stejně jako pro prvky s ID.
     </li>
+    <li>
+      <strong>Protokol chyb</strong> (JVF 1.5.0.1) — nahrání souboru
+      s protokolem chyb (<code>ServisJVFDTM</code>) se místo mapy zobrazí
+      jako <em>report</em>: přehled kontrol a chyb odděleně pro část
+      DTI a ZPS (kód kontroly, popis chyby, ID objektu).
+    </li>
   </ul>
 
   <h3>Co topologická validace kontroluje</h3>
@@ -195,14 +201,22 @@ const INFO_CONTENT_HTML = `
 
   <h3>Verze JVF DTM</h3>
   <p>
-    V hlavičce vlevo lze zvolit aktivní verzi specifikace. Aplikace zatím
-    podporuje pouze <strong>${VERSIONS_DISPLAY}</strong>, výběr je proto
-    informativní. Při nahrání souboru se kontroluje, zda jeho atribut
-    <code>verze</code> odpovídá aktivní verzi — v opačném případě se
-    soubor <strong>nenačte</strong> a zobrazí se upozornění s nabídkou
-    přepnout verzi nebo zvolit jiný soubor. Při přepnutí verze nad již
-    načtenými daty aplikace nejprve požádá o potvrzení, protože dojde
-    k jejich vymazání.
+    Aplikace podporuje verze <strong>${VERSIONS_DISPLAY}</strong> souběžně.
+    Verze se <strong>detekuje automaticky</strong> podle obsahu souboru
+    (element <code>VerzeJVFDTM</code>, případně strukturně) — při nahrání
+    souboru jiné podporované verze se aktivní verze v hlavičce
+    <strong>automaticky přepne</strong>. Nepodporovaná verze se nenačte
+    a zobrazí se upozornění. Verzi lze v hlavičce zvolit i ručně; při
+    ruční změně nad již načtenými daty aplikace nejprve požádá o potvrzení,
+    protože dojde k jejich vymazání.
+  </p>
+  <p>
+    <strong>Novinky 1.5.0.1:</strong> nová obsahová část
+    <strong>PSPI</strong> (plánované stavební práce infrastruktury) —
+    zobrazuje se v mapě i jako samostatná sekce v legendě; nový typ datové
+    sady <em>Výdej PSPI</em>; operace záznamu jsou nově v názvu elementu
+    (<code>ZaznamObjektuIns/Upd/Del</code>, referenční a přeshraniční věty);
+    zrušeno rozlišení KI a objekt „průběh technologické konstrukce".
   </p>
 
   <h3>Omezení</h3>
@@ -240,7 +254,9 @@ const INFO_CONTENT_HTML = `
     </li>
     <li>
       <strong>jvf-parser</strong> — parser JVF XML do typovaných objektů.
-      Postavený nad <code>fast-xml-parser</code>, podporuje verzi 1.4.3.
+      Postavený nad <code>fast-xml-parser</code>, podporuje verze 1.4.3
+      i 1.5.0.1 (verzní router s auto-detekcí) a samostatný parser
+      protokolu chyb.
     </li>
     <li>
       <strong>jvf-topology</strong> — topologická a geometrická validace.

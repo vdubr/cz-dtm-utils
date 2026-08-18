@@ -72,7 +72,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T6, T8. **Akceptace:** nahrání protokolu → zobrazí se
     seznam kontrol a chyb.
 
-- [ ] **T11 — Info modal + changelog + docs** — README §F/G (CLAUDE.md pravidlo!)
+- [x] **T11 — Info modal + changelog + docs** — README §F/G (CLAUDE.md pravidlo!)
   - `infoModal.ts`: opravit hardcoded „1.4.3" (ř. 111, 239) + popis PSPI/
     výdeje PSPI/protokolu chyb/1.5.0.1. `CHANGELOG.md` `[Unreleased]`.
   - **Závislosti:** průběžně (finalizovat po T1–T10). **Akceptace:** info modal

@@ -9,12 +9,25 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
-- **Podpora JVF DTM 1.5.0.1 souběžně s 1.4.3** (probíhá) — sdílené doménové
-  typy rozšířeny aditivně o novou obsahovou část **PSPI**, bezztrátový druh
-  záznamu (`recordKind`/`visibility`/`context` pro operace v názvu elementu
-  1.5.0.1), `typDatoveSady` a model **protokolu chyb** (`ErrorProtocol`).
-  Registr verzí (`SUPPORTED_VERSIONS`) nově zná obě verze; version selector
-  ve vieweru je při 2 verzích aktivní. Čtení 1.4.3 zůstává beze změny.
+- **Podpora JVF DTM 1.5.0.1 souběžně s 1.4.3** napříč všemi balíčky
+  (parser, topologie, viewer). Čtení archivních 1.4.3 souborů zůstává beze
+  změny — verze se **detekuje automaticky** podle obsahu souboru a aktivní
+  verze ve vieweru se při načtení přepne (ruční přepínač zůstává).
+  - **Parser**: verzní router `parseJvfDtm` (1.4.3 i 1.5.0.1), nová struktura
+    1.5.0.1 — operace v názvu elementu záznamu (`ZaznamObjektuIns/Upd/Del`,
+    referenční `RefV/RefN…` a přeshraniční `Pe…` věty), geometrické wrappery
+    (`Bod/Linie/Plocha/Obvod3D`), sdílené atributy PSPI, doprovodné info
+    (`…GAD/KAD/DTI/VydejZPS/VydejDTI/VydejPSPI`) a `TypDatoveSady`. Katalog
+    1.5.0.1 vygenerován z distribučního XSD (nové objekty, PSPI, bez KI
+    a zrušeného objektu).
+  - **Protokol chyb**: samostatný parser `parseErrorProtocol`
+    (`ServisJVFDTM/ProtokolChyb`) + zobrazení jako report ve vieweru.
+  - **Topologie**: páry DefBod↔Plocha pro 1.5.0.1 (66), režim „Výdej PSPI",
+    bezpečný default pro neznámou verzi (jen generické kontroly).
+  - **Viewer**: nová obsahová část **PSPI** v legendě a mapě (nové/PSPI typy
+    mají styl), verzní legenda, auto-detekce verze při načtení.
+- **Nová obsahová část PSPI** (plánované stavební práce infrastruktury) —
+  vlastní sekce v legendě a barevné odlišení v mapě.
 - Sekce **Projekty** v levém panelu je nově **sbalitelná** (klik na
   hlavičku „Projekty") — s více načtenými soubory seznam narůstá a zabíral
   místo; počet projektů zůstává v hlavičce vidět i ve sbaleném stavu.
