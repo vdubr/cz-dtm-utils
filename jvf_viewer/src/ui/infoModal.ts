@@ -104,7 +104,11 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>Legenda DTM</strong> — kompletní seznam všech ~360 objektových
       typů specifikace s reprezentativními symboly a barvami podle
-      <em>Katalogu kartografických symbolů DTM ČR</em>. Otevře se ikonou
+      <em>Katalogu kartografických symbolů DTM ČR</em>. Barva swatche
+      odpovídá tomu, jak se prvek vykreslí v mapě — i u sítí, které barvu
+      nesou až ve variantách (elektro červená, plyn zelená, voda modrá,
+      kanalizace hnědá, teplovod oranžová), takže legenda i vrstvový panel
+      souhlasí s mapou. Otevře se ikonou
       <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">legend_toggle</span>
       vedle nadpisu <em>JVF vrstvy</em>. Lze fulltextově filtrovat podle
       názvu, kódu nebo kategorie.

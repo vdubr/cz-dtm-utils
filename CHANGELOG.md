@@ -108,6 +108,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- **Barvy sítí v legendě a vrstvovém panelu** nyní souhlasí s vykreslením
+  v mapě. Trasy sítí nesou barvu jen ve variantách, takže se dřív v legendě
+  i panelu zobrazovaly jednotnou oranžovou (fallback obsahové části TI) —
+  nově se použije **reprezentativní barva z variant** (elektro červená, plyn
+  zelená, voda modrá, kanalizace hnědá, teplovod oranžová). Kanalizace
+  a teplovod tak jdou v legendě od sebe rozeznat.
+- **27 poškozených výplní** objektů (příkop, manipulační plocha, nádrž, …),
+  u nichž se barva omylem uložila do `strokeWidth` (a objekt tak ztratil
+  výplň a dostal monstrózní obrys), opraveno zpět na správnou `fillColor`.
 - **Výkon 3D scény** (`threeScene.ts`) — skrývání SVG sprite ikon při pohybu
   kamery (orbit/pan/zoom) už neprochází celou scénu (`scene.traverse`) na
   každý mousemove, ale jen udržovaný seznam spritů; materiály stejné barvy

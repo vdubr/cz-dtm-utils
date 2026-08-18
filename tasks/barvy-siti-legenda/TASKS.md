@@ -43,7 +43,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     **Akceptace:** v resume `../finished/T3.md` je seznam ověřených/opravených
     barev a seznam typů bez barvy; případné opravy = jen srovnání na katalog.
 
-- [ ] **T4 — Info modal + changelog** — README §D (CLAUDE.md pravidlo!)
+- [x] **T4 — Info modal + changelog** — README §D (CLAUDE.md pravidlo!)
   - `jvf_viewer/src/ui/infoModal.ts`: zkontrolovat sekci „Legenda DTM"
     (kolem `:105`) — po T1 „reprezentativní barvy" sedí; případně upřesnit.
   - `CHANGELOG.md` `[Unreleased]` → `Opraveno` (soulad barev sítí v
