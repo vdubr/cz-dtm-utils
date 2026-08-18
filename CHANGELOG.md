@@ -9,6 +9,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Popisky číselníkových atributů** v panelu detailu prvku — u kódovaných
+  atributů se vedle číselného kódu zobrazí i český popisek z číselníku DTM
+  (např. `2 — dálnice II. třídy`). Mapování `kód → text` se generuje
+  build-time z XSD (`ENUM_LABELS`), překlad běží jen pro sekci „Atributy
+  objektu"; nekódované atributy zůstávají beze změny.
 - **Podpora JVF DTM 1.5.0.1 souběžně s 1.4.3** napříč všemi balíčky
   (parser, topologie, viewer). Čtení archivních 1.4.3 souborů zůstává beze
   změny — verze se **detekuje automaticky** podle obsahu souboru a aktivní

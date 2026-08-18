@@ -144,7 +144,9 @@ const INFO_CONTENT_HTML = `
       Klik na záznam zoomuje
       mapu (2D i 3D) a rozbalí tabulku všech atributů včetně
       <em>nadmořské výšky</em> (Z ze geometrie — u bodu jedna hodnota,
-      u linií a ploch rozsah min–max). Funguje to i opačně:
+      u linií a ploch rozsah min–max). U <strong>číselníkových atributů</strong>
+      se vedle číselného kódu zobrazí i <strong>český popisek</strong> z číselníku
+      DTM (např. <code>2 — dálnice II. třídy</code>). Funguje to i opačně:
       klik na prvek v mapě se synchronně promítne do panelu — rozbalí jeho
       skupinu, scrollne na řádek a označí ho jako vybraný. ZapisObjektu se
       v changeset souborech rozlišuje barevným badge

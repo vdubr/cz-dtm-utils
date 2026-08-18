@@ -40,7 +40,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     `ukazka_ZPS.xml`, klik na prvek) — u `KategoriePozemniKomunikace` je `2 — dálnice II. třídy`;
     „Společné atributy" beze změny; nekódované atributy holé; `npm run build` zelený.
 
-- [ ] **T4 — Info modal + changelog** — README §D (CLAUDE.md pravidlo!)
+- [x] **T4 — Info modal + changelog** — README §D (CLAUDE.md pravidlo!)
   - `infoModal.ts`: do `INFO_CONTENT_HTML` doplnit zmínku o popiskách číselníkových atributů.
   - `CHANGELOG.md` `[Unreleased]` → `Přidáno`.
   - **Závislosti:** T3. **Akceptace:** info modal odpovídá skutečnému stavu; `CHANGELOG.md`
