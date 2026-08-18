@@ -1,0 +1,9 @@
+id: ID
+nazev: ID
+namespace: atr
+popis: |-
+  Identifikátor objektu v rámci DTM
+  Zadává IS DTMK
+nillable: false
+typ: String
+maxDelka: 50

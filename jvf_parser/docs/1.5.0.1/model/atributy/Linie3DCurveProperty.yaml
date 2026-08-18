@@ -1,0 +1,7 @@
+id: Linie3DCurveProperty
+nazev: Linie 3D
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: curveProperty
+dim: 3

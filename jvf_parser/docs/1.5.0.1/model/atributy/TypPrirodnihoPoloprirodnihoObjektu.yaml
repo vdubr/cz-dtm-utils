@@ -1,0 +1,21 @@
+id: TypPrirodnihoPoloprirodnihoObjektu
+nazev: Typ přírodního a polopřírodního objektu
+namespace: atr
+popis: Typ přírodního a polopřírodního objektu
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: vodní tok
+ - hodnota: 2
+   popis: jezero
+ - hodnota: 4
+   popis: zemědělská plocha
+ - hodnota: 5
+   popis: zahrada
+ - hodnota: 6
+   popis: les
+ - hodnota: 7
+   popis: hospodářsky nevyužívaná plocha
+ - hodnota: 99
+   popis: nezjištěno

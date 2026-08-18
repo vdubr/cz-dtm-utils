@@ -1,0 +1,7 @@
+id: CisloETahu
+nazev: Číslo E-tahu
+namespace: atr
+popis: Číslo E-Tahu
+nillable: false
+typ: String
+maxDelka: 100

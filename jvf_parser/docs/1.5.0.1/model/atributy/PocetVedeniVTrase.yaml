@@ -1,0 +1,7 @@
+id: PocetVedeniVTrase
+nazev: Počet vedení v trase
+namespace: atr
+popis: Počet vedení v trase
+nillable: true
+typ: Integer
+min: 0

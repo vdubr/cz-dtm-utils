@@ -16,7 +16,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** žádné. **Akceptace:** `npm run build` zelený; **1.4.3
     testy zelené beze změny** (R1).
 
-- [ ] **T2 — XSD/model/ukázky + codegen** — README §B, R8
+- [x] **T2 — XSD/model/ukázky + codegen** — README §B, R8
   - Stáhnout distribuci 1.5.0.1 → `jvf_parser/docs/1.5.0.1/xsd/` (+ `model/`);
     ukázky XML → `jvf_parser/samples/1.5.0.1/`.
   - Parametrizovat `jvf_parser/scripts/generate-types.ts` verzí; doplnit

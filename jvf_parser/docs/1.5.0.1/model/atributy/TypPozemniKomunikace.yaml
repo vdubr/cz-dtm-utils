@@ -1,0 +1,15 @@
+id: TypPozemniKomunikace
+nazev: Typ pozemní komunikace
+namespace: atr
+popis: Typ pozemní komunikace
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: komunikace
+ - hodnota: 2
+   popis: okružní křižovatka
+ - hodnota: 3
+   popis: prostranství bezprostředně sloužící provozu a údržbě pozemní komunikace
+ - hodnota: 99
+   popis: nezjištěno

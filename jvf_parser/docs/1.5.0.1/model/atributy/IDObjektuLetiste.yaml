@@ -1,0 +1,7 @@
+id: IDObjektuLetiste
+nazev: ID objektu letiště
+namespace: atr
+popis: Identifikátor objektu letiště
+nillable: false
+typ: String
+maxDelka: 50

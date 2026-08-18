@@ -1,0 +1,28 @@
+id: GeometrieObjektuBod3D
+namespace: cmn
+atributy:
+  - id: Bod3D
+    volitelny: false
+    atribut: Bod3DPointProperty
+
+kontexty:
+  Ref:
+    obsah:
+      - id: Bod3D
+        volitelny: false
+
+  Ins:
+    obsah:
+      - id: Bod3D
+        volitelny: false
+
+  Upd:
+    obsah:
+      - id: Bod3D
+        volitelny: true
+
+  Del:
+    obsah:
+      - id: Bod3D
+        volitelny: true
+

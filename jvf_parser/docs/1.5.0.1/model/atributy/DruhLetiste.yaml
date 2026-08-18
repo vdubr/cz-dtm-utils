@@ -1,0 +1,19 @@
+id: DruhLetiste
+nazev: Druh letiště
+namespace: atr
+popis: Druh letiště
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: veřejné s vnitrostátním provozem
+ - hodnota: 2
+   popis: veřejné s mezinárodním provozem
+ - hodnota: 3
+   popis: neveřejné s vnitrostátním provozem
+ - hodnota: 4
+   popis: neveřejné s mezinárodním provozem
+ - hodnota: 5
+   popis: vojenské
+ - hodnota: 99
+   popis: nezjištěno

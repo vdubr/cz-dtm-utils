@@ -1,0 +1,7 @@
+id: OznaceniTunelu
+nazev: Označení tunelu
+namespace: atr
+popis: Označení tunelu
+nillable: false
+typ: String
+maxDelka: 255

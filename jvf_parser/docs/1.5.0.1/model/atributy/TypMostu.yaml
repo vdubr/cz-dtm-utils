@@ -1,0 +1,21 @@
+id: TypMostu
+nazev: Typ mostu
+namespace: atr
+popis: Typ mostu
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: silniční
+ - hodnota: 2
+   popis: železniční
+ - hodnota: 3
+   popis: pro vodní dopravu
+ - hodnota: 4
+   popis: lávka pro pěší a cyklisty
+ - hodnota: 5
+   popis: přechod pro volně žijící živočichy
+ - hodnota: 6
+   popis: sdružený
+ - hodnota: 99
+   popis: nezjištěno

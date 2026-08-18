@@ -1,0 +1,227 @@
+id: TrasaTrakcnihoTrolejovehoVedeni
+namespace: ttvlin
+nazev: trasa trakčního trolejového vedení
+skupinaPrvku: ElektrickeVedeni
+obsahovaCast: TI
+typGeometrie: Linie
+code:
+  base: "0100000382"
+  suffix: "02"
+dim: 2
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuTI
+   typ: sada
+   sada: SpolecneAtributyObjektuTI
+ - id: ProvozniNapeti
+   typ: atribut
+   volitelny: false
+   atribut: ProvozniNapeti
+ - id: DruhElektrickehoProuduTrakcnihoVedeni
+   typ: atribut
+   volitelny: false
+   atribut: DruhElektrickehoProuduTrakcnihoVedeni
+ - id: TypDrahy
+   typ: atribut
+   volitelny: false
+   atribut: TypDrahy
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie2D
+ - id: StavTrasySiteTI
+   typ: atribut
+   volitelny: false
+   atribut: StavTrasySiteTI
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ProvozniNapeti
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhElektrickehoProuduTrakcnihoVedeni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ProvozniNapeti
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhElektrickehoProuduTrakcnihoVedeni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ProvozniNapeti
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: DruhElektrickehoProuduTrakcnihoVedeni
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ProvozniNapeti
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: DruhElektrickehoProuduTrakcnihoVedeni
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ProvozniNapeti
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhElektrickehoProuduTrakcnihoVedeni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ProvozniNapeti
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhElektrickehoProuduTrakcnihoVedeni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

@@ -1,0 +1,17 @@
+id: TypZarizeniKanalizacniPripojky
+nazev: Typ zařízení kanalizační přípojky
+namespace: atr
+popis: Typ zařízení kanalizační přípojky
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: revizní šachta
+ - hodnota: 2
+   popis: měrná šachta
+ - hodnota: 3
+   popis: domovní čerpací stanice
+ - hodnota: 4
+   popis: vsakovací zařízení s přepadem
+ - hodnota: 98
+   popis: jiné

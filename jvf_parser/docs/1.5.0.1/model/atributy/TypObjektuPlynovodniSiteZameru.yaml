@@ -1,0 +1,17 @@
+id: TypObjektuPlynovodniSiteZameru
+nazev: Typ objektu plynovodní sítě - záměru
+namespace: atr
+popis: Typ objektu plynovodní sítě - záměru
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: výrobna plynu
+ - hodnota: 2
+   popis: stanice
+ - hodnota: 3
+   popis: zásobník plynu
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: neurčeno

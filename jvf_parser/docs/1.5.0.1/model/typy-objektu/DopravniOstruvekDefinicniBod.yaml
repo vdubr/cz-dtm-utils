@@ -1,0 +1,156 @@
+id: DopravniOstruvekDefinicniBod
+namespace: doodef
+nazev: dopravní ostrůvek
+skupinaPrvku: SilnicniDoprava
+obsahovaCast: ZPS
+typGeometrie: Bod
+code:
+  base: "0100000013"
+  suffix: "04"
+dim: 3
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuDefinicnichBodu
+   typ: sada
+   sada: SpolecneAtributyObjektuDefinicnichBodu
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuBod3D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsZPS
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdZPS
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  PeIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  PeUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  PeDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDefinicnichBodu
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true

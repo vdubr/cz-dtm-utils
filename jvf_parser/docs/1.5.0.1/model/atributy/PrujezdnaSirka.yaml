@@ -1,0 +1,7 @@
+id: PrujezdnaSirka
+nazev: Průjezdná šířka
+namespace: atr
+popis: Průjezdná šířka
+nillable: true
+typ: Integer
+min: 0

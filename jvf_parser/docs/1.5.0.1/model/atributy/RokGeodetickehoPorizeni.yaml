@@ -1,0 +1,7 @@
+id: RokGeodetickehoPorizeni
+nazev: Rok geodetického pořízení
+namespace: atr
+popis: Rok geodetického pořízení
+nillable: true
+typ: Integer
+min: 0

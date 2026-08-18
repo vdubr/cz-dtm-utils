@@ -1,0 +1,13 @@
+id: TypOPSiteProduktovodu
+nazev: Typ ochranného pásma sítě produktovodu
+namespace: atr
+popis: Typ ochranného pásma sítě produktovodu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: OP produktovodu
+ - hodnota: 2
+   popis: OP ropovodu
+ - hodnota: 99
+   popis: nezjištěno

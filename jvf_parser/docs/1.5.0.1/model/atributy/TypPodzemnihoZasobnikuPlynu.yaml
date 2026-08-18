@@ -1,0 +1,13 @@
+id: TypPodzemnihoZasobnikuPlynu
+nazev: Typ podzemního zásobníku plynu
+namespace: atr
+popis: Typ podzemního zásobníku plynu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: sonda
+ - hodnota: 2
+   popis: sběrné středisko
+ - hodnota: 3
+   popis: centrální areál

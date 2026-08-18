@@ -1,0 +1,15 @@
+id: ZpusobOchranyVedeniSiteEK
+nazev: Způsob ochrany vedení sítě EK
+namespace: atr
+popis: Způsob ochrany vedení sítě elektronických komunikací
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: bez ochrany vedení
+ - hodnota: 2
+   popis: plastová trubka
+ - hodnota: 3
+   popis: svazek mikrotrubiček
+ - hodnota: 99
+   popis: nezjištěno

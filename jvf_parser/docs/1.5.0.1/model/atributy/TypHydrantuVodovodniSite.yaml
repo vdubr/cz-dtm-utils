@@ -1,0 +1,13 @@
+id: TypHydrantuVodovodniSite
+nazev: Typ hydrantu vodovodní sítě
+namespace: atr
+popis: Typ hydrantu vodovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: garantovaný
+ - hodnota: 2
+   popis: obecný
+ - hodnota: 99
+   popis: nezjištěno

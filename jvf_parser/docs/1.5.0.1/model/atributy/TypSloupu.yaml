@@ -1,0 +1,15 @@
+id: TypSloupu
+nazev: Typ sloupu
+namespace: atr
+popis: Typ sloupu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: betonový
+ - hodnota: 2
+   popis: dřevěný
+ - hodnota: 3
+   popis: kovový
+ - hodnota: 99
+   popis: nezjištěno

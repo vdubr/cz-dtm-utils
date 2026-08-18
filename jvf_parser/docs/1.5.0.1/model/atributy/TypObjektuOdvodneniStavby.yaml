@@ -1,0 +1,17 @@
+id: TypObjektuOdvodneniStavby
+nazev: Typ objektu odvodnění stavby
+namespace: atr
+popis: Typ objektu odvodnění stavby
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: liniový odvodňovač
+ - hodnota: 2
+   popis: vpusť kanalizační sítě
+ - hodnota: 3
+   popis: odtokové potrubí
+ - hodnota: 4
+   popis: vsakovací jímka
+ - hodnota: 98
+   popis: jiný

@@ -1,0 +1,7 @@
+id: Dimenze
+nazev: Dimenze
+namespace: atr
+popis: Dimenze (DN)
+nillable: true
+typ: Integer
+min: 0

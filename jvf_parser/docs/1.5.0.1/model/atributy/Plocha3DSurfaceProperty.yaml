@@ -1,0 +1,7 @@
+id: Plocha3DSurfaceProperty
+nazev: Plocha 3D (surfaceProperty)
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: surfaceProperty
+dim: 3

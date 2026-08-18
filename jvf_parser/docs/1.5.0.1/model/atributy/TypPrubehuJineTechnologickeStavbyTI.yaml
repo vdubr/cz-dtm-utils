@@ -1,0 +1,13 @@
+id: TypPrubehuJineTechnologickeStavbyTI
+nazev: Typ průběhu jiné technologické stavby TI
+namespace: atr
+popis: Typ průběhu jiné technologické stavby TI
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: převěs trakčního trolejového vedení železniční dráhy
+ - hodnota: 2
+   popis: převěs trakčního trolejového vedení jiné dráhy
+ - hodnota: 98
+   popis: jiný

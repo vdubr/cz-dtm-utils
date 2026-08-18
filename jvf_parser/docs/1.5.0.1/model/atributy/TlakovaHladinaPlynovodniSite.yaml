@@ -1,0 +1,17 @@
+id: TlakovaHladinaPlynovodniSite
+nazev: Tlaková hladina plynovodní sítě
+namespace: atr
+popis: Tlaková hladina plynovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: NTL
+ - hodnota: 2
+   popis: STL
+ - hodnota: 3
+   popis: VTL
+ - hodnota: 4
+   popis: VVTL
+ - hodnota: 99
+   popis: nezjištěno/neurčeno

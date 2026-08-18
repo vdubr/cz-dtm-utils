@@ -1,0 +1,25 @@
+id: PrevazujiciPovrch
+nazev: Převažující povrch
+namespace: atr
+popis: Převažující povrch
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: asfalt
+ - hodnota: 2
+   popis: beton
+ - hodnota: 3
+   popis: dlažba
+ - hodnota: 4
+   popis: R-materiál
+ - hodnota: 5
+   popis: písek, štěrkopísek
+ - hodnota: 6
+   popis: šotolina
+ - hodnota: 7
+   popis: nezpevněno
+ - hodnota: 8
+   popis: zpevněný propustný
+ - hodnota: 99
+   popis: nezjištěno

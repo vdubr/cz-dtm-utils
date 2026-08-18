@@ -1,0 +1,19 @@
+id: TypTechnickehoKanalu
+nazev: Typ technického kanálu
+namespace: atr
+popis: Typ technického kanálu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 4
+   popis: chránička
+ - hodnota: 5
+   popis: kabelovod
+ - hodnota: 6
+   popis: technický podpovrchový kanál
+ - hodnota: 7
+   popis: kabelová lávka / žlab
+ - hodnota: 98
+   popis: jiná ochranná konstrukce
+ - hodnota: 99
+   popis: nezjištěno

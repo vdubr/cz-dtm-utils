@@ -1,0 +1,21 @@
+id: KategorieZeleznicniTrate
+nazev: Kategorie železniční tratě
+namespace: atr
+popis: Kategorie železniční tratě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: celostátní
+ - hodnota: 2
+   popis: regionální
+ - hodnota: 3
+   popis: místní
+ - hodnota: 4
+   popis: vlečka
+ - hodnota: 5
+   popis: zkušební
+ - hodnota: 98
+   popis: jiná
+ - hodnota: 99
+   popis: nezjištěno/neurčeno

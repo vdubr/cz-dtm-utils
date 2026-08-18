@@ -1,0 +1,7 @@
+id: IDRDTI
+nazev: ID rozsahu DTI
+namespace: atr
+popis: Identifikátor rozsahu DTI
+nillable: false
+typ: String
+maxDelka: 50

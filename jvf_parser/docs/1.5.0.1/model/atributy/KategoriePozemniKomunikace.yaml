@@ -1,0 +1,31 @@
+id: KategoriePozemniKomunikace
+nazev: Kategorie pozemní komunikace
+namespace: atr
+popis: Kategorie pozemní komunikace
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: dálnice I. třídy
+ - hodnota: 2
+   popis: dálnice II. třídy
+ - hodnota: 3
+   popis: silnice I. třídy
+ - hodnota: 4
+   popis: silnice II. třídy
+ - hodnota: 5
+   popis: silnice III. třídy
+ - hodnota: 6
+   popis: místní komunikace I. třídy
+ - hodnota: 7
+   popis: místní komunikace II. třídy
+ - hodnota: 8
+   popis: místní komunikace III. třídy
+ - hodnota: 9
+   popis: místní komunikace IV. třídy
+ - hodnota: 10
+   popis: účelová komunikace
+ - hodnota: 11
+   popis: neveřejně přístupná účelová komunikace
+ - hodnota: 99
+   popis: nezjištěno

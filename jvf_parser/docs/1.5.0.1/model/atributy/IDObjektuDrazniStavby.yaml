@@ -1,0 +1,7 @@
+id: IDObjektuDrazniStavby
+nazev: ID objektu drážní stavby
+namespace: atr
+popis: Identifikátor objektu drážní stavby
+nillable: false
+typ: String
+maxDelka: 50

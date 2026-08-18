@@ -1,0 +1,13 @@
+id: TypSledovaneVodniCesty
+nazev: Typ sledované vodní cesty
+namespace: atr
+popis: Typ sledované vodní cesty
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: vedená řekou
+ - hodnota: 2
+   popis: vedená plavebním kanálem
+ - hodnota: 98
+   popis: jiná vodní plocha

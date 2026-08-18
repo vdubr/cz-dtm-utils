@@ -1,0 +1,8 @@
+id: HraniceJinehoObjektu
+nazev: Hranice jiného objektu
+namespace: atr
+popis: |-
+  Hranice jiného objektu?
+  0 = ne, 1 = ano
+nillable: false
+typ: Boolean

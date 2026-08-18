@@ -1,0 +1,28 @@
+id: GeometrieObjektuPlocha2DDTI
+namespace: cmn
+atributy:
+  - id: Plocha2D
+    volitelny: false
+    atribut: Plocha2DSurfaceProperty
+
+kontexty:
+  Ref:
+    obsah:
+      - id: Plocha2D
+        volitelny: false
+
+  Ins:
+    obsah:
+      - id: Plocha2D
+        volitelny: false
+
+  Upd:
+    obsah:
+      - id: Plocha2D
+        volitelny: true
+
+  Del:
+    obsah:
+      - id: Plocha2D
+        volitelny: true
+

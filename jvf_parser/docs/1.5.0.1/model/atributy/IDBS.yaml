@@ -1,0 +1,7 @@
+id: IDBS
+nazev: ID budoucího stavebníka
+namespace: atr
+popis: Identifikátor budoucího stavebníka
+nillable: false
+typ: String
+maxDelka: 50

@@ -1,0 +1,15 @@
+id: TypOPZarizeniOdpadovehoHospodarstvi
+nazev: Typ ochranného pásma zařízení odpadového hospodářství
+namespace: atr
+popis: Typ ochranného pásma zařízení odpadového hospodářství
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: OP skládky
+ - hodnota: 2
+   popis: OP spalovny
+ - hodnota: 3
+   popis: OP zařízení BRO
+ - hodnota: 4
+   popis: OP zařízení na odstraňování NO

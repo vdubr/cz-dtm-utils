@@ -1,0 +1,7 @@
+id: ProvozniNapeti
+nazev: Provozní napětí
+namespace: atr
+popis: Provozní napětí
+nillable: false
+typ: String
+maxDelka: 50

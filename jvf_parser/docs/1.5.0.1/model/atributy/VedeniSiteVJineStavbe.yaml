@@ -1,0 +1,27 @@
+id: VedeniSiteVJineStavbe
+nazev: Vedení sítě v jiné stavbě
+namespace: atr
+popis: Vedení sítě v jiné stavbě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: kolektor
+ - hodnota: 2
+   popis: technický kanál
+ - hodnota: 3
+   popis: teplovod
+ - hodnota: 4
+   popis: kanalizace
+ - hodnota: 5
+   popis: tunel
+ - hodnota: 6
+   popis: most
+ - hodnota: 7
+   popis: portál
+ - hodnota: 97
+   popis: jiná stavba
+ - hodnota: 98
+   popis: nevede v jiné stavbě
+ - hodnota: 99
+   popis: nezjištěno

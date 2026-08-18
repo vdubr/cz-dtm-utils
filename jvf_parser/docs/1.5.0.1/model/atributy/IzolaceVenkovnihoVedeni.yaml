@@ -1,0 +1,13 @@
+id: IzolaceVenkovnihoVedeni
+nazev: Izolace venkovního vedení
+namespace: atr
+popis: Izolace venkovního vedení
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: základní
+ - hodnota: 2
+   popis: bez izolace
+ - hodnota: 99
+   popis: nezjištěno

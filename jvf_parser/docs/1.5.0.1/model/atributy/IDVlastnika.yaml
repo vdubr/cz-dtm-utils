@@ -1,0 +1,7 @@
+id: IDVlastnika
+nazev: ID vlastníka
+namespace: atr
+popis: Identifikátor vlastníka DTI
+nillable: false
+typ: String
+maxDelka: 50

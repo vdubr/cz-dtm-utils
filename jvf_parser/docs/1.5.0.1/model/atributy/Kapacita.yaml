@@ -1,0 +1,7 @@
+id: Kapacita
+nazev: Kapacita
+namespace: atr
+popis: Kapacita
+nillable: true
+typ: Integer
+min: 0

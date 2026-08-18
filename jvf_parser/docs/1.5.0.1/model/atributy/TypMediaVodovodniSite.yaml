@@ -1,0 +1,17 @@
+id: TypMediaVodovodniSite
+nazev: Typ média vodovodní sítě
+namespace: atr
+popis: Typ média vodovodní sítě
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: voda pitná
+ - hodnota: 2
+   popis: voda surová
+ - hodnota: 3
+   popis: voda užitková
+ - hodnota: 98
+   popis: jiné
+ - hodnota: 99
+   popis: nezjištěno

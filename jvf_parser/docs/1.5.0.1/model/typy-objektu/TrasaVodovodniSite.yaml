@@ -1,0 +1,311 @@
+id: TrasaVodovodniSite
+namespace: trvosi
+nazev: trasa vodovodní sítě
+skupinaPrvku: Vodovod
+obsahovaCast: TI
+typGeometrie: Linie
+code:
+  base: "0100000113"
+  suffix: "02"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuTI
+   typ: sada
+   sada: SpolecneAtributyObjektuTI
+ - id: VedeniSiteVJineStavbe
+   typ: atribut
+   volitelny: false
+   atribut: VedeniSiteVJineStavbe
+ - id: TypTrasyVodovodniSite
+   typ: atribut
+   volitelny: false
+   atribut: TypTrasyVodovodniSite
+ - id: TypMediaVodovodniSite
+   typ: atribut
+   volitelny: false
+   atribut: TypMediaVodovodniSite
+ - id: Material
+   typ: atribut
+   volitelny: false
+   atribut: Material
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie3D
+ - id: ICME
+   typ: atribut
+   volitelny: false
+   atribut: ICME
+ - id: StavTrasySiteTI
+   typ: atribut
+   volitelny: false
+   atribut: StavTrasySiteTI
+ - id: Dimenze
+   typ: atribut
+   volitelny: false
+   atribut: Dimenze
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypTrasyVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypTrasyVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypTrasyVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypTrasyVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypTrasyVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypTrasyVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

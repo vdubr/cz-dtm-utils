@@ -1,0 +1,9 @@
+id: NeuplnaData
+nazev: Neúplná data
+namespace: atr
+popis: |-
+  Jedná se o neúplná data o objektu podle $ 4 Vyhlášky o DTM?
+  0 = ne, data o objektu jsou úplná
+  1 = ano, data o objektu nejsou úplná
+nillable: false
+typ: Boolean

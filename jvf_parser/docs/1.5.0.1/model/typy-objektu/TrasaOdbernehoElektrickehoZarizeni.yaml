@@ -1,0 +1,196 @@
+id: TrasaOdbernehoElektrickehoZarizeni
+namespace: toelin
+nazev: trasa odběrného elektrického zařízení
+skupinaPrvku: ElektrickeVedeni
+obsahovaCast: ZPS
+typGeometrie: Linie
+code:
+  base: "0100000100"
+  suffix: "02"
+dim: 3
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuZPS_TI
+   typ: sada
+   sada: SpolecneAtributyObjektuZPS_TI
+ - id: StavObjektu
+   typ: atribut
+   volitelny: false
+   atribut: StavObjektu
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie3D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsZPS
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdZPS
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  PeIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  PeUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  PeDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS_TI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true

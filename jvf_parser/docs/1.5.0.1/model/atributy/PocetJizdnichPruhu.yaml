@@ -1,0 +1,7 @@
+id: PocetJizdnichPruhu
+nazev: Počet jízdních pruhů
+namespace: atr
+popis: Počet jízdních pruhů
+nillable: true
+typ: Integer
+min: 0

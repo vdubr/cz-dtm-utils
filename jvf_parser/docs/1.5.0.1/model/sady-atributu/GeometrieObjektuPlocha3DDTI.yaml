@@ -1,0 +1,28 @@
+id: GeometrieObjektuPlocha3DDTI
+namespace: cmn
+atributy:
+  - id: Plocha3D
+    volitelny: false
+    atribut: Plocha3DSurfaceProperty
+
+kontexty:
+  Ref:
+    obsah:
+      - id: Plocha3D
+        volitelny: false
+
+  Ins:
+    obsah:
+      - id: Plocha3D
+        volitelny: false
+
+  Upd:
+    obsah:
+      - id: Plocha3D
+        volitelny: true
+
+  Del:
+    obsah:
+      - id: Plocha3D
+        volitelny: true
+

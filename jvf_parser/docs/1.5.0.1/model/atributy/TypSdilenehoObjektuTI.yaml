@@ -1,0 +1,27 @@
+id: TypSdilenehoObjektuTI
+nazev: Typ sdíleného objektu TI
+namespace: atr
+popis: Typ sdíleného objektu TI
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: sdružená rozvodná skříň
+ - hodnota: 5
+   popis: šachta vstupní
+ - hodnota: 6
+   popis: šachta kabelová
+ - hodnota: 7
+   popis: odbočka
+ - hodnota: 8
+   popis: technická komora
+ - hodnota: 9
+   popis: inspekční komora
+ - hodnota: 10
+   popis: kabelová komora
+ - hodnota: 11
+   popis: armaturní komora
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: nezjištěno
