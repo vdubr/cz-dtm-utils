@@ -246,6 +246,26 @@ export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
 }
 
 /**
+ * Reprezentativní styl objektového typu pro base-only kontexty (legenda,
+ * vrstvový panel). Když base symbologie nemá `fillColor` ani `strokeColor`,
+ * ale barvu nese některá **varianta** (typicky trasy sítí), vezme se barva
+ * z první varianty s barvou — aby swatch v legendě/panelu odpovídal tomu, jak
+ * se prvek reálně vykreslí v mapě, místo jednotné fallback barvy obsahové
+ * části. Objekty s barvou v base i objekty bez symbologie se chovají shodně
+ * s {@link resolveStyle}.
+ */
+export function resolveRepresentativeStyle(ot: ObjektovyTyp): ResolvedStyle {
+  const sym = getSymbology(ot.codeBase);
+  if (!sym) return resolveStyle(ot);
+
+  let repVariant: SymbolVariant | undefined;
+  if (sym.fillColor == null && sym.strokeColor == null && sym.variants?.length) {
+    repVariant = sym.variants.find((v) => v.fillColor != null || v.strokeColor != null);
+  }
+  return buildResolvedStyle(mergeSymbologyWithVariant(sym, repVariant), ot.obsahovaCast);
+}
+
+/**
  * Resolve style for a single záznam, applying variant lookup based on
  * VARIANT_ATTR map. Falls back to base style when no variant matches.
  */

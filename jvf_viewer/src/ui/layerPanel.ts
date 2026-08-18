@@ -1,5 +1,5 @@
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
-import { LAYER_COLORS, resolveStyle } from '../map/jvfLayers.js';
+import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
 import { getProject, isMultiProject } from '../state/projects.js';
 
 const SVG_BASE = './symboly/';
@@ -8,7 +8,7 @@ const SVG_BASE = './symboly/';
 function buildSymbolEl(layer: JvfVectorLayer): HTMLElement {
   const ot = layer.objektovyTyp;
   const geomType = ot.zaznamy[0]?.geometrie[0]?.type ?? 'Point';
-  const s = resolveStyle(ot);
+  const s = resolveRepresentativeStyle(ot);
 
   if (geomType === 'Point') {
     if (s.pointSvg) {

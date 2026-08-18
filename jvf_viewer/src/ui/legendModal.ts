@@ -4,7 +4,7 @@
 import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
 import { getActiveVersion } from '../state/activeVersion.js';
-import { LAYER_COLORS, resolveStyle } from '../map/jvfLayers.js';
+import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -16,8 +16,8 @@ type EntityMeta = ReturnType<typeof getEntityCatalog>[string];
 const SVG_BASE = './symboly/';
 
 /**
- * Adapter EntityMeta → ObjektovyTyp pro `resolveStyle()`.
- * `resolveStyle` používá pouze `codeBase` a `obsahovaCast`, ale typový kontrakt
+ * Adapter EntityMeta → ObjektovyTyp pro `resolveRepresentativeStyle()`.
+ * Ten používá pouze `codeBase` a `obsahovaCast`, ale typový kontrakt
  * vyžaduje plný ObjektovyTyp; doplníme prázdný `zaznamy` array.
  */
 function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
@@ -53,7 +53,7 @@ function swatchKindFor(meta: EntityMeta): SwatchKind {
 /** Vytvoř malý HTML element se symbolem (16×16, podobné layerPanel.buildSymbolEl). */
 function buildLegendSwatch(meta: EntityMeta): HTMLElement {
   const ot = entityMetaToObjektovyTyp(meta);
-  const s = resolveStyle(ot);
+  const s = resolveRepresentativeStyle(ot);
   const kind = swatchKindFor(meta);
 
   if (kind === 'point') {

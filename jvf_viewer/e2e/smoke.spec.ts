@@ -194,6 +194,24 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#legend-modal')).toBeHidden();
   });
 
+  test('legenda ukazuje reprezentativní barvu sítě z variant (elektro červená)', async ({ page }) => {
+    // Trasa elektrické sítě nese barvu jen ve variantách (#e60000). Legenda
+    // musí ukázat reprezentativní barvu z variant, ne jednotný TI fallback
+    // (#ff9800).
+    await page.locator('#btn-legend').click();
+    await expect(page.locator('#legend-modal')).toBeVisible();
+    await page.locator('#legend-modal-search').fill('trasa elektrické sítě');
+    await expect(page.locator('.legend-item')).toHaveCount(1);
+
+    // Swatch trasy elektrické sítě nese červenou (#e60000) z variant — ne
+    // oranžový TI fallback. (#ff9800 zůstává jen barvou hlavičky obsahové části.)
+    const swatchHtml = await page.locator('.legend-swatch').first().innerHTML();
+    expect(swatchHtml.toLowerCase()).toContain('e60000');
+    expect(swatchHtml.toLowerCase()).not.toContain('ff9800');
+
+    await page.locator('#legend-modal-close').click();
+  });
+
   test('klik na prvek v mapě otevře zavřený panel Přehled prvků', async ({ page }) => {
     // Fixture s jedním velkým polygonem → klik do středu mapy ho trefí.
     await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
