@@ -55,7 +55,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T2, T5. **Akceptace:** `npm test -w jvf-topology` zelené;
     nové páry validní vůči katalogu; neznámá verze → jen generické checky.
 
-- [ ] **T8 — Viewer: verzní routing + gate** — README §F
+- [x] **T8 — Viewer: verzní routing + gate** — README §F
   - Verzně-vědomé volání (`main.ts`); `fileUpload` auto-detekce + `setActiveVersion`;
     `versionSelect` aktivace; e2e fixture předělat.
   - **Závislosti:** T5. **Akceptace:** nahrání 1.5.0.1 i 1.4.3 souboru funguje

@@ -1,11 +1,12 @@
 /**
  * Aktivní verze JVF DTM v aplikaci.
  *
- * Aktuálně podporujeme jedinou verzi (1.4.3), ale UI je připravené na
- * víceverzní budoucnost. Aktivní verze řídí:
- *   1. Které soubory aplikace přijme (parser je tolerantní, ale UI
- *      odmítne soubor s `verze ≠ activeVersion`).
- *   2. UI label v hlavičce.
+ * Podporované verze jsou `1.4.3` a `1.5.0.1` (viz `SUPPORTED_VERSIONS`).
+ * Aktivní verze řídí:
+ *   1. UI indikátor (version selector v hlavičce).
+ *   2. Výchozí režim; při načtení souboru jiné **podporované** verze se
+ *      aktivní verze automaticky přepne na verzi souboru (viz `fileUpload`).
+ *      Nepodporovaná verze se odmítne blokujícím modalem.
  *
  * Stav je in-memory (žádný localStorage). Při reloadu se vrací k
  * `DEFAULT_VERSION`.

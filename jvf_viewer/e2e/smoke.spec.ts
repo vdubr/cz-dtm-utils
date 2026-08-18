@@ -45,8 +45,8 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
   });
 
-  test('soubor s nepodporovanou verzí je odmítnut', async ({ page }) => {
-    // Nesprávná verze (1.5.0) proti výchozí aktivní verzi → blokující modal
+  test('soubor s nepodporovanou verzí (1.5.0) je odmítnut', async ({ page }) => {
+    // Verze 1.5.0 není v SUPPORTED_VERSIONS (1.4.3, 1.5.0.1) → blokující modal
     // (#confirm-modal, ne nativní alert). Soubor se nenačte a tlačítka
     // zůstanou zakázaná.
     await page.setInputFiles('#file-input', fixturePath('test_verze_1.5.0.xml'));
@@ -58,6 +58,18 @@ test.describe('Načtení JVF souboru', () => {
     await page.locator('#confirm-modal-footer button').click();
     await expect(page.locator('#confirm-modal')).toBeHidden();
     await expect(page.locator('#btn-validate')).toBeDisabled();
+  });
+
+  test('soubor verze 1.5.0.1 se načte a aktivní verze se přepne', async ({ page }) => {
+    // Podporovaná verze odlišná od výchozí (1.4.3) → auto-přepnutí bez modalu,
+    // soubor se načte a version selector ukáže 1.5.0.1.
+    await page.setInputFiles('#file-input', fixturePath('test_verze_1.5.0.1.xml'));
+
+    await expect(page.locator('#confirm-modal')).toBeHidden();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#btn-validate')).toBeEnabled();
+    await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
+    await expect(page.locator('#version-select')).toHaveValue('1.5.0.1');
   });
 });
 

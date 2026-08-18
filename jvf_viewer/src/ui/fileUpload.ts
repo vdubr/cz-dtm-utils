@@ -1,11 +1,15 @@
-import { parseJvfDtm } from 'jvf-parser';
+import { parseJvfDtm, isSupportedVersion } from 'jvf-parser';
 import type { JvfDtm } from 'jvf-parser';
-import { getActiveVersion } from '../state/activeVersion.js';
+import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
 
 /**
- * Validace verze: pokud parsovaný soubor má `verze ≠ aktivní`, ukáže
- * blokující modal a vrátí `false`. Soubor se v tom případě nenačte.
+ * Validace verze souboru (1.5.0.1+ chování):
+ *   - shoda s aktivní verzí → načíst,
+ *   - jiná **podporovaná** verze → **auto-přepnout** aktivní verzi na verzi
+ *     souboru a načíst (`setActiveVersion`),
+ *   - nedeklarovaná verze → tolerovat (router parseru ji vyřešil strukturně),
+ *   - **nepodporovaná** verze → blokující modal a `false` (soubor se nenačte).
  */
 async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<boolean> {
   const fileVersion = data.verze.trim();
@@ -13,19 +17,26 @@ async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<b
 
   if (fileVersion === activeVersion) return true;
 
-  const fileVersionDisplay = fileVersion === '' ? '(nezadána)' : fileVersion;
+  // Podporovaná verze odlišná od aktivní → přepnout aplikaci na verzi souboru.
+  if (fileVersion !== '' && isSupportedVersion(fileVersion)) {
+    setActiveVersion(fileVersion);
+    return true;
+  }
+
+  // Nedeklarovaná verze — parser router si poradil (strukturní sniff), načteme.
+  if (fileVersion === '') return true;
+
+  // Nepodporovaná verze → blokující modal.
   await showConfirm({
-    title: 'Nesoulad verze JVF DTM',
+    title: 'Nepodporovaná verze JVF DTM',
     bodyHtml: `
       <p>
         Soubor <strong>${escapeHtml(sourceLabel)}</strong> deklaruje verzi
-        JVF DTM <strong>${escapeHtml(fileVersionDisplay)}</strong>, ale
-        aplikace je aktuálně v režimu verze <strong>${activeVersion}</strong>.
+        JVF DTM <strong>${escapeHtml(fileVersion)}</strong>, kterou aplikace
+        zatím nepodporuje.
       </p>
       <p>
-        Načítat lze pouze soubory odpovídající aktivní verzi. Přepněte
-        aktivní verzi v hlavičce na <strong>${escapeHtml(fileVersionDisplay)}</strong>
-        a načtěte soubor znovu.
+        Podporované verze: <strong>1.4.3</strong> a <strong>1.5.0.1</strong>.
       </p>
     `,
     buttons: [{ label: 'Rozumím', variant: 'primary' }],

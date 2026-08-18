@@ -11,7 +11,11 @@
  */
 
 import { SUPPORTED_VERSIONS, type JvfVersion } from 'jvf-parser';
-import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
+import {
+  getActiveVersion,
+  setActiveVersion,
+  onActiveVersionChange,
+} from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
 
 interface SetupOptions {
@@ -34,6 +38,12 @@ export function setupVersionSelect(opts: SetupOptions): void {
     select.appendChild(option);
   }
   select.value = getActiveVersion();
+
+  // Reflektovat automatické přepnutí verze (např. auto-detekce při načtení
+  // souboru jiné podporované verze) zpět do hodnoty selectu.
+  onActiveVersionChange((v) => {
+    if (select.value !== v) select.value = v;
+  });
 
   // Disable, pokud je jen jedna verze — ale necháme ji vidět jako indikátor.
   // Při 2+ verzích je select aktivní jako ruční override auto-detekce.
