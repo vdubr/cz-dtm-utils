@@ -20,6 +20,7 @@ import {
   parsePoint,
   parsePolygon,
 } from './geometry-primitives.js';
+import { pickChild } from './xml-helpers.js';
 
 function parseGeometriePlocha(
   geomEl: Record<string, unknown> | undefined
@@ -33,28 +34,16 @@ function parseGeometriePlocha(
   if (plochaZPS != null && typeof plochaZPS === 'object') {
     const sp = (plochaZPS as Record<string, unknown>)['surfaceProperty'];
     if (sp != null && typeof sp === 'object') {
-      const spObj = sp as Record<string, unknown>;
-      for (const key of ['Polygon', 'gml:Polygon']) {
-        const polyEl = spObj[key];
-        if (polyEl != null && typeof polyEl === 'object') {
-          result.plocha = parsePolygon(polyEl as Record<string, unknown>);
-          break;
-        }
-      }
+      const polyEl = pickChild(sp as Record<string, unknown>, ['Polygon', 'gml:Polygon']);
+      if (polyEl != null) result.plocha = parsePolygon(polyEl);
     }
   }
 
   // ObvodZPS → MultiCurve
   const obvodZPS = geomEl['ObvodZPS'];
   if (obvodZPS != null && typeof obvodZPS === 'object') {
-    const obvodObj = obvodZPS as Record<string, unknown>;
-    for (const key of ['MultiCurve', 'gml:MultiCurve']) {
-      const mcEl = obvodObj[key];
-      if (mcEl != null && typeof mcEl === 'object') {
-        result.obvod = parseMultiCurve(mcEl as Record<string, unknown>);
-        break;
-      }
-    }
+    const mcEl = pickChild(obvodZPS as Record<string, unknown>, ['MultiCurve', 'gml:MultiCurve']);
+    if (mcEl != null) result.obvod = parseMultiCurve(mcEl);
   }
 
   // DefBodZPS → pointProperty/Point
@@ -62,14 +51,8 @@ function parseGeometriePlocha(
   if (defBodZPS != null && typeof defBodZPS === 'object') {
     const pp = (defBodZPS as Record<string, unknown>)['pointProperty'];
     if (pp != null && typeof pp === 'object') {
-      const ppObj = pp as Record<string, unknown>;
-      for (const key of ['Point', 'gml:Point']) {
-        const ptEl = ppObj[key];
-        if (ptEl != null && typeof ptEl === 'object') {
-          result.defBod = parsePoint(ptEl as Record<string, unknown>);
-          break;
-        }
-      }
+      const ptEl = pickChild(pp as Record<string, unknown>, ['Point', 'gml:Point']);
+      if (ptEl != null) result.defBod = parsePoint(ptEl);
     }
   }
 

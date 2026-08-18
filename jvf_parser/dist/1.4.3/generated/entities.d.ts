@@ -6,7 +6,7 @@ export interface EntityMeta {
     codeSuffix: string;
     kategorieObjektu: string;
     skupinaObjektu: string;
-    obsahovaCast: 'ZPS' | 'TI' | 'DI';
+    obsahovaCast: 'ZPS' | 'TI' | 'DI' | '';
     sharedAttrGroup: string | null;
     specificAttrs: readonly string[];
     geomType: GeomKind;

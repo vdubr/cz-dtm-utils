@@ -590,7 +590,7 @@ function generateEntitiesFile(
   lines.push('  codeSuffix: string;');
   lines.push('  kategorieObjektu: string;');
   lines.push('  skupinaObjektu: string;');
-  lines.push("  obsahovaCast: 'ZPS' | 'TI' | 'DI';");
+  lines.push("  obsahovaCast: 'ZPS' | 'TI' | 'DI' | '';");
   lines.push('  sharedAttrGroup: string | null;');
   lines.push('  specificAttrs: readonly string[];');
   lines.push('  geomType: GeomKind;');
@@ -633,7 +633,7 @@ function generateEntitiesFile(
     lines.push(`    kategorieObjektu: ${JSON.stringify(entity.kategorieObjektu)},`);
     lines.push(`    skupinaObjektu: ${JSON.stringify(entity.skupinaObjektu)},`);
     lines.push(
-      `    obsahovaCast: ${JSON.stringify(entity.obsahovaCast)} as 'ZPS' | 'TI' | 'DI',`
+      `    obsahovaCast: ${JSON.stringify(entity.obsahovaCast)} as 'ZPS' | 'TI' | 'DI' | '',`
     );
     lines.push(`    sharedAttrGroup: ${JSON.stringify(entity.sharedAttrGroup)},`);
     lines.push(`    specificAttrs: ${JSON.stringify(entity.specificAttrs)},`);

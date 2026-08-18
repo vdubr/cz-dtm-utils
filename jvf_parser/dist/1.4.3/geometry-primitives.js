@@ -1,3 +1,4 @@
+import { pickChild } from './xml-helpers.js';
 /**
  * Parse a whitespace-separated coordinate string into a number array.
  * Works for both `pos` (single point) and `posList` (multiple points).
@@ -129,16 +130,11 @@ export function parseMultiCurve(mcEl) {
         const memberList = Array.isArray(memberRaw) ? memberRaw : [memberRaw];
         for (const member of memberList) {
             if (typeof member === 'object' && member !== null) {
-                const memberObj = member;
                 // LineString může být s nebo bez `gml:` prefixu (fast-xml-parser má
                 // `removeNSPrefix: true`, ale obranně kontrolujeme obě varianty).
-                // Break po prvním nálezu — stejné chování jako ostatní GML parsery výše.
-                for (const key of ['LineString', 'gml:LineString']) {
-                    const ls = memberObj[key];
-                    if (ls != null && typeof ls === 'object') {
-                        curves.push(parseLineString(ls, mcDim));
-                        break;
-                    }
+                const ls = pickChild(member, ['LineString', 'gml:LineString']);
+                if (ls != null) {
+                    curves.push(parseLineString(ls, mcDim));
                 }
             }
         }

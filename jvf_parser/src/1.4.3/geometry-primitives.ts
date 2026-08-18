@@ -1,4 +1,5 @@
 import type { GmlLineString, GmlMultiCurve, GmlPoint, GmlPolygon } from './types.js';
+import { pickChild } from './xml-helpers.js';
 
 /**
  * Parse a whitespace-separated coordinate string into a number array.
@@ -144,16 +145,11 @@ export function parseMultiCurve(mcEl: Record<string, unknown>): GmlMultiCurve {
     const memberList = Array.isArray(memberRaw) ? memberRaw : [memberRaw];
     for (const member of memberList) {
       if (typeof member === 'object' && member !== null) {
-        const memberObj = member as Record<string, unknown>;
         // LineString může být s nebo bez `gml:` prefixu (fast-xml-parser má
         // `removeNSPrefix: true`, ale obranně kontrolujeme obě varianty).
-        // Break po prvním nálezu — stejné chování jako ostatní GML parsery výše.
-        for (const key of ['LineString', 'gml:LineString']) {
-          const ls = memberObj[key];
-          if (ls != null && typeof ls === 'object') {
-            curves.push(parseLineString(ls as Record<string, unknown>, mcDim));
-            break;
-          }
+        const ls = pickChild(member as Record<string, unknown>, ['LineString', 'gml:LineString']);
+        if (ls != null) {
+          curves.push(parseLineString(ls, mcDim));
         }
       }
     }

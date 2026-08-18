@@ -1,8 +1,11 @@
-import { XMLParser } from 'fast-xml-parser';
+import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import { isSupportedVersion } from 'jvf-dtm-types';
 import { parseGeometrieObjektu, parseOblastObjektuKI } from './geometry.js';
 import { parseAtributyObjektu } from './attributes.js';
 import { parseDoprovodneInformace } from './doprovodne-informace.js';
 import { extractText } from './xml-helpers.js';
+/** Platné hodnoty `TypZapisu` (viz `jvf-dtm-types`), pro runtime validaci. */
+const VALID_TYP_ZAPISU = ['kompletní zápis', 'změnové věty'];
 function createParser() {
     return new XMLParser({
         ignoreAttributes: false,
@@ -85,6 +88,11 @@ function parseObjektovyTyp(elementName, typEl) {
     };
 }
 export function parseJvfDtm(xml) {
+    const validation = XMLValidator.validate(xml);
+    if (validation !== true) {
+        const { msg, line, col } = validation.err;
+        throw new Error(`Neplatný XML soubor: ${msg} (řádek ${line}, sloupec ${col})`);
+    }
     const parser = createParser();
     const parsed = parser.parse(xml);
     const jvfDtm = parsed['JVFDTM'];
@@ -96,8 +104,14 @@ export function parseJvfDtm(xml) {
         throw new Error('Invalid JVF DTM XML: missing <DataJVFDTM> element');
     }
     const verze = extractText(dataJvfDtm['VerzeJVFDTM']) ?? '';
+    if (verze !== '' && !isSupportedVersion(verze)) {
+        console.warn(`jvf-parser: nepodporovaná verze JVF DTM specifikace "${verze}" — očekávána jedna z podporovaných verzí. Parsování pokračuje, ale výsledek nemusí odpovídat schématu.`);
+    }
     const datumZapisu = extractText(dataJvfDtm['DatumZapisu']) ?? '';
     const typZapisuRaw = extractText(dataJvfDtm['TypZapisu']) ?? '';
+    if (typZapisuRaw !== '' && !VALID_TYP_ZAPISU.includes(typZapisuRaw)) {
+        console.warn(`jvf-parser: neočekávaná hodnota TypZapisu "${typZapisuRaw}" — očekáváno "kompletní zápis" nebo "změnové věty".`);
+    }
     const typZapisu = typZapisuRaw;
     const dataEl = dataJvfDtm['Data'];
     const objekty = [];

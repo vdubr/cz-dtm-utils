@@ -5,6 +5,7 @@ import {
   parsePolygon,
   parseMultiCurve,
 } from './geometry-primitives.js';
+import { pickChild } from './xml-helpers.js';
 
 /**
  * Parse all geometries from a `GeometrieObjektu` parsed element.
@@ -31,48 +32,33 @@ export function parseGeometrieObjektu(
   // curveProperty → LineString (plain or gml: prefixed)
   const curveProp = geomObj['curveProperty'];
   if (curveProp != null && typeof curveProp === 'object') {
-    const cpObj = curveProp as Record<string, unknown>;
-    for (const key of ['LineString', 'gml:LineString']) {
-      const lsEl = cpObj[key];
-      if (lsEl != null && typeof lsEl === 'object') {
-        geometries.push({
-          type: 'LineString',
-          data: parseLineString(lsEl as Record<string, unknown>),
-        });
-        break;
-      }
+    const lsEl = pickChild(curveProp as Record<string, unknown>, ['LineString', 'gml:LineString']);
+    if (lsEl != null) {
+      geometries.push({ type: 'LineString', data: parseLineString(lsEl) });
     }
   }
 
   // surfaceProperty → Polygon
   const surfaceProp = geomObj['surfaceProperty'];
   if (surfaceProp != null && typeof surfaceProp === 'object') {
-    const spObj = surfaceProp as Record<string, unknown>;
-    for (const key of ['Polygon', 'gml:Polygon']) {
-      const polygonEl = spObj[key];
-      if (polygonEl != null && typeof polygonEl === 'object') {
-        geometries.push({
-          type: 'Polygon',
-          data: parsePolygon(polygonEl as Record<string, unknown>),
-        });
-        break;
-      }
+    const polygonEl = pickChild(surfaceProp as Record<string, unknown>, [
+      'Polygon',
+      'gml:Polygon',
+    ]);
+    if (polygonEl != null) {
+      geometries.push({ type: 'Polygon', data: parsePolygon(polygonEl) });
     }
   }
 
   // multiCurveProperty → MultiCurve
   const multiCurveProp = geomObj['multiCurveProperty'];
   if (multiCurveProp != null && typeof multiCurveProp === 'object') {
-    const mcpObj = multiCurveProp as Record<string, unknown>;
-    for (const key of ['MultiCurve', 'gml:MultiCurve']) {
-      const mcEl = mcpObj[key];
-      if (mcEl != null && typeof mcEl === 'object') {
-        geometries.push({
-          type: 'MultiCurve',
-          data: parseMultiCurve(mcEl as Record<string, unknown>),
-        });
-        break;
-      }
+    const mcEl = pickChild(multiCurveProp as Record<string, unknown>, [
+      'MultiCurve',
+      'gml:MultiCurve',
+    ]);
+    if (mcEl != null) {
+      geometries.push({ type: 'MultiCurve', data: parseMultiCurve(mcEl) });
     }
   }
 
@@ -89,13 +75,11 @@ export function parseOblastObjektuKI(
 
   const surfaceProp = oblastObj['surfaceProperty'];
   if (surfaceProp != null && typeof surfaceProp === 'object') {
-    const spObj = surfaceProp as Record<string, unknown>;
-    for (const key of ['Polygon', 'gml:Polygon']) {
-      const polygonEl = spObj[key];
-      if (polygonEl != null && typeof polygonEl === 'object') {
-        return parsePolygon(polygonEl as Record<string, unknown>);
-      }
-    }
+    const polygonEl = pickChild(surfaceProp as Record<string, unknown>, [
+      'Polygon',
+      'gml:Polygon',
+    ]);
+    if (polygonEl != null) return parsePolygon(polygonEl);
   }
 
   return undefined;
