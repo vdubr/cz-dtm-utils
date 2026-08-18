@@ -34,7 +34,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     objekty (příkop, manipulační plocha, nádrž, …) mají v mapě světlou výplň
     a tenký obrys.
 
-- [ ] **T3 — Audit barev sítí vs. Katalog DTM + pokrytí** — README §C, R3/R4
+- [x] **T3 — Audit barev sítí vs. Katalog DTM + pokrytí** — README §C, R3/R4
   - Ověřit barvy hlavních sítí (elektro/plyn/voda/kanalizace/teplovod/
     produktovod/EK) proti oficiálnímu značkovému klíči DTM ČR; nesoulad
     srovnat na katalog. **Normativní barvy neměnit kvůli optice** bez pokynu.
