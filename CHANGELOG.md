@@ -57,6 +57,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Přehled prvků** — hlavička kategorie zůstává při scrollování
+  **přišpendlená nahoře** panelu; v dlouhém seznamu (např. stovky podrobných
+  bodů v jedné kategorii) je tak stále vidět, ve které kategorii se nacházíte.
+  Jakmile doscrollujete k další kategorii, její hlavička předchozí vystřídá.
 - **Sjednocené ovládání podkladové mapy**: volba Základní mapa / Ortofoto
   v levém panelu nově řídí 2D mapu i texturu na 3D terénu (jeden zdroj
   pravdy); separátní panel „Podklad" ze spodní 3D lišty byl odstraněn.

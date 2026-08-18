@@ -2084,11 +2084,14 @@ html, body {
 }
 
 .feature-group-header {
+  position: sticky;   /* přišpendlení při scrollu v .features-list */
+  top: 0;
+  z-index: 2;         /* nad .feature-row (nepozicované) i hover stavy */
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: #1c2128;
+  background: #1c2128; /* neprůhledné pozadí — nutné, aby řádky neprosvítaly */
   border-bottom: 1px solid #30363d;
   border-top: 1px solid #30363d;
   cursor: pointer;

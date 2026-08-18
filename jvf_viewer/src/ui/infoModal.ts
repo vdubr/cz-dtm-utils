@@ -131,7 +131,9 @@ const INFO_CONTENT_HTML = `
     </li>
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
-      seznamem všech načtených objektů seskupených podle typu. Lze
+      seznamem všech načtených objektů seskupených podle typu. Hlavička
+      kategorie zůstává při scrollování přišpendlená nahoře, takže je
+      v dlouhém seznamu stále vidět, ve které kategorii se nacházíte. Lze
       filtrovat podle obsahové části (ZPS / TI / DI / GAD / OPL) a hledat
       v názvu, <code>elementName</code> nebo ID. Pokud data obsahují víc
       <em>úrovní umístění</em> (LEVEL −3 až +3 z atributů
