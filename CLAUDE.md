@@ -325,3 +325,32 @@ co je „DTM jazyk" a co „programátorská infrastruktura":
 - Funkce typu `checkOsaInObvod` jsou záměrně bilingvní:
   `check` = sloveso (EN), `OsaInObvod` = DTM doména (CZ).
   Nepřejmenovávat.
+
+## Home Assistant (MCP)
+
+> **Bezpečnost:** Do tohoto souboru (je v gitu) **nikdy nepatří token ani
+> heslo.** Long-Lived Access Token se předává až v příkazu `claude mcp add`
+> v terminálu a ukládá se mimo repozitář. Zde jsou jen ne-tajné údaje.
+
+Fakta o instanci Home Assistant:
+
+- **URL instance:** `http://192.168.1.164:8123/`
+- **Přístup:** pouze lokální síť (žádná Nabu Casa / proxy / VPN). Claude Code
+  se musí připojovat ze stejné LAN.
+- **MCP Server endpoint:** `http://192.168.1.164:8123/mcp_server/sse`
+  ⚠️ **Integrace „Model Context Protocol Server" zatím NENÍ nainstalovaná** —
+  nutno přidat v HA: Nastavení → Zařízení a služby → Přidat integraci →
+  „Model Context Protocol Server". Bez ní endpoint neexistuje.
+- **Token:** Long-Lived Access Token z Profil → Bezpečnost → dole
+  „Tokeny s dlouhou platností". **Netiskni ho sem** — jen do `claude mcp add`.
+
+### Připojení HA MCP do Claude Code
+
+V interaktivním terminálu (ne v této session), token dosadit ručně:
+
+```bash
+claude mcp add --transport sse home-assistant http://192.168.1.164:8123/mcp_server/sse \
+  --header "Authorization: Bearer <TOKEN>"
+```
+
+Po připojení jsou nástroje dostupné jako `mcp__home-assistant__*`.

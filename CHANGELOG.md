@@ -44,6 +44,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   Ortofoto) + posuvník průhlednosti, aby vykreslené prvky zůstaly čitelné.
   Volba podkladu automaticky zapne terén; načítání běží asynchronně
   s indikátorem a selhání sítě scénu nerozbije.
+- **Klikací (e2e) testy vieweru** — Playwright smoke sada (`jvf_viewer/e2e/`)
+  pokrývající načtení JVF souboru, odmítnutí nesprávné verze, panely
+  validace a přehledu prvků, přepínání 2D/3D, modály a ovládací prvky.
+  Spouští se přes `npm run test:e2e` v `jvf_viewer`.
 
 ### Změněno
 
@@ -66,6 +70,21 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- **Výkon 3D scény** (`threeScene.ts`) — skrývání SVG sprite ikon při pohybu
+  kamery (orbit/pan/zoom) už neprochází celou scénu (`scene.traverse`) na
+  každý mousemove, ale jen udržovaný seznam spritů; materiály stejné barvy
+  a stylu se navíc sdílejí mezi záznamy místo vytváření nové instance pro
+  každý jednotlivý objekt. Beze změny chování (highlight, filtry, changeset
+  barvy i click-picking fungují stejně jako dřív).
+- **Parser (`jvf-parser`) nově validuje vstupní XML** (`XMLValidator.validate`
+  z `fast-xml-parser`) — nepárové/oříznuté tagy nebo jinak nevalidní XML dřív
+  prošly tiše a vrátily neúplný/zavádějící `JvfDtm`. Nově se vyhodí
+  srozumitelná chyba `Neplatný XML soubor: … (řádek …, sloupec …)`.
+- Parser nově hlásí (`console.warn`) neočekávanou hodnotu `TypZapisu` (jinou
+  než „kompletní zápis"/„změnové věty") a nepodporovanou verzi `VerzeJVFDTM`
+  (mimo `SUPPORTED_VERSIONS` z `jvf-dtm-types`) — dřív se hodnoty tiše
+  přetypovaly bez ověření. Parsování v obou případech pokračuje (nejedná se
+  o fatální chybu), jen upozorní na neočekávaný vstup.
 - Obvodové linie ploch (MultiCurve) se ve 2D mapě mohly vykreslovat jako
   obří pruhy přes celou mapu (pozorováno u `BudovaPlocha` z ukázkových OPL
   dat). Příčina v parseru: atribut `srsDimension="3"` nese element
@@ -86,6 +105,30 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   identifikovatelné pomocí syntetického klíče — funguje pro ně klik v mapě
   (2D i 3D), zoom, zvýraznění i detail atributů v Přehledu prvků. Dříve byly
   řádky bez ID neklikatelné a výběr prvku v mapě je ignoroval.
+- **Bezpečnost**: panel vrstev (`layerPanel.ts`) vkládal název, skupinu,
+  kategorii a obsahovou část objektového typu přes `innerHTML` — hodnoty
+  pocházející z libovolného nahraného JVF souboru mohly obsahovat cizí
+  HTML/JS (XSS). Nahrazeno bezpečným sestavením DOM přes `createElement` /
+  `textContent`, vizuálně beze změny.
+- Chybové hlášky při selhání načtení JVF souboru (`fileUpload.ts`) uživateli
+  zobrazovaly surový technický text výjimky. Nyní se zobrazí srozumitelná
+  česká hláška a technický detail jde jen do konzole (`console.error`).
+- **Topologie — kontrola 3.4 (self-intersection linií)** nedetekovala
+  kolineární překryv ani dotyk vrcholu na jiném segmentu (T-junction) —
+  `segmentsIntersect` používal jen ostré nerovnosti, takže tyto případy
+  procházely bez chyby, přestože specifikace zakazuje linii se "křížit i
+  překrývat". Nyní `LINE_SELF_INTERSECTION` hlásí i tyto případy.
+- **Topologie — Vrstva 3 (DefBod ↔ Plocha, Osa ↔ Obvod) ignorovala díry
+  polygonů** (interior rings) — definiční bod nebo bod osy ležící uvnitř
+  díry plochy/obvodu byl mylně vyhodnocen jako "uvnitř". `pointInPolygon`
+  nově zohledňuje `interiors`; dotčeno `checkDefBodInPlocha`,
+  `checkOsaInObvod` a `checkDelAreaContainsDefBodPlocha`.
+- **Topologie — `checkDanglingEnds` hlásil false positive u samostatné
+  uzavřené smyčky** (linie, kde začátek ≈ konec v toleranci 0,05 m) — oba
+  konce se ohlašovaly jako volné, i když jde o platně uzavřenou linii bez
+  potřeby návaznosti na jinou.
+- Odstraněn mrtvý kód (`lineInPolygon`, `toXYFlat` v `geometry-math.ts`),
+  nikde v monorepu nepoužívaný.
 
 ## [2026.6.16.2] - 2026-06-16
 
