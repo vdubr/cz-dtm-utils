@@ -25,7 +25,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
   - **Závislosti:** T1. **Akceptace:** katalog obsahuje `02000000XX` a
     `0100000372–388`, neobsahuje `0100000185`; integritní test zelený.
 
-- [ ] **T3 — Parser: záznamy + geometrie** — README §C, R2, R6
+- [x] **T3 — Parser: záznamy + geometrie** — README §C, R2, R6
   - `RECORD_KIND_MAP`, iterace `ZaznamyObjektu` přes klíče; wrappery
     `Bod*/Linie*/Plocha*/Obvod*` → reuse `parsePoint/LineString/Polygon`.
   - **Závislosti:** T1, T2. **Akceptace:** naparsuje `ukazkaZPS.jvf.xml` a
