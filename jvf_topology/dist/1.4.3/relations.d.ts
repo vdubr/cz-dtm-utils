@@ -31,6 +31,9 @@ export declare function checkOsaInObvod(dtm: JvfDtm): TopologyError[];
  * Volný konec = žádná jiná linie ze stejného objektového typu v JVF souboru
  * nezačíná ani nekončí blíže než SNAP_TOLERANCE.
  *
+ * Samostatná uzavřená smyčka (start ≈ end v toleranci `SNAP_TOLERANCE`) se
+ * nehlásí — oba konce jsou spojené samy se sebou.
+ *
  * Kód: `LINE_DANGLING_END`
  *
  * Závažnost: warning — DTM spec. neřeší linie jako topologicky uzavřené sítě

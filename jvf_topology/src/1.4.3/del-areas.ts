@@ -54,7 +54,7 @@ export function checkDelAreaContainsDefBodPlocha(dtm: JvfDtm): TopologyError[] {
 
       const insideDelArea = delOblasti.some(({ plocha }) => {
         if (plocha === undefined) return false;
-        return pointInPolygon(px, py, plocha.exterior, plocha.srsDimension);
+        return pointInPolygon(px, py, plocha.exterior, plocha.srsDimension, plocha.interiors);
       });
 
       if (!insideDelArea) continue;

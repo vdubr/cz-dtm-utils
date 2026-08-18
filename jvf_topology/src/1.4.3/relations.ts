@@ -70,8 +70,8 @@ export function checkDefBodInPlocha(dtm: JvfDtm): TopologyError[] {
       const px = coords[0], py = coords[1];
       if (px === undefined || py === undefined) continue;
 
-      const inside = polygons.some(({ exterior, dim }) =>
-        pointInPolygon(px, py, exterior, dim)
+      const inside = polygons.some(({ exterior, dim, interiors }) =>
+        pointInPolygon(px, py, exterior, dim, interiors)
       );
 
       if (!inside) {
@@ -171,8 +171,8 @@ function findPointOutsidePolygons(
   for (let i = 0; i + 1 < coords.length; i += dim) {
     const x = coords[i], y = coords[i + 1];
     if (x === undefined || y === undefined) continue;
-    const inside = polygons.some(({ exterior, dim: pd }) =>
-      pointInPolygon(x, y, exterior, pd)
+    const inside = polygons.some(({ exterior, dim: pd, interiors }) =>
+      pointInPolygon(x, y, exterior, pd, interiors)
     );
     if (!inside) return { x, y };
   }
@@ -188,6 +188,9 @@ function findPointOutsidePolygons(
  * Konec jedné linie musí být ve snap toleranci od začátku nebo konce jiné linie.
  * Volný konec = žádná jiná linie ze stejného objektového typu v JVF souboru
  * nezačíná ani nekončí blíže než SNAP_TOLERANCE.
+ *
+ * Samostatná uzavřená smyčka (start ≈ end v toleranci `SNAP_TOLERANCE`) se
+ * nehlásí — oba konce jsou spojené samy se sebou.
  *
  * Kód: `LINE_DANGLING_END`
  *
@@ -219,6 +222,12 @@ export function checkDanglingEnds(dtm: JvfDtm): TopologyError[] {
     for (let i = 0; i < endpoints.length; i++) {
       const curr = endpoints[i];
       if (curr === undefined) continue;
+
+      // Samostatná uzavřená smyčka (start ≈ end) není volný konec — oba
+      // konce jsou spojené samy se sebou, i když linie nemá žádné sousedy.
+      if (dist3D(curr.start.x, curr.start.y, undefined, curr.end.x, curr.end.y, undefined) <= SNAP_TOLERANCE) {
+        continue;
+      }
 
       // Zkontrolovat start tohoto prvku — jen sousedé na stejné úrovni umístění
       const startConnected = endpoints.some((other, j) => {
