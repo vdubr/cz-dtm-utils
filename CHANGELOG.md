@@ -9,6 +9,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Podpora JVF DTM 1.5.0.1 souběžně s 1.4.3** (probíhá) — sdílené doménové
+  typy rozšířeny aditivně o novou obsahovou část **PSPI**, bezztrátový druh
+  záznamu (`recordKind`/`visibility`/`context` pro operace v názvu elementu
+  1.5.0.1), `typDatoveSady` a model **protokolu chyb** (`ErrorProtocol`).
+  Registr verzí (`SUPPORTED_VERSIONS`) nově zná obě verze; version selector
+  ve vieweru je při 2 verzích aktivní. Čtení 1.4.3 zůstává beze změny.
 - Sekce **Projekty** v levém panelu je nově **sbalitelná** (klik na
   hlavičku „Projekty") — s více načtenými soubory seznam narůstá a zabíral
   místo; počet projektů zůstává v hlavičce vidět i ve sbaleném stavu.

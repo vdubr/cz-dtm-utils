@@ -36,7 +36,10 @@ export function setupVersionSelect(opts: SetupOptions): void {
   select.value = getActiveVersion();
 
   // Disable, pokud je jen jedna verze — ale necháme ji vidět jako indikátor.
-  if (SUPPORTED_VERSIONS.length === 1) {
+  // Při 2+ verzích je select aktivní jako ruční override auto-detekce.
+  // (`as readonly string[]` — jinak TS zúží `.length` na literál a porovnání
+  // hlásí jako nadbytečné.)
+  if ((SUPPORTED_VERSIONS as readonly string[]).length === 1) {
     select.disabled = true;
     select.title = 'Aktuálně je podporována pouze jedna verze JVF DTM.';
   }

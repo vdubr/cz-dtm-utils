@@ -8,7 +8,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
 
 ---
 
-- [ ] **T1 — Registr verzí + sdílené typy** — README §A
+- [x] **T1 — Registr verzí + sdílené typy** — README §A
   - `jvf_dtm_types/src/versions.ts`: `SUPPORTED_VERSIONS` += `'1.5.0.1'`.
   - `jvf_dtm_types/src/1.4.3/types.ts` (jen aditivně, R1): `ObsahovaCast`
     += `'PSPI'`; `ZaznamObjektu` `recordKind?/visibility?/context?` (R2);
