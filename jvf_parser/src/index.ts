@@ -8,6 +8,8 @@ export * from './1.4.3/index.js';
 export {
   parseJvfDtm,
   getEntityCatalog,
+  getEnumLabels,
+  labelForAttribute,
   resolveDtmVersion,
   detectVersionString,
   sniffVersionByStructure,

@@ -17,7 +17,7 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     vytvoří soubor; `ENUM_LABELS.KategoriePozemniKomunikace['2'] === 'dálnice II. třídy'`,
     `ENUM_LABELS.UrovenUmisteniObjektuZPS['-3']` obsahuje „nejníže"; `npm run build` zelený.
 
-- [ ] **T2 — Veřejné API + testy** — README §B, A2/A3
+- [x] **T2 — Veřejné API + testy** — README §B, A2/A3
   - `src/1.4.3/index.ts`: re-export `ENUM_LABELS` + helper
     `labelForAttribute(attrName, value): string | undefined`.
   - Unit test: `labelForAttribute('KategoriePozemniKomunikace', 2) === 'dálnice II. třídy'`,

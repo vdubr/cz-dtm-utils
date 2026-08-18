@@ -4,7 +4,7 @@ export * from './1.4.3/index.js';
 // …a poté verzní router, jehož `parseJvfDtm` (dispatch dle verze, R3/R4)
 // přebíjí stejnojmenný export z 1.4.3 (explicitní re-export uvedený jako
 // poslední má v použitém bundleru přednost před `export *`).
-export { parseJvfDtm, getEntityCatalog, resolveDtmVersion, detectVersionString, sniffVersionByStructure, isErrorProtocolXml, } from './router.js';
+export { parseJvfDtm, getEntityCatalog, getEnumLabels, labelForAttribute, resolveDtmVersion, detectVersionString, sniffVersionByStructure, isErrorProtocolXml, } from './router.js';
 // Protokol chyb (ServisJVFDTM/ProtokolChyb) — samostatný artefakt (R5).
 export { parseErrorProtocol } from './1.5.0.1/error-protocol.js';
 //# sourceMappingURL=index.js.map

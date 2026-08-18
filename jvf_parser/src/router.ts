@@ -23,6 +23,8 @@ import {
   ENTITY_CATALOG as CATALOG_1501,
   type EntityMeta,
 } from './1.5.0.1/generated/entities.js';
+import { ENUM_LABELS as LABELS_143 } from './1.4.3/generated/enum-labels.js';
+import { ENUM_LABELS as LABELS_1501 } from './1.5.0.1/generated/enum-labels.js';
 
 /** Přečte hodnotu `<VerzeJVFDTM>` z raw XML (bez plného parsování). */
 export function detectVersionString(xml: string): string | null {
@@ -83,4 +85,22 @@ export function parseJvfDtm(xml: string): JvfDtm {
  */
 export function getEntityCatalog(version: JvfVersion): Readonly<Record<string, EntityMeta>> {
   return version === '1.5.0.1' ? CATALOG_1501 : CATALOG_143;
+}
+
+/** Tabulka číselníků `název atributu → { kód → popisek }` pro danou verzi. */
+export function getEnumLabels(version: JvfVersion): Readonly<Record<string, Record<string, string>>> {
+  return version === '1.5.0.1' ? LABELS_1501 : LABELS_143;
+}
+
+/**
+ * Vrátí český popisek číselníkové hodnoty (`kód → text`) pro daný atribut,
+ * nebo `undefined` u neznámého atributu/kódu (graceful degradation, A3).
+ * `value` se porovnává jako string (číselný i řetězcový kód shodně).
+ */
+export function labelForAttribute(
+  attrName: string,
+  value: unknown,
+  version: JvfVersion = DEFAULT_VERSION
+): string | undefined {
+  return getEnumLabels(version)[attrName]?.[String(value)];
 }

@@ -34,4 +34,12 @@ export declare function parseJvfDtm(xml: string): JvfDtm;
  * zůstává exportován pro zpětnou kompatibilitu.
  */
 export declare function getEntityCatalog(version: JvfVersion): Readonly<Record<string, EntityMeta>>;
+/** Tabulka číselníků `název atributu → { kód → popisek }` pro danou verzi. */
+export declare function getEnumLabels(version: JvfVersion): Readonly<Record<string, Record<string, string>>>;
+/**
+ * Vrátí český popisek číselníkové hodnoty (`kód → text`) pro daný atribut,
+ * nebo `undefined` u neznámého atributu/kódu (graceful degradation, A3).
+ * `value` se porovnává jako string (číselný i řetězcový kód shodně).
+ */
+export declare function labelForAttribute(attrName: string, value: unknown, version?: JvfVersion): string | undefined;
 //# sourceMappingURL=router.d.ts.map
