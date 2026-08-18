@@ -7,7 +7,6 @@ dist/
 .vercel/
 *.js.map
 *.d.ts.map
-package-lock.json
 .vercel
 
 # OpenCode / Claude session worktrees (per-user, never commit)
@@ -15,6 +14,11 @@ package-lock.json
 
 # Vitest result cache
 **/.vite/vitest/results.json
+
+# Playwright e2e artefakty
+**/test-results/
+**/playwright-report/
+**/.playwright/
 
 # VS Code Local History plugin
 .history/
