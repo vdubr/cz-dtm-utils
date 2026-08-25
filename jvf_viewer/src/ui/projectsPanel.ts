@@ -78,6 +78,18 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
     nameEl.className = 'project-name';
     nameEl.textContent = project.nazev;
 
+    // Info ikona za názvem — po najetí ukáže verzi JVF DTM daného projektu.
+    // Verze je per-soubor (`dtm.verze`), takže při více projektech může každý
+    // řádek ukazovat jinou verzi. Klik neděláme vlastní — probublá na řádek
+    // (zoom), ikona slouží čistě jako hover nápověda.
+    const versionInfo = document.createElement('span');
+    versionInfo.className = 'project-version-info';
+    versionInfo.textContent = 'i';
+    versionInfo.setAttribute('role', 'img');
+    const versionTitle = `Verze JVF ${project.dtm.verze}`;
+    versionInfo.title = versionTitle;
+    versionInfo.setAttribute('aria-label', versionTitle);
+
     const countEl = document.createElement('span');
     countEl.className = 'project-count';
     countEl.textContent = String(countZaznamy(project.dtm));
@@ -92,7 +104,7 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
       callbacks.onRemove(project.id);
     });
 
-    row.append(dot, nameEl, countEl, removeBtn);
+    row.append(dot, nameEl, versionInfo, countEl, removeBtn);
     list.appendChild(row);
   }
 

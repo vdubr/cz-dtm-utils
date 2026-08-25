@@ -55,63 +55,6 @@ html, body {
   letter-spacing: 0.02em;
 }
 
-.version-select-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 12px;
-  padding: 3px 8px;
-  background: rgba(88, 166, 255, 0.08);
-  border: 1px solid rgba(88, 166, 255, 0.25);
-  border-radius: 4px;
-  font-size: 11px;
-  color: #8b949e;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-}
-
-.version-select-wrap:has(select:disabled) {
-  cursor: default;
-}
-
-.version-select-label {
-  font-weight: 600;
-}
-
-.version-select {
-  background: transparent;
-  border: none;
-  color: #58a6ff;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-  text-transform: none;
-  min-width: 38px;
-  text-align: left;
-}
-
-/* Skryj nativní chevron, dokud máme jen 1 verzi (select je disabled).
-   Až přibude více verzí a select se povolí, chevron se zobrazí zpátky. */
-.version-select:disabled {
-  cursor: default;
-  opacity: 1;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: none;
-  padding-right: 4px;
-}
-
-.version-select:focus-visible {
-  outline: 1px solid #58a6ff;
-  outline-offset: 2px;
-}
-
 .header-right {
   display: flex;
   align-items: center;
@@ -2351,6 +2294,30 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Info ikona za názvem projektu — hover ukáže verzi JVF DTM (title). */
+.project-version-info {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid #4b5563;
+  color: #8b949e;
+  font-size: 9px;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1;
+  cursor: help;
+  user-select: none;
+}
+.project-version-info:hover {
+  color: #58a6ff;
+  border-color: #58a6ff;
 }
 
 .project-count {

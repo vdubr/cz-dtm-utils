@@ -11,7 +11,9 @@ const INFO_CONTENT_HTML = `
   <p>
     Webový prohlížeč souborů <strong>JVF DTM</strong> (Jednotný výměnný formát
     Digitální technické mapy ČR). Podporované verze specifikace:
-    <strong>${VERSIONS_DISPLAY}</strong> (aktivní verzi lze přepnout v hlavičce).
+    <strong>${VERSIONS_DISPLAY}</strong> (verze se detekuje automaticky
+    z načteného souboru; konkrétní verzi každého souboru ukáže info ikona
+    <code>i</code> za názvem projektu v panelu „Projekty").
     Umožňuje načíst JVF XML soubor a prohlédnout si jeho obsah ve 2D mapě i ve
     3D pohledu. Načtený soubor se zpracovává <strong>lokálně v prohlížeči</strong>
     — nic se neodesílá na server.
@@ -150,7 +152,10 @@ const INFO_CONTENT_HTML = `
       <em>nadmořské výšky</em> (Z ze geometrie — u bodu jedna hodnota,
       u linií a ploch rozsah min–max). U <strong>číselníkových atributů</strong>
       se vedle číselného kódu zobrazí i <strong>český popisek</strong> z číselníku
-      DTM (např. <code>2 — dálnice II. třídy</code>). Funguje to i opačně:
+      DTM (např. <code>2 — dálnice II. třídy</code>); u <strong>ano/ne atributů</strong>
+      (např. <code>KritickaTI</code>, <code>NeuplnaData</code>) se kód
+      <code>0</code>/<code>1</code> přeloží na <code>ne</code>/<code>ano</code>.
+      Funguje to i opačně:
       klik na prvek v mapě (2D i 3D) se synchronně promítne do panelu — rozbalí
       jeho skupinu, scrollne na řádek a označí ho jako vybraný.
       <strong>Je-li panel „Přehled prvků" zavřený, klik na prvek v mapě ho
@@ -212,12 +217,11 @@ const INFO_CONTENT_HTML = `
   <p>
     Aplikace podporuje verze <strong>${VERSIONS_DISPLAY}</strong> souběžně.
     Verze se <strong>detekuje automaticky</strong> podle obsahu souboru
-    (element <code>VerzeJVFDTM</code>, případně strukturně) — při nahrání
-    souboru jiné podporované verze se aktivní verze v hlavičce
-    <strong>automaticky přepne</strong>. Nepodporovaná verze se nenačte
-    a zobrazí se upozornění. Verzi lze v hlavičce zvolit i ručně; při
-    ruční změně nad již načtenými daty aplikace nejprve požádá o potvrzení,
-    protože dojde k jejich vymazání.
+    (element <code>VerzeJVFDTM</code>, případně strukturně) — není potřeba
+    ji ručně nastavovat. Konkrétní verzi každého načteného souboru ukáže
+    info ikona <code>i</code> za názvem projektu v panelu „Projekty", takže
+    při více projektech může mít každý jinou verzi. Nepodporovaná verze se
+    nenačte a zobrazí se upozornění.
   </p>
   <p>
     <strong>Novinky 1.5.0.1:</strong> nová obsahová část

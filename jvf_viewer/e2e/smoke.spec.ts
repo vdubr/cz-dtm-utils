@@ -29,11 +29,19 @@ test.describe('Základní stav aplikace', () => {
 
 test.describe('Načtení JVF souboru', () => {
   test('načte ukázku ZPS a povolí akční tlačítka', async ({ page }) => {
+    // Prázdný stav → sekce Projekty ještě není vidět.
+    await expect(page.locator('#projects-section')).toBeHidden();
+
     await loadSample(page, 'ukazka_ZPS.xml');
 
     await expect(page.locator('#btn-validate')).toBeEnabled();
     await expect(page.locator('#btn-features')).toBeEnabled();
     await expect(page.locator('#jvf-layers-list .layer-group').first()).toBeVisible();
+    // Verze souboru (1.4.3) se ukáže u projektu jako info ikona (hover title).
+    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+      'title',
+      'Verze JVF 1.4.3',
+    );
   });
 
   test('načtení ukázky přes nabídku (fetch z fixtures) také funguje', async ({ page }) => {
@@ -60,16 +68,18 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#btn-validate')).toBeDisabled();
   });
 
-  test('soubor verze 1.5.0.1 se načte a aktivní verze se přepne', async ({ page }) => {
-    // Podporovaná verze odlišná od výchozí (1.4.3) → auto-přepnutí bez modalu,
-    // soubor se načte a version selector ukáže 1.5.0.1.
+  test('soubor verze 1.5.0.1 se načte a info ikona projektu ukáže verzi 1.5.0.1', async ({ page }) => {
+    // Auto-detekce bez modalu; verze souboru se ukáže u projektu (hover title).
     await page.setInputFiles('#file-input', fixturePath('test_verze_1.5.0.1.xml'));
 
     await expect(page.locator('#confirm-modal')).toBeHidden();
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#btn-validate')).toBeEnabled();
     await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
-    await expect(page.locator('#version-select')).toHaveValue('1.5.0.1');
+    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+      'title',
+      'Verze JVF 1.5.0.1',
+    );
   });
 });
 

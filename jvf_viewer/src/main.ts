@@ -27,7 +27,6 @@ import {
 import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
-import { setupVersionSelect } from './ui/versionSelect.js';
 import { showErrorProtocol } from './ui/errorProtocolModal.js';
 import {
   setupChangesetToggle,
@@ -36,7 +35,6 @@ import {
 import { resetFeatureFilter } from './state/featureFilter.js';
 import {
   addProject,
-  clearProjects,
   getProjectCount,
   getProjects,
   isMultiProject,
@@ -175,17 +173,6 @@ setupDragAndDrop(
   (data: JvfDtm, fileName: string) => onJvfLoaded(data, fileName),
   (proto, fileName) => showErrorProtocol(proto, fileName),
 );
-
-// Setup version selector — pokud uživatel přepne verzi a má nahraná data,
-// confirm modal vyzve ke ztrátě dat. Po potvrzení se odeberou všechny
-// projekty (všechny prošly validací proti staré aktivní verzi).
-setupVersionSelect({
-  hasData: () => getProjectCount() > 0,
-  onClearData: () => {
-    clearProjects();
-    rebuildAll();
-  },
-});
 
 /**
  * Přepočítá odvozený stav vieweru z aktuální kolekce projektů — jediné
