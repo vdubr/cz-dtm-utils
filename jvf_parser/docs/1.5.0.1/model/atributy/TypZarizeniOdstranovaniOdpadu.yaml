@@ -1,0 +1,15 @@
+id: TypZarizeniOdstranovaniOdpadu
+nazev: Typ zařízení na odstraňování odpadu
+namespace: atr
+popis: Typ zařízení na odstraňování odpadů
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: zařízení na odstraňování BRO
+ - hodnota: 2
+   popis: zařízení na odstraňování nebezpečného odpadu
+ - hodnota: 98
+   popis: jiné
+ - hodnota: 99
+   popis: nezjištěno

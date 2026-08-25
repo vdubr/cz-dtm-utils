@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ukázka použití extenze -->
+<ExtenzeJVFDTM xmlns="ext">
+  <NazevExtenze>Název extenze</NazevExtenze>
+  <SpravceExtenze>Správce extenze</SpravceExtenze>
+  <VerzeExtenze>Verze extenze</VerzeExtenze>
+  <DataExtenze>
+    <Element1>Obsah elementu 1</Element1>
+    <Element2>
+      <PodElement1>Obsah podelementu 1</PodElement1>
+      <PodElement2>Obsah podelementu 2</PodElement2>
+    </Element2>
+    <!-- atd. -->
+  </DataExtenze>
+</ExtenzeJVFDTM>

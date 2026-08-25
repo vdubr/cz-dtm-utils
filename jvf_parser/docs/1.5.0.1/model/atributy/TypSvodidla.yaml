@@ -1,0 +1,13 @@
+id: TypSvodidla
+nazev: Typ svodidla
+namespace: atr
+popis: Typ svodidla
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: jednoduché
+ - hodnota: 2
+   popis: zdvojené
+ - hodnota: 99
+   popis: nezjištěno

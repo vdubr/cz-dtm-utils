@@ -1,0 +1,199 @@
+id: DrazniDopravaKoridorZameruLinie
+namespace: ddklin
+nazev: drážní doprava - koridor záměru
+skupinaPrvku: ZamerNaProvedeniZmenDopravniATechnickeInfrastruktury
+obsahovaCast: DI
+typGeometrie: Linie
+code:
+  base: "0100000341"
+  suffix: "02"
+dim: 2
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuZameru
+   typ: sada
+   sada: SpolecneAtributyObjektuZameru
+ - id: TypDrahy
+   typ: atribut
+   volitelny: true
+   atribut: TypDrahy
+ - id: KategorieZeleznicniTrate
+   typ: atribut
+   volitelny: true
+   atribut: KategorieZeleznicniTrate
+ - id: TypZeleznicniTrate
+   typ: atribut
+   volitelny: true
+   atribut: TypZeleznicniTrate
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie2D
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZameru
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZameru
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZameru
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZameru
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZameru
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZameru
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypDrahy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

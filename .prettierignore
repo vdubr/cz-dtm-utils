@@ -1,0 +1,10 @@
+node_modules
+dist
+.vercel
+.history
+coverage
+package-lock.json
+jvf_parser/docs
+jvf_parser/samples
+jvf_viewer/test-files
+CHANGELOG.md

@@ -1,0 +1,15 @@
+id: TypTrasyVodovodniSite
+nazev: Typ trasy vodovodní sítě
+namespace: atr
+popis: Typ trasy vodovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: přiváděcí řad
+ - hodnota: 2
+   popis: rozvodná vodovodní síť
+ - hodnota: 98
+   popis: jiná
+ - hodnota: 99
+   popis: nezjištěno

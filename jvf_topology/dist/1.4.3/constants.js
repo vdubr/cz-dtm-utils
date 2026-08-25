@@ -116,4 +116,86 @@ export const DEFBOD_PLOCHA_PAIRS = [
 export const OSA_OBVOD_PAIRS = [
     { osa: 'OsaPozemniKomunikace', obvod: 'ObvodPozemniKomunikace' },
 ];
+// ---------------------------------------------------------------------------
+// JVF DTM 1.5.0.1 — páry DefBod ↔ Plocha a Osa ↔ Obvod
+// ---------------------------------------------------------------------------
+/**
+ * Páry definiční bod ↔ plocha pro JVF DTM 1.5.0.1 (66 párů).
+ *
+ * Odvozeno z katalogu 1.5.0.1 konvencí `{Kořen}DefinicniBod` +
+ * `{Kořen}Plocha` (validováno testem `pairs-integrity`). Oproti 1.4.3 (63)
+ * přibyly mj. `RozestavenaPlocha` (0100000381). PSPI objekty do párů nepatří.
+ */
+export const DEFBOD_PLOCHA_PAIRS_1501 = [
+    { defbod: 'BudovaDefinicniBod', plocha: 'BudovaPlocha' },
+    { defbod: 'CeloPropustkuDefinicniBod', plocha: 'CeloPropustkuPlocha' },
+    { defbod: 'ChodnikDefinicniBod', plocha: 'ChodnikPlocha' },
+    { defbod: 'CyklostezkaDefinicniBod', plocha: 'CyklostezkaPlocha' },
+    { defbod: 'DeliciPasDefinicniBod', plocha: 'DeliciPasPlocha' },
+    { defbod: 'DopravniOstruvekDefinicniBod', plocha: 'DopravniOstruvekPlocha' },
+    { defbod: 'DrobnaKulturniStavbaDefinicniBod', plocha: 'DrobnaKulturniStavbaPlocha' },
+    { defbod: 'DrobnaSakralniStavbaDefinicniBod', plocha: 'DrobnaSakralniStavbaPlocha' },
+    { defbod: 'DulLomDefinicniBod', plocha: 'DulLomPlocha' },
+    { defbod: 'DvurNadvoriDefinicniBod', plocha: 'DvurNadvoriPlocha' },
+    { defbod: 'HospodarskyNevyuzivanaPlochaDefinicniBod', plocha: 'HospodarskyNevyuzivanaPlochaPlocha' },
+    { defbod: 'HrazDefinicniBod', plocha: 'HrazPlocha' },
+    { defbod: 'HrbitovDefinicniBod', plocha: 'HrbitovPlocha' },
+    { defbod: 'HristeDefinicniBod', plocha: 'HristePlocha' },
+    { defbod: 'JezDefinicniBod', plocha: 'JezPlocha' },
+    { defbod: 'JezeroDefinicniBod', plocha: 'JezeroPlocha' },
+    { defbod: 'JineDulniDiloStavbaDefinicniBod', plocha: 'JineDulniDiloStavbaPlocha' },
+    { defbod: 'KominDefinicniBod', plocha: 'KominPlocha' },
+    { defbod: 'LesDefinicniBod', plocha: 'LesPlocha' },
+    { defbod: 'ManipulacniPlochaDefinicniBod', plocha: 'ManipulacniPlochaPlocha' },
+    { defbod: 'MelioracniPrikopZlabDefinicniBod', plocha: 'MelioracniPrikopZlabPlocha' },
+    { defbod: 'MostniVahaDefinicniBod', plocha: 'MostniVahaPlocha' },
+    { defbod: 'NadrzBezVzdouvacihoObjektuDefinicniBod', plocha: 'NadrzBezVzdouvacihoObjektuPlocha' },
+    { defbod: 'NadrzZdrzSeVzdouvacimObjektemDefinicniBod', plocha: 'NadrzZdrzSeVzdouvacimObjektemPlocha' },
+    { defbod: 'NajezdDefinicniBod', plocha: 'NajezdPlocha' },
+    { defbod: 'NastupisteDefinicniBod', plocha: 'NastupistePlocha' },
+    { defbod: 'OstatniZastresenaStavbaDefinicniBod', plocha: 'OstatniZastresenaStavbaPlocha' },
+    { defbod: 'ParkovisteOdstavnaPlochaDefinicniBod', plocha: 'ParkovisteOdstavnaPlochaPlocha' },
+    { defbod: 'PatkaDeskaMonolitPilirDefinicniBod', plocha: 'PatkaDeskaMonolitPilirPlocha' },
+    { defbod: 'PlochaMostniKonstrukceDefinicniBod', plocha: 'PlochaMostniKonstrukcePlocha' },
+    { defbod: 'PlochaRekultivaceDefinicniBod', plocha: 'PlochaRekultivacePlocha' },
+    { defbod: 'PodezdivkaDefinicniBod', plocha: 'PodezdivkaPlocha' },
+    { defbod: 'PodzemniObjektZPSDefinicniBod', plocha: 'PodzemniObjektZPSPlocha' },
+    { defbod: 'PortalPodchoduDefinicniBod', plocha: 'PortalPodchoduPlocha' },
+    { defbod: 'PortalTuneluDefinicniBod', plocha: 'PortalTuneluPlocha' },
+    { defbod: 'PozemniLanovaDrahaDefinicniBod', plocha: 'PozemniLanovaDrahaPlocha' },
+    { defbod: 'PridruzenaPlochaPozemniKomunikaceDefinicniBod', plocha: 'PridruzenaPlochaPozemniKomunikacePlocha' },
+    { defbod: 'PrikopNasepZarezDopravniStavbyDefinicniBod', plocha: 'PrikopNasepZarezDopravniStavbyPlocha' },
+    { defbod: 'ProtipovodnovaZabranaDefinicniBod', plocha: 'ProtipovodnovaZabranaPlocha' },
+    { defbod: 'ProvozniPlochaPodchoduDefinicniBod', plocha: 'ProvozniPlochaPodchoduPlocha' },
+    { defbod: 'ProvozniPlochaPozemniKomunikaceDefinicniBod', plocha: 'ProvozniPlochaPozemniKomunikacePlocha' },
+    { defbod: 'ProvozniPlochaTuneluDefinicniBod', plocha: 'ProvozniPlochaTuneluPlocha' },
+    { defbod: 'RampaDefinicniBod', plocha: 'RampaPlocha' },
+    { defbod: 'RozestavenaPlochaDefinicniBod', plocha: 'RozestavenaPlochaPlocha' },
+    { defbod: 'SchodisteDefinicniBod', plocha: 'SchodistePlocha' },
+    { defbod: 'SklenikDefinicniBod', plocha: 'SklenikPlocha' },
+    { defbod: 'SouhrnnaPlochaZeleznicnichDrahDefinicniBod', plocha: 'SouhrnnaPlochaZeleznicnichDrahPlocha' },
+    { defbod: 'SpecialniDrahaDefinicniBod', plocha: 'SpecialniDrahaPlocha' },
+    { defbod: 'StavbaProZpevneniPovrchuDefinicniBod', plocha: 'StavbaProZpevneniPovrchuPlocha' },
+    { defbod: 'StavebneUpraveneKorytoDefinicniBod', plocha: 'StavebneUpraveneKorytoPlocha' },
+    { defbod: 'SterkovaPrehrazkaDefinicniBod', plocha: 'SterkovaPrehrazkaPlocha' },
+    { defbod: 'StupenDefinicniBod', plocha: 'StupenPlocha' },
+    { defbod: 'SuchaNadrzDefinicniBod', plocha: 'SuchaNadrzPlocha' },
+    { defbod: 'TerasaDefinicniBod', plocha: 'TerasaPlocha' },
+    { defbod: 'TramvajovaDrahaDefinicniBod', plocha: 'TramvajovaDrahaPlocha' },
+    { defbod: 'UdrzovanaPlochaZeleneDefinicniBod', plocha: 'UdrzovanaPlochaZelenePlocha' },
+    { defbod: 'UlozneMistoTezebnihoOdpaduDefinicniBod', plocha: 'UlozneMistoTezebnihoOdpaduPlocha' },
+    { defbod: 'VegetacniMisaDefinicniBod', plocha: 'VegetacniMisaPlocha' },
+    { defbod: 'VodniTokDefinicniBod', plocha: 'VodniTokPlocha' },
+    { defbod: 'ZahradaDefinicniBod', plocha: 'ZahradaPlocha' },
+    { defbod: 'ZahradniBazenDefinicniBod', plocha: 'ZahradniBazenPlocha' },
+    { defbod: 'ZarizeniKanalizacniPripojkyDefinicniBod', plocha: 'ZarizeniKanalizacniPripojkyPlocha' },
+    { defbod: 'ZarizeniVodovodniPripojkyDefinicniBod', plocha: 'ZarizeniVodovodniPripojkyPlocha' },
+    { defbod: 'ZastreseniDefinicniBod', plocha: 'ZastreseniPlocha' },
+    { defbod: 'ZedDefinicniBod', plocha: 'ZedPlocha' },
+    { defbod: 'ZemedelskaPlochaDefinicniBod', plocha: 'ZemedelskaPlochaPlocha' },
+];
+/** Páry Osa ↔ Obvod pro 1.5.0.1 (shodné s 1.4.3 — PK). */
+export const OSA_OBVOD_PAIRS_1501 = [
+    { osa: 'OsaPozemniKomunikace', obvod: 'ObvodPozemniKomunikace' },
+];
 //# sourceMappingURL=constants.js.map

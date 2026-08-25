@@ -15,7 +15,10 @@ import type { TopologyError } from './types.js';
  * - `DEFBOD_OUTSIDE_PLOCHA`   — bod leží mimo jakoukoliv plochu svého typu
  * - `DEFBOD_NO_PLOCHA`        — v JVF souboru není žádná plocha odpovídajícího typu
  */
-export declare function checkDefBodInPlocha(dtm: JvfDtm): TopologyError[];
+export declare function checkDefBodInPlocha(dtm: JvfDtm, pairs?: ReadonlyArray<{
+    defbod: string;
+    plocha: string;
+}>): TopologyError[];
 /**
  * Vrstva 3B: Všechny vrcholy linie Osy musí ležet uvnitř (nebo na hranici)
  * alespoň jednoho Obvodu stejné DI skupiny (2D).
@@ -24,12 +27,18 @@ export declare function checkDefBodInPlocha(dtm: JvfDtm): TopologyError[];
  * - `OSA_OUTSIDE_OBVOD`  — bod osy leží mimo jakýkoliv obvod
  * - `OSA_NO_OBVOD`       — v JVF souboru není žádný obvod odpovídajícího typu
  */
-export declare function checkOsaInObvod(dtm: JvfDtm): TopologyError[];
+export declare function checkOsaInObvod(dtm: JvfDtm, pairs?: ReadonlyArray<{
+    osa: string;
+    obvod: string;
+}>): TopologyError[];
 /**
  * Vrstva 3C: Sdílené body sousedních linií stejného objektového typu.
  * Konec jedné linie musí být ve snap toleranci od začátku nebo konce jiné linie.
  * Volný konec = žádná jiná linie ze stejného objektového typu v JVF souboru
  * nezačíná ani nekončí blíže než SNAP_TOLERANCE.
+ *
+ * Samostatná uzavřená smyčka (start ≈ end v toleranci `SNAP_TOLERANCE`) se
+ * nehlásí — oba konce jsou spojené samy se sebou.
  *
  * Kód: `LINE_DANGLING_END`
  *

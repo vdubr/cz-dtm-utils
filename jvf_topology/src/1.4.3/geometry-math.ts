@@ -2,8 +2,8 @@
  * Sdílené geometrické pomocné funkce pro topologické kontroly.
  *
  * - Tvorba chyb (`mkError`)
- * - Konverze mezi plochými souřadnicemi a poli bodů (`toPoints`, `toXYFlat`)
- * - Geometrické předikáty (`segmentsIntersect`, `pointInPolygon`, `pointOnSegment`, `lineInPolygon`)
+ * - Konverze mezi plochými souřadnicemi a poli bodů (`toPoints`)
+ * - Geometrické předikáty (`segmentsIntersect`, `pointInPolygon`, `pointOnSegment`)
  * - Měření vzdálenosti (`dist3D`)
  * - Extrakce dat ze `JvfDtm` (`collectCoordSets`, `extractPolygons`, `buildIndex`)
  */
@@ -112,21 +112,6 @@ export function toPoints(coords: number[], dim: number): Point2D[] {
   return pts;
 }
 
-/**
- * Vrátí plochý seznam [x0, y0, x1, y1, ...] z pole koordinát s danou dimenzí.
- */
-export function toXYFlat(coords: number[], dim: number): number[] {
-  const out: number[] = [];
-  for (let i = 0; i + 1 < coords.length; i += dim) {
-    const x = coords[i];
-    const y = coords[i + 1];
-    if (x !== undefined && y !== undefined) {
-      out.push(x, y);
-    }
-  }
-  return out;
-}
-
 // ---------------------------------------------------------------------------
 // Vzdálenost
 // ---------------------------------------------------------------------------
@@ -149,9 +134,15 @@ export function dist3D(
 // Geometrické předikáty
 // ---------------------------------------------------------------------------
 
+/** Tolerance pro rozpoznání "nulového" křížového součinu (kolinearita/dotyk). */
+const CROSS_EPS = 1e-6;
+
 /**
- * Zjistí, zda se dvě úsečky (ax,ay)→(bx,by) a (cx,cy)→(dx,dy) vzájemně kříží.
- * Kolineární překryvy nejsou považovány za křížení.
+ * Zjistí, zda se dvě úsečky (ax,ay)→(bx,by) a (cx,cy)→(dx,dy) vzájemně kříží,
+ * dotýkají (T-junction — vrchol jedné leží na druhé) nebo kolineárně překrývají.
+ *
+ * DTM spec. (kontrola 3.4) zakazuje linii jak křížení, tak překrytí — obojí
+ * proto musí tato funkce detekovat.
  */
 export function segmentsIntersect(
   ax: number, ay: number, bx: number, by: number,
@@ -168,10 +159,23 @@ export function segmentsIntersect(
   const d3 = cross(ax, ay, bx, by, cx, cy);
   const d4 = cross(ax, ay, bx, by, dx, dy);
 
-  return (
+  // Běžný "čistý kříž" — oba páry koncových bodů leží na opačných stranách
+  // druhé úsečky.
+  if (
     ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
     ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
-  );
+  ) {
+    return true;
+  }
+
+  // Kolineární překryv a dotyk (T-junction): pokud je vrchol jedné úsečky
+  // kolineární s druhou (d≈0), zjistí se, zda leží v jejím rozsahu.
+  if (Math.abs(d1) <= CROSS_EPS && pointOnSegment(ax, ay, cx, cy, dx, dy)) return true;
+  if (Math.abs(d2) <= CROSS_EPS && pointOnSegment(bx, by, cx, cy, dx, dy)) return true;
+  if (Math.abs(d3) <= CROSS_EPS && pointOnSegment(cx, cy, ax, ay, bx, by)) return true;
+  if (Math.abs(d4) <= CROSS_EPS && pointOnSegment(dx, dy, ax, ay, bx, by)) return true;
+
+  return false;
 }
 
 /**
@@ -207,25 +211,26 @@ export function hasSelfIntersection(pts: Point2D[]): boolean {
 }
 
 /**
- * Ray-casting algoritmus: vrátí true pokud bod (px, py) leží uvnitř polygonu.
- * Polygon je zadán jako plochý seznam [x0,y0, x1,y1, ...] (2D, uzavřený nebo ne).
- *
- * Bod na hranici je považován za "uvnitř" (vrací true).
+ * Vrátí true, pokud bod (px, py) leží přímo na hranici ringu (posloupnost
+ * uzavřených hran, poslední bod se automaticky spojuje s prvním).
  */
-export function pointInPolygon(px: number, py: number, exterior: number[], dim: number): boolean {
-  const pts = toPoints(exterior, dim);
+function pointOnRing(px: number, py: number, pts: Point2D[]): boolean {
   const n = pts.length;
-  if (n < 3) return false;
-
-  // Nejprve zkontrolovat, zda bod leží přímo na hranici
   for (let i = 0; i < n; i++) {
     const a = pts[i];
     const b = pts[(i + 1) % n];
     if (a === undefined || b === undefined) continue;
     if (pointOnSegment(px, py, a.x, a.y, b.x, b.y)) return true;
   }
+  return false;
+}
 
-  // Ray-casting: paprsek ve směru +X
+/**
+ * Ray-casting test bez ošetření hranice: vrátí true pokud bod (px, py) leží
+ * striktně uvnitř ringu (nekontroluje hraniční případ).
+ */
+function rayCastInRing(px: number, py: number, pts: Point2D[]): boolean {
+  const n = pts.length;
   let inside = false;
   for (let i = 0, j = n - 1; i < n; j = i++) {
     const pi = pts[i];
@@ -238,6 +243,38 @@ export function pointInPolygon(px: number, py: number, exterior: number[], dim: 
     if (intersect) inside = !inside;
   }
   return inside;
+}
+
+/**
+ * Ray-casting algoritmus: vrátí true pokud bod (px, py) leží uvnitř polygonu.
+ * `exterior` je plochý seznam [x0,y0, x1,y1, ...] (2D, uzavřený nebo ne).
+ *
+ * Volitelné `interiors` (díry polygonu, GML `interiors`) se z výsledku
+ * odečítají — bod striktně uvnitř díry se považuje za "mimo" polygon.
+ * Bod na hranici (exterioru i libovolné díry) je považován za "uvnitř"
+ * (vrací true) — hranice náleží polygonu.
+ */
+export function pointInPolygon(
+  px: number, py: number,
+  exterior: number[], dim: number,
+  interiors?: number[][]
+): boolean {
+  const pts = toPoints(exterior, dim);
+  if (pts.length < 3) return false;
+
+  if (pointOnRing(px, py, pts)) return true;
+  if (!rayCastInRing(px, py, pts)) return false;
+
+  if (interiors !== undefined) {
+    for (const interior of interiors) {
+      const holePts = toPoints(interior, dim);
+      if (holePts.length < 3) continue;
+      if (pointOnRing(px, py, holePts)) return true;
+      if (rayCastInRing(px, py, holePts)) return false;
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -257,21 +294,6 @@ export function pointOnSegment(
     Math.min(ax, bx) - 1e-9 <= px && px <= Math.max(ax, bx) + 1e-9 &&
     Math.min(ay, by) - 1e-9 <= py && py <= Math.max(ay, by) + 1e-9
   );
-}
-
-/**
- * Vrátí true pokud všechny body polyčáry leží uvnitř (nebo na hranici) polygonu.
- */
-export function lineInPolygon(
-  lineCoords: number[], lineDim: number,
-  polyExterior: number[], polyDim: number
-): boolean {
-  for (let i = 0; i + 1 < lineCoords.length; i += lineDim) {
-    const x = lineCoords[i], y = lineCoords[i + 1];
-    if (x === undefined || y === undefined) continue;
-    if (!pointInPolygon(x, y, polyExterior, polyDim)) return false;
-  }
-  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -312,7 +334,7 @@ export function collectCoordSets(
 }
 
 /**
- * Extrahuje exterior všech polygonů daného objektového typu.
+ * Extrahuje exterior + interiors (díry) všech polygonů daného objektového typu.
  * Používáno ve Vrstvě 3 (DefBod↔Plocha, Osa↔Obvod).
  */
 export function extractPolygons(objTyp: ObjektovyTyp): ExtractedPolygon[] {
@@ -320,7 +342,11 @@ export function extractPolygons(objTyp: ObjektovyTyp): ExtractedPolygon[] {
   for (const zaznam of objTyp.zaznamy) {
     for (const geom of zaznam.geometrie) {
       if (geom.type === 'Polygon') {
-        result.push({ exterior: geom.data.exterior, dim: geom.data.srsDimension });
+        result.push({
+          exterior: geom.data.exterior,
+          dim: geom.data.srsDimension,
+          interiors: geom.data.interiors,
+        });
       }
     }
   }

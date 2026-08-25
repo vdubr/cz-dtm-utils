@@ -1,0 +1,27 @@
+id: TypOstatniPlochy
+nazev: Typ ostatní plochy
+namespace: atr
+popis: Typ ostatní plochy
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: důl, lom
+ - hodnota: 2
+   popis: plocha rekultivace
+ - hodnota: 3
+   popis: úložné místo těžebního odpadu
+ - hodnota: 4
+   popis: jiné důlní dílo, důlní stavba
+ - hodnota: 5
+   popis: hřiště
+ - hodnota: 6
+   popis: hřbitov
+ - hodnota: 7
+   popis: dvůr, nádvoří
+ - hodnota: 8
+   popis: vegetační mísa
+ - hodnota: 9
+   popis: rozestavěná plocha
+ - hodnota: 99
+   popis: nezjištěno

@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ukázka importu PSPI -->
+<JVFDTM xmlns="objtyp" xmlns:atr="atr" xmlns:cmn="cmn" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <cmn:VerzeJVFDTM>1.5.0.1</cmn:VerzeJVFDTM>
+    <cmn:DatumZapisu>2025-04-01T15:36:00</cmn:DatumZapisu>
+    <cmn:TypZapisu>změnové věty</cmn:TypZapisu>
+    <Data>
+      <SilnicniDopravaPS>
+        <ObjektovyTypNazev code_base="0200000001" code_suffix="03" xmlns="sidops">silniční doprava - plánovaná stavba</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="sidops">Plánované stavební práce infrastruktury</KategorieObjektu>
+        <SkupinaObjektu xmlns="sidops">Plánovaná stavební práce infrastruktury</SkupinaObjektu>
+        <ObsahovaCast xmlns="sidops">DI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="sidops">
+          <ZaznamObjektuIns>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu>
+                <atr:IDEditora>SUBJ-00100001</atr:IDEditora>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuPSPI>
+                <atr:UrovenUmisteniObjektuPSPI>0</atr:UrovenUmisteniObjektuPSPI>
+                <atr:IDExterni>123456</atr:IDExterni>
+              </SpolecneAtributyObjektuPSPI>
+              <atr:TypObjektuSilnicniDopravyPS>3</atr:TypObjektuSilnicniDopravyPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <cmn:Plocha2D>
+                <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                  <Polygon gml:id="ID1_02" srsDimension="2" srsName="EPSG:5514">
+                    <exterior>
+                      <LinearRing>
+                        <posList>-738389.42 -1113100.35 -738245.26 -1112692.95 -738217.06 -1112172.74 -738232.73 -1111840.56 -738191.99 -1111849.96 -738163.78 -1112097.53 -738179.45 -1112442.25 -738232.73 -1112821.44 -738342.41 -1113125.42 -738389.42 -1113100.35</posList>
+                      </LinearRing>
+                    </exterior>
+                  </Polygon>
+                </surfaceProperty>
+              </cmn:Plocha2D>
+            </GeometrieObjektu>
+          </ZaznamObjektuIns>
+        </ZaznamyObjektu>
+      </SilnicniDopravaPS>
+      <ElektrickaSitPS>
+        <ObjektovyTypNazev code_base="0200000008" code_suffix="03" xmlns="elsips">elektrická síť - plánovaná stavba</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="elsips">Plánované stavební práce infrastruktury</KategorieObjektu>
+        <SkupinaObjektu xmlns="elsips">Plánovaná stavební práce infrastruktury</SkupinaObjektu>
+        <ObsahovaCast xmlns="elsips">TI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="elsips">
+          <ZaznamObjektuIns>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu>
+                <atr:IDEditora>SUBJ-00100001</atr:IDEditora>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuPSPI>
+                <atr:UrovenUmisteniObjektuPSPI>-1</atr:UrovenUmisteniObjektuPSPI>
+                <atr:IDExterni>123457</atr:IDExterni>
+              </SpolecneAtributyObjektuPSPI>
+              <atr:TypObjektuElektrickeSitePS>4</atr:TypObjektuElektrickeSitePS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <cmn:Plocha2D>
+                <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                  <Polygon gml:id="ID2_02" srsDimension="2" srsName="EPSG:5514">
+                    <exterior>
+                      <LinearRing>
+                        <posList>-738389.42 -1113100.35 -738245.26 -1112692.95 -738217.06 -1112172.74 -738232.73 -1111840.56 -738191.99 -1111849.96 -738163.78 -1112097.53 -738179.45 -1112442.25 -738232.73 -1112821.44 -738342.41 -1113125.42 -738389.42 -1113100.35</posList>
+                      </LinearRing>
+                    </exterior>
+                  </Polygon>
+                </surfaceProperty>
+              </cmn:Plocha2D>
+            </GeometrieObjektu>
+          </ZaznamObjektuIns>
+        </ZaznamyObjektu>
+      </ElektrickaSitPS>
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>

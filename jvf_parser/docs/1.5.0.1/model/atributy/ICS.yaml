@@ -1,0 +1,9 @@
+id: ICS
+nazev: Identifikační číslo stavby
+namespace: atr
+popis: |-
+  Identifikační číslo stavby
+  Více záznamů IČS odděleno středníkem
+nillable: false
+typ: String
+maxDelka: 255

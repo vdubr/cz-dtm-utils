@@ -37,41 +37,40 @@ export function checkDuplicateLines(dtm) {
         const lineZaznamy = objTyp.zaznamy.filter(z => z.geometrie.some(g => g.type === 'LineString' || g.type === 'MultiCurve'));
         if (lineZaznamy.length < 2)
             continue;
-        // Normalizovaný klíč: LEVEL + seřazené XY vrcholy → string.
+        // Map-based grouping (konzistentní s `checkDuplicatePoints`): klíč je
+        // LEVEL + normalizovaná XY reprezentace linie → O(n) místo O(n²).
         // Duplicitní kontrola dle spec. probíhá per LEVEL (objekty na různých
         // úrovních — podzemí vs. povrch — nejsou duplicitní).
-        const keys = lineZaznamy.map(z => ({
-            zaznam: z,
-            level: getLevel(z),
-            xyKey: extractLineXYKey(z),
-            zCoords: extractLineZCoords(z),
-        }));
-        for (let i = 0; i < keys.length; i++) {
-            for (let j = i + 1; j < keys.length; j++) {
-                const a = keys[i];
-                const b = keys[j];
-                if (a === undefined || b === undefined)
+        const seen = new Map();
+        for (const zaznam of lineZaznamy) {
+            const xyKey = extractLineXYKey(zaznam);
+            if (xyKey === '')
+                continue;
+            const level = getLevel(zaznam);
+            const key = `${level === null ? 'null' : level}|${xyKey}`;
+            const objectId = zaznam.commonAttributes.id;
+            const zCoords = extractLineZCoords(zaznam);
+            const prev = seen.get(key);
+            if (prev !== undefined) {
+                if (isChangesetDeleteInsertPair(prev.zaznam, zaznam))
                     continue;
-                if (a.xyKey !== b.xyKey || a.xyKey === '')
-                    continue;
-                if (a.level !== b.level)
-                    continue;
-                if (isChangesetDeleteInsertPair(a.zaznam, b.zaznam))
-                    continue;
-                const objectIdA = a.zaznam.commonAttributes.id;
+                // Kontext reportuje první nalezený záznam skupiny (konzistentní
+                // s dřívějším pairwise chováním, kde `a` bylo první v pořadí).
                 const ctx = {
                     objektovyTyp: objTyp.elementName,
-                    ...(objectIdA !== undefined ? { objectId: objectIdA } : {}),
+                    ...(prev.id !== undefined ? { objectId: prev.id } : {}),
                     geometryIndex: 0,
                 };
-                const objectIdB = b.zaznam.commonAttributes.id;
-                const maxZDiff = maxZDifference(a.zCoords, b.zCoords);
+                const maxZDiff = maxZDifference(prev.zCoords, zCoords);
                 if (maxZDiff === 0) {
-                    errors.push(mkError(ctx, 'error', 'DUPLICATE_LINE_ERROR', `Duplicitní linie (identické XYZ) s objektem ${objectIdB ?? '(bez id)'}.`));
+                    errors.push(mkError(ctx, 'error', 'DUPLICATE_LINE_ERROR', `Duplicitní linie (identické XYZ) s objektem ${objectId ?? '(bez id)'}.`));
                 }
                 else if (maxZDiff < DUPLICATE_Z_TOLERANCE) {
-                    errors.push(mkError(ctx, 'warning', 'DUPLICATE_LINE_WARNING', `Duplicitní linie (identické XY, max. rozdíl Z=${maxZDiff.toFixed(3)} m < ${DUPLICATE_Z_TOLERANCE} m) s objektem ${objectIdB ?? '(bez id)'}.`));
+                    errors.push(mkError(ctx, 'warning', 'DUPLICATE_LINE_WARNING', `Duplicitní linie (identické XY, max. rozdíl Z=${maxZDiff.toFixed(3)} m < ${DUPLICATE_Z_TOLERANCE} m) s objektem ${objectId ?? '(bez id)'}.`));
                 }
+            }
+            else {
+                seen.set(key, { zaznam, id: objectId, zCoords });
             }
         }
     }

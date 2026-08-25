@@ -1,0 +1,15 @@
+id: TypProtipovodnoveZabrany
+nazev: Typ protipovodňové zábrany
+namespace: atr
+popis: Typ protipovodňové zábrany
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: hráz
+ - hodnota: 3
+   popis: zeď
+ - hodnota: 4
+   popis: stavební základy mobilní zábrany
+ - hodnota: 98
+   popis: jiná

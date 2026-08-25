@@ -32,5 +32,7 @@ export interface CoordSet {
 export interface ExtractedPolygon {
     exterior: number[];
     dim: number;
+    /** Interior ringy (díry) polygonu, GML `interiors` — prázdné pole pokud žádné. */
+    interiors: number[][];
 }
 //# sourceMappingURL=types.d.ts.map

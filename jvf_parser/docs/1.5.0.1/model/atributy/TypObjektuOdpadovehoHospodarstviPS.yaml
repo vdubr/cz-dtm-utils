@@ -1,0 +1,17 @@
+id: TypObjektuOdpadovehoHospodarstviPS
+nazev: Typ objektu odpadového hospodářství - plánované stavby
+namespace: atr
+popis: Typ objektu odpadového hospodářství - plánované stavby
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: skládka odpadů
+ - hodnota: 2
+   popis: spalovna
+ - hodnota: 3
+   popis: jiné zařízení na odstraňování, využívání nebo sběr odpadů
+ - hodnota: 4
+   popis: odkaliště
+ - hodnota: 99
+   popis: neurčeno

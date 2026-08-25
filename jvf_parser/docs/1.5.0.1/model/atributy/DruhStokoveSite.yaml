@@ -1,0 +1,15 @@
+id: DruhStokoveSite
+nazev: Druh stokové sítě
+namespace: atr
+popis: Druh stokové sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: gravitační
+ - hodnota: 2
+   popis: tlaková
+ - hodnota: 3
+   popis: podtlaková
+ - hodnota: 99
+   popis: nezjištěno

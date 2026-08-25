@@ -1,11 +1,15 @@
-import { parseJvfDtm } from 'jvf-parser';
-import type { JvfDtm } from 'jvf-parser';
-import { getActiveVersion } from '../state/activeVersion.js';
+import { parseJvfDtm, isSupportedVersion, isErrorProtocolXml, parseErrorProtocol } from 'jvf-parser';
+import type { JvfDtm, ErrorProtocol } from 'jvf-parser';
+import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
 
 /**
- * Validace verze: pokud parsovaný soubor má `verze ≠ aktivní`, ukáže
- * blokující modal a vrátí `false`. Soubor se v tom případě nenačte.
+ * Validace verze souboru (1.5.0.1+ chování):
+ *   - shoda s aktivní verzí → načíst,
+ *   - jiná **podporovaná** verze → **auto-přepnout** aktivní verzi na verzi
+ *     souboru a načíst (`setActiveVersion`),
+ *   - nedeklarovaná verze → tolerovat (router parseru ji vyřešil strukturně),
+ *   - **nepodporovaná** verze → blokující modal a `false` (soubor se nenačte).
  */
 async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<boolean> {
   const fileVersion = data.verze.trim();
@@ -13,19 +17,26 @@ async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<b
 
   if (fileVersion === activeVersion) return true;
 
-  const fileVersionDisplay = fileVersion === '' ? '(nezadána)' : fileVersion;
+  // Podporovaná verze odlišná od aktivní → přepnout aplikaci na verzi souboru.
+  if (fileVersion !== '' && isSupportedVersion(fileVersion)) {
+    setActiveVersion(fileVersion);
+    return true;
+  }
+
+  // Nedeklarovaná verze — parser router si poradil (strukturní sniff), načteme.
+  if (fileVersion === '') return true;
+
+  // Nepodporovaná verze → blokující modal.
   await showConfirm({
-    title: 'Nesoulad verze JVF DTM',
+    title: 'Nepodporovaná verze JVF DTM',
     bodyHtml: `
       <p>
         Soubor <strong>${escapeHtml(sourceLabel)}</strong> deklaruje verzi
-        JVF DTM <strong>${escapeHtml(fileVersionDisplay)}</strong>, ale
-        aplikace je aktuálně v režimu verze <strong>${activeVersion}</strong>.
+        JVF DTM <strong>${escapeHtml(fileVersion)}</strong>, kterou aplikace
+        zatím nepodporuje.
       </p>
       <p>
-        Načítat lze pouze soubory odpovídající aktivní verzi. Přepněte
-        aktivní verzi v hlavičce na <strong>${escapeHtml(fileVersionDisplay)}</strong>
-        a načtěte soubor znovu.
+        Podporované verze: <strong>1.4.3</strong> a <strong>1.5.0.1</strong>.
       </p>
     `,
     buttons: [{ label: 'Rozumím', variant: 'primary' }],
@@ -42,8 +53,62 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/** Callback po úspěšném parsování — dostává i název souboru (nový projekt). */
+export type JvfLoadCallback = (data: JvfDtm, fileName: string) => void;
+
+/** Callback pro protokol chyb (ServisJVFDTM) — zobrazí se jako report, ne data. */
+export type JvfErrorProtocolCallback = (proto: ErrorProtocol, fileName: string) => void;
+
+/**
+ * Načte lokální soubor (z file inputu nebo drag & drop) a zpracuje ho
+ * parserem — jediný sdílený kód-path pro oba způsoby načtení. Vrací
+ * Promise, aby šlo více souborů (multi-výběr / multi-drop) zpracovat
+ * sekvenčně bez závodění o loading overlay.
+ */
+export function loadJvfFile(
+  file: File,
+  onLoad: JvfLoadCallback,
+  onErrorProtocol?: JvfErrorProtocolCallback
+): Promise<void> {
+  const loadingOverlay = document.getElementById('loading-overlay') as HTMLDivElement;
+  loadingOverlay.style.display = 'flex';
+
+  return new Promise<void>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const xml = e.target?.result as string;
+        // Protokol chyb (ServisJVFDTM) není mapová data — zobraz jako report.
+        if (onErrorProtocol && isErrorProtocolXml(xml)) {
+          onErrorProtocol(parseErrorProtocol(xml), file.name);
+          return;
+        }
+        const data = parseJvfDtm(xml);
+        const ok = await validateFileVersion(data, file.name);
+        if (!ok) return;
+        onLoad(data, file.name);
+      } catch (err) {
+        console.error('Failed to parse JVF file:', err);
+        alert(`Soubor „${file.name}“ se nepodařilo načíst. Zkontrolujte, že jde o platný JVF DTM soubor.`);
+      } finally {
+        loadingOverlay.style.display = 'none';
+        resolve();
+      }
+    };
+
+    reader.onerror = () => {
+      loadingOverlay.style.display = 'none';
+      alert('Chyba při čtení souboru.');
+      resolve();
+    };
+
+    reader.readAsText(file, 'UTF-8');
+  });
+}
+
 export function setupFileUpload(
-  onLoad: (data: JvfDtm) => void
+  onLoad: JvfLoadCallback,
+  onErrorProtocol?: JvfErrorProtocolCallback
 ): void {
   const btnUpload = document.getElementById('btn-upload') as HTMLButtonElement;
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -55,36 +120,15 @@ export function setupFileUpload(
     fileInput.click();
   });
 
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files?.[0];
-    if (!file) return;
-
-    loadingOverlay.style.display = 'flex';
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const xml = e.target?.result as string;
-        const data = parseJvfDtm(xml);
-        const ok = await validateFileVersion(data, file.name);
-        if (!ok) return;
-        onLoad(data);
-      } catch (err) {
-        console.error('Failed to parse JVF file:', err);
-        alert(`Chyba při načtení souboru: ${String(err)}`);
-      } finally {
-        loadingOverlay.style.display = 'none';
-        fileInput.value = '';
-      }
-    };
-
-    reader.onerror = () => {
-      loadingOverlay.style.display = 'none';
-      alert('Chyba při čtení souboru.');
-      fileInput.value = '';
-    };
-
-    reader.readAsText(file, 'UTF-8');
+  fileInput.addEventListener('change', async () => {
+    // Multi-výběr: každý soubor se přidá jako samostatný projekt.
+    // Sekvenčně — loading overlay a případné modaly se nesmí překrývat.
+    const files = Array.from(fileInput.files ?? []);
+    // Reset hned, aby šel stejný soubor vybrat znovu
+    fileInput.value = '';
+    for (const file of files) {
+      await loadJvfFile(file, onLoad, onErrorProtocol);
+    }
   });
 
   // Dropdown s ukázkovými soubory (fixtures) — fetchne XML ze statického
@@ -127,7 +171,7 @@ export function setupFileUpload(
         const sample = item.dataset['sample'];
         if (!sample) return;
         closeMenu();
-        await loadSample(sample, onLoad, loadingOverlay);
+        await loadSample(sample, onLoad, loadingOverlay, onErrorProtocol);
       });
     });
   }
@@ -139,8 +183,9 @@ export function setupFileUpload(
  */
 async function loadSample(
   name: string,
-  onLoad: (data: JvfDtm) => void,
-  loadingOverlay: HTMLDivElement
+  onLoad: JvfLoadCallback,
+  loadingOverlay: HTMLDivElement,
+  onErrorProtocol?: JvfErrorProtocolCallback
 ): Promise<void> {
   loadingOverlay.style.display = 'flex';
   try {
@@ -150,13 +195,17 @@ async function loadSample(
       throw new Error(`HTTP ${resp.status} — soubor nenalezen`);
     }
     const xml = await resp.text();
+    if (onErrorProtocol && isErrorProtocolXml(xml)) {
+      onErrorProtocol(parseErrorProtocol(xml), name);
+      return;
+    }
     const data = parseJvfDtm(xml);
     const ok = await validateFileVersion(data, name);
     if (!ok) return;
-    onLoad(data);
+    onLoad(data, name);
   } catch (err) {
     console.error('Failed to load sample:', err);
-    alert(`Chyba při načtení ukázky ${name}: ${String(err)}`);
+    alert(`Ukázkový soubor „${name}“ se nepodařilo načíst.`);
   } finally {
     loadingOverlay.style.display = 'none';
   }

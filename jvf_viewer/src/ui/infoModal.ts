@@ -11,7 +11,9 @@ const INFO_CONTENT_HTML = `
   <p>
     Webový prohlížeč souborů <strong>JVF DTM</strong> (Jednotný výměnný formát
     Digitální technické mapy ČR). Podporované verze specifikace:
-    <strong>${VERSIONS_DISPLAY}</strong> (aktivní verzi lze přepnout v hlavičce).
+    <strong>${VERSIONS_DISPLAY}</strong> (verze se detekuje automaticky
+    z načteného souboru; konkrétní verzi každého souboru ukáže info ikona
+    <code>i</code> za názvem projektu v panelu „Projekty").
     Umožňuje načíst JVF XML soubor a prohlédnout si jeho obsah ve 2D mapě i ve
     3D pohledu. Načtený soubor se zpracovává <strong>lokálně v prohlížeči</strong>
     — nic se neodesílá na server.
@@ -20,16 +22,45 @@ const INFO_CONTENT_HTML = `
   <h3>Hlavní funkce</h3>
   <ul>
     <li>
-      <strong>Nahrát soubor</strong> — výběr JVF XML souboru z disku. Parsování
-      probíhá v prohlížeči. Vedle tlačítka je šipka s rychlým výběrem
-      přiložených <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL).
+      <strong>Nahrát soubor</strong> — výběr JVF XML souboru z disku (lze
+      vybrat i více souborů naráz), nebo jednoduše
+      <strong>přetažení souborů myší</strong> (drag &amp; drop)
+      kamkoli nad okno aplikace. Parsování probíhá v prohlížeči. Vedle
+      tlačítka je šipka s rychlým výběrem přiložených
+      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL).
+    </li>
+    <li>
+      <strong>Více projektů naráz</strong> — každý načtený soubor se přidá
+      jako samostatný <em>projekt</em> (další výběr souboru nebo drag &amp;
+      drop načtená data <em>nenahrazuje</em>, ale přidává — až do
+      8 projektů). Hodí se pro navazující projekty, které chcete vidět
+      společně v jedné mapě. Levý panel zobrazuje sekci
+      <em>Projekty</em> se seznamem souborů (barevná tečka, počet záznamů)
+      a tlačítkem × pro odebrání; odebráním posledního projektu se viewer
+      vrátí do prázdného stavu. <strong>Klikem na projekt</strong> v seznamu
+      přiblížíte pohled na jeho rozsah (ve 2D mapě i ve 3D scéně). Hlavičku
+      sekce lze <strong>sbalit</strong> (klik na „Projekty") — počet projektů
+      zůstává v hlavičce vidět i po sbalení. Při ≥2 projektech přibude
+      v Přehledu prvků řádek <em>Projekt</em> s přepínatelnými chipy —
+      odškrtnutý projekt se skryje v tabulce i ve 2D a 3D mapě. Vrstvy
+      a skupiny stejného typu z různých projektů jsou odlišené barevnou
+      tečkou projektu. Verze každého souboru se detekuje automaticky
+      (podporované 1.4.3 i 1.5.0.1); topologická validace běží pro každý
+      projekt zvlášť dle jeho verze. 3D
+      terén se při více projektech stahuje <strong>zvlášť kolem každého
+      projektu</strong> (okolí 800&nbsp;m) — dva projekty daleko od sebe
+      tak nestáhnou obří model přes prázdnou plochu mezi nimi.
     </li>
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní
       mapa nebo Ortofoto), přepínání jednotlivých vrstev v levém panelu.
       Druhý klik na aktivní podkladové tlačítko podklad <em>vypne</em> —
       JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
-      kontrolu geometrie bez vizuálního šumu).
+      kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
+      tlačítky řídí průhlednost podkladu — platí společně pro 2D mapu
+      i 3D scénu. Tlačítko ☀️/🌙 v hlavičce přepíná
+      <em>světlý (výchozí) / tmavý režim</em> — barvu pozadí pod vrstvami
+      ve 2D i 3D.
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).
@@ -47,22 +78,24 @@ const INFO_CONTENT_HTML = `
       (<code>R</code>). Otáčení a náklon kamery se ovládají tlačítky ve spodní
       liště, kterou lze sbalit. Kliknutím do scény se nastaví <em>střed
       otáčení (pivot)</em> na zvolené místo. Volitelné převýšení výšky
-      (1× / 2× / 5× / 10×), světlé nebo tmavé pozadí a možnost renderovat
+      (1× / 2× / 5× / 10×) a možnost renderovat
       body jako SVG symboly (shodné s 2D). Viditelnost vrstev se zachovává
       mezi 2D a 3D režimem.
     </li>
     <li>
       <strong>3D terén</strong> — pod vektorovými daty se ve 3D scéně zobrazuje
       digitální model terénu <strong>ČÚZK DMR5G</strong> nad rozsahem načteného
-      JVF souboru. Povrch je obarven <em>hypsometricky</em> podle lokálního
+      JVF souboru (při více projektech kolem každého zvlášť — viz výše).
+      Povrch je obarven <em>hypsometricky</em> podle lokálního
       rozsahu výšek (tmavě zelená → žlutá → hnědá → bílá) a překryt
       <em>vrstevnicemi po 1 m</em> (zvýrazněnými každých 10 m). Terénní mesh
       i vrstevnice reagují na nastavené převýšení výšky a pomáhají zasadit
-      geometrie do reliéfu krajiny.
-    </li>
-    <li>
-      <strong>Zoom na data</strong> — přiblíží pohled na rozsah načteného JVF
-      souboru (ve 2D) nebo resetuje kameru (ve 3D).
+      geometrie do reliéfu krajiny. Je-li v levém panelu zvolená podkladová
+      mapa (<em>Základní mapa</em> nebo <em>Ortofoto</em>), namapuje se místo
+      hypsometrie jako <strong>textura na povrch terénu</strong> — stejná
+      volba i sytost jako ve 2D, jedno ovládání pro oba režimy; volba
+      podkladu ve 3D automaticky zapne terén. Vypnutím podkladu se terén
+      vrátí k hypsometrickému obarvení.
     </li>
     <li>
       <strong>Topologická validace</strong> — spustí sadu kontrol nad
@@ -73,7 +106,11 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>Legenda DTM</strong> — kompletní seznam všech ~360 objektových
       typů specifikace s reprezentativními symboly a barvami podle
-      <em>Katalogu kartografických symbolů DTM ČR</em>. Otevře se ikonou
+      <em>Katalogu kartografických symbolů DTM ČR</em>. Barva swatche
+      odpovídá tomu, jak se prvek vykreslí v mapě — i u sítí, které barvu
+      nesou až ve variantách (elektro červená, plyn zelená, voda modrá,
+      kanalizace hnědá, teplovod oranžová), takže legenda i vrstvový panel
+      souhlasí s mapou. Otevře se ikonou
       <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">legend_toggle</span>
       vedle nadpisu <em>JVF vrstvy</em>. Lze fulltextově filtrovat podle
       názvu, kódu nebo kategorie.
@@ -86,26 +123,56 @@ const INFO_CONTENT_HTML = `
       </em>
     </li>
     <li>
-      <strong>Zobrazit mazané (červeně)</strong> — přepínač pod seznamem
-      vrstev, který se objeví jen u změnových vět obsahujících záznamy
-      ke smazání (<code>ZapisObjektu = d</code>). Po zaškrtnutí se mazané
-      geometrie vykreslí sytě červeně ve 2D i 3D, takže rovnou vidíte, co
-      přijetím dávky zmizí. Po odškrtnutí se skryjí, zůstanou jen vkládané
-      a aktualizované záznamy. Default je zaškrtnuto.
+      <strong>Barevné rozlišení změn (nové / editované / mazané)</strong> —
+      přepínače pod seznamem vrstev, které se objeví jen pro typy
+      <code>ZapisObjektu</code> obsažené v nahraném souboru:
+      <strong>nové</strong> (<code>i</code>) zeleně,
+      <strong>editované</strong> (<code>u</code>) oranžově,
+      <strong>mazané</strong> (<code>d</code>) sytě červeně. Po zaškrtnutí
+      se geometrie daného typu vykreslí příslušnou barvou ve 2D i 3D, takže
+      rovnou vidíte, co přijetím dávky do DTM přibude, změní se nebo zmizí.
+      Po odškrtnutí se záznamy daného typu skryjí. Default je vše zaškrtnuto.
+      Funguje i pro nově vytvořené JVF soubory DI/TI, jejichž prvky ještě
+      nemají přidělená DTM ID.
     </li>
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
-      seznamem všech načtených objektů seskupených podle typu. Lze
+      seznamem všech načtených objektů seskupených podle typu. Hlavička
+      kategorie zůstává při scrollování přišpendlená nahoře, takže je
+      v dlouhém seznamu stále vidět, ve které kategorii se nacházíte. Lze
       filtrovat podle obsahové části (ZPS / TI / DI / GAD / OPL) a hledat
-      v názvu, <code>elementName</code> nebo ID. Klik na záznam zoomuje
+      v názvu, <code>elementName</code> nebo ID. Pokud data obsahují víc
+      <em>úrovní umístění</em> (LEVEL −3 až +3 z atributů
+      <code>UrovenUmisteniObjektu*</code>), zobrazí se navíc řádek
+      <em>Úroveň</em> s přepínatelnými chipy — odškrtnuté úrovně se skryjí
+      v tabulce i ve 2D a 3D mapě (kombinuje se s viditelností vrstev
+      a changeset přepínači). Filtr se resetuje při načtení nového souboru.
+      Klik na záznam zoomuje
       mapu (2D i 3D) a rozbalí tabulku všech atributů včetně
       <em>nadmořské výšky</em> (Z ze geometrie — u bodu jedna hodnota,
-      u linií a ploch rozsah min–max). Funguje to i opačně:
-      klik na prvek v mapě se synchronně promítne do panelu — rozbalí jeho
-      skupinu, scrollne na řádek a označí ho jako vybraný. ZapisObjektu se
+      u linií a ploch rozsah min–max). U <strong>číselníkových atributů</strong>
+      se vedle číselného kódu zobrazí i <strong>český popisek</strong> z číselníku
+      DTM (např. <code>2 — dálnice II. třídy</code>); u <strong>ano/ne atributů</strong>
+      (např. <code>KritickaTI</code>, <code>NeuplnaData</code>) se kód
+      <code>0</code>/<code>1</code> přeloží na <code>ne</code>/<code>ano</code>.
+      Funguje to i opačně:
+      klik na prvek v mapě (2D i 3D) se synchronně promítne do panelu — rozbalí
+      jeho skupinu, scrollne na řádek a označí ho jako vybraný.
+      <strong>Je-li panel „Přehled prvků" zavřený, klik na prvek v mapě ho
+      automaticky otevře</strong> a prvek rovnou vybere (klik do prázdné plochy
+      nedělá nic). ZapisObjektu se
       v changeset souborech rozlišuje barevným badge
       (<strong>I</strong> zelená / <strong>U</strong> žlutá /
-      <strong>D</strong> červená).
+      <strong>D</strong> červená). Prvky bez přiděleného DTM ID (nové
+      záznamy, které se teprve budou vkládat) jsou identifikovány
+      syntetickým klíčem — klikání, zoom i detail atributů pro ně fungují
+      stejně jako pro prvky s ID.
+    </li>
+    <li>
+      <strong>Protokol chyb</strong> (JVF 1.5.0.1) — nahrání souboru
+      s protokolem chyb (<code>ServisJVFDTM</code>) se místo mapy zobrazí
+      jako <em>report</em>: přehled kontrol a chyb odděleně pro část
+      DTI a ZPS (kód kontroly, popis chyby, ID objektu).
     </li>
   </ul>
 
@@ -148,14 +215,21 @@ const INFO_CONTENT_HTML = `
 
   <h3>Verze JVF DTM</h3>
   <p>
-    V hlavičce vlevo lze zvolit aktivní verzi specifikace. Aplikace zatím
-    podporuje pouze <strong>${VERSIONS_DISPLAY}</strong>, výběr je proto
-    informativní. Při nahrání souboru se kontroluje, zda jeho atribut
-    <code>verze</code> odpovídá aktivní verzi — v opačném případě se
-    soubor <strong>nenačte</strong> a zobrazí se upozornění s nabídkou
-    přepnout verzi nebo zvolit jiný soubor. Při přepnutí verze nad již
-    načtenými daty aplikace nejprve požádá o potvrzení, protože dojde
-    k jejich vymazání.
+    Aplikace podporuje verze <strong>${VERSIONS_DISPLAY}</strong> souběžně.
+    Verze se <strong>detekuje automaticky</strong> podle obsahu souboru
+    (element <code>VerzeJVFDTM</code>, případně strukturně) — není potřeba
+    ji ručně nastavovat. Konkrétní verzi každého načteného souboru ukáže
+    info ikona <code>i</code> za názvem projektu v panelu „Projekty", takže
+    při více projektech může mít každý jinou verzi. Nepodporovaná verze se
+    nenačte a zobrazí se upozornění.
+  </p>
+  <p>
+    <strong>Novinky 1.5.0.1:</strong> nová obsahová část
+    <strong>PSPI</strong> (plánované stavební práce infrastruktury) —
+    zobrazuje se v mapě i jako samostatná sekce v legendě; nový typ datové
+    sady <em>Výdej PSPI</em>; operace záznamu jsou nově v názvu elementu
+    (<code>ZaznamObjektuIns/Upd/Del</code>, referenční a přeshraniční věty);
+    zrušeno rozlišení KI a objekt „průběh technologické konstrukce".
   </p>
 
   <h3>Omezení</h3>
@@ -193,7 +267,9 @@ const INFO_CONTENT_HTML = `
     </li>
     <li>
       <strong>jvf-parser</strong> — parser JVF XML do typovaných objektů.
-      Postavený nad <code>fast-xml-parser</code>, podporuje verzi 1.4.3.
+      Postavený nad <code>fast-xml-parser</code>, podporuje verze 1.4.3
+      i 1.5.0.1 (verzní router s auto-detekcí) a samostatný parser
+      protokolu chyb.
     </li>
     <li>
       <strong>jvf-topology</strong> — topologická a geometrická validace.

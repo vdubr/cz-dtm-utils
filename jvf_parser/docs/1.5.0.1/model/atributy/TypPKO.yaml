@@ -1,0 +1,17 @@
+id: TypPKO
+nazev: Typ protikorozní ochrany
+namespace: atr
+popis: Typ protikorozní ochrany
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: katodická
+ - hodnota: 2
+   popis: elektropolarizovaná drenáž
+ - hodnota: 3
+   popis: anoda
+ - hodnota: 4
+   popis: propojovací kabeláž
+ - hodnota: 99
+   popis: nezjištěno

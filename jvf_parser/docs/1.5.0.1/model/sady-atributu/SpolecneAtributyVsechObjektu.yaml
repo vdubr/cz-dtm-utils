@@ -1,0 +1,163 @@
+id: SpolecneAtributyVsechObjektu
+namespace: atr
+popis: Společné atributy všech objektů
+atributy:
+  - id: ID
+    volitelny: true
+    atribut: ID
+  - id: IDZmeny
+    volitelny: true
+    atribut: IDZmeny
+  - id: PopisObjektu
+    volitelny: true
+    atribut: PopisObjektu
+  - id: IDEditora
+    volitelny: true
+    atribut: IDEditora
+  - id: DatumVkladu
+    volitelny: true
+    atribut: DatumVkladu
+  - id: VkladOsoba
+    volitelny: true
+    atribut: VkladOsoba
+  - id: DatumZmeny
+    volitelny: true
+    atribut: DatumZmeny
+  - id: ZmenaOsoba
+    volitelny: true
+    atribut: ZmenaOsoba
+
+kontexty:
+  Ref:
+    obsah:
+     - id: ID
+       namespace: atr
+       volitelny: false
+     - id: IDZmeny
+       namespace: atr
+       volitelny: false
+     - id: PopisObjektu
+       namespace: atr
+       volitelny: false
+     - id: IDEditora
+       namespace: atr
+       volitelny: false
+     - id: DatumVkladu
+       namespace: atr
+       volitelny: false
+     - id: VkladOsoba
+       namespace: atr
+       volitelny: false
+     - id: DatumZmeny
+       namespace: atr
+       volitelny: false
+     - id: ZmenaOsoba
+       namespace: atr
+       volitelny: false
+
+  InsZPS:
+    obsah:
+     - id: PopisObjektu
+       namespace: atr
+       volitelny: true
+
+  InsDTI:
+    obsah:
+     - id: PopisObjektu
+       namespace: atr
+       volitelny: true
+     - id: IDEditora
+       namespace: atr
+       volitelny: false
+
+  UpdZPS:
+    obsah:
+     - id: ID
+       namespace: atr
+       volitelny: false
+     - id: PopisObjektu
+       namespace: atr
+       volitelny: true
+
+  UpdDTI:
+    obsah:
+     - id: ID
+       namespace: atr
+       volitelny: false
+     - id: PopisObjektu
+       namespace: atr
+       volitelny: true
+     - id: IDEditora
+       namespace: atr
+       volitelny: false
+
+  Del:
+    obsah:
+     - id: ID
+       namespace: atr
+       volitelny: false
+     - id: IDZmeny
+       namespace: atr
+       volitelny: true
+     - id: PopisObjektu
+       namespace: atr
+       volitelny: true
+     - id: IDEditora
+       namespace: atr
+       volitelny: true
+     - id: DatumVkladu
+       namespace: atr
+       volitelny: true
+     - id: VkladOsoba
+       namespace: atr
+       volitelny: true
+     - id: DatumZmeny
+       namespace: atr
+       volitelny: true
+     - id: ZmenaOsoba
+       namespace: atr
+       volitelny: true
+
+  RefDel:
+    obsah:
+     - id: ID
+       namespace: atr
+       volitelny: false
+
+  Pe:
+    obsah:
+      - id: ID
+        namespace: atr
+        volitelny: false
+      - id: IDZmeny
+        namespace: atr
+        volitelny: false
+      - id: PopisObjektu
+        namespace: atr
+        volitelny: true
+      - id: IDEditora
+        namespace: atr
+        volitelny: false
+      - id: DatumVkladu
+        namespace: atr
+        volitelny: true
+      - id: VkladOsoba
+        namespace: atr
+        volitelny: true
+      - id: DatumZmeny
+        namespace: atr
+        volitelny: true
+      - id: ZmenaOsoba
+        namespace: atr
+        volitelny: true
+
+zobrazeni:
+  pohledy:
+    EditorZobrazeni:
+      obsah:
+        - id: ID
+        - id: PopisObjektu
+
+    EditorEditace:
+      obsah:
+        - id: PopisObjektu

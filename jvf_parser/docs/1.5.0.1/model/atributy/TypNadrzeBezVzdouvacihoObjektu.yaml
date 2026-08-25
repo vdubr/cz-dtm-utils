@@ -1,0 +1,17 @@
+id: TypNadrzeBezVzdouvacihoObjektu
+nazev: Typ nádrže bez vzdouvacího objektu
+namespace: atr
+popis: Typ nádrže bez vzdouvacího objektu
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: retenční
+ - hodnota: 2
+   popis: dešťová
+ - hodnota: 3
+   popis: usazovací
+ - hodnota: 98
+   popis: jiná
+ - hodnota: 99
+   popis: nezjištěno

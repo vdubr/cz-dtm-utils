@@ -1,0 +1,6 @@
+id: DatumRekultivace
+nazev: Datum rekultivace
+namespace: atr
+popis: Datum rekultivace
+nillable: true
+typ: Date

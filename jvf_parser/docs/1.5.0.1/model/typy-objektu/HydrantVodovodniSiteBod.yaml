@@ -1,0 +1,255 @@
+id: HydrantVodovodniSiteBod
+namespace: hydbod
+nazev: hydrant vodovodní sítě
+skupinaPrvku: Vodovod
+obsahovaCast: TI
+typGeometrie: Bod
+code:
+  base: "0100000387"
+  suffix: "01"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuTI
+   typ: sada
+   sada: SpolecneAtributyObjektuTI
+ - id: TypHydrantuVodovodniSite
+   typ: atribut
+   volitelny: false
+   atribut: TypHydrantuVodovodniSite
+ - id: TypMediaVodovodniSite
+   typ: atribut
+   volitelny: false
+   atribut: TypMediaVodovodniSite
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuBod3D
+ - id: ICME
+   typ: atribut
+   volitelny: false
+   atribut: ICME
+ - id: StavObjektu
+   typ: atribut
+   volitelny: false
+   atribut: StavObjektu
+ - id: DimenzeHydrantuVodovodniSite
+   typ: atribut
+   volitelny: false
+   atribut: DimenzeHydrantuVodovodniSite
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DimenzeHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DimenzeHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypHydrantuVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: DimenzeHydrantuVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypHydrantuVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: DimenzeHydrantuVodovodniSite
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DimenzeHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ICME
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypMediaVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DimenzeHydrantuVodovodniSite
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

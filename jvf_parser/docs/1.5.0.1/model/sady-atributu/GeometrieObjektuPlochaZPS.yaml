@@ -1,0 +1,38 @@
+id: GeometrieObjektuPlochaZPS
+namespace: cmn
+atributy:
+  - id: Plocha2D
+    volitelny: false
+    atribut: Plocha2DPolygon
+  - id: Obvod3D
+    volitelny: false
+    atribut: Obvod3DLineString
+
+kontexty:
+  Ref:
+    obsah:
+      - id: Plocha2D
+        volitelny: false
+      - id: Obvod3D
+        volitelny: false
+
+  Ins:
+    obsah:
+      - id: Plocha2D
+        volitelny: false
+      - id: Obvod3D
+        volitelny: false
+
+  Upd:
+    obsah:
+      - id: Plocha2D
+        volitelny: true
+      - id: Obvod3D
+        volitelny: true
+
+  Del:
+    obsah:
+      - id: Plocha2D
+        volitelny: true
+      - id: Obvod3D
+        volitelny: true

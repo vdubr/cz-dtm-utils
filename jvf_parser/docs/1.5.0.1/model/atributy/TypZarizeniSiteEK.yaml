@@ -1,0 +1,11 @@
+id: TypZarizeniSiteEK
+nazev: Typ zařízení sítě EK
+namespace: atr
+popis: Typ zařízení sítě elektronických komunikací
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 2
+   popis: venkovní rozvaděč EK
+ - hodnota: 3
+   popis: bod pro přístup nebo propojení sítí EK uvnitř budov

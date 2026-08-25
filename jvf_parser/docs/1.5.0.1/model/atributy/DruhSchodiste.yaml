@@ -1,0 +1,13 @@
+id: DruhSchodiste
+nazev: Druh schodiště
+namespace: atr
+popis: Druh schodiště
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: vícestupňové
+ - hodnota: 2
+   popis: platforma s jedním stupněm
+ - hodnota: 99
+   popis: nezjištěno

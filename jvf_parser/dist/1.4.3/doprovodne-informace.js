@@ -7,6 +7,7 @@
  */
 import { parseAtributyObjektu } from './attributes.js';
 import { parseMultiCurve, parsePoint, parsePolygon, } from './geometry-primitives.js';
+import { pickChild } from './xml-helpers.js';
 function parseGeometriePlocha(geomEl) {
     if (geomEl == null || typeof geomEl !== 'object')
         return {};
@@ -16,41 +17,26 @@ function parseGeometriePlocha(geomEl) {
     if (plochaZPS != null && typeof plochaZPS === 'object') {
         const sp = plochaZPS['surfaceProperty'];
         if (sp != null && typeof sp === 'object') {
-            const spObj = sp;
-            for (const key of ['Polygon', 'gml:Polygon']) {
-                const polyEl = spObj[key];
-                if (polyEl != null && typeof polyEl === 'object') {
-                    result.plocha = parsePolygon(polyEl);
-                    break;
-                }
-            }
+            const polyEl = pickChild(sp, ['Polygon', 'gml:Polygon']);
+            if (polyEl != null)
+                result.plocha = parsePolygon(polyEl);
         }
     }
     // ObvodZPS → MultiCurve
     const obvodZPS = geomEl['ObvodZPS'];
     if (obvodZPS != null && typeof obvodZPS === 'object') {
-        const obvodObj = obvodZPS;
-        for (const key of ['MultiCurve', 'gml:MultiCurve']) {
-            const mcEl = obvodObj[key];
-            if (mcEl != null && typeof mcEl === 'object') {
-                result.obvod = parseMultiCurve(mcEl);
-                break;
-            }
-        }
+        const mcEl = pickChild(obvodZPS, ['MultiCurve', 'gml:MultiCurve']);
+        if (mcEl != null)
+            result.obvod = parseMultiCurve(mcEl);
     }
     // DefBodZPS → pointProperty/Point
     const defBodZPS = geomEl['DefBodZPS'];
     if (defBodZPS != null && typeof defBodZPS === 'object') {
         const pp = defBodZPS['pointProperty'];
         if (pp != null && typeof pp === 'object') {
-            const ppObj = pp;
-            for (const key of ['Point', 'gml:Point']) {
-                const ptEl = ppObj[key];
-                if (ptEl != null && typeof ptEl === 'object') {
-                    result.defBod = parsePoint(ptEl);
-                    break;
-                }
-            }
+            const ptEl = pickChild(pp, ['Point', 'gml:Point']);
+            if (ptEl != null)
+                result.defBod = parsePoint(ptEl);
         }
     }
     return result;

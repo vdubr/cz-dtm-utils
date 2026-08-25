@@ -1,0 +1,15 @@
+id: TypPovrchuVzletovePristavaciDrahy
+nazev: Typ povrchu vzletové a přistávací dráhy
+namespace: atr
+popis: Typ povrchu vzletové a přistávací dráhy
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: asfaltobeton
+ - hodnota: 2
+   popis: cementobeton
+ - hodnota: 3
+   popis: tráva
+ - hodnota: 99
+   popis: nezjištěno

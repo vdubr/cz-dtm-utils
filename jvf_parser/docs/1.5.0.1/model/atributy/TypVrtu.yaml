@@ -1,0 +1,11 @@
+id: TypVrtu
+nazev: Typ vrtu
+namespace: atr
+popis: Typ vrtu
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: geotermální
+ - hodnota: 99
+   popis: nezjištěno

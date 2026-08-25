@@ -21,17 +21,37 @@ import {
   type SymbolVariant,
 } from './symbology.js';
 import { VARIANT_ATTR } from './variantAttrMap.js';
-import { isShowDeleted } from '../state/deletedToggle.js';
+import {
+  isShowZapis,
+  isChangesetZapis,
+  type ChangesetZapisType,
+} from '../state/changesetToggle.js';
+import { resolveZaznamId } from '../state/zaznamId.js';
+import {
+  isLevelVisible,
+  isProjectVisible,
+  resolveLevelKey,
+  type LevelKey,
+} from '../state/featureFilter.js';
+import { resolveProjectKey } from '../state/projects.js';
 
 // Re-export for consumers that previously imported LAYER_COLORS from here
 export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
 
 /**
- * Barva pro vizualizaci mazaných objektů (`ZapisObjektu='d'`). Záměrně sytě
- * červená, aby šly na první pohled odlišit od stávajících i vkládaných.
+ * Barvy pro vizualizaci changeset záznamů podle `ZapisObjektu`:
+ *   'i' — nové (zeleně), 'u' — editované (oranžově), 'd' — mazané (červeně).
+ * Záměrně syté, aby šly typy změn na první pohled odlišit. Fill má 20 % alpha.
+ * Barvy odpovídají badge barvám I/U/D v Přehledu prvků (style.css).
  */
-const DELETED_COLOR = '#e02020';
-const DELETED_FILL = '#e0202033'; // 20 % alpha
+export const ZAPIS_HIGHLIGHT_COLORS: Record<
+  ChangesetZapisType,
+  { stroke: string; fill: string }
+> = {
+  i: { stroke: '#2da44e', fill: '#2da44e33' },
+  u: { stroke: '#bf8700', fill: '#bf870033' },
+  d: { stroke: '#e02020', fill: '#e0202033' },
+};
 
 /** Base path for SVG symbols served from public/symboly/ */
 const SVG_BASE = './symboly/';
@@ -226,6 +246,26 @@ export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
 }
 
 /**
+ * Reprezentativní styl objektového typu pro base-only kontexty (legenda,
+ * vrstvový panel). Když base symbologie nemá `fillColor` ani `strokeColor`,
+ * ale barvu nese některá **varianta** (typicky trasy sítí), vezme se barva
+ * z první varianty s barvou — aby swatch v legendě/panelu odpovídal tomu, jak
+ * se prvek reálně vykreslí v mapě, místo jednotné fallback barvy obsahové
+ * části. Objekty s barvou v base i objekty bez symbologie se chovají shodně
+ * s {@link resolveStyle}.
+ */
+export function resolveRepresentativeStyle(ot: ObjektovyTyp): ResolvedStyle {
+  const sym = getSymbology(ot.codeBase);
+  if (!sym) return resolveStyle(ot);
+
+  let repVariant: SymbolVariant | undefined;
+  if (sym.fillColor == null && sym.strokeColor == null && sym.variants?.length) {
+    repVariant = sym.variants.find((v) => v.fillColor != null || v.strokeColor != null);
+  }
+  return buildResolvedStyle(mergeSymbologyWithVariant(sym, repVariant), ot.obsahovaCast);
+}
+
+/**
  * Resolve style for a single záznam, applying variant lookup based on
  * VARIANT_ATTR map. Falls back to base style when no variant matches.
  */
@@ -319,6 +359,8 @@ export interface JvfVectorLayer {
   olLayer: VectorLayer;
   objektovyTyp: ObjektovyTyp;
   featureCount: number;
+  /** Id projektu, ze kterého vrstva pochází (null bez provenience). */
+  projectId: string | null;
 }
 
 export function buildJvfLayers(objekty: ObjektovyTyp[]): {
@@ -330,9 +372,17 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
 
   for (const ot of objekty) {
     const features: Feature[] = [];
+    // Provenience: id projektu, ze kterého objektový typ pochází — dimenze
+    // filtru prvků (state/featureFilter.ts) při více načtených projektech.
+    const projectId = resolveProjectKey(ot);
 
-    for (const zaznam of ot.zaznamy) {
+    for (const [zaznamIndex, zaznam] of ot.zaznamy.entries()) {
       const sFeature = resolveStyleForZaznam(ot, zaznam);
+      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
+      // (nové prvky `ZapisObjektu='i'`, které se teprve budou do DTM vkládat).
+      const objectId = resolveZaznamId(ot.elementName, zaznam, zaznamIndex);
+      // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
+      const levelKey = resolveLevelKey(zaznam);
       for (const geom of zaznam.geometrie) {
         let feature: Feature | null = null;
 
@@ -373,8 +423,10 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfResolvedStyle', sFeature);
                 mcFeature.set('jvfGeomType', 'LineString');
                 mcFeature.set('jvfElementName', ot.elementName);
-                mcFeature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
+                mcFeature.set('jvfObjectId', objectId);
                 mcFeature.set('jvfZapisObjektu', zaznam.zapisObjektu);
+                mcFeature.set('jvfLevel', levelKey);
+                mcFeature.set('jvfProjectId', projectId);
                 features.push(mcFeature);
               }
             }
@@ -386,8 +438,10 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfResolvedStyle', sFeature);
           feature.set('jvfGeomType', geom.type);
           feature.set('jvfElementName', ot.elementName);
-          feature.set('jvfObjectId', zaznam.commonAttributes?.id ?? null);
+          feature.set('jvfObjectId', objectId);
           feature.set('jvfZapisObjektu', zaznam.zapisObjektu);
+          feature.set('jvfLevel', levelKey);
+          feature.set('jvfProjectId', projectId);
           features.push(feature);
         }
       }
@@ -417,21 +471,31 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
         const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
         if (!s || !geomType) return undefined;
-        // Mazané záznamy (ZapisObjektu='d') — buď skryjeme úplně, nebo
-        // přebarvíme na sytě červenou. Globální flag řídí checkbox v UI.
+        // Filtr prvků (úroveň umístění + projekt) — odfiltrované záznamy se
+        // nekreslí. Při neaktivním filtru obě funkce vrací vždy true →
+        // chování beze změny.
+        const levelKey = feature.get('jvfLevel') as LevelKey | undefined;
+        if (!isLevelVisible(levelKey)) return undefined;
+        const projectKey = feature.get('jvfProjectId') as string | null | undefined;
+        if (!isProjectVisible(projectKey)) return undefined;
+        // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — buď skryjeme úplně,
+        // nebo přebarvíme podle typu změny (zelená/oranžová/červená).
+        // Globální flagy řídí checkboxy v UI.
         const zo = feature.get('jvfZapisObjektu') as string | undefined;
-        if (zo === 'd') {
-          if (!isShowDeleted()) return undefined;
-          const deletedStyle: ResolvedStyle = {
+        if (isChangesetZapis(zo)) {
+          if (!isShowZapis(zo)) return undefined;
+          const hl = ZAPIS_HIGHLIGHT_COLORS[zo];
+          const zapisStyle: ResolvedStyle = {
             ...s,
-            fillColor: DELETED_FILL,
-            strokeColor: DELETED_COLOR,
+            fillColor: hl.fill,
+            strokeColor: hl.stroke,
             strokeWidthPx: Math.max(s.strokeWidthPx, 2),
-            // Bez SVG ikony — mazané body chceme červenou tečkou, ne SVG symbol
-            // (jinak by uživatel barvu nepoznal — symbol kreslí ČÚZK barvami).
+            // Bez SVG ikony — changeset body chceme barevnou tečkou, ne SVG
+            // symbol (jinak by uživatel barvu nepoznal — symbol kreslí ČÚZK
+            // barvami).
             pointSvg: undefined,
           };
-          return createStyleForGeom(geomType, deletedStyle, resolution);
+          return createStyleForGeom(geomType, zapisStyle, resolution);
         }
         return createStyleForGeom(geomType, s, resolution);
       },
@@ -440,7 +504,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     olLayer.set('jvfNazev', ot.nazev);
     olLayer.set('jvfObsahova', ot.obsahovaCast);
 
-    layers.push({ olLayer, objektovyTyp: ot, featureCount: features.length });
+    layers.push({ olLayer, objektovyTyp: ot, featureCount: features.length, projectId });
   }
 
   return { layers, extent: totalExtent };

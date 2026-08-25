@@ -1,0 +1,284 @@
+id: HeliportPlocha
+namespace: helpol
+nazev: heliport
+skupinaPrvku: LeteckaDoprava
+obsahovaCast: DI
+typGeometrie: Plocha
+code:
+  base: "0100000048"
+  suffix: "03"
+dim: 3
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuDI
+   typ: sada
+   sada: SpolecneAtributyObjektuDI
+ - id: OznaceniObjektu
+   typ: atribut
+   volitelny: false
+   atribut: OznaceniObjektu
+ - id: OznaceniHeliportu
+   typ: atribut
+   volitelny: false
+   atribut: OznaceniHeliportu
+ - id: UmisteniHeliportu
+   typ: atribut
+   volitelny: false
+   atribut: UmisteniHeliportu
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuPlocha3DDTI
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniHeliportu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

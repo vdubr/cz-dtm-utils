@@ -1,0 +1,19 @@
+id: TypOPPozemniKomunikace
+nazev: Typ ochranného pásma pozemní komunikace
+namespace: atr
+popis: Typ ochranného pásma pozemní komunikace
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: OP dálnice
+ - hodnota: 3
+   popis: OP silnice I. třídy
+ - hodnota: 4
+   popis: OP silnice II. třídy
+ - hodnota: 5
+   popis: OP silnice III. třídy
+ - hodnota: 6
+   popis: OP místní komunikace I. třídy
+ - hodnota: 7
+   popis: OP místní komunikace II. třídy

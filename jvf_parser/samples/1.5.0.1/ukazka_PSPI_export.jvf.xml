@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ukázka výdeje PSPI -->
+<JVFDTM xmlns="objtyp" xmlns:atr="atr" xmlns:cmn="cmn" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DataJVFDTM>
+    <cmn:VerzeJVFDTM>1.5.0.1</cmn:VerzeJVFDTM>
+    <cmn:DatumZapisu>2025-04-01T15:36:00</cmn:DatumZapisu>
+    <cmn:TypZapisu>kompletní zápis</cmn:TypZapisu>
+    <Data>
+      <SilnicniDopravaPS>
+        <ObjektovyTypNazev code_base="0200000001" code_suffix="03" xmlns="sidops">silniční doprava - plánovaná stavba</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="sidops">Plánované stavební práce infrastruktury</KategorieObjektu>
+        <SkupinaObjektu xmlns="sidops">Plánovaná stavební práce infrastruktury</SkupinaObjektu>
+        <ObsahovaCast xmlns="sidops">DI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="sidops">
+          <ZaznamObjektuRefN>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu>
+                <atr:ID>100000000204</atr:ID>
+                <atr:IDZmeny>0b37a208-7712-41f5-8133-2cc0357074d4</atr:IDZmeny>
+                <atr:PopisObjektu/>
+                <atr:IDEditora/>
+                <atr:DatumVkladu>2024-08-20T15:36:00</atr:DatumVkladu>
+                <atr:VkladOsoba>IS DMVS</atr:VkladOsoba>
+                <atr:DatumZmeny xsi:nil="true"/>
+                <atr:ZmenaOsoba/>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuPSPI>
+                <atr:IDBS>SUBJ-00000204</atr:IDBS>
+                <atr:IDPSPI>PSP-00000001</atr:IDPSPI>
+                <atr:UrovenUmisteniObjektuPSPI>0</atr:UrovenUmisteniObjektuPSPI>
+                <atr:IDExterni>123456</atr:IDExterni>
+                <atr:EvidencniCisloObjektu/>
+                <atr:ICS/>
+              </SpolecneAtributyObjektuPSPI>
+              <atr:TypObjektuSilnicniDopravyPS>3</atr:TypObjektuSilnicniDopravyPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <cmn:Plocha2D>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID100000000204_02" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>-738389.42 -1113100.35 -738245.26 -1112692.95 -738217.06 -1112172.74 -738232.73 -1111840.56 -738191.99 -1111849.96 -738163.78 -1112097.53 -738179.45 -1112442.25 -738232.73 -1112821.44 -738342.41 -1113125.42 -738389.42 -1113100.35</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+              </cmn:Plocha2D>
+            </GeometrieObjektu>
+          </ZaznamObjektuRefN>
+        </ZaznamyObjektu>
+      </SilnicniDopravaPS>
+      <ElektrickaSitPS>
+        <ObjektovyTypNazev code_base="0200000008" code_suffix="03" xmlns="elsips">elektrická síť - plánovaná stavba</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="elsips">Plánované stavební práce infrastruktury</KategorieObjektu>
+        <SkupinaObjektu xmlns="elsips">Plánovaná stavební práce infrastruktury</SkupinaObjektu>
+        <ObsahovaCast xmlns="elsips">TI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="elsips">
+          <ZaznamObjektuRefN>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu>
+                <atr:ID>100000000205</atr:ID>
+                <atr:IDZmeny>0b37a208-7712-41f5-8133-2cc0357074d4</atr:IDZmeny>
+                <atr:PopisObjektu/>
+                <atr:IDEditora/>
+                <atr:DatumVkladu>2024-08-20T15:36:00</atr:DatumVkladu>
+                <atr:VkladOsoba>IS DMVS</atr:VkladOsoba>
+                <atr:DatumZmeny xsi:nil="true"/>
+                <atr:ZmenaOsoba/>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuPSPI>
+                <atr:IDBS>SUBJ-00000204</atr:IDBS>
+                <atr:IDPSPI>PSP-00000001</atr:IDPSPI>
+                <atr:UrovenUmisteniObjektuPSPI>0</atr:UrovenUmisteniObjektuPSPI>
+                <atr:IDExterni>123457</atr:IDExterni>
+                <atr:EvidencniCisloObjektu/>
+                <atr:ICS/>
+              </SpolecneAtributyObjektuPSPI>
+              <atr:TypObjektuElektrickeSitePS>4</atr:TypObjektuElektrickeSitePS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+            <cmn:Plocha2D>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="ID100000000205_02" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>-738389.42 -1113100.35 -738245.26 -1112692.95 -738217.06 -1112172.74 -738232.73 -1111840.56 -738191.99 -1111849.96 -738163.78 -1112097.53 -738179.45 -1112442.25 -738232.73 -1112821.44 -738342.41 -1113125.42 -738389.42 -1113100.35</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </cmn:Plocha2D>
+            </GeometrieObjektu>
+          </ZaznamObjektuRefN>
+        </ZaznamyObjektu>
+      </ElektrickaSitPS>
+    </Data>
+    <DoprovodneInformaceVydejPSPI xmlns="dopinf">
+      <UdajeOPSPI>
+        <ZaznamPSPI>
+          <atr:IDBS>SUBJ-00000204</atr:IDBS>
+          <atr:IDPSPI>PSP-00000001</atr:IDPSPI>
+          <Nazev>Komunikace Radkov</Nazev>
+          <IDStavebnihoZameru/>
+          <atr:ICS/>
+          <Vytvorena>2025-01-20T15:51:51.509+01:00</Vytvorena>
+          <NaposledyUpravena>2025-01-28T09:09:21.269+01:00</NaposledyUpravena>
+          <VerejneProstredky>1</VerejneProstredky>
+          <VerejneProstredkyPodil>100</VerejneProstredkyPodil>
+          <KontaktniUdaje>
+            <Email>pan.stavitel@seznam.cz</Email>
+            <Telefon>606606606</Telefon>
+          </KontaktniUdaje>
+          <PodaniZadostiOPovoleniZameru>
+            <PredpokladaneDatum>2025-05-20</PredpokladaneDatum>
+          </PodaniZadostiOPovoleniZameru>
+          <PredpokladanaDobaStavby>120</PredpokladanaDobaStavby>
+        </ZaznamPSPI>
+      </UdajeOPSPI>
+      <UdajeOBudoucichStavebnicich>
+        <ZaznamBS>
+          <atr:IDBS>SUBJ-00000204</atr:IDBS>
+          <NazevBS xmlns="dopinf">PETRA NOSKOVÁ</NazevBS>
+        </ZaznamBS>
+      </UdajeOBudoucichStavebnicich>
+      <UdajeOVydeji>
+        <DatumPlatnosti>2025-04-01T15:36:00</DatumPlatnosti>
+        <TypDatoveSady>11</TypDatoveSady>
+      </UdajeOVydeji>
+    </DoprovodneInformaceVydejPSPI> 
+  </DataJVFDTM>
+</JVFDTM>

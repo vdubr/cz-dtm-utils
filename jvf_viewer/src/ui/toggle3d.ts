@@ -17,13 +17,69 @@ import {
   setTerrainVisible,
   isTerrainVisible,
   invalidateTerrainCache,
+  setBasemap,
+  getBasemap,
+  setBasemapOpacity,
 } from '../viewer3d/threeScene.js';
 import { clearHighlight } from '../map/highlight.js';
 import { reapplyActiveHighlight } from './errorPanel.js';
 import { reapplyActiveFeatureHighlight } from './featuresPanel.js';
+import {
+  getBasemapChoice,
+  getBasemapChoiceOpacity,
+  subscribeBasemapChoice,
+} from '../state/basemapChoice.js';
 
 let is3dActive = false;
 let currentZExaggeration = 1;
+
+/**
+ * Aplikuje volbu podkladu z levého panelu (sdílený stav basemapChoice)
+ * na 3D texturu terénu. Volá se při změně volby/sytosti, při přepnutí
+ * do 3D a po zapnutí terénu — scéna tak odpovídá panelu.
+ *
+ * @param autoEnableTerrain Zapnout terén automaticky, když je zvolený
+ *   podklad a terén vypnutý. `true` jen při AKTIVNÍ změně volby uživatelem
+ *   (klik v panelu během 3D) — samotné přepnutí do 3D terén nevnucuje,
+ *   jinak by vstup do 3D vždy „rozsvítil" scénu světlou mapou.
+ */
+async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<void> {
+  if (!is3dActive) return;
+  const kind = getBasemapChoice();
+  // Změna jen sytosti (slider) — nepřenačítat texturu.
+  if (kind === getBasemap()) {
+    setBasemapOpacity(getBasemapChoiceOpacity());
+    return;
+  }
+  if (kind !== 'none' && !isTerrainVisible() && !autoEnableTerrain) {
+    // Terén je vypnutý a nejde o aktivní volbu — texturu nanést až poté,
+    // co uživatel terén zapne (viz handler checkboxu Terén).
+    return;
+  }
+  const spinner = document.getElementById('basemap-spinner');
+  spinner?.removeAttribute('hidden');
+  try {
+    // Podklad se mapuje na povrch DMR — bez terénu není kam texturu
+    // položit. Zapneme ho tedy automaticky (vč. synchronizace checkboxu).
+    if (kind !== 'none' && !isTerrainVisible()) {
+      await setTerrainVisible(true);
+      const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
+      if (terrainCheckbox) terrainCheckbox.checked = true;
+    }
+    setBasemapOpacity(getBasemapChoiceOpacity());
+    await setBasemap(kind);
+  } catch (err) {
+    console.error('[basemap] načtení podkladu selhalo', err);
+    alert(
+      'Nepodařilo se načíst podkladovou mapu ČÚZK pro 3D terén:\n' +
+      (err as Error).message
+    );
+    // 3D vrátíme na hypsometrii; volba v panelu zůstává (2D funguje dál).
+    await setBasemap('none').catch(() => { /* už jen úklid */ });
+  } finally {
+    spinner?.setAttribute('hidden', '');
+  }
+}
 let currentObjekty: ObjektovyTyp[] = [];
 
 export function getIs3dActive(): boolean {
@@ -124,21 +180,35 @@ export function setup3dToggle(
     toolbarsEl?.classList.toggle('collapsed');
   });
 
-  // Background color picker (3D only)
+  // Obecný přepínač světlý/tmavý režim (☀️/🌙 v hlavičce) — platí pro 3D
+  // scénu i pro 2D mapu (pozadí #map-area viditelné pod vrstvami při
+  // vypnutém podkladu). Ikona ukazuje režim, NA který se kliknutím přepne.
   const BG_COLORS: Record<string, string> = {
     dark: '#0a0a0f',
     light: '#f5f5f5',
   };
-  const bgBtns = document.querySelectorAll<HTMLButtonElement>('.btn-bg');
-  bgBtns.forEach((bgBtn) => {
-    bgBtn.addEventListener('click', () => {
-      const key = bgBtn.dataset['bg'] ?? 'dark';
-      const color = BG_COLORS[key] ?? BG_COLORS['dark']!;
-      setThreeBackground(color);
-      bgBtns.forEach((b) => b.classList.remove('active'));
-      bgBtn.classList.add('active');
-    });
+  const mapArea = document.getElementById('map-area') as HTMLElement | null;
+  const themeBtn = document.getElementById('btn-theme') as HTMLButtonElement | null;
+
+  function applyTheme(theme: 'light' | 'dark'): void {
+    setThreeBackground(BG_COLORS[theme]!);
+    if (mapArea) mapArea.style.background = BG_COLORS[theme]!;
+    if (themeBtn) {
+      themeBtn.dataset['theme'] = theme;
+      const icon = themeBtn.querySelector('.material-symbols-outlined');
+      if (icon) icon.textContent = theme === 'light' ? 'dark_mode' : 'light_mode';
+      themeBtn.title = theme === 'light'
+        ? 'Přepnout na tmavý režim (pozadí 2D mapy i 3D scény)'
+        : 'Přepnout na světlý režim (pozadí 2D mapy i 3D scény)';
+    }
+  }
+
+  themeBtn?.addEventListener('click', () => {
+    applyTheme(themeBtn.dataset['theme'] === 'light' ? 'dark' : 'light');
   });
+
+  // Aplikovat výchozí (světlý) režim hned při startu — i ve 2D.
+  applyTheme((themeBtn?.dataset['theme'] as 'light' | 'dark') ?? 'light');
 
   // SVG symboly toggle (jen 3D)
   const svgCheckbox = document.getElementById('toggle-svg-symbols') as HTMLInputElement | null;
@@ -160,6 +230,8 @@ export function setup3dToggle(
         terrainCheckbox.disabled = true;
         try {
           await setTerrainVisible(true);
+          // Po zapnutí terénu nanést podklad zvolený v levém panelu.
+          await apply3dBasemapFromChoice(false);
         } catch (err) {
           console.error('[terrain] načtení selhalo', err);
           alert(
@@ -178,6 +250,14 @@ export function setup3dToggle(
       }
     });
   }
+
+  // Podklad na terénu (ČÚZK ZM / Ortofoto jako textura na DMR): volbu i
+  // sytost řídí sdílený stav basemapChoice z levého panelu (jeden zdroj
+  // pravdy pro 2D vrstvy i 3D texturu) — tady jsme jen konzument.
+  subscribeBasemapChoice(() => {
+    // Aktivní volba uživatele → smí automaticky zapnout terén.
+    void apply3dBasemapFromChoice(true);
+  });
 
   // Z exaggeration buttons
   const exaggerationBtns = document.querySelectorAll<HTMLButtonElement>('.btn-z-exag');
@@ -346,6 +426,10 @@ function switchTo3d(
   // Přenést výběr z 2D → 3D (highlight + zoom na objekt)
   reapplyActiveHighlight();
   reapplyActiveFeatureHighlight();
+
+  // Promítnout volbu podkladu z levého panelu do 3D (textura na terénu) —
+  // jen pokud je terén zapnutý; vstup do 3D ho sám nezapíná.
+  void apply3dBasemapFromChoice(false);
 }
 
 function switchTo2d(

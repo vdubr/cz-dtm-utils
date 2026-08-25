@@ -1,0 +1,13 @@
+id: TypZeleznicniTrate
+nazev: Typ železniční tratě
+namespace: atr
+popis: Typ železniční tratě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: vysokorychlostní
+ - hodnota: 2
+   popis: konvenční
+ - hodnota: 99
+   popis: nezjištěno/neurčeno

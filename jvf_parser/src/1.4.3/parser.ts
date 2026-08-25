@@ -1,4 +1,5 @@
-import { XMLParser } from 'fast-xml-parser';
+import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import { isSupportedVersion } from 'jvf-dtm-types';
 import { parseGeometrieObjektu, parseOblastObjektuKI } from './geometry.js';
 import { parseAtributyObjektu } from './attributes.js';
 import { parseDoprovodneInformace } from './doprovodne-informace.js';
@@ -10,6 +11,9 @@ import type {
   ZaznamObjektu,
   ZapisObjektuType,
 } from './types.js';
+
+/** Platné hodnoty `TypZapisu` (viz `jvf-dtm-types`), pro runtime validaci. */
+const VALID_TYP_ZAPISU: readonly string[] = ['kompletní zápis', 'změnové věty'];
 
 function createParser(): XMLParser {
   return new XMLParser({
@@ -105,6 +109,12 @@ function parseObjektovyTyp(elementName: string, typEl: Record<string, unknown>):
 }
 
 export function parseJvfDtm(xml: string): JvfDtm {
+  const validation = XMLValidator.validate(xml);
+  if (validation !== true) {
+    const { msg, line, col } = validation.err;
+    throw new Error(`Neplatný XML soubor: ${msg} (řádek ${line}, sloupec ${col})`);
+  }
+
   const parser = createParser();
   const parsed = parser.parse(xml) as Record<string, unknown>;
 
@@ -119,8 +129,19 @@ export function parseJvfDtm(xml: string): JvfDtm {
   }
 
   const verze = extractText(dataJvfDtm['VerzeJVFDTM']) ?? '';
+  if (verze !== '' && !isSupportedVersion(verze)) {
+    console.warn(
+      `jvf-parser: nepodporovaná verze JVF DTM specifikace "${verze}" — očekávána jedna z podporovaných verzí. Parsování pokračuje, ale výsledek nemusí odpovídat schématu.`
+    );
+  }
+
   const datumZapisu = extractText(dataJvfDtm['DatumZapisu']) ?? '';
   const typZapisuRaw = extractText(dataJvfDtm['TypZapisu']) ?? '';
+  if (typZapisuRaw !== '' && !VALID_TYP_ZAPISU.includes(typZapisuRaw)) {
+    console.warn(
+      `jvf-parser: neočekávaná hodnota TypZapisu "${typZapisuRaw}" — očekáváno "kompletní zápis" nebo "změnové věty".`
+    );
+  }
   const typZapisu = typZapisuRaw as TypZapisu;
 
   const dataEl = dataJvfDtm['Data'] as Record<string, unknown> | undefined;

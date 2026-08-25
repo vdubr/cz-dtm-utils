@@ -1,0 +1,21 @@
+id: DimenzeHydrantuVodovodniSite
+nazev: Dimenze hydrantu vodovodní sítě
+namespace: atr
+popis: Dimenze hydrantu vodovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: DN 80
+ - hodnota: 2
+   popis: DN 100
+ - hodnota: 3
+   popis: DN 125
+ - hodnota: 4
+   popis: DN 150
+ - hodnota: 5
+   popis: DN 200
+ - hodnota: 98
+   popis: jiná
+ - hodnota: 99
+   popis: nezjištěno

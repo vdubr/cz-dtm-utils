@@ -1,0 +1,7 @@
+id: PrujezdnaVyska
+nazev: Průjezdná výška
+namespace: atr
+popis: Průjezdná výška
+nillable: true
+typ: Integer
+min: 0

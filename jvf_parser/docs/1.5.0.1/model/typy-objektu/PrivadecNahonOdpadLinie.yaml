@@ -1,0 +1,227 @@
+id: PrivadecNahonOdpadLinie
+namespace: pnolin
+nazev: přivaděč, náhon, odpad
+skupinaPrvku: PrivadecPovrchovychVodNahonOdpad
+obsahovaCast: TI
+typGeometrie: Linie
+code:
+  base: "0100000118"
+  suffix: "02"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuTI
+   typ: sada
+   sada: SpolecneAtributyObjektuTI
+ - id: TypPrivadece
+   typ: atribut
+   volitelny: false
+   atribut: TypPrivadece
+ - id: Material
+   typ: atribut
+   volitelny: false
+   atribut: Material
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie3D
+ - id: StavObjektu
+   typ: atribut
+   volitelny: false
+   atribut: StavObjektu
+ - id: Dimenze
+   typ: atribut
+   volitelny: false
+   atribut: Dimenze
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypPrivadece
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypPrivadece
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypPrivadece
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypPrivadece
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypPrivadece
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypPrivadece
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Dimenze
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: Material
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

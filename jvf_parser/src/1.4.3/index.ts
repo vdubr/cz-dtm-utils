@@ -45,6 +45,9 @@ export type {
 
 export * from './generated/enums.js';
 
+// Číselník kód → český popisek (pro popisky atributů v UI).
+export { ENUM_LABELS } from './generated/enum-labels.js';
+
 // ---------------------------------------------------------------------------
 // Re-export verzí (z jvf-dtm-types) — viewer importuje verze přes parser
 // ---------------------------------------------------------------------------

@@ -10,10 +10,10 @@
  * IS DTM 3.4+3.5+3.10 (self-intersection, nulový/krátký segment)    → `segments.ts`
  * IS DTM 3.6+3.8+3.9 (duplicitní linie/body, blízkost bodů)         → `duplicates.ts`
  */
-import type { JvfDtm } from 'jvf-dtm-types';
+import { type JvfDtm } from 'jvf-dtm-types';
 import type { TopologyCheck, TopologyError } from './types.js';
 export type { TopologyCheck, TopologyError, TopologyErrorSeverity } from './types.js';
-export { DEFBOD_PLOCHA_PAIRS, DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE, OSA_OBVOD_PAIRS, SJTSK_BOUNDS, SNAP_TOLERANCE, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS, } from './constants.js';
+export { DEFBOD_PLOCHA_PAIRS, DEFBOD_PLOCHA_PAIRS_1501, DUPLICATE_Z_TOLERANCE, MIN_DISTANCE_TOLERANCE, OSA_OBVOD_PAIRS, OSA_OBVOD_PAIRS_1501, SJTSK_BOUNDS, SNAP_TOLERANCE, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS, } from './constants.js';
 export { checkGeometricValidity } from './validity.js';
 export { checkPolygonMultiCurveConsistency } from './consistency.js';
 export { checkCoordinateBounds, checkCoordinatePrecision } from './bounds.js';
@@ -33,6 +33,12 @@ export { checkDelAreaContainsDefBodPlocha } from './del-areas.js';
  * - `'auto'`: detekce z `dtm.typZapisu`.
  */
 export type ValidationMode = 'complete' | 'changeset' | 'auto';
+/** Volby validace: režim + explicitní verze (jinak se odvodí z `dtm.verze`). */
+export interface RunAllChecksOptions {
+    mode?: ValidationMode;
+    /** Verze specifikace; default = `dtm.verze`. Řídí výběr párové tabulky. */
+    version?: string;
+}
 /**
  * Spustí zadané kontroly nad DTM dokumentem a vrátí souhrnný seznam chyb.
  */
@@ -61,5 +67,5 @@ export declare function runTopologyChecks(dtm: JvfDtm, checks: TopologyCheck[]):
  * Vrstva 3B: Osa PK leží uvnitř Obvodu PK              (pouze 'complete')
  * Vrstva 3C: Volné konce liniových prvků               (pouze 'complete')
  */
-export declare function runAllChecks(dtm: JvfDtm, mode?: ValidationMode): TopologyError[];
+export declare function runAllChecks(dtm: JvfDtm, modeOrOptions?: ValidationMode | RunAllChecksOptions): TopologyError[];
 //# sourceMappingURL=index.d.ts.map

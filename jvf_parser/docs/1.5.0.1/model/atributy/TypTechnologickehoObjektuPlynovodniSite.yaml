@@ -1,0 +1,33 @@
+id: TypTechnologickehoObjektuPlynovodniSite
+nazev: Typ technologického objektu plynovodní sítě
+namespace: atr
+popis: Typ technologického objektu plynovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: kompresní stanice
+ - hodnota: 2
+   popis: regulační stanice
+ - hodnota: 3
+   popis: distribuční regulátor
+ - hodnota: 4
+   popis: odorizační stanice
+ - hodnota: 5
+   popis: výrobna plynu
+ - hodnota: 6
+   popis: stanice katodové ochrany
+ - hodnota: 7
+   popis: podzemní zásobník plynu
+ - hodnota: 8
+   popis: plnírna plynu
+ - hodnota: 10
+   popis: armaturní uzel
+ - hodnota: 11
+   popis: nadzemní zásobník plynu
+ - hodnota: 12
+   popis: pomocné rozvody
+ - hodnota: 13
+   popis: sonda
+ - hodnota: 98
+   popis: jiný

@@ -1,20 +1,31 @@
 /**
- * XSD → TypeScript code generator for JVF DTM 1.4.3
+ * XSD → TypeScript code generator for JVF DTM.
  *
- * Reads all 358 XSD files in xsd/xsd/objekty/ and the common schemas,
- * then generates:
- *   src/generated/enums.ts         – all integer enum types
- *   src/generated/shared-attrs.ts  – shared attribute group interfaces
- *   src/generated/entities.ts      – per-entity interfaces + catalog
+ * Verze se předává argumentem: `tsx scripts/generate-types.ts [version]`
+ * (default `1.4.3`). Podporováno `1.4.3` i `1.5.0.1`.
+ *
+ * Reads all XSD files in `docs/<version>/xsd/objekty/` and the common
+ * schemas, then generates:
+ *   src/<version>/generated/enums.ts         – all integer enum types
+ *   src/<version>/generated/shared-attrs.ts  – shared attribute group ifaces
+ *   src/<version>/generated/entities.ts      – per-entity interfaces + catalog
+ *
+ * 1.5.0.1 má oproti 1.4.3 jinou strukturu objektových XSD (abstraktní
+ * `ZaznamObjektu` + substituční skupina `Ins/Upd/Del/RefV…`, geometrie
+ * odkazovaná typem `cmn:GeometrieObjektu…Type`, sdílené skupiny přes
+ * `type=` místo `ref=`). 1.4.3 větev zůstává beze změny (R1).
  */
 
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
+const VERSION = process.argv[2] ?? '1.4.3';
 const ROOT = resolve(import.meta.dirname ?? '.', '..');
-const XSD_DIR = join(ROOT, 'docs/1.4.3/xsd');
-const OUT_DIR = join(ROOT, 'src/1.4.3/generated');
+const XSD_DIR = join(ROOT, `docs/${VERSION}/xsd`);
+const OUT_DIR = join(ROOT, `src/${VERSION}/generated`);
+/** Struktura objektových XSD 1.5.0.1 (abstraktní ZaznamObjektu). */
+const IS_1501 = VERSION === '1.5.0.1';
 
 // ---------------------------------------------------------------------------
 // XSD parser
@@ -140,7 +151,23 @@ const SHARED_ATTR_GROUPS: SharedAttrGroup[] = [
   { name: 'SpolecneAtributyObjektuDI', tsName: 'SharedAttrsDI' },
   { name: 'SpolecneAtributyObjektuPasemDI', tsName: 'SharedAttrsPasemDI' },
   { name: 'SpolecneAtributyObjektuZameru', tsName: 'SharedAttrsZameru' },
+  // 1.5.0.1 (PSPI) — pro 1.4.3 se v objektech nevyskytuje, je tedy neškodné
+  { name: 'SpolecneAtributyObjektuPSPI', tsName: 'SharedAttrsPSPI' },
 ];
+
+/**
+ * Mapování názvu geometrického typu (`cmn:GeometrieObjektu…Type`, 1.5.0.1)
+ * na `GeomType`. `PlochaZPSType` = Plocha2D (Polygon) + Obvod3D (MultiCurve).
+ */
+const GEOM_TYPE_MAP_1501: Record<string, GeomType> = {
+  GeometrieObjektuBod2DType: 'point',
+  GeometrieObjektuBod3DType: 'point',
+  GeometrieObjektuLinie2DType: 'curve',
+  GeometrieObjektuLinie3DType: 'curve',
+  GeometrieObjektuPlocha2DDTIType: 'surface',
+  GeometrieObjektuPlocha3DDTIType: 'surface',
+  GeometrieObjektuPlochaZPSType: 'surface+multiCurve',
+};
 
 const SHARED_ATTR_NAMES = new Set(SHARED_ATTR_GROUPS.map((g) => g.name));
 
@@ -351,6 +378,182 @@ function detectGeomType(geomEl: Record<string, unknown>): GeomType {
 }
 
 // ---------------------------------------------------------------------------
+// 2b. Entity extraction — JVF DTM 1.5.0.1 structure
+// ---------------------------------------------------------------------------
+
+/** Vrátí mapu named complexType → uzel z `xs:schema`. */
+function complexTypesByName(schema: Record<string, unknown>): Map<string, Record<string, unknown>> {
+  const cts = schema['xs:complexType'];
+  const arr = Array.isArray(cts) ? cts : cts ? [cts] : [];
+  const map = new Map<string, Record<string, unknown>>();
+  for (const t of arr) {
+    const o = t as Record<string, unknown>;
+    const n = o['@_name'] as string | undefined;
+    if (n) map.set(n, o);
+  }
+  return map;
+}
+
+/**
+ * Extrakce entity z objektového XSD 1.5.0.1.
+ *
+ * Metadata (nazev/code_base/…/ObsahovaCast) se čtou z hlavního typu
+ * (`<root> type="…Type"`). Atributy a geometrie z kanonického záznamového
+ * typu `Ins` (existuje u všech 393 objektů; fallback `RefV`).
+ */
+function extractEntity1501(xsdPath: string): EntityDef | null {
+  try {
+    const parsed = parseXsd(xsdPath);
+    const schema = parsed['xs:schema'] as Record<string, unknown>;
+    if (!schema) return null;
+
+    const topElements = schema['xs:element'];
+    if (!Array.isArray(topElements) || topElements.length === 0) return null;
+    const rootEl = topElements[0] as Record<string, unknown>;
+    const elementName = rootEl['@_name'] as string;
+    if (!elementName) return null;
+
+    const typeByName = complexTypesByName(schema);
+    const rootTypeName = ((rootEl['@_type'] as string | undefined) ?? '').replace(/^[a-z]+:/, '');
+    const mainType = rootTypeName ? typeByName.get(rootTypeName) : undefined;
+    if (!mainType) return null;
+
+    let nazev = '';
+    let codeBase = '';
+    let codeSuffix = '';
+    let kategorieObjektu = '';
+    let skupinaObjektu = '';
+    let obsahovaCast = '';
+
+    for (const item of flattenSequence(mainType)) {
+      const itemObj = item as Record<string, unknown>;
+      const itemName = (itemObj['@_name'] ?? '') as string;
+      const fixed = itemObj['@_fixed'] as string | undefined;
+      if (itemName === 'ObjektovyTypNazev') {
+        nazev = (fixed ?? '') as string;
+        const ct = itemObj['xs:complexType'] as Record<string, unknown> | undefined;
+        const sc = ct?.['xs:simpleContent'] as Record<string, unknown> | undefined;
+        const ext = sc?.['xs:extension'] as Record<string, unknown> | undefined;
+        if (ext) {
+          const attrs = ext['xs:attribute'];
+          const attrList = Array.isArray(attrs) ? attrs : attrs ? [attrs] : [];
+          for (const a of attrList) {
+            const aObj = a as Record<string, unknown>;
+            if (aObj['@_name'] === 'code_base') codeBase = (aObj['@_fixed'] ?? '') as string;
+            if (aObj['@_name'] === 'code_suffix') codeSuffix = (aObj['@_fixed'] ?? '') as string;
+          }
+        }
+      } else if (itemName === 'KategorieObjektu' && fixed) {
+        kategorieObjektu = fixed;
+      } else if (itemName === 'SkupinaObjektu' && fixed) {
+        skupinaObjektu = fixed;
+      } else if (itemName === 'ObsahovaCast' && fixed) {
+        obsahovaCast = fixed;
+      }
+    }
+
+    // Kanonický záznamový typ: Ins (u všech objektů), fallback RefV.
+    const recordType = typeByName.get('Ins') ?? typeByName.get('RefV') ?? null;
+    let sharedAttrGroup: string | null = null;
+    const specificAttrs: string[] = [];
+    let geomType: GeomType = 'point';
+    let geomOptional = true;
+
+    if (recordType) {
+      for (const ri of flattenSequence(recordType)) {
+        const riObj = ri as Record<string, unknown>;
+        const riName = (riObj['@_name'] ?? '') as string;
+        if (riName === 'AtributyObjektu') {
+          for (const ai of flattenAll(riObj)) {
+            const aiObj = ai as Record<string, unknown>;
+            const aiName = (aiObj['@_name'] ?? '') as string;
+            const aiRef = ((aiObj['@_ref'] ?? '') as string).replace('atr:', '');
+            if (aiName === 'SpolecneAtributyVsechObjektu' || aiRef === 'SpolecneAtributyVsechObjektu') {
+              continue;
+            }
+            // 1.5.0.1: sdílená skupina přes `name=` (+ type=); specifické atr. přes `ref=`.
+            if (SHARED_ATTR_NAMES.has(aiName)) {
+              sharedAttrGroup = aiName;
+            } else if (SHARED_ATTR_NAMES.has(aiRef)) {
+              sharedAttrGroup = aiRef;
+            } else if (aiRef) {
+              specificAttrs.push(aiRef);
+            }
+          }
+        } else if (riName === 'GeometrieObjektu') {
+          geomOptional = riObj['@_minOccurs'] === '0';
+          const gt = ((riObj['@_type'] ?? '') as string).replace(/^[a-z]+:/, '');
+          geomType = GEOM_TYPE_MAP_1501[gt] ?? 'point';
+        }
+      }
+    }
+
+    // PSPI normalizace — objekty s code_base 0200000* patří do obsahové části PSPI
+    // (v XSD mají fixed ObsahovaCast DI/TI, ale downstream je řadí do PSPI).
+    if (codeBase.startsWith('0200000')) obsahovaCast = 'PSPI';
+
+    return {
+      elementName,
+      nazev,
+      codeBase,
+      codeSuffix,
+      kategorieObjektu,
+      skupinaObjektu,
+      obsahovaCast,
+      sharedAttrGroup,
+      specificAttrs,
+      geomType,
+      geomOptional,
+      hasOblastKI: false, // KI zrušeno v 1.5.0.1
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extrakce polí sdílených skupin z `common/atributy.xsd` (1.5.0.1).
+ *
+ * Skupiny existují jako kontextové varianty complexType (`…RefType`,
+ * `…InsType`, `…UpdType`, `…DelType`, …). Pole se sjednotí přes všechny
+ * varianty dané skupiny; type-level jsou všechna volitelná (napříč kontexty
+ * se povinnost liší a parser je stejně data-driven).
+ */
+function extractSharedGroups1501(): Record<string, string[]> {
+  const xml = readFileSync(join(XSD_DIR, 'common/atributy.xsd'), 'utf-8');
+  const parsed = xsdParser.parse(xml) as Record<string, unknown>;
+  const schema = parsed['xs:schema'] as Record<string, unknown>;
+  const cts = schema['xs:complexType'];
+  const arr = Array.isArray(cts) ? cts : cts ? [cts] : [];
+
+  const result: Record<string, string[]> = {};
+  for (const g of SHARED_ATTR_GROUPS) {
+    const fields = new Set<string>();
+    for (const t of arr) {
+      const o = t as Record<string, unknown>;
+      const n = (o['@_name'] ?? '') as string;
+      // Kontextové varianty: název = jméno skupiny + kontext (Ref/Ins/Upd/Del…)
+      // + "Type". Pozor: `…ZPS` je prefixem `…ZPS_TI` → po jménu skupiny nesmí
+      // následovat `_` (jinak by ZPS pohltilo pole skupiny ZPS_TI).
+      if (!n.startsWith(g.name) || !n.endsWith('Type')) continue;
+      if (n.charAt(g.name.length) === '_') continue;
+      const container =
+        (o['xs:all'] as Record<string, unknown> | undefined) ??
+        (o['xs:sequence'] as Record<string, unknown> | undefined);
+      const els = container?.['xs:element'];
+      const elArr = Array.isArray(els) ? els : els ? [els] : [];
+      for (const e of elArr) {
+        const eObj = e as Record<string, unknown>;
+        const name = (((eObj['@_ref'] ?? eObj['@_name']) ?? '') as string).replace('atr:', '');
+        if (name) fields.add(name);
+      }
+    }
+    if (fields.size > 0) result[g.tsName] = [...fields];
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // 3. Code generation
 // ---------------------------------------------------------------------------
 
@@ -377,8 +580,8 @@ function xsdTypeToTs(type: string): string {
 
 function generateEnumsFile(enums: EnumDef[]): string {
   const lines: string[] = [
-    '// Auto-generated from JVF DTM 1.4.3 XSD — DO NOT EDIT',
-    '// Run: npx tsx scripts/generate-types.ts',
+    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    '// Run: npx tsx scripts/generate-types.ts <version>',
     '',
   ];
 
@@ -413,6 +616,63 @@ function makeEnumKey(value: string, doc: string): string {
     if (key && /^[A-Z]/.test(key)) return key;
   }
   return `VALUE_${value.replace('-', 'MINUS_')}`;
+}
+
+/**
+ * Runtime tabulka `kód → český popisek` pro číselníkové atributy (A1).
+ *
+ * Na rozdíl od `enums.ts` (SLUG → kód) drží `ENUM_LABELS` mapu
+ * `název atributu → { kód → text }` z `xs:documentation`. Používá viewer
+ * k doplnění popisků číselníkových atributů v panelu prvku.
+ * Escaping přes `JSON.stringify` (A4 — české popisky s apostrofy/uvozovkami).
+ */
+function generateEnumLabelsFile(
+  enums: EnumDef[],
+  elements: Map<string, ElementTypeDef>
+): string {
+  const lines: string[] = [
+    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    '// Run: npx tsx scripts/generate-types.ts <version>',
+    '//',
+    '// ENUM_LABELS: název číselníkového atributu → { kód → český popisek }.',
+    '// BOOLEAN_ATTRS: názvy xs:boolean atributů (v XML 0/1) — hodnotu překládá',
+    '//   labelForAttribute na ano/ne (nejsou to číselníky, drženy zvlášť).',
+    '',
+    'export const ENUM_LABELS: Record<string, Record<string, string>> = {',
+  ];
+
+  const enumNames = new Set<string>();
+  for (const e of enums) {
+    if (enumNames.has(e.name)) {
+      console.warn(`  WARN: duplicitní číselník v ENUM_LABELS: ${e.name}`);
+      continue;
+    }
+    enumNames.add(e.name);
+    lines.push(`  ${JSON.stringify(e.name)}: {`);
+    for (const v of e.values) {
+      if (!v.doc) continue; // hodnoty bez popisku přeskočit (graceful, A3)
+      lines.push(`    ${JSON.stringify(v.value)}: ${JSON.stringify(v.doc)},`);
+    }
+    lines.push('  },');
+  }
+
+  lines.push('};');
+  lines.push('');
+
+  // Boolean atributy (xs:boolean): nemají xs:enumeration, takže nejsou v
+  // ENUM_LABELS, ale kód 0/1 (příp. true/false) nese význam ne/ano. Držíme je
+  // zvlášť, ať zůstane invariant „ENUM_LABELS = číselníky" (enum-labels.test.ts).
+  const boolNames = [...elements.values()]
+    .filter((e) => e.type === 'boolean' && !enumNames.has(e.name))
+    .map((e) => e.name)
+    .sort();
+  lines.push('export const BOOLEAN_ATTRS: readonly string[] = [');
+  for (const name of boolNames) {
+    lines.push(`  ${JSON.stringify(name)},`);
+  }
+  lines.push('];');
+  lines.push('');
+  return lines.join('\n');
 }
 
 function generateSharedAttrsFile(
@@ -547,15 +807,61 @@ function generateSharedAttrsFile(
   return lines.join('\n');
 }
 
+/**
+ * shared-attrs.ts pro 1.5.0.1 — pole se berou z `extractSharedGroups1501`
+ * (sjednocení kontextových variant), všechna type-level volitelná.
+ */
+function generateSharedAttrsFile1501(
+  elements: Map<string, ElementTypeDef>,
+  enums: EnumDef[],
+  groupFields: Record<string, string[]>
+): string {
+  const enumNames = new Set(enums.map((e) => e.name));
+  const lines: string[] = [
+    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    '',
+    "import type { CommonAttributes } from '../types.js';",
+    '',
+  ];
+
+  for (const g of SHARED_ATTR_GROUPS) {
+    const fields = groupFields[g.tsName];
+    if (!fields || fields.length === 0) continue;
+    lines.push(`export interface ${g.tsName} {`);
+    for (const field of fields) {
+      const elDef = elements.get(field);
+      let tsType: string;
+      if (elDef?.type === 'enum' && enumNames.has(field)) {
+        tsType = 'number';
+      } else if (elDef) {
+        tsType = xsdTypeToTs(elDef.type);
+      } else {
+        tsType = 'string';
+      }
+      lines.push(`  ${field}?: ${tsType};`);
+    }
+    lines.push('}');
+    lines.push('');
+  }
+
+  // `CommonAttributes` je re-exportováno pro symetrii s 1.4.3 shared-attrs.
+  lines.push('export type { CommonAttributes };');
+  lines.push('');
+
+  return lines.join('\n');
+}
+
 function generateEntitiesFile(
   entities: EntityDef[],
   elements: Map<string, ElementTypeDef>,
   enums: EnumDef[]
 ): string {
   const enumNames = new Set(enums.map((e) => e.name));
+  // 1.5.0.1 přidává obsahovou část PSPI (code_base 0200000*).
+  const castUnion = IS_1501 ? "'ZPS' | 'TI' | 'DI' | 'PSPI' | ''" : "'ZPS' | 'TI' | 'DI' | ''";
   const lines: string[] = [
-    '// Auto-generated from JVF DTM 1.4.3 XSD — DO NOT EDIT',
-    '// Run: npx tsx scripts/generate-types.ts',
+    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    '// Run: npx tsx scripts/generate-types.ts <version>',
     '',
     "import type { Geometry, GmlPolygon, CommonAttributes } from '../types.js';",
     "import type {",
@@ -590,7 +896,7 @@ function generateEntitiesFile(
   lines.push('  codeSuffix: string;');
   lines.push('  kategorieObjektu: string;');
   lines.push('  skupinaObjektu: string;');
-  lines.push("  obsahovaCast: 'ZPS' | 'TI' | 'DI';");
+  lines.push(`  obsahovaCast: ${castUnion};`);
   lines.push('  sharedAttrGroup: string | null;');
   lines.push('  specificAttrs: readonly string[];');
   lines.push('  geomType: GeomKind;');
@@ -622,7 +928,9 @@ function generateEntitiesFile(
   }
 
   // Generate the catalog
-  lines.push('/** Catalog of all 358 JVF DTM entity types, keyed by XML element name */');
+  lines.push(
+    `/** Catalog of all ${entities.length} JVF DTM entity types, keyed by XML element name */`
+  );
   lines.push('export const ENTITY_CATALOG: Record<string, EntityMeta> = {');
   for (const entity of entities) {
     lines.push(`  ${JSON.stringify(entity.elementName)}: {`);
@@ -632,9 +940,7 @@ function generateEntitiesFile(
     lines.push(`    codeSuffix: ${JSON.stringify(entity.codeSuffix)},`);
     lines.push(`    kategorieObjektu: ${JSON.stringify(entity.kategorieObjektu)},`);
     lines.push(`    skupinaObjektu: ${JSON.stringify(entity.skupinaObjektu)},`);
-    lines.push(
-      `    obsahovaCast: ${JSON.stringify(entity.obsahovaCast)} as 'ZPS' | 'TI' | 'DI',`
-    );
+    lines.push(`    obsahovaCast: ${JSON.stringify(entity.obsahovaCast)} as ${castUnion},`);
     lines.push(`    sharedAttrGroup: ${JSON.stringify(entity.sharedAttrGroup)},`);
     lines.push(`    specificAttrs: ${JSON.stringify(entity.specificAttrs)},`);
     lines.push(`    geomType: ${JSON.stringify(entity.geomType)},`);
@@ -668,6 +974,7 @@ function generateEntitiesFile(
 // ---------------------------------------------------------------------------
 
 function main(): void {
+  console.log(`Generating JVF DTM ${VERSION} types (structure: ${IS_1501 ? '1.5.0.1' : '1.4.3'})`);
   console.log('Extracting enums and element types from atributy.xsd...');
   const { enums, elements } = extractEnumsAndElements();
   console.log(`  Found ${enums.length} enums, ${elements.size} elements`);
@@ -681,7 +988,9 @@ function main(): void {
   const entities: EntityDef[] = [];
   let failed = 0;
   for (const file of xsdFiles) {
-    const entity = extractEntity(join(objDir, file));
+    const entity = IS_1501
+      ? extractEntity1501(join(objDir, file))
+      : extractEntity(join(objDir, file));
     if (entity) {
       entities.push(entity);
     } else {
@@ -698,7 +1007,13 @@ function main(): void {
   writeFileSync(join(OUT_DIR, 'enums.ts'), enumsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enums.ts`);
 
-  const sharedAttrsCode = generateSharedAttrsFile(elements, enums);
+  const enumLabelsCode = generateEnumLabelsFile(enums, elements);
+  writeFileSync(join(OUT_DIR, 'enum-labels.ts'), enumLabelsCode, 'utf-8');
+  console.log(`  Written ${OUT_DIR}/enum-labels.ts`);
+
+  const sharedAttrsCode = IS_1501
+    ? generateSharedAttrsFile1501(elements, enums, extractSharedGroups1501())
+    : generateSharedAttrsFile(elements, enums);
   writeFileSync(join(OUT_DIR, 'shared-attrs.ts'), sharedAttrsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/shared-attrs.ts`);
 

@@ -1,0 +1,15 @@
+id: UmisteniOznacniku
+nazev: Umístění označníku
+namespace: atr
+popis: Umístění označníku
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: samostatný nosič
+ - hodnota: 2
+   popis: sdílené podpěrné zařízení
+ - hodnota: 3
+   popis: stavba zastřešení
+ - hodnota: 4
+   popis: jiné

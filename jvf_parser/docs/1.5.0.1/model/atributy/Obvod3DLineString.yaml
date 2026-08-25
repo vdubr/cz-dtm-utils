@@ -1,0 +1,6 @@
+id: Obvod3DLineString
+nazev: Obvod 3D (LineString)
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: LineString

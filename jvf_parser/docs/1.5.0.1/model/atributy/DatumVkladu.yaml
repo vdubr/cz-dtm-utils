@@ -1,0 +1,8 @@
+id: DatumVkladu
+nazev: Datum vkladu
+namespace: atr
+popis:  |-
+  Datum a čas zapracování objektu do DTMK
+  Zadává IS DTMK
+nillable: false
+typ: DateTime

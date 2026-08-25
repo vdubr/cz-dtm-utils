@@ -1,0 +1,7 @@
+id: ICME
+nazev: Identifikační číslo majetkové evidence
+namespace: atr
+popis: Identifikační číslo majetkové evidence
+nillable: false
+typ: String
+maxDelka: 50

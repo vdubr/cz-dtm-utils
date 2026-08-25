@@ -1,0 +1,13 @@
+id: TypTerenniHrany
+nazev: Typ terénní hrany
+namespace: atr
+popis: Typ terénní hrany
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: hrana
+ - hodnota: 2
+   popis: pata
+ - hodnota: 99
+   popis: nezjištěno

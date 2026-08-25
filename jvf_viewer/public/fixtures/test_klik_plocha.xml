@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture pro test „klik na prvek v mapě otevře Přehled prvků": jeden velký
+     polygon vyplní viewport, klik do středu mapy ho spolehlivě trefí. -->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.4.3</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2026-01-01T12:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">kompletní zápis</TypZapisu>
+    <Data>
+      <BudovaPlocha>
+        <ObjektovyTypNazev code_base="0100000001" code_suffix="03" xmlns="budpol">budova</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="budpol">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="budpol">Objekt budovy</SkupinaObjektu>
+        <ObsahovaCast xmlns="budpol">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="budpol">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>TEST-BUDOVA-0001</ID>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuZPS xmlns="atr">
+                <UrovenUmisteniObjektuZPS>0</UrovenUmisteniObjektuZPS>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniZPS>1</ZpusobPorizeniZPS>
+              </SpolecneAtributyObjektuZPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="IDB_03" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>-520800.00 -1164200.00 -520600.00 -1164200.00 -520600.00 -1164000.00 -520800.00 -1164000.00 -520800.00 -1164200.00</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </BudovaPlocha>
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>

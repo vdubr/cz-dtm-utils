@@ -1,0 +1,17 @@
+id: TypUdrzovaneZelene
+nazev: Typ udržované zeleně
+namespace: atr
+popis: Typ udržované zeleně
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: městská parková zeleň
+ - hodnota: 2
+   popis: udržovaná travnatá a okrasná plocha
+ - hodnota: 3
+   popis: skupina stromů a keřů
+ - hodnota: 4
+   popis: silniční vegetace
+ - hodnota: 99
+   popis: nezjištěno

@@ -1,0 +1,15 @@
+id: TypTrasyElektrickeSite
+nazev: Typ trasy elektrické sítě
+namespace: atr
+popis: Typ trasy elektrické sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: silové vedení
+ - hodnota: 2
+   popis: zemnící lano
+ - hodnota: 3
+   popis: zemnič
+ - hodnota: 99
+   popis: nezjištěno

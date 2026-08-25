@@ -1,3 +1,4 @@
+import { pickChild } from './xml-helpers.js';
 /**
  * Parse a whitespace-separated coordinate string into a number array.
  * Works for both `pos` (single point) and `posList` (multiple points).
@@ -34,7 +35,7 @@ function extractSrsDimension(obj) {
         return v;
     if (typeof v === 'string')
         return parseInt(v, 10);
-    return 2;
+    return undefined;
 }
 /**
  * Get the text content of a `pos` or `posList` element from a GML geometry node.
@@ -57,18 +58,23 @@ export function parsePoint(pointEl) {
     return {
         id: extractGmlId(pointEl) ?? '',
         srsName: extractSrsName(pointEl),
-        srsDimension: extractSrsDimension(pointEl),
+        srsDimension: extractSrsDimension(pointEl) ?? 2,
         coordinates: parseCoordinates(getPosList(pointEl)),
     };
 }
 // ---------------------------------------------------------------------------
 // LineString
 // ---------------------------------------------------------------------------
-export function parseLineString(lsEl) {
+/**
+ * @param inheritedDim srsDimension zděděná z rodičovské geometrie (GML
+ *   sémantika: atribut platí i pro potomky, dokud ho nepřepíšou). Členské
+ *   LineString v MultiCurve atribut typicky nemají — nese ho MultiCurve.
+ */
+export function parseLineString(lsEl, inheritedDim) {
     return {
         id: extractGmlId(lsEl),
         srsName: extractSrsName(lsEl),
-        srsDimension: extractSrsDimension(lsEl),
+        srsDimension: extractSrsDimension(lsEl) ?? inheritedDim ?? 2,
         coordinates: parseCoordinates(getPosList(lsEl)),
     };
 }
@@ -105,7 +111,7 @@ export function parsePolygon(polygonEl) {
     return {
         id: extractGmlId(polygonEl),
         srsName: extractSrsName(polygonEl),
-        srsDimension: extractSrsDimension(polygonEl),
+        srsDimension: extractSrsDimension(polygonEl) ?? 2,
         exterior,
         interiors,
     };
@@ -115,21 +121,20 @@ export function parsePolygon(polygonEl) {
 // ---------------------------------------------------------------------------
 export function parseMultiCurve(mcEl) {
     const curves = [];
+    // srsDimension nese typicky element MultiCurve; členské LineString ho
+    // dědí (bez propagace by dostaly default 2 a 3D souřadnice by se četly
+    // s krokem 2 — vrcholy by „létaly" přes celou mapu).
+    const mcDim = extractSrsDimension(mcEl);
     const memberRaw = mcEl['curveMember'];
     if (memberRaw != null) {
         const memberList = Array.isArray(memberRaw) ? memberRaw : [memberRaw];
         for (const member of memberList) {
             if (typeof member === 'object' && member !== null) {
-                const memberObj = member;
                 // LineString může být s nebo bez `gml:` prefixu (fast-xml-parser má
                 // `removeNSPrefix: true`, ale obranně kontrolujeme obě varianty).
-                // Break po prvním nálezu — stejné chování jako ostatní GML parsery výše.
-                for (const key of ['LineString', 'gml:LineString']) {
-                    const ls = memberObj[key];
-                    if (ls != null && typeof ls === 'object') {
-                        curves.push(parseLineString(ls));
-                        break;
-                    }
+                const ls = pickChild(member, ['LineString', 'gml:LineString']);
+                if (ls != null) {
+                    curves.push(parseLineString(ls, mcDim));
                 }
             }
         }
@@ -137,7 +142,7 @@ export function parseMultiCurve(mcEl) {
     return {
         id: extractGmlId(mcEl),
         srsName: extractSrsName(mcEl),
-        srsDimension: extractSrsDimension(mcEl),
+        srsDimension: mcDim ?? 2,
         curves,
     };
 }

@@ -1,0 +1,7 @@
+id: Bod2DPointProperty
+nazev: Bod 2D
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: pointProperty
+dim: 2

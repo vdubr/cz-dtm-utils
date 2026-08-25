@@ -7,6 +7,193 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.8.25] - 2026-08-25
+
+### Přidáno
+
+- **Popisky číselníkových atributů** v panelu detailu prvku — u kódovaných
+  atributů se vedle číselného kódu zobrazí i český popisek z číselníku DTM
+  (např. `2 — dálnice II. třídy`). Mapování `kód → text` se generuje
+  build-time z XSD (`ENUM_LABELS`), překlad běží jen pro sekci „Atributy
+  objektu"; nekódované atributy zůstávají beze změny. Kromě číselníků se
+  překládají i **boolean atributy** (`xs:boolean`, v XML `0`/`1`) na
+  `ne`/`ano` — např. `KritickaTI`, `NeuplnaData`, `HraniceJinehoObjektu`,
+  `OchrannaFunkce`. Skutečná čísla (počty, rozměry jako `PocetVedeniVTrase`)
+  a identifikátory/volný text zůstávají beze změny.
+- **Podpora JVF DTM 1.5.0.1 souběžně s 1.4.3** napříč všemi balíčky
+  (parser, topologie, viewer). Čtení archivních 1.4.3 souborů zůstává beze
+  změny — verze se **detekuje automaticky** podle obsahu souboru a zobrazí
+  se u načteného projektu (viz „Změněno" → verze u projektu).
+  - **Parser**: verzní router `parseJvfDtm` (1.4.3 i 1.5.0.1), nová struktura
+    1.5.0.1 — operace v názvu elementu záznamu (`ZaznamObjektuIns/Upd/Del`,
+    referenční `RefV/RefN…` a přeshraniční `Pe…` věty), geometrické wrappery
+    (`Bod/Linie/Plocha/Obvod3D`), sdílené atributy PSPI, doprovodné info
+    (`…GAD/KAD/DTI/VydejZPS/VydejDTI/VydejPSPI`) a `TypDatoveSady`. Katalog
+    1.5.0.1 vygenerován z distribučního XSD (nové objekty, PSPI, bez KI
+    a zrušeného objektu).
+  - **Protokol chyb**: samostatný parser `parseErrorProtocol`
+    (`ServisJVFDTM/ProtokolChyb`) + zobrazení jako report ve vieweru.
+  - **Topologie**: páry DefBod↔Plocha pro 1.5.0.1 (66), režim „Výdej PSPI",
+    bezpečný default pro neznámou verzi (jen generické kontroly).
+  - **Viewer**: nová obsahová část **PSPI** v legendě a mapě (nové/PSPI typy
+    mají styl), verzní legenda, auto-detekce verze při načtení.
+- **Nová obsahová část PSPI** (plánované stavební práce infrastruktury) —
+  vlastní sekce v legendě a barevné odlišení v mapě.
+- Sekce **Projekty** v levém panelu je nově **sbalitelná** (klik na
+  hlavičku „Projekty") — s více načtenými soubory seznam narůstá a zabíral
+  místo; počet projektů zůstává v hlavičce vidět i ve sbaleném stavu.
+- Klik na projekt v sekci **Projekty** přiblíží pohled na jeho rozsah —
+  ve 2D mapě i ve 3D scéně (animovaný přesun kamery).
+- **Více JVF souborů (projektů) naráz** — další výběr souboru nebo drag &
+  drop načtená data nenahrazuje, ale **přidává jako samostatný projekt**
+  (až 8 projektů; hodí se pro navazující projekty v jedné mapě). Levý panel
+  má novou sekci **Projekty** (název souboru, barevná tečka, počet záznamů,
+  tlačítko × pro odebrání); odebráním posledního projektu se viewer vrátí
+  do prázdného stavu. Při ≥2 projektech přibude v Přehledu prvků filtr
+  **Projekt** (chips) promítající se do tabulky i 2D/3D mapy; vrstvy
+  a skupiny stejného typu z různých projektů odlišuje tečka projektu.
+  Topologická validace běží per projekt a klik na projekt v seznamu
+  přiblíží jeho rozsah; **3D terén se při ≥2 projektech stahuje zvlášť
+  kolem každého projektu** (okolí 800 m místo společného bboxu), takže
+  dva projekty daleko od sebe nestáhnou obří model přes prázdnou plochu
+  mezi nimi. Identifikátory záznamů se při více projektech kvalifikují
+  projektem, takže stejná DTM ID ve dvou souborech nekolidují.
+  S jedním načteným souborem se chování vieweru nemění.
+- JVF soubor lze nově načíst **přetažením myší (drag & drop)** kamkoli nad
+  okno aplikace — při přetahování se zobrazí vizuální nápověda, upuštění
+  souboru ho načte stejně jako výběr přes tlačítko „Nahrát soubor".
+- **Filtrování prvků podle úrovně umístění (LEVEL)** v Přehledu prvků —
+  pokud data obsahují víc úrovní (−3 až +3 z atributů
+  `UrovenUmisteniObjektuZPS/TI/DI`, plus skupina „bez úrovně"), zobrazí se
+  v panelu řádek chipů **Úroveň**. Odškrtnuté úrovně se skryjí v tabulce
+  i ve **2D a 3D mapě**; filtr se kombinuje (AND) s viditelností vrstev
+  a changeset přepínači a resetuje se při načtení nového souboru.
+- **Barevné rozlišení changeset záznamů**: kromě mazaných (`ZapisObjektu='d'`,
+  červeně) se nyní dají zvýraznit a vypínat/zapínat i **nové** záznamy
+  (`'i'`, zeleně) a **editované** záznamy (`'u'`, oranžově) — samostatné
+  přepínače pod seznamem vrstev, ve 2D i 3D. Přepínač se zobrazí jen pro
+  typy zápisu obsažené v nahraném souboru.
+- **Podkladová mapa na 3D terénu** — na povrch DMR (ČÚZK DMR5G) lze ve 3D
+  scéně namapovat jako texturu **Základní mapu** nebo **Ortofoto ČÚZK**
+  (stejné vrstvy jako ve 2D, dlaždice nativně v S-JTSK / EPSG:5514).
+  Ovládání ve spodní liště 3D: volba podkladu (Žádný / Základní mapa /
+  Ortofoto) + posuvník průhlednosti, aby vykreslené prvky zůstaly čitelné.
+  Volba podkladu automaticky zapne terén; načítání běží asynchronně
+  s indikátorem a selhání sítě scénu nerozbije.
+- **Klikací (e2e) testy vieweru** — Playwright smoke sada (`jvf_viewer/e2e/`)
+  pokrývající načtení JVF souboru, odmítnutí nesprávné verze, panely
+  validace a přehledu prvků, přepínání 2D/3D, modály a ovládací prvky.
+  Spouští se přes `npm run test:e2e` v `jvf_viewer`.
+
+### Změněno
+
+- **Verze JVF se zobrazuje u projektu, ne v hlavičce.** Za názvem každého
+  načteného souboru v panelu „Projekty" je malá info ikona `i` — po najetí
+  ukáže „Verze JVF …" daného souboru. Verze se detekuje automaticky z obsahu;
+  z hlavičky zmizel dřívější přepínač i potvrzovací dialog o ztrátě dat.
+  Při více projektech tak může každý řádek ukazovat jinou verzi.
+- **Klik na prvek v mapě (2D i 3D) automaticky otevře „Přehled prvků"**, pokud
+  byl zavřený, a rovnou v něm prvek vybere, rozbalí jeho atributy a odscrolluje
+  na něj. Dříve klik do mapy fungoval jen při už otevřeném panelu; klik do
+  prázdné plochy i nadále nedělá nic.
+- **Přehled prvků** — hlavička kategorie zůstává při scrollování
+  **přišpendlená nahoře** panelu; v dlouhém seznamu (např. stovky podrobných
+  bodů v jedné kategorii) je tak stále vidět, ve které kategorii se nacházíte.
+  Jakmile doscrollujete k další kategorii, její hlavička předchozí vystřídá.
+- **Sjednocené ovládání podkladové mapy**: volba Základní mapa / Ortofoto
+  v levém panelu nově řídí 2D mapu i texturu na 3D terénu (jeden zdroj
+  pravdy); separátní panel „Podklad" ze spodní 3D lišty byl odstraněn.
+  Pod tlačítky přibyl posuvník **sytosti** (ikona kapky, 10–100 %, výchozí
+  100 %) — průhlednost podkladu platí shodně pro 2D i 3D. Aktivní volba
+  podkladu během 3D automaticky zapne terén; samotné přepnutí do 3D ale
+  terén nevnucuje — textura se nanese, až když je (nebo se stane) terén
+  zapnutý.
+- **Přepínač světlý/tmavý režim** je nově jediné toggle tlačítko ☀️/🌙
+  v hlavičce (dříve dvojice tlačítek ve spodní 3D liště) a funguje i ve
+  **2D** — mění barvu plochy pod vrstvami, viditelnou při vypnutém
+  podkladu, i pozadí 3D scény.
+- 3D scéna má nově **výchozí světlé pozadí** (dříve tmavé) — barvy prvků
+  z Katalogu ČÚZK počítají se světlým podkladem stejně jako 2D mapa.
+  Tmavé pozadí zůstává dostupné přepínačem, pomocná mřížka se barevně
+  přizpůsobuje zvolenému pozadí.
+
+### Opraveno
+
+- **Barvy sítí v legendě a vrstvovém panelu** nyní souhlasí s vykreslením
+  v mapě. Trasy sítí nesou barvu jen ve variantách, takže se dřív v legendě
+  i panelu zobrazovaly jednotnou oranžovou (fallback obsahové části TI) —
+  nově se použije **reprezentativní barva z variant** (elektro červená, plyn
+  zelená, voda modrá, kanalizace hnědá, teplovod oranžová). Kanalizace
+  a teplovod tak jdou v legendě od sebe rozeznat.
+- **27 poškozených výplní** objektů (příkop, manipulační plocha, nádrž, …),
+  u nichž se barva omylem uložila do `strokeWidth` (a objekt tak ztratil
+  výplň a dostal monstrózní obrys), opraveno zpět na správnou `fillColor`.
+- **Výkon 3D scény** (`threeScene.ts`) — skrývání SVG sprite ikon při pohybu
+  kamery (orbit/pan/zoom) už neprochází celou scénu (`scene.traverse`) na
+  každý mousemove, ale jen udržovaný seznam spritů; materiály stejné barvy
+  a stylu se navíc sdílejí mezi záznamy místo vytváření nové instance pro
+  každý jednotlivý objekt. Beze změny chování (highlight, filtry, changeset
+  barvy i click-picking fungují stejně jako dřív).
+- **Parser (`jvf-parser`) nově validuje vstupní XML** (`XMLValidator.validate`
+  z `fast-xml-parser`) — nepárové/oříznuté tagy nebo jinak nevalidní XML dřív
+  prošly tiše a vrátily neúplný/zavádějící `JvfDtm`. Nově se vyhodí
+  srozumitelná chyba `Neplatný XML soubor: … (řádek …, sloupec …)`.
+- Parser nově hlásí (`console.warn`) neočekávanou hodnotu `TypZapisu` (jinou
+  než „kompletní zápis"/„změnové věty") a nepodporovanou verzi `VerzeJVFDTM`
+  (mimo `SUPPORTED_VERSIONS` z `jvf-dtm-types`) — dřív se hodnoty tiše
+  přetypovaly bez ověření. Parsování v obou případech pokračuje (nejedná se
+  o fatální chybu), jen upozorní na neočekávaný vstup.
+- Obvodové linie ploch (MultiCurve) se ve 2D mapě mohly vykreslovat jako
+  obří pruhy přes celou mapu (pozorováno u `BudovaPlocha` z ukázkových OPL
+  dat). Příčina v parseru: atribut `srsDimension="3"` nese element
+  `gml:MultiCurve`, ale členské `LineString` ho nemají — parser jim místo
+  zdědění hodnoty z rodiče (GML sémantika) přiřadil default 2, takže se 3D
+  souřadnice četly po dvojicích a výšky se interpretovaly jako polohy.
+  Oprava propaguje `srsDimension` z MultiCurve do členských křivek — platí
+  pro 2D mapu, 3D scénu i topologické kontroly.
+- Půlpixelová registrace DMR terénu ve 3D: rastr z ČÚZK `exportImage` je
+  pixel-is-area (hodnota patří středu buňky), ale terén vzorkoval buňky na
+  hrany extentu — na okrajích scény to posouvalo terén až o ±půl buňky
+  (typicky 2–4 m). Nyní se vzorkují středy buněk; stejně opraveny vrstevnice
+  a UV mapování podkladové textury. Nalezeno při prověřování hlášeného
+  posunu DMR (~50 m západně), který se přitom nepotvrdil — skutečná odchylka
+  vůči referenčnímu vrcholu Sněžky byla do 4 m.
+- Prvky bez přiděleného DTM ID (nově vytvořené JVF soubory DI/TI, jejichž
+  záznamy se teprve budou do DTM vkládat) jsou nyní plnohodnotně
+  identifikovatelné pomocí syntetického klíče — funguje pro ně klik v mapě
+  (2D i 3D), zoom, zvýraznění i detail atributů v Přehledu prvků. Dříve byly
+  řádky bez ID neklikatelné a výběr prvku v mapě je ignoroval.
+- **Bezpečnost**: panel vrstev (`layerPanel.ts`) vkládal název, skupinu,
+  kategorii a obsahovou část objektového typu přes `innerHTML` — hodnoty
+  pocházející z libovolného nahraného JVF souboru mohly obsahovat cizí
+  HTML/JS (XSS). Nahrazeno bezpečným sestavením DOM přes `createElement` /
+  `textContent`, vizuálně beze změny.
+- Chybové hlášky při selhání načtení JVF souboru (`fileUpload.ts`) uživateli
+  zobrazovaly surový technický text výjimky. Nyní se zobrazí srozumitelná
+  česká hláška a technický detail jde jen do konzole (`console.error`).
+- **Topologie — kontrola 3.4 (self-intersection linií)** nedetekovala
+  kolineární překryv ani dotyk vrcholu na jiném segmentu (T-junction) —
+  `segmentsIntersect` používal jen ostré nerovnosti, takže tyto případy
+  procházely bez chyby, přestože specifikace zakazuje linii se "křížit i
+  překrývat". Nyní `LINE_SELF_INTERSECTION` hlásí i tyto případy.
+- **Topologie — Vrstva 3 (DefBod ↔ Plocha, Osa ↔ Obvod) ignorovala díry
+  polygonů** (interior rings) — definiční bod nebo bod osy ležící uvnitř
+  díry plochy/obvodu byl mylně vyhodnocen jako "uvnitř". `pointInPolygon`
+  nově zohledňuje `interiors`; dotčeno `checkDefBodInPlocha`,
+  `checkOsaInObvod` a `checkDelAreaContainsDefBodPlocha`.
+- **Topologie — `checkDanglingEnds` hlásil false positive u samostatné
+  uzavřené smyčky** (linie, kde začátek ≈ konec v toleranci 0,05 m) — oba
+  konce se ohlašovaly jako volné, i když jde o platně uzavřenou linii bez
+  potřeby návaznosti na jinou.
+- Odstraněn mrtvý kód (`lineInPolygon`, `toXYFlat` v `geometry-math.ts`),
+  nikde v monorepu nepoužívaný.
+
+### Odstraněno
+
+- Tlačítko **„Zoom na data"** v hlavičce — funkci nahradil **klik na projekt**
+  v sekci Projekty (přiblíží pohled na jeho rozsah ve 2D i 3D). Automatické
+  přiblížení na rozsah po načtení souboru zůstává beze změny.
+
 ## [2026.6.16.2] - 2026-06-16
 
 ### Přidáno

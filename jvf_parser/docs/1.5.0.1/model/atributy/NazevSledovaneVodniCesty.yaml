@@ -1,0 +1,7 @@
+id: NazevSledovaneVodniCesty
+nazev: Název sledované vodní cesty
+namespace: atr
+popis: Název sledované vodní cesty
+nillable: false
+typ: String
+maxDelka: 255

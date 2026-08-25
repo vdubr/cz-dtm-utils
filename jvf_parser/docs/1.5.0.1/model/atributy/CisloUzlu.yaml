@@ -1,0 +1,7 @@
+id: CisloUzlu
+nazev: Číslo uzlu
+namespace: atr
+popis: Číslo uzlu
+nillable: false
+typ: String
+maxDelka: 100

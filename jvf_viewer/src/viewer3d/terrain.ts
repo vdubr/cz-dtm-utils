@@ -278,19 +278,28 @@ function buildMeshFromRaster(raster: CachedRaster, opts: TerrainOptions): THREE.
   const vertexCount = width * height;
   const positions = new Float32Array(vertexCount * 3);
   const colors = new Float32Array(vertexCount * 3);
+  // UV pro texturu podkladové mapy — textura se skládá pro tentýž realBbox,
+  // takže mapování je přímé: u roste od minX (západ) doprava, v od minY (jih)
+  // nahoru (three.js flipY=true → v=0 je spodní okraj obrázku = jih).
+  // Zarovnání vůči světovým souřadnicím je tím dané konstrukcí, nezávisle
+  // na orientaci os scény.
+  const uvs = new Float32Array(vertexCount * 2);
 
-  const dx = (realBbox.maxX - realBbox.minX) / (width - 1);
-  const dy = (realBbox.maxY - realBbox.minY) / (height - 1);
+  // exportImage vrací pixel-is-area raster: buňka má rozměr extent/width a
+  // hodnota patří jejímu STŘEDU (první střed = minX + dx/2), ne hraně extentu.
+  // Vzorkování na hrany by posouvalo terén až o ±půl buňky na okrajích scény.
+  const dx = (realBbox.maxX - realBbox.minX) / width;
+  const dy = (realBbox.maxY - realBbox.minY) / height;
   const range = maxH - minH;
   const invRange = range > 1e-6 ? 1 / range : 0;
 
   for (let row = 0; row < height; row++) {
     // Raster řádek 0 = horní (= maxY), řádek height-1 = dolní (= minY)
-    const worldY = realBbox.maxY - row * dy;
+    const worldY = realBbox.maxY - (row + 0.5) * dy;
     for (let col = 0; col < width; col++) {
       const idx = row * width + col;
       const h = heights[idx]!;
-      const worldX = realBbox.minX + col * dx;
+      const worldX = realBbox.minX + (col + 0.5) * dx;
       const elev = (h === NODATA || !Number.isFinite(h)) ? minH : h;
 
       // Scene coords: x = X-cx, z = cy-Y (Y-osa invertovaná, viz threeScene.ts —
@@ -305,6 +314,9 @@ function buildMeshFromRaster(raster: CachedRaster, opts: TerrainOptions): THREE.
       colors[idx * 3] = r;
       colors[idx * 3 + 1] = g;
       colors[idx * 3 + 2] = b;
+
+      uvs[idx * 2] = (col + 0.5) / width;
+      uvs[idx * 2 + 1] = 1 - (row + 0.5) / height;
     }
   }
 
@@ -331,6 +343,7 @@ function buildMeshFromRaster(raster: CachedRaster, opts: TerrainOptions): THREE.
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
   geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   geometry.computeBoundingSphere();
 
@@ -374,17 +387,18 @@ function extractContourSegments(
   yOffset: number
 ): number[] {
   const { heights, width, height, realBbox } = raster;
-  const dxM = (realBbox.maxX - realBbox.minX) / (width - 1);
-  const dyM = (realBbox.maxY - realBbox.minY) / (height - 1);
+  // Pixel-is-area: hodnoty patří středům buněk (viz buildMeshFromRaster)
+  const dxM = (realBbox.maxX - realBbox.minX) / width;
+  const dyM = (realBbox.maxY - realBbox.minY) / height;
   const segs: number[] = [];
   const yLevel = (level - cz) * zExag + yOffset;
 
   // Převede (col, row) na (sceneX, sceneZ)
   function sx(col: number): number {
-    return (realBbox.minX + col * dxM) - cx;
+    return (realBbox.minX + (col + 0.5) * dxM) - cx;
   }
   function sz(row: number): number {
-    return cy - (realBbox.maxY - row * dyM);
+    return cy - (realBbox.maxY - (row + 0.5) * dyM);
   }
 
   for (let row = 0; row < height - 1; row++) {
@@ -611,7 +625,88 @@ export function disposeTerrainMesh(group: THREE.Group): void {
     const mat = withGeom.material;
     if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
     else if (mat) mat.dispose();
+    // Odložený hypsometrický materiál (pokud je zrovna aktivní podklad)
+    const stashed = obj.userData['hypsoMaterial'] as THREE.Material | undefined;
+    stashed?.dispose();
   });
+}
+
+// ── Podkladová mapa na terénu ────────────────────────────────────────────────
+
+/** Najde surface mesh v terénní skupině. */
+function findSurfaceMesh(group: THREE.Group): THREE.Mesh | null {
+  let found: THREE.Mesh | null = null;
+  group.traverse((obj) => {
+    if (!found && obj.userData['isTerrainMesh'] === true) {
+      found = obj as THREE.Mesh;
+    }
+  });
+  return found;
+}
+
+/**
+ * Vrátí skutečný bbox terénního rasteru (EPSG:5514) — pro něj se skládá
+ * textura podkladové mapy, aby UV mapování sedělo 1:1.
+ */
+export function getTerrainRealBbox(group: THREE.Group): BBox | null {
+  const surface = findSurfaceMesh(group);
+  return (surface?.userData['realBbox'] as BBox | undefined) ?? null;
+}
+
+/**
+ * Namapuje texturu podkladové mapy na terénní povrch. Původní hypsometrický
+ * materiál se odloží do `userData['hypsoMaterial']` a při odebrání podkladu
+ * se vrátí zpět. Textura se nevlastní (cache v `basemapTexture.ts`) —
+ * dispose materiálu ji nesmí uvolnit, proto `material.map` před dispose
+ * odpojujeme.
+ */
+export function applyBasemapToTerrain(
+  group: THREE.Group,
+  texture: THREE.Texture,
+  opacity: number
+): void {
+  const surface = findSurfaceMesh(group);
+  if (!surface) return;
+
+  const current = surface.material as THREE.Material;
+  if (surface.userData['hypsoMaterial'] === undefined) {
+    // Hypsometrický materiál odložíme pro pozdější návrat
+    surface.userData['hypsoMaterial'] = current;
+  } else if (current !== surface.userData['hypsoMaterial']) {
+    // Přepnutí mezi dvěma podklady — starý basemap materiál uvolníme
+    (current as THREE.MeshBasicMaterial).map = null;
+    current.dispose();
+  }
+
+  surface.material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+}
+
+/** Odebere podklad z terénu a vrátí hypsometrický materiál. */
+export function removeBasemapFromTerrain(group: THREE.Group): void {
+  const surface = findSurfaceMesh(group);
+  if (!surface) return;
+  const hypso = surface.userData['hypsoMaterial'] as THREE.Material | undefined;
+  if (!hypso) return; // podklad nebyl aplikován
+  const current = surface.material as THREE.MeshBasicMaterial;
+  if (current !== hypso) {
+    current.map = null; // texturu vlastní cache, neuvolňovat
+    current.dispose();
+  }
+  surface.material = hypso;
+  delete surface.userData['hypsoMaterial'];
+}
+
+/** Nastaví průhlednost aktivního podkladu (no-op bez podkladu). */
+export function setBasemapOpacityOnTerrain(group: THREE.Group, opacity: number): void {
+  const surface = findSurfaceMesh(group);
+  if (!surface || surface.userData['hypsoMaterial'] === undefined) return;
+  (surface.material as THREE.Material).opacity = opacity;
 }
 
 /** Zapne/vypne konkrétní vrstvu terénu (surface / minor / major vrstevnice). */

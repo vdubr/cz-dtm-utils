@@ -1,0 +1,23 @@
+id: TypNabijecihoVydejnihoMedia
+nazev: Typ nabíjecího/výdejního média
+namespace: atr
+popis: Typ nabíjecího/výdejního média
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: nabíjení elektromobilních zařízení (vč. plavidel)
+ - hodnota: 2
+   popis: CNG
+ - hodnota: 3
+   popis: LPG
+ - hodnota: 4
+   popis: LNG
+ - hodnota: 5
+   popis: benzín/nafta
+ - hodnota: 6
+   popis: vodík
+ - hodnota: 98
+   popis: jiné
+ - hodnota: 99
+   popis: nezjištěno

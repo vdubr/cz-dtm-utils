@@ -66,10 +66,6 @@
       <div class="header-left">
         <span class="app-logo">&#11041;</span>
         <h1>JVF DTM Prohlížeč</h1>
-        <label class="version-select-wrap" title="Aktivní verze specifikace JVF DTM. Načítat lze pouze soubory odpovídající této verzi.">
-          <span class="version-select-label">verze</span>
-          <select id="version-select" class="version-select" aria-label="Aktivní verze JVF DTM"></select>
-        </label>
       </div>
       <div class="header-right">
         <div class="upload-wrapper">
@@ -87,10 +83,7 @@
             <button class="upload-menu-item" data-sample="ukazka_OPL.xml" role="menuitem" title="Ochranná pásma a linie">ukazka_OPL.xml</button>
           </div>
         </div>
-        <input type="file" id="file-input" accept=".xml" style="display:none" />
-        <button id="btn-zoom" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
-          <span class="btn-icon">&#8982;</span> Zoom na data
-        </button>
+        <input type="file" id="file-input" accept=".xml,.jvf" multiple style="display:none" />
         <button id="btn-validate" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           Zkontrolovat
         </button>
@@ -98,6 +91,7 @@
           Přehled prvků
         </button>
         <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>
+        <button id="btn-theme" class="btn btn-secondary btn-theme" data-theme="light" title="Přepnout na tmavý režim (pozadí 2D mapy i 3D scény)"><span class="material-symbols-outlined">dark_mode</span></button>
       </div>
     </header>
     <div id="app-body">
@@ -108,6 +102,19 @@
             <button class="base-btn active" data-layer="zm" title="Přepnout ČÚZK Základní mapu (kliknutí na aktivní tlačítko podklad vypne)">Základní mapa</button>
             <button class="base-btn" data-layer="ortofoto" title="Přepnout ČÚZK Ortofoto (kliknutí na aktivní tlačítko podklad vypne)">Ortofoto</button>
           </div>
+          <div class="basemap-opacity-row">
+            <span class="material-symbols-outlined basemap-opacity-icon" title="Sytost podkladové mapy (2D i 3D textura na terénu)">opacity</span>
+            <input type="range" id="basemap-opacity" min="10" max="100" value="100" title="Sytost podkladové mapy (2D i 3D textura na terénu) — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
+            <span id="basemap-spinner" class="terrain-spinner" hidden></span>
+          </div>
+        </div>
+        <div class="panel-section" id="projects-section" style="display:none">
+          <button type="button" class="panel-section-title projects-header" id="projects-header" aria-expanded="true" title="Sbalit / rozbalit seznam projektů">
+            <span class="material-symbols-outlined projects-chevron">expand_more</span>
+            <span class="projects-header-label">Projekty</span>
+            <span class="projects-header-count" id="projects-header-count"></span>
+          </button>
+          <div id="projects-list" class="projects-list"></div>
         </div>
         <div class="panel-section panel-section-jvf">
           <div class="panel-section-title-row">
@@ -119,8 +126,16 @@
           <div id="jvf-layers-list" class="jvf-layers-list">
             <div class="empty-hint">Nahrajte JVF soubor</div>
           </div>
-          <div id="deleted-options-section" class="three-options-footer" style="display:none">
-            <label class="toggle-row" title="Zobrazit objekty se ZapisObjektu='d' (změnové věty — záznamy ke smazání) sytě červeně">
+          <div id="changeset-options-section" class="three-options-footer" style="display:none">
+            <label class="toggle-row" id="row-show-inserted" style="display:none" title="Zobrazit objekty se ZapisObjektu='i' (nové záznamy, teprve se budou do DTM vkládat) zeleně">
+              <input type="checkbox" id="toggle-show-inserted" />
+              <span>Zobrazit nové (zeleně)</span>
+            </label>
+            <label class="toggle-row" id="row-show-updated" style="display:none" title="Zobrazit objekty se ZapisObjektu='u' (editované záznamy) oranžově">
+              <input type="checkbox" id="toggle-show-updated" />
+              <span>Zobrazit editované (oranžově)</span>
+            </label>
+            <label class="toggle-row" id="row-show-deleted" style="display:none" title="Zobrazit objekty se ZapisObjektu='d' (změnové věty — záznamy ke smazání) sytě červeně">
               <input type="checkbox" id="toggle-show-deleted" />
               <span>Zobrazit mazané (červeně)</span>
             </label>
@@ -187,16 +202,17 @@
             <button class="btn btn-secondary btn-z-exag" data-exag="5" title="Pětinásobné převýšení">5×</button>
             <button class="btn btn-secondary btn-z-exag" data-exag="10" title="Desetinásobné převýšení (silné zvýraznění)">10×</button>
           </div>
-          <div id="bg-toolbar" class="toolbar-panel">
-            <span class="toolbar-label">Pozadí:</span>
-            <button class="btn btn-secondary btn-bg active" data-bg="dark" title="Tmavé pozadí"><span class="material-symbols-outlined">dark_mode</span></button>
-            <button class="btn btn-secondary btn-bg" data-bg="light" title="Světlé pozadí (lepší kontrast pro tmavé linie)"><span class="material-symbols-outlined">light_mode</span></button>
-          </div>
           </div>
         </div>
         <div id="loading-overlay" style="display:none">
           <div class="spinner"></div>
           <span>Načítám…</span>
+        </div>
+        <div id="drop-overlay" hidden>
+          <div class="drop-overlay-box">
+            <span class="material-symbols-outlined">upload_file</span>
+            <span>Pusťte JVF soubor pro načtení</span>
+          </div>
         </div>
       </main>
       <aside id="error-panel" style="display:none">
@@ -229,6 +245,8 @@
             <button class="features-filter-btn" data-filter="GAD" title="Geodetické a administrativní údaje">GAD</button>
             <button class="features-filter-btn" data-filter="OPL" title="Ostatní prvky a linie">OPL</button>
           </div>
+          <div id="features-project-filter" class="features-level-filter" style="display:none"></div>
+          <div id="features-level-filter" class="features-level-filter" style="display:none"></div>
           <input id="features-search" class="features-search" type="search" placeholder="Filtrovat podle názvu nebo ID…" />
         </div>
         <div id="features-list" class="features-list"></div>

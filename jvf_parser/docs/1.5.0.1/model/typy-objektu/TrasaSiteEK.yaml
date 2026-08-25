@@ -1,0 +1,255 @@
+id: TrasaSiteEK
+namespace: trsiek
+nazev: trasa sítě EK
+skupinaPrvku: ElektronickaKomunikace
+obsahovaCast: TI
+typGeometrie: Linie
+code:
+  base: "0100000105"
+  suffix: "02"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuTI
+   typ: sada
+   sada: SpolecneAtributyObjektuTI
+ - id: PocetVedeniVTrase
+   typ: atribut
+   volitelny: false
+   atribut: PocetVedeniVTrase
+ - id: VedeniSiteVJineStavbe
+   typ: atribut
+   volitelny: false
+   atribut: VedeniSiteVJineStavbe
+ - id: ZpusobOchranyVedeniSiteEK
+   typ: atribut
+   volitelny: false
+   atribut: ZpusobOchranyVedeniSiteEK
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie3D
+ - id: StavTrasySiteTI
+   typ: atribut
+   volitelny: false
+   atribut: StavTrasySiteTI
+ - id: MaterialTrasySiteEK
+   typ: atribut
+   volitelny: false
+   atribut: MaterialTrasySiteEK
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetVedeniVTrase
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: MaterialTrasySiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobOchranyVedeniSiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetVedeniVTrase
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: MaterialTrasySiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobOchranyVedeniSiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PocetVedeniVTrase
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: MaterialTrasySiteEK
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobOchranyVedeniSiteEK
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PocetVedeniVTrase
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: MaterialTrasySiteEK
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobOchranyVedeniSiteEK
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetVedeniVTrase
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: MaterialTrasySiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobOchranyVedeniSiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavTrasySiteTI
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetVedeniVTrase
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: VedeniSiteVJineStavbe
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: MaterialTrasySiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobOchranyVedeniSiteEK
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

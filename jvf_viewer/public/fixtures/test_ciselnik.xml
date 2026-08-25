@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimální fixture pro test překladu číselníkových atributů (kód → text). -->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.4.3</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2026-01-01T12:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">změnové věty</TypZapisu>
+    <Data>
+      <OsaPozemniKomunikace>
+        <ObjektovyTypNazev code_base="0100000004" code_suffix="02" xmlns="osapok">osa pozemní komunikace</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="osapok">Dopravní stavby</KategorieObjektu>
+        <SkupinaObjektu xmlns="osapok">Silniční doprava</SkupinaObjektu>
+        <ObsahovaCast xmlns="osapok">DI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="osapok">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>TEST-OSA-0001</ID>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuDI xmlns="atr">
+                <IDVlastnika>SUBJ-00100001</IDVlastnika>
+                <NeuplnaData>0</NeuplnaData>
+                <UrovenUmisteniObjektuDI>0</UrovenUmisteniObjektuDI>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniDI>1</ZpusobPorizeniDI>
+              </SpolecneAtributyObjektuDI>
+              <PrevazujiciPovrch xmlns="atr">1</PrevazujiciPovrch>
+              <KategoriePozemniKomunikace xmlns="atr">2</KategoriePozemniKomunikace>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <curveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <gml:LineString gml:id="IDT_02" srsName="EPSG:5514" srsDimension="3">
+                  <gml:posList>-526203.34 -1149337.49 253.76 -526196.02 -1149180.86 257.57</gml:posList>
+                </gml:LineString>
+              </curveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </OsaPozemniKomunikace>
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>

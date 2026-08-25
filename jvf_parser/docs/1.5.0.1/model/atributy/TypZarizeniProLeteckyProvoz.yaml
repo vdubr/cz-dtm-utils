@@ -1,0 +1,19 @@
+id: TypZarizeniProLeteckyProvoz
+nazev: Typ zařízení pro letecký provoz
+namespace: atr
+popis: Typ zařízení pro letecký provoz
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: přehledový systém
+ - hodnota: 2
+   popis: radionavigační zařízení
+ - hodnota: 3
+   popis: radiokomunikační systém
+ - hodnota: 4
+   popis: světelné zařízení
+ - hodnota: 98
+   popis: jiné
+ - hodnota: 99
+   popis: nezjištěno

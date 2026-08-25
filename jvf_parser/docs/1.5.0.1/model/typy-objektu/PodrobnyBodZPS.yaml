@@ -1,0 +1,317 @@
+id: PodrobnyBodZPS
+namespace: pobzps
+nazev: podrobný bod ZPS
+skupinaPrvku: PodrobnyBod
+obsahovaCast: ZPS
+typGeometrie: Bod
+code:
+  base: "0100000218"
+  suffix: "01"
+dim: 3
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: UrovenUmisteniObjektuZPS
+   typ: atribut
+   volitelny: false
+   atribut: UrovenUmisteniObjektuZPS
+ - id: TridaPresnostiPoloha
+   typ: atribut
+   volitelny: false
+   atribut: TridaPresnostiPoloha
+ - id: TridaPresnostiVyska
+   typ: atribut
+   volitelny: false
+   atribut: TridaPresnostiVyska
+ - id: ZpusobPorizeniPB_ZPS
+   typ: atribut
+   volitelny: false
+   atribut: ZpusobPorizeniPB_ZPS
+ - id: CisloBodu
+   typ: atribut
+   volitelny: false
+   atribut: CisloBodu
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuBod3D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsZPS
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdZPS
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  PeIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  PeUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  PeDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniPB_ZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: CisloBodu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true

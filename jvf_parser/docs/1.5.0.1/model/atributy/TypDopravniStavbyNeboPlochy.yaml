@@ -1,0 +1,53 @@
+id: TypDopravniStavbyNeboPlochy
+nazev: Typ dopravní stavby nebo plochy
+namespace: atr
+popis: Typ dopravní stavby nebo plochy
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: pozemní komunikace
+ - hodnota: 2
+   popis: chodník
+ - hodnota: 3
+   popis: cyklostezka
+ - hodnota: 4
+   popis: parkoviště, odstavná plocha
+ - hodnota: 5
+   popis: dopravní ostrůvek
+ - hodnota: 6
+   popis: dělící pás
+ - hodnota: 7
+   popis: nájezd
+ - hodnota: 8
+   popis: přidružená plocha pozemní komunikace
+ - hodnota: 9
+   popis: tramvajová dráha
+ - hodnota: 10
+   popis: pozemní lanová dráha
+ - hodnota: 11
+   popis: speciální dráha
+ - hodnota: 12
+   popis: manipulační plocha
+ - hodnota: 13
+   popis: mostní váha
+ - hodnota: 14
+   popis: příkop, násyp, zářez dopravní stavby
+ - hodnota: 15
+   popis: nástupiště
+ - hodnota: 16
+   popis: plocha mostní konstrukce
+ - hodnota: 17
+   popis: portál tunelu
+ - hodnota: 18
+   popis: provozní plocha tunelu
+ - hodnota: 19
+   popis: portál podchodu
+ - hodnota: 20
+   popis: provozní plocha podchodu
+ - hodnota: 21
+   popis: souhrnná plocha železničních drah
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: nezjištěno

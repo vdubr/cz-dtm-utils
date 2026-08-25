@@ -1,0 +1,4 @@
+Ukázkové soubory JVF DTM verze 1.5.0.1
+Verze 1.0, 16. 1. 2026
+Ukázkové soubory byly vytvořeny uměle pouze pro stručnou demonstraci způsobu zápisu dat, nemusejí 
+obsahovat všechny uvedené informace v reálné podobě.

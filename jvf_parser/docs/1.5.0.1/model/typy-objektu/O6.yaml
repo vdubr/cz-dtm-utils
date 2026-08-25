@@ -1,0 +1,313 @@
+id: O6
+namespace: o6
+nazev: o6
+popis: Objekt podle §4b odst. 6 zákona č. 200/1994 Sb. o zeměměřictví, ve znění pozdějších předpisů
+skupinaPrvku: OchranneABezpecnostniPasmo
+obsahovaCast: TI
+typGeometrie: Plocha
+code:
+  base: "0100000372"
+  suffix: "03"
+dim: 2
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: IDVlastnika
+   typ: atribut
+   volitelny: false
+   atribut: IDVlastnika
+ - id: IDProvozovateleZeZakona
+   typ: atribut
+   volitelny: false
+   atribut: IDProvozovateleZeZakona
+ - id: IDSpravce
+   typ: atribut
+   volitelny: false
+   atribut: IDSpravce
+ - id: IDProvozovatele
+   typ: atribut
+   volitelny: false
+   atribut: IDProvozovatele
+ - id: IDExterni
+   typ: atribut
+   volitelny: false
+   atribut: IDExterni
+ - id: NeuplnaData
+   typ: atribut
+   volitelny: false
+   atribut: NeuplnaData
+ - id: TridaPresnostiPoloha
+   typ: atribut
+   volitelny: false
+   atribut: TridaPresnostiPoloha
+ - id: EvidencniCisloObjektu
+   typ: atribut
+   volitelny: false
+   atribut: EvidencniCisloObjektu
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuPlocha2DDTI
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovateleZeZakona
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDSpravce
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NeuplnaData
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovateleZeZakona
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDSpravce
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NeuplnaData
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDProvozovateleZeZakona
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDSpravce
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDExterni
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: NeuplnaData
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDProvozovateleZeZakona
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDSpravce
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: IDExterni
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: NeuplnaData
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovateleZeZakona
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDSpravce
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NeuplnaData
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovateleZeZakona
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDSpravce
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NeuplnaData
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

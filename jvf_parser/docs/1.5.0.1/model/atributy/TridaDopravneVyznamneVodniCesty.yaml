@@ -1,0 +1,17 @@
+id: TridaDopravneVyznamneVodniCesty
+nazev: Třída dopravně významné vodní cesty
+namespace: atr
+popis: Třída dopravně významné vodní cesty
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: místního významu třídy 0
+ - hodnota: 2
+   popis: místního významu třídy I
+ - hodnota: 3
+   popis: mezinárodního významu třídy IV
+ - hodnota: 4
+   popis: mezinárodního významu třídy Va
+ - hodnota: 5
+   popis: mezinárodního významu třídy Vb

@@ -1,0 +1,19 @@
+id: DruhStaniceElektrickeSite
+nazev: Druh stanice elektrické sítě
+namespace: atr
+popis: Druh stanice elektrické sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: kompaktní a zděná
+ - hodnota: 2
+   popis: stožárová
+ - hodnota: 3
+   popis: věžová
+ - hodnota: 4
+   popis: venkovní
+ - hodnota: 5
+   popis: vestavěná
+ - hodnota: 99
+   popis: nezjištěno

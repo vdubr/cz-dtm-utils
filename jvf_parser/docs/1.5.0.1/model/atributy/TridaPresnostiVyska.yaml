@@ -1,0 +1,19 @@
+id: TridaPresnostiVyska
+nazev: Třída přesnosti (výška)
+namespace: atr
+popis: Třída přesnosti ve výšce
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: třída přesnosti 1
+ - hodnota: 2
+   popis: třída přesnosti 2
+ - hodnota: 3
+   popis: třída přesnosti 3
+ - hodnota: 4
+   popis: třída přesnosti 4
+ - hodnota: 5
+   popis: třída přesnosti 5
+ - hodnota: 9
+   popis: přesnost nevyhovuje ani třídě přesnosti 5, nebo není známa

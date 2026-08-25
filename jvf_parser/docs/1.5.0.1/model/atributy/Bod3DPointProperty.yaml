@@ -1,0 +1,7 @@
+id: Bod3DPointProperty
+nazev: Bod 3D
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: pointProperty
+dim: 3

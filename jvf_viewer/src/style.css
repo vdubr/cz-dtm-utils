@@ -55,63 +55,6 @@ html, body {
   letter-spacing: 0.02em;
 }
 
-.version-select-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 12px;
-  padding: 3px 8px;
-  background: rgba(88, 166, 255, 0.08);
-  border: 1px solid rgba(88, 166, 255, 0.25);
-  border-radius: 4px;
-  font-size: 11px;
-  color: #8b949e;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  cursor: pointer;
-}
-
-.version-select-wrap:has(select:disabled) {
-  cursor: default;
-}
-
-.version-select-label {
-  font-weight: 600;
-}
-
-.version-select {
-  background: transparent;
-  border: none;
-  color: #58a6ff;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-  text-transform: none;
-  min-width: 38px;
-  text-align: left;
-}
-
-/* Skryj nativní chevron, dokud máme jen 1 verzi (select je disabled).
-   Až přibude více verzí a select se povolí, chevron se zobrazí zpátky. */
-.version-select:disabled {
-  cursor: default;
-  opacity: 1;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: none;
-  padding-right: 4px;
-}
-
-.version-select:focus-visible {
-  outline: 1px solid #58a6ff;
-  outline-offset: 2px;
-}
-
 .header-right {
   display: flex;
   align-items: center;
@@ -762,24 +705,100 @@ html, body {
   justify-content: center;
 }
 
-.btn-bg {
-  padding: 2px 5px !important;
-  min-width: 26px;
-  height: 24px;
-  line-height: 1;
+/* ===== Přepínač světlý/tmavý režim (hlavička) ===== */
+.btn-theme {
+  padding: 4px 8px !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.btn-bg .material-symbols-outlined {
-  font-size: 16px;
+.btn-theme .material-symbols-outlined {
+  font-size: 18px;
 }
 
-.btn-bg.active {
-  background: #1f6feb !important;
-  border-color: #1f6feb !important;
-  color: #fff !important;
+/* ===== Sytost podkladové mapy (levý panel, řídí 2D i 3D texturu) ===== */
+.basemap-opacity-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.basemap-opacity-icon {
+  flex: 0 0 auto;
+  font-size: 16px !important;
+  color: #8b949e;
+}
+
+#basemap-opacity {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 14px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+/* Minimalistický slider: tenká linka + malý palec (WebKit / Firefox) */
+#basemap-opacity::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 1px;
+  background: #30363d;
+}
+
+#basemap-opacity::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: #8b949e;
+  border: none;
+  transition: background 0.15s;
+}
+
+#basemap-opacity:hover::-webkit-slider-thumb {
+  background: #1f6feb;
+}
+
+#basemap-opacity::-moz-range-track {
+  height: 2px;
+  border-radius: 1px;
+  background: #30363d;
+}
+
+#basemap-opacity::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8b949e;
+  border: none;
+  transition: background 0.15s;
+}
+
+#basemap-opacity:hover::-moz-range-thumb {
+  background: #1f6feb;
+}
+
+#basemap-opacity:focus {
+  outline: none;
+}
+
+#basemap-opacity:focus-visible::-webkit-slider-thumb {
+  background: #1f6feb;
+}
+
+#basemap-opacity:focus-visible::-moz-range-thumb {
+  background: #1f6feb;
+}
+
+.basemap-opacity-row .terrain-spinner {
+  flex: 0 0 auto;
 }
 
 /* ===== 3D navigation toolbar ===== */
@@ -859,6 +878,44 @@ html, body {
   font-size: 14px;
   color: #e6edf3;
   backdrop-filter: blur(2px);
+}
+
+/* ===== Drop Overlay (drag & drop JVF souboru) ===== */
+#drop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 17, 23, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+  backdrop-filter: blur(2px);
+  /* Overlay nesmí krást drag eventy — počítadlo dragenter/dragleave
+     v dragDrop.ts se řídí eventy na window */
+  pointer-events: none;
+}
+
+#drop-overlay[hidden] {
+  display: none;
+}
+
+.drop-overlay-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 56px;
+  border: 3px dashed #58a6ff;
+  border-radius: 12px;
+  background: rgba(22, 27, 34, 0.85);
+  color: #e6edf3;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.drop-overlay-box .material-symbols-outlined {
+  font-size: 44px;
+  color: #58a6ff;
 }
 
 /* ===== Spinner ===== */
@@ -1906,6 +1963,37 @@ html, body {
   color: #fff;
 }
 
+/* Filtr úrovní umístění (LEVEL) — chips v toolbaru Přehledu prvků */
+.features-level-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.features-level-label {
+  font-size: 11px;
+  color: #8b949e;
+  margin-right: 2px;
+}
+
+.level-chip {
+  padding: 3px 8px;
+  font-size: 11px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: #8b949e;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.level-chip:hover { background: #1f242c; border-color: #484f58; }
+.level-chip.active {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #fff;
+}
+
 .features-search {
   width: 100%;
   padding: 4px 8px;
@@ -1939,11 +2027,14 @@ html, body {
 }
 
 .feature-group-header {
+  position: sticky;   /* přišpendlení při scrollu v .features-list */
+  top: 0;
+  z-index: 2;         /* nad .feature-row (nepozicované) i hover stavy */
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: #1c2128;
+  background: #1c2128; /* neprůhledné pozadí — nutné, aby řádky neprosvítaly */
   border-bottom: 1px solid #30363d;
   border-top: 1px solid #30363d;
   cursor: pointer;
@@ -2109,4 +2200,167 @@ html, body {
   font-size: 11px;
   color: #8b949e;
   font-style: italic;
+}
+
+/* ── Projekty (více načtených JVF souborů) ─────────────────────────────── */
+
+/* Sekce Projekty nesmí růst — .panel-section + .panel-section jí jinak dává
+   flex:1 a rozdělila by volný prostor s JVF vrstvami (velká mezera pod
+   seznamem). Má zabírat jen výšku obsahu; JVF vrstvy vyplní zbytek. */
+#projects-section {
+  flex: 0 0 auto;
+}
+
+/* Sbalitelná hlavička sekce — chová se jako .panel-section-title, ale je
+   klikací (button reset) a nese chevron + počet projektů. */
+.projects-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.projects-header:hover {
+  color: #c9d1d9;
+}
+
+.projects-chevron {
+  font-size: 16px;
+  color: #8b949e;
+  /* nutné — .panel-section-title dědí uppercase, což by rozbilo ligaturu ikony */
+  text-transform: none;
+  transition: transform 0.15s ease;
+}
+#projects-section.collapsed .projects-chevron {
+  transform: rotate(-90deg);
+}
+
+.projects-header-label {
+  flex: 1 1 auto;
+}
+
+.projects-header-count {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8b949e;
+  background: #21262d;
+  border-radius: 8px;
+  padding: 1px 6px;
+  letter-spacing: 0;
+}
+
+#projects-section.collapsed .projects-list {
+  display: none;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Pojistka při plném limitu projektů — seznam neroztlačí panel, scrolluje. */
+  max-height: 30vh;
+  overflow-y: auto;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  color: #c9d1d9;
+  cursor: pointer;
+}
+.project-item:hover {
+  background: #1f242c;
+}
+
+.project-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.project-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Info ikona za názvem projektu — hover ukáže verzi JVF DTM (title). */
+.project-version-info {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid #4b5563;
+  color: #8b949e;
+  font-size: 9px;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1;
+  cursor: help;
+  user-select: none;
+}
+.project-version-info:hover {
+  color: #58a6ff;
+  border-color: #58a6ff;
+}
+
+.project-count {
+  flex: 0 0 auto;
+  font-size: 10px;
+  color: #8b949e;
+  background: #21262d;
+  border-radius: 8px;
+  padding: 1px 6px;
+}
+
+.project-remove-btn {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: #8b949e;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 3px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.project-remove-btn:hover {
+  color: #f85149;
+  background: #21262d;
+}
+
+.projects-limit-hint {
+  font-size: 10px;
+  color: #8b949e;
+  font-style: italic;
+  padding: 2px 6px;
+}
+
+/* Chip projektu ve filtru Přehledu prvků — rozšiřuje .level-chip */
+.project-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 160px;
+}
+.project-chip .project-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

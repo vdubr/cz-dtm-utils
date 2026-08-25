@@ -1,0 +1,15 @@
+id: TypJadernehoZarizeni
+nazev: Typ jaderného zařízení
+namespace: atr
+popis: Typ jaderného zařízení
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: reaktor
+ - hodnota: 2
+   popis: sklad
+ - hodnota: 3
+   popis: úložiště
+ - hodnota: 98
+   popis: jiné

@@ -1,0 +1,21 @@
+id: TypTunelu
+nazev: Typ tunelu
+namespace: atr
+popis: Typ tunelu
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: železniční
+ - hodnota: 2
+   popis: silniční
+ - hodnota: 3
+   popis: pro cyklisty a chodce
+ - hodnota: 4
+   popis: pro vodní dopravu
+ - hodnota: 5
+   popis: sdružený
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: nezjištěno

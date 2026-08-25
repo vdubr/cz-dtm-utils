@@ -1,0 +1,7 @@
+id: IDEditora
+nazev: ID editora
+namespace: atr
+popis: Identifikátor editora DTI nebo ZPS
+nillable: false
+typ: String
+maxDelka: 50
