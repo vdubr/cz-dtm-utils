@@ -7,17 +7,23 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+## [2026.8.25] - 2026-08-25
+
 ### Přidáno
 
 - **Popisky číselníkových atributů** v panelu detailu prvku — u kódovaných
   atributů se vedle číselného kódu zobrazí i český popisek z číselníku DTM
   (např. `2 — dálnice II. třídy`). Mapování `kód → text` se generuje
   build-time z XSD (`ENUM_LABELS`), překlad běží jen pro sekci „Atributy
-  objektu"; nekódované atributy zůstávají beze změny.
+  objektu"; nekódované atributy zůstávají beze změny. Kromě číselníků se
+  překládají i **boolean atributy** (`xs:boolean`, v XML `0`/`1`) na
+  `ne`/`ano` — např. `KritickaTI`, `NeuplnaData`, `HraniceJinehoObjektu`,
+  `OchrannaFunkce`. Skutečná čísla (počty, rozměry jako `PocetVedeniVTrase`)
+  a identifikátory/volný text zůstávají beze změny.
 - **Podpora JVF DTM 1.5.0.1 souběžně s 1.4.3** napříč všemi balíčky
   (parser, topologie, viewer). Čtení archivních 1.4.3 souborů zůstává beze
-  změny — verze se **detekuje automaticky** podle obsahu souboru a aktivní
-  verze ve vieweru se při načtení přepne (ruční přepínač zůstává).
+  změny — verze se **detekuje automaticky** podle obsahu souboru a zobrazí
+  se u načteného projektu (viz „Změněno" → verze u projektu).
   - **Parser**: verzní router `parseJvfDtm` (1.4.3 i 1.5.0.1), nová struktura
     1.5.0.1 — operace v názvu elementu záznamu (`ZaznamObjektuIns/Upd/Del`,
     referenční `RefV/RefN…` a přeshraniční `Pe…` věty), geometrické wrappery
@@ -81,6 +87,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Verze JVF se zobrazuje u projektu, ne v hlavičce.** Za názvem každého
+  načteného souboru v panelu „Projekty" je malá info ikona `i` — po najetí
+  ukáže „Verze JVF …" daného souboru. Verze se detekuje automaticky z obsahu;
+  z hlavičky zmizel dřívější přepínač i potvrzovací dialog o ztrátě dat.
+  Při více projektech tak může každý řádek ukazovat jinou verzi.
 - **Klik na prvek v mapě (2D i 3D) automaticky otevře „Přehled prvků"**, pokud
   byl zavřený, a rovnou v něm prvek vybere, rozbalí jeho atributy a odscrolluje
   na něj. Dříve klik do mapy fungoval jen při už otevřeném panelu; klik do
