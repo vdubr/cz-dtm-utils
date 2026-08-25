@@ -1,7 +1,9 @@
 // Auto-generated from JVF DTM 1.5.0.1 XSD — DO NOT EDIT
 // Run: npx tsx scripts/generate-types.ts <version>
 //
-// Mapa: název číselníkového atributu → { kód → český popisek }.
+// ENUM_LABELS: název číselníkového atributu → { kód → český popisek }.
+// BOOLEAN_ATTRS: názvy xs:boolean atributů (v XML 0/1) — hodnotu překládá
+//   labelForAttribute na ano/ne (nejsou to číselníky, drženy zvlášť).
 export const ENUM_LABELS = {
     "UrovenUmisteniObjektuZPS": {
         "-3": "3. úroveň pod povrchem (nejníže)",
@@ -1052,4 +1054,9 @@ export const ENUM_LABELS = {
         "99": "nezjištěno",
     },
 };
+export const BOOLEAN_ATTRS = [
+    "HraniceJinehoObjektu",
+    "NeuplnaData",
+    "OchrannaFunkce",
+];
 //# sourceMappingURL=enum-labels.js.map

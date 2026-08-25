@@ -626,23 +626,28 @@ function makeEnumKey(value: string, doc: string): string {
  * k doplnění popisků číselníkových atributů v panelu prvku.
  * Escaping přes `JSON.stringify` (A4 — české popisky s apostrofy/uvozovkami).
  */
-function generateEnumLabelsFile(enums: EnumDef[]): string {
+function generateEnumLabelsFile(
+  enums: EnumDef[],
+  elements: Map<string, ElementTypeDef>
+): string {
   const lines: string[] = [
     `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
     '// Run: npx tsx scripts/generate-types.ts <version>',
     '//',
-    '// Mapa: název číselníkového atributu → { kód → český popisek }.',
+    '// ENUM_LABELS: název číselníkového atributu → { kód → český popisek }.',
+    '// BOOLEAN_ATTRS: názvy xs:boolean atributů (v XML 0/1) — hodnotu překládá',
+    '//   labelForAttribute na ano/ne (nejsou to číselníky, drženy zvlášť).',
     '',
     'export const ENUM_LABELS: Record<string, Record<string, string>> = {',
   ];
 
-  const seen = new Set<string>();
+  const enumNames = new Set<string>();
   for (const e of enums) {
-    if (seen.has(e.name)) {
+    if (enumNames.has(e.name)) {
       console.warn(`  WARN: duplicitní číselník v ENUM_LABELS: ${e.name}`);
       continue;
     }
-    seen.add(e.name);
+    enumNames.add(e.name);
     lines.push(`  ${JSON.stringify(e.name)}: {`);
     for (const v of e.values) {
       if (!v.doc) continue; // hodnoty bez popisku přeskočit (graceful, A3)
@@ -652,6 +657,20 @@ function generateEnumLabelsFile(enums: EnumDef[]): string {
   }
 
   lines.push('};');
+  lines.push('');
+
+  // Boolean atributy (xs:boolean): nemají xs:enumeration, takže nejsou v
+  // ENUM_LABELS, ale kód 0/1 (příp. true/false) nese význam ne/ano. Držíme je
+  // zvlášť, ať zůstane invariant „ENUM_LABELS = číselníky" (enum-labels.test.ts).
+  const boolNames = [...elements.values()]
+    .filter((e) => e.type === 'boolean' && !enumNames.has(e.name))
+    .map((e) => e.name)
+    .sort();
+  lines.push('export const BOOLEAN_ATTRS: readonly string[] = [');
+  for (const name of boolNames) {
+    lines.push(`  ${JSON.stringify(name)},`);
+  }
+  lines.push('];');
   lines.push('');
   return lines.join('\n');
 }
@@ -988,7 +1007,7 @@ function main(): void {
   writeFileSync(join(OUT_DIR, 'enums.ts'), enumsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enums.ts`);
 
-  const enumLabelsCode = generateEnumLabelsFile(enums);
+  const enumLabelsCode = generateEnumLabelsFile(enums, elements);
   writeFileSync(join(OUT_DIR, 'enum-labels.ts'), enumLabelsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enum-labels.ts`);
 

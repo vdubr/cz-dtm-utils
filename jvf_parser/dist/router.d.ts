@@ -36,10 +36,18 @@ export declare function parseJvfDtm(xml: string): JvfDtm;
 export declare function getEntityCatalog(version: JvfVersion): Readonly<Record<string, EntityMeta>>;
 /** Tabulka číselníků `název atributu → { kód → popisek }` pro danou verzi. */
 export declare function getEnumLabels(version: JvfVersion): Readonly<Record<string, Record<string, string>>>;
+/** Množina názvů `xs:boolean` atributů (v XML 0/1) pro danou verzi. */
+export declare function getBooleanAttrs(version: JvfVersion): ReadonlySet<string>;
 /**
- * Vrátí český popisek číselníkové hodnoty (`kód → text`) pro daný atribut,
+ * Vrátí český popisek hodnoty atributu (`kód → text`) pro daný atribut,
  * nebo `undefined` u neznámého atributu/kódu (graceful degradation, A3).
  * `value` se porovnává jako string (číselný i řetězcový kód shodně).
+ *
+ * Pokrývá dva druhy kódovaných atributů:
+ *  1. **číselníky** (`xs:enumeration`) přes `ENUM_LABELS`,
+ *  2. **booleany** (`xs:boolean`, v XML `0`/`1` příp. `false`/`true`) →
+ *     `ne`/`ano`. Booleany nejsou číselníky (nemají popisky po hodnotách),
+ *     kontext dává název atributu (např. `NeuplnaData: 1 — ano`).
  */
 export declare function labelForAttribute(attrName: string, value: unknown, version?: JvfVersion): string | undefined;
 //# sourceMappingURL=router.d.ts.map

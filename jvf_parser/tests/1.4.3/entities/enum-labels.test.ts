@@ -24,6 +24,22 @@ describe('labelForAttribute (kód → text)', () => {
     expect(labelForAttribute('KategoriePozemniKomunikace', 9999)).toBeUndefined();
   });
 
+  it('boolean atributy (xs:boolean) → ano/ne', () => {
+    expect(labelForAttribute('KritickaTI', 0)).toBe('ne');
+    expect(labelForAttribute('KritickaTI', 1)).toBe('ano');
+    // string i number kód, i XML forma true/false
+    expect(labelForAttribute('NeuplnaData', '0')).toBe('ne');
+    expect(labelForAttribute('NeuplnaData', 'true')).toBe('ano');
+    // 1.5.0.1 nemá KritickaTI, ale má NeuplnaData
+    expect(labelForAttribute('NeuplnaData', 1, '1.5.0.1')).toBe('ano');
+  });
+
+  it('nonNegativeInteger (počet) NENÍ boolean → zůstává bez popisku', () => {
+    // PocetVedeniVTrase = skutečný počet (1 = jedno vedení), ne kód
+    expect(labelForAttribute('PocetVedeniVTrase', 1)).toBeUndefined();
+    expect(labelForAttribute('PocetVedeniVTrase', 0)).toBeUndefined();
+  });
+
   it('1.5.0.1 tabulka: PSPI-specifický číselník se přeloží jen pro 1.5.0.1', () => {
     // TypObjektuSilnicniDopravyPS je jen v 1.5.0.1
     const v1501 = labelForAttribute('TypObjektuSilnicniDopravyPS', 3, '1.5.0.1');

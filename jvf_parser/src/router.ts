@@ -23,8 +23,17 @@ import {
   ENTITY_CATALOG as CATALOG_1501,
   type EntityMeta,
 } from './1.5.0.1/generated/entities.js';
-import { ENUM_LABELS as LABELS_143 } from './1.4.3/generated/enum-labels.js';
-import { ENUM_LABELS as LABELS_1501 } from './1.5.0.1/generated/enum-labels.js';
+import {
+  ENUM_LABELS as LABELS_143,
+  BOOLEAN_ATTRS as BOOL_ATTRS_143,
+} from './1.4.3/generated/enum-labels.js';
+import {
+  ENUM_LABELS as LABELS_1501,
+  BOOLEAN_ATTRS as BOOL_ATTRS_1501,
+} from './1.5.0.1/generated/enum-labels.js';
+
+const BOOL_SET_143 = new Set<string>(BOOL_ATTRS_143);
+const BOOL_SET_1501 = new Set<string>(BOOL_ATTRS_1501);
 
 /** Přečte hodnotu `<VerzeJVFDTM>` z raw XML (bez plného parsování). */
 export function detectVersionString(xml: string): string | null {
@@ -92,15 +101,34 @@ export function getEnumLabels(version: JvfVersion): Readonly<Record<string, Reco
   return version === '1.5.0.1' ? LABELS_1501 : LABELS_143;
 }
 
+/** Množina názvů `xs:boolean` atributů (v XML 0/1) pro danou verzi. */
+export function getBooleanAttrs(version: JvfVersion): ReadonlySet<string> {
+  return version === '1.5.0.1' ? BOOL_SET_1501 : BOOL_SET_143;
+}
+
 /**
- * Vrátí český popisek číselníkové hodnoty (`kód → text`) pro daný atribut,
+ * Vrátí český popisek hodnoty atributu (`kód → text`) pro daný atribut,
  * nebo `undefined` u neznámého atributu/kódu (graceful degradation, A3).
  * `value` se porovnává jako string (číselný i řetězcový kód shodně).
+ *
+ * Pokrývá dva druhy kódovaných atributů:
+ *  1. **číselníky** (`xs:enumeration`) přes `ENUM_LABELS`,
+ *  2. **booleany** (`xs:boolean`, v XML `0`/`1` příp. `false`/`true`) →
+ *     `ne`/`ano`. Booleany nejsou číselníky (nemají popisky po hodnotách),
+ *     kontext dává název atributu (např. `NeuplnaData: 1 — ano`).
  */
 export function labelForAttribute(
   attrName: string,
   value: unknown,
   version: JvfVersion = DEFAULT_VERSION
 ): string | undefined {
-  return getEnumLabels(version)[attrName]?.[String(value)];
+  const enumLabel = getEnumLabels(version)[attrName]?.[String(value)];
+  if (enumLabel !== undefined) return enumLabel;
+
+  if (getBooleanAttrs(version).has(attrName)) {
+    const s = String(value).trim().toLowerCase();
+    if (s === '1' || s === 'true') return 'ano';
+    if (s === '0' || s === 'false') return 'ne';
+  }
+  return undefined;
 }
