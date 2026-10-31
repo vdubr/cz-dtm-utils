@@ -1,17 +1,20 @@
 // Info modal — zobrazí README o aplikaci v překryvném dialogu.
 // Obsah je staticky vložený HTML (bez závislosti na markdown parseru).
 
-import { SUPPORTED_VERSIONS } from 'jvf-parser';
+import { SUPPORTED_VERSIONS, UDM_VERSIONS, formatVersionLabel } from 'jvf-parser';
 import { buildChangelogHtml } from './changelog.js';
 
 const VERSIONS_DISPLAY = SUPPORTED_VERSIONS.join(', ');
+const UDM_DISPLAY = UDM_VERSIONS.map(formatVersionLabel).join(', ');
 
 const INFO_CONTENT_HTML = `
   <h3>Co to je</h3>
   <p>
     Webový prohlížeč souborů <strong>JVF DTM</strong> (Jednotný výměnný formát
     Digitální technické mapy ČR). Podporované verze specifikace:
-    <strong>${VERSIONS_DISPLAY}</strong> (verze se detekuje automaticky
+    <strong>${VERSIONS_DISPLAY}</strong> a rozšíření
+    <strong>${UDM_DISPLAY}</strong> (Univerzální datový model ČKZ)
+    (verze se detekuje automaticky
     z načteného souboru; konkrétní verzi každého souboru ukáže info ikona
     <code>i</code> za názvem projektu v panelu „Projekty").
     Umožňuje načíst JVF XML soubor a prohlédnout si jeho obsah ve 2D mapě i ve
@@ -27,7 +30,7 @@ const INFO_CONTENT_HTML = `
       <strong>přetažení souborů myší</strong> (drag &amp; drop)
       kamkoli nad okno aplikace. Parsování probíhá v prohlížeči. Vedle
       tlačítka je šipka s rychlým výběrem přiložených
-      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL).
+      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL a UDM).
     </li>
     <li>
       <strong>Více projektů naráz</strong> — každý načtený soubor se přidá
@@ -45,7 +48,7 @@ const INFO_CONTENT_HTML = `
       odškrtnutý projekt se skryje v tabulce i ve 2D a 3D mapě. Vrstvy
       a skupiny stejného typu z různých projektů jsou odlišené barevnou
       tečkou projektu. Verze každého souboru se detekuje automaticky
-      (podporované 1.4.3 i 1.5.0.1); topologická validace běží pro každý
+      (podporované 1.4.3, 1.5.0.1 i UDM); topologická validace běží pro každý
       projekt zvlášť dle jeho verze. 3D
       terén se při více projektech stahuje <strong>zvlášť kolem každého
       projektu</strong> (okolí 800&nbsp;m) — dva projekty daleko od sebe
@@ -231,6 +234,22 @@ const INFO_CONTENT_HTML = `
     (<code>ZaznamObjektuIns/Upd/Del</code>, referenční a přeshraniční věty);
     zrušeno rozlišení KI a objekt „průběh technologické konstrukce".
   </p>
+  <p>
+    <strong>UDM — Univerzální datový model ČKZ (${UDM_DISPLAY}):</strong>
+    otevřený datový model České komory zeměměřičů, nadmnožina JVF DTM pro
+    data nad rámec DTM (stromy, mobiliář, svislé a vodorovné dopravní
+    značení, popisy, vrstevnice, pasportní atributy, přílohy). Soubor UDM se
+    pozná podle elementu <code>VerzeJVFUDM</code> a načte se automaticky.
+    Objekty nad rámec DTM (kód <code>94…</code>) tvoří obsahové části
+    <strong>ZPSUDM</strong>, <strong>DIUDM</strong>, <strong>TIUDM</strong>
+    a <strong>OST</strong> — v mapě se kreslí barvami z tabulky UDM
+    (pro světlý podklad ztmavenými), v legendě i v panelu prvků mají české
+    názvy a popisky číselníků <code>ckz_*</code> (např. stav stromu,
+    materiál). Info ikona projektu ukáže verzi UDM i podkladového JVF.
+    Meziobjektová topologie se pro UDM nespouští — UDM nepracuje s plošnou
+    mapou ani s vazbou definiční bod ↔ plocha. Ukázkové soubory UDM jsou
+    v nabídce vedle tlačítka „Nahrát soubor".
+  </p>
 
   <h3>Omezení</h3>
   <p>
@@ -268,8 +287,8 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>jvf-parser</strong> — parser JVF XML do typovaných objektů.
       Postavený nad <code>fast-xml-parser</code>, podporuje verze 1.4.3
-      i 1.5.0.1 (verzní router s auto-detekcí) a samostatný parser
-      protokolu chyb.
+      i 1.5.0.1 a Univerzální datový model ČKZ (UDM 2.1.1) — verzní router
+      s auto-detekcí — a samostatný parser protokolu chyb.
     </li>
     <li>
       <strong>jvf-topology</strong> — topologická a geometrická validace.

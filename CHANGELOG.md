@@ -7,6 +7,33 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
+### Přidáno
+
+- **Podpora UDM 2.1.1 (Univerzální datový model ČKZ)** — otevřeného
+  datového modelu České komory zeměměřičů, který rozšiřuje JVF DTM
+  (1.5.0.2) o objekty a atributy nad rámec DTM (stromy, mobiliář, svislé
+  a vodorovné dopravní značení, popisy, vrstevnice, pasportní údaje, přílohy).
+  Soubor UDM se rozpozná automaticky podle `VerzeJVFUDM`. Parser zvládá
+  zploštělou strukturu atributů UDM, katalog obsahuje všech 470 objektů
+  (393 DTM + 77 UDM s kódem `94…`) včetně českých popisků číselníků
+  `ckz_*`. Objekty UDM tvoří obsahové části ZPSUDM / DIUDM / TIUDM / OST
+  a v mapě i legendě mají barvy z oficiální tabulky UDM (pro světlý podklad
+  ztmavené). Info ikona projektu ukazuje verzi UDM i podkladového JVF.
+- **Ukázkové soubory UDM** v nabídce vedle tlačítka „Nahrát soubor"
+  (reálná ukázka ČKZ a minimální testovací soubor).
+
+### Změněno
+
+- Meziobjektová topologie se pro soubory UDM nespouští (UDM nepracuje
+  s plošnou mapou ani s vazbou definiční bod ↔ plocha); kontrola rozsahu
+  výšek ZPS se vztahuje i na objekty ZPSUDM.
+
+### Opraveno
+
+- Legenda se po načtení souboru jiné verze při dalším otevření překreslí
+  (dřív zůstal katalog verze platné při prvním otevření).
+- Hláška o nepodporované verzi vypisuje aktuální seznam podporovaných verzí.
+
 ## [2026.8.25] - 2026-08-25
 
 ### Přidáno

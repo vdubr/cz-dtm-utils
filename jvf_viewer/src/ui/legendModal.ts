@@ -3,7 +3,7 @@
 
 import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
-import { getActiveVersion } from '../state/activeVersion.js';
+import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
 
 /**
@@ -149,8 +149,9 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     catMap.get(kat)!.push(meta);
   }
 
-  // Stabilní pořadí: ZPS, TI, DI, GAD, OPL, PSPI, ostatní (alfa).
-  const CAST_ORDER = ['ZPS', 'TI', 'DI', 'GAD', 'OPL', 'PSPI'];
+  // Stabilní pořadí: ZPS, TI, DI, GAD, OPL, PSPI, UDM (ZPSUDM, TIUDM, DIUDM,
+  // OST), ostatní (alfa).
+  const CAST_ORDER = ['ZPS', 'TI', 'DI', 'GAD', 'OPL', 'PSPI', 'ZPSUDM', 'TIUDM', 'DIUDM', 'OST'];
   const sortedCasts = [...groups.keys()].sort((a, b) => {
     const ai = CAST_ORDER.indexOf(a);
     const bi = CAST_ORDER.indexOf(b);
@@ -236,6 +237,11 @@ export function setupLegendModal(): void {
   }
 
   let rendered = false;
+  // Legenda je katalogová podle aktivní verze — po načtení souboru jiné verze
+  // (např. UDM) ji při dalším otevření překresli.
+  onActiveVersionChange(() => {
+    rendered = false;
+  });
 
   const open = (): void => {
     if (!rendered) {

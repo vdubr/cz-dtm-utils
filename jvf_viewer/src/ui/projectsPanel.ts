@@ -1,3 +1,4 @@
+import { formatVersionLabel, isUdmVersion } from 'jvf-parser';
 import {
   countZaznamy,
   getProjects,
@@ -86,7 +87,11 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
     versionInfo.className = 'project-version-info';
     versionInfo.textContent = 'i';
     versionInfo.setAttribute('role', 'img');
-    const versionTitle = `Verze JVF ${project.dtm.verze}`;
+    // UDM: „Verze UDM 2.1.1 (JVF 1.5.0.2)" — model + verze podkladového JVF.
+    const { verze, verzeJvfDtm } = project.dtm;
+    const versionTitle = isUdmVersion(verze)
+      ? `Verze ${formatVersionLabel(verze)}${verzeJvfDtm ? ` (JVF ${verzeJvfDtm})` : ''}`
+      : `Verze JVF ${verze}`;
     versionInfo.title = versionTitle;
     versionInfo.setAttribute('aria-label', versionTitle);
 

@@ -21,6 +21,7 @@ import {
   type SymbolVariant,
 } from './symbology.js';
 import { VARIANT_ATTR } from './variantAttrMap.js';
+import { UDM_VARIANT_ATTR } from './udmSymbology.js';
 import {
   isShowZapis,
   isChangesetZapis,
@@ -276,7 +277,7 @@ export function resolveStyleForZaznam(
   const sym = getSymbology(ot.codeBase);
   if (!sym) return resolveStyle(ot);
 
-  const variantMap = VARIANT_ATTR[ot.codeBase];
+  const variantMap = VARIANT_ATTR[ot.codeBase] ?? UDM_VARIANT_ATTR[ot.codeBase];
   let variant: SymbolVariant | undefined;
   if (variantMap && sym.variants && sym.variants.length > 0) {
     const raw = zaznam.attributes?.[variantMap.attrName];

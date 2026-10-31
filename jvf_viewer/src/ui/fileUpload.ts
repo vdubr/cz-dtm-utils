@@ -1,4 +1,12 @@
-import { parseJvfDtm, isSupportedVersion, isErrorProtocolXml, parseErrorProtocol } from 'jvf-parser';
+import {
+  parseJvfDtm,
+  isSupportedVersion,
+  isErrorProtocolXml,
+  parseErrorProtocol,
+  SUPPORTED_VERSIONS,
+  UDM_VERSIONS,
+  formatVersionLabel,
+} from 'jvf-parser';
 import type { JvfDtm, ErrorProtocol } from 'jvf-parser';
 import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
@@ -36,7 +44,9 @@ async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<b
         zatím nepodporuje.
       </p>
       <p>
-        Podporované verze: <strong>1.4.3</strong> a <strong>1.5.0.1</strong>.
+        Podporované verze: <strong>${[...SUPPORTED_VERSIONS, ...UDM_VERSIONS]
+          .map(formatVersionLabel)
+          .join(', ')}</strong>.
       </p>
     `,
     buttons: [{ label: 'Rozumím', variant: 'primary' }],

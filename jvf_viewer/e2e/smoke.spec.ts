@@ -23,7 +23,8 @@ test.describe('Základní stav aplikace', () => {
     await page.locator('#btn-upload-menu').click();
     await expect(page.locator('#upload-menu')).toBeVisible();
     await expect(page.locator('.upload-menu-item[data-sample="ukazka_ZPS.xml"]')).toBeVisible();
-    await expect(page.locator('.upload-menu-item')).toHaveCount(4);
+    // 4 ukázky JVF 1.4.3 + 2 ukázky UDM 2.1.1.
+    await expect(page.locator('.upload-menu-item')).toHaveCount(6);
   });
 });
 
@@ -80,6 +81,24 @@ test.describe('Načtení JVF souboru', () => {
       'title',
       'Verze JVF 1.5.0.1',
     );
+  });
+
+  test('soubor UDM 2.1.1 se načte bez modalu, s verzí UDM a skupinami UDM', async ({ page }) => {
+    // VerzeJVFDTM 1.5.0.2 + VerzeJVFUDM 2.1.1 → UDM (ne odmítnutá verze 1.5.0.2).
+    await page.locator('#btn-upload-menu').click();
+    await page.locator('.upload-menu-item[data-sample="udm_minimal.xml"]').click();
+
+    await expect(page.locator('#confirm-modal')).toBeHidden();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#btn-validate')).toBeEnabled();
+    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+      'title',
+      'Verze UDM 2.1.1 (JVF 1.5.0.2)',
+    );
+    // Objekty nad rámec DTM tvoří vlastní obsahové části ve vrstvách.
+    for (const cast of ['ZPSUDM', 'DIUDM', 'OST']) {
+      await expect(page.locator('#jvf-layers-list')).toContainText(cast);
+    }
   });
 });
 
