@@ -139,7 +139,7 @@ describe('UDM — ukázka pontonového mostu (udm_pontonovy_most.xml)', () => {
     expect(most.attributes['TypMostu']).toBe(402);
     expect(labelForAttribute('TypMostu', 402, 'udm-2.1.1')).toBe('jiný');
     expect(most.attributes['Upresneni']).toBe('pontonový most');
-    expect(most.attributes['OznaceniMostu']).toBe('pontonový most přes Volyňku');
+    expect(most.attributes['OznaceniMostu']).toBe('pontonový most přes Vltavu v ose Karlova mostu');
     expect(most.geometrie[0].type).toBe('Polygon');
     // Povrch plochy i definičního bodu: 205 = dřevo (rozšíření UDM), ne asfalt (1).
     for (const ot of dtm.objekty.slice(1)) {

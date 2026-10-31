@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Ukázka UDM 2.1.1: pontonový most.
+  Ukázka UDM 2.1.1: pontonový most přes Vltavu v Praze, osazený v ose
+  Karlova mostu (mezi Staroměstskou a Malostranskou mosteckou věží, ~456 m;
+  WGS84 → S-JTSK se 7 parametry towgs84). Výška ~186 m n. m. = hladina
+  Vltavy (pontonový most plave). Obvod mostu 6 m, komunikace 4 m široká.
   ObvodMostu (DI) s typem mostu „jiný" (402) a upřesněním „pontonový most";
   na mostě provozní plocha pozemní komunikace (plocha + definiční bod)
   s dřevěným povrchem (PrevazujiciPovrch 205 = dřevo, rozšíření číselníku UDM).
@@ -29,7 +32,7 @@
               <omopol:ZpusobPorizeniDI>1</omopol:ZpusobPorizeniDI>
               <omopol:TypMostu>402</omopol:TypMostu>
               <omopol:Upresneni>pontonový most</omopol:Upresneni>
-              <omopol:OznaceniMostu>pontonový most přes Volyňku</omopol:OznaceniMostu>
+              <omopol:OznaceniMostu>pontonový most přes Vltavu v ose Karlova mostu</omopol:OznaceniMostu>
               <omopol:OznaceniKomunikaceTrate>účelová komunikace</omopol:OznaceniKomunikaceTrate>
               <omopol:VstupDoDTM>1</omopol:VstupDoDTM>
             </omopol:AtributyObjektu>
@@ -39,7 +42,7 @@
                   <gml:Polygon gml:id="ID40_03" srsDimension="3" srsName="EPSG:5514">
                     <gml:exterior>
                       <gml:LinearRing>
-                        <gml:posList>-795031.00 -1138702.00 440.20 -795025.00 -1138702.00 440.20 -795025.00 -1138668.00 440.20 -795031.00 -1138668.00 440.20 -795031.00 -1138702.00 440.20</gml:posList>
+                        <gml:posList>-743376.26 -1043085.20 186.00 -743820.80 -1042981.30 186.00 -743819.43 -1042975.46 186.00 -743374.90 -1043079.36 186.00 -743376.26 -1043085.20 186.00</gml:posList>
                       </gml:LinearRing>
                     </gml:exterior>
                   </gml:Polygon>
@@ -69,7 +72,7 @@
                 <gml:Polygon gml:id="ID41_03" srsDimension="2" srsName="EPSG:5514">
                   <gml:exterior>
                     <gml:LinearRing>
-                      <gml:posList>-795030.00 -1138701.00 -795026.00 -1138701.00 -795026.00 -1138669.00 -795030.00 -1138669.00 -795030.00 -1138701.00</gml:posList>
+                      <gml:posList>-743376.03 -1043084.23 -743820.57 -1042980.33 -743819.66 -1042976.44 -743375.12 -1043080.34 -743376.03 -1043084.23</gml:posList>
                     </gml:LinearRing>
                   </gml:exterior>
                 </gml:Polygon>
@@ -95,7 +98,7 @@
               <pokdef:Bod3D>
                 <gml:pointProperty>
                   <gml:Point gml:id="ID42_04" srsDimension="3" srsName="EPSG:5514">
-                    <gml:pos>-795028.00 -1138685.00 440.20</gml:pos>
+                    <gml:pos>-743597.85 -1043030.33 186.00</gml:pos>
                   </gml:Point>
                 </gml:pointProperty>
               </pokdef:Bod3D>
