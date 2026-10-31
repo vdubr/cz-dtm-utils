@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="42.6021204042469" height="42.6021204042469">
+<title>1068-1-510</title>
+<desc>Knihovna symbolu_UDM 2 - 1068-1-510</desc>
+<g id="1068-1-510" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 42.6021204042469,0 42.6021204042469,42.6021204042469 0,42.6021204042469" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="14.6868869737762,17.5215326430679 17.7105090210206,18.8443672887373 21.3010602021234,19.4112964225957 24.7026350052735,18.8443672887373 27.9152334304707,17.5215326430679" style="stroke:#000000" />
+		<polyline points="25.8364932729902,17.3325562651151 27.9152334304707,17.5215326430679 26.7813751627541,19.6002728005484" style="stroke:#000000" />
+		<polyline points="15.6317688635401,19.6002728005484 14.6868869737762,17.5215326430679 16.7656271312567,17.3325562651151" style="stroke:#000000" />
+		<circle cx="21.2991704383439" cy="5.21350114700331" r="0.871429072947104" style="stroke:#000000"/>
+		<circle cx="21.2991704383439" cy="5.21539091078284" r="0.871181102362314" style="stroke:#000000;fill:#000000"/>
+		<polyline points="21.3010602021234,6.18294996590107 21.3010602021234,21.3010602021234" style="stroke:#000000" />
+		<polyline points="21.2972806745644,6.17917043834201 21.2972806745644,6.08468224936563" style="stroke:#000000" />
+		<polyline points="19.4112964225957,6.18294996590107 23.1908239816512,6.18294996590107" style="stroke:#000000" />
+		<polyline points="20.6698790997612,5.80121768243646 21.8868869737771,4.58420980842055" style="stroke:#000000" />
+		<text x="0" y="1.889734" transform="translate(28.7164932729905,9.96247752495666) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291254" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">KOT</text>
+	</g>
+</g>
+</svg>

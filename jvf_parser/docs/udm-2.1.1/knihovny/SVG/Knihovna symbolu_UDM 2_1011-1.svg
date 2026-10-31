@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="36.8874747349548" height="36.8874747349548">
+<title>1011-1</title>
+<desc>Knihovna symbolu_UDM 2 - 1011-1</desc>
+<g id="1011-1" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 36.8874747349548,0 36.8874747349548,36.8874747349548 0,36.8874747349548" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<circle cx="18.4437373674774" cy="18.4437373674774" r="0.566929" style="stroke:none;fill:#000000"/>
+		<circle cx="18.4456271312569" cy="18.4456271312569" r="0.944881889763899" style="stroke:#000000"/>
+		<circle cx="18.4456271312569" cy="8.53486597599956" r="3.48919997593402" style="stroke:#000000"/>
+		<polyline points="18.4437373674774,12.026099572201 18.4437373674774,16.5539735879496" style="stroke:#000000" />
+		<circle cx="18.4456271312569" cy="18.4456271312569" r="1.8897637795278" style="stroke:#000000"/>
+		<text x="0" y="1.889764" transform="translate(18.4437373674774,8.53759563519271)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291339" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">P</text>
+	</g>
+</g>
+</svg>

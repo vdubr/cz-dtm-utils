@@ -23,12 +23,15 @@ krajů pro data nad rámec DTM. Verze 2.1.1 (vydána 2026-10-19) navazuje na
 
 ```bash
 npm run generate:udm -w jvf-parser             # src/udm-2.1.1/generated/*
-# symbologie pro viewer (udmStyles.ts + public/symboly/udm/*.svg);
-# argument = adresář Knihovny/SVG z balíku ČKZ „UDM 2.1.1.zip"
-python3 jvf_viewer/scripts/build-udm-styles.py <…/Knihovny/SVG>
+# symbologie UDM (src/udm-2.1.1/generated/styles.ts + viewer public/symboly/udm/*.svg)
+# ze spec/Struktura UDM 2.1.1.xlsx a knihovny symbolů knihovny/SVG
+python3 scripts/udm/build-udm-styles.py
 ```
 
-Ukázky: `jvf_parser/samples/udm-2.1.1/` (ukázka ČKZ, vzorník všech objektů,
+- `knihovny/` — knihovna symbolů ČKZ z balíku „UDM 2.1.1.zip" (`Knihovny/SVG`
+  + `Knihovna symbolu_udm.csv`), zdroj symbolů pro viewer i export do CAD.
+
+Ukázky: `jvf_parser/samples/udm-2.1.1/` (ukázka ČKZ, vzorník objektů,
 ruční minimální fixture, pontonový most) — ruční soubory jsou validní proti
 XSD (`xmllint --noout --schema xsd/index/index_data.xsd <soubor>`). Druhá ukázka ČKZ (`UDM_ukazka-2.xml`, 10 MB) není
 v repu kvůli velikosti — je v balíku na webu ČKZ.

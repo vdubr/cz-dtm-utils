@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="44.3255849711762" height="44.3255849711762">
+<title>1066-1-502</title>
+<desc>Knihovna symbolu_UDM 2 - 1066-1-502</desc>
+<g id="1066-1-502" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 44.3255849711762,0 44.3255849711762,44.3255849711762 0,44.3255849711762" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<path d="M 18.3815464683822 18.3828593303683 A 3.77938892399188 3.77938892399188 -89.996408 0 0 18.3810722692831 25.9416371634776" style="stroke:#000000"/>
+		<path d="M 25.9403239711109 18.3833324678819 A 3.77938892399188 3.77938892399188 0.003586 0 0 18.3815461379556 18.3828590017026" style="stroke:#000000"/>
+		<path d="M 25.9398508344754 25.9421103370705 A 3.77938892399188 3.77938892399188 90.003586 0 0 25.9403243006547 18.3833325039152" style="stroke:#000000"/>
+		<path d="M 18.3810729644087 25.9416368339751 A 3.77938892399188 3.77938892399188 -179.996408 0 0 25.939850797518 25.9421110330742" style="stroke:#000000"/>
+		<circle cx="22.1606984672978" cy="22.1624848332574" r="3.77938892399186E-03" style="stroke:#000000"/>
+		<text x="0" y="1.889764" transform="translate(28.8072019344079,14.199327918658) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291339" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">O</text>
+	</g>
+</g>
+</svg>

@@ -27,7 +27,7 @@ import {
   resolveUdmRepresentativeAppearance,
   udmSymbolPath,
 } from './udmStyle.js';
-import type { UdmAppearance } from './udmStyles.js';
+import type { UdmAppearance } from 'jvf-parser';
 import {
   isShowZapis,
   isHighlightZapis,

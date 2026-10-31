@@ -20,6 +20,14 @@ export {
 
 // UDM (Univerzální datový model ČKZ) — přímý vstup bez routeru.
 export { parseUdm, detectUdmVersionString } from './udm-2.1.1/parser.js';
+// Vzhled UDM (barvy, tloušťky, vzory linií, symboly) — viewer i export do CAD.
+export {
+  UDM_STYLES,
+  getUdmStyle,
+  resolveUdmAppearance,
+  resolveUdmRepresentativeAppearance,
+} from './udm-2.1.1/styles.js';
+export type { UdmAppearance, UdmAttrRule, UdmObjectStyle } from './udm-2.1.1/styles.js';
 
 // Protokol chyb (ServisJVFDTM/ProtokolChyb) — samostatný artefakt (R5).
 export { parseErrorProtocol } from './1.5.0.1/error-protocol.js';

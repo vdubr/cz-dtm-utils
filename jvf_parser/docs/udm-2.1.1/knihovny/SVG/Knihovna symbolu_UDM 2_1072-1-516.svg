@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="27.5596007192056" height="27.5596007192056">
+<title>1072-1-516</title>
+<desc>Knihovna symbolu_UDM 2 - 1072-1-516</desc>
+<g id="1072-1-516" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 27.5596007192056,0 27.5596007192056,27.5596007192056 0,27.5596007192056" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<line x1="12.3133436666892" y1="8.73035154070454" x2="11.9505090210199" y2="11.6481468162955" style="stroke:#000000"/>
+		<line x1="12.3133436666892" y1="8.73035154070454" x2="14.1501940603903" y2="10.7939735879489" style="stroke:#000000"/>
+		<line x1="12.3133436666892" y1="8.73035154070454" x2="13.7798003596028" y2="13.7798003596028" style="stroke:#000000"/>
+		<line x1="13.7798003596028" y1="13.7798003596028" x2="13.2279893359807" y2="18.5193279186585" style="stroke:#000000"/>
+		<line x1="13.2279893359807" y1="18.5193279186585" x2="15.0119263438549" y2="18.0204302808632" style="stroke:#000000"/>
+		<line x1="15.0119263438549" y1="18.0204302808632" x2="15.4881468162959" y2="19.6531861863752" style="stroke:#000000"/>
+	</g>
+</g>
+</svg>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="48.2411755223578" height="48.2411755223578">
+<title>0329-1-003</title>
+<desc>Knihovna symbolu_UDM 2 - 0329-1-003</desc>
+<g id="0329-1-003" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 48.2411755223578,0 48.2411755223578,48.2411755223578 0,48.2411755223578" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polygon points="17.0339735879497,27.522162564329 31.2072019344082,27.522162564329 31.2072019344082,20.7190129580289 17.0339735879497,20.7190129580289 17.0339735879497,27.522162564329" style="stroke:#000000" />
+		<polyline points="9.94735941472044,24.1205877611789 24.1205877611789,24.1205877611789" style="stroke:#000000" />
+		<polyline points="24.1205877611789,24.1205877611789 19.1089342178712,21.4673594147219" style="stroke:#000000" />
+		<polyline points="24.1205877611789,24.1205877611789 19.1089342178712,26.7738161076359" style="stroke:#000000" />
+	</g>
+</g>
+</svg>
