@@ -1,7 +1,9 @@
-import type { JvfDtm } from 'jvf-parser';
+import { isUdmVersion, type JvfDtm } from 'jvf-parser';
 import {
   isShowZapis,
   setShowZapis,
+  isHighlightZapis,
+  setHighlightZapis,
   subscribeChangesetToggle,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
@@ -43,6 +45,10 @@ function getCheckbox(type: ChangesetZapisType): HTMLInputElement | null {
   return document.getElementById(TOGGLE_UI[type].checkboxId) as HTMLInputElement | null;
 }
 
+function getHighlightCheckbox(): HTMLInputElement | null {
+  return document.getElementById('toggle-highlight-zapis') as HTMLInputElement | null;
+}
+
 /**
  * Inicializace UI a wiring na state. Volat jednou při startu aplikace.
  */
@@ -59,11 +65,19 @@ export function setupChangesetToggle(getLayers: () => JvfVectorLayer[]): void {
     });
   }
 
+  const highlightCheckbox = getHighlightCheckbox();
+  if (highlightCheckbox) {
+    highlightCheckbox.checked = isHighlightZapis();
+    highlightCheckbox.addEventListener('change', () => {
+      setHighlightZapis(highlightCheckbox.checked);
+    });
+  }
+
   // Listener: refresh 2D + 3D při každé změně kteréhokoli flagu
   if (unsubscribe) unsubscribe();
   unsubscribe = subscribeChangesetToggle((type, value) => {
     // Sync zpět do UI (pro případ, že flag byl změněn mimo checkbox)
-    const checkbox = getCheckbox(type);
+    const checkbox = type === 'highlight' ? getHighlightCheckbox() : getCheckbox(type);
     if (checkbox && checkbox.checked !== value) checkbox.checked = value;
     refreshAllLayers();
     applyChangesetHighlight();
@@ -87,15 +101,26 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
   if (!section) return;
 
   const present = new Set<ChangesetZapisType>();
+  // Zvýraznění změn barvou je default ON, pokud changeset záznamy obsahuje
+  // aspoň jeden soubor JVF DTM. Jsou-li jen v souborech UDM, default OFF —
+  // UDM jsou typicky data geodeta celá jako nová (`i`) a zelená by překryla
+  // vzhled objektů.
+  let highlightDefault = false;
   for (const dtm of dtms) {
+    let hasChangeset = false;
     for (const ot of dtm.objekty) {
       for (const z of ot.zaznamy) {
         if (z.zapisObjektu === 'i' || z.zapisObjektu === 'u' || z.zapisObjektu === 'd') {
           present.add(z.zapisObjektu);
+          hasChangeset = true;
         }
       }
     }
+    if (hasChangeset && !isUdmVersion(dtm.verze)) highlightDefault = true;
   }
+  setHighlightZapis(highlightDefault);
+  const highlightCheckbox = getHighlightCheckbox();
+  if (highlightCheckbox) highlightCheckbox.checked = highlightDefault;
 
   for (const type of CHANGESET_TYPES) {
     const row = document.getElementById(TOGGLE_UI[type].rowId);

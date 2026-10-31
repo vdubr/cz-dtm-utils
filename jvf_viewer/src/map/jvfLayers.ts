@@ -24,6 +24,7 @@ import { VARIANT_ATTR } from './variantAttrMap.js';
 import { UDM_VARIANT_ATTR } from './udmSymbology.js';
 import {
   isShowZapis,
+  isHighlightZapis,
   isChangesetZapis,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
@@ -485,6 +486,8 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         const zo = feature.get('jvfZapisObjektu') as string | undefined;
         if (isChangesetZapis(zo)) {
           if (!isShowZapis(zo)) return undefined;
+          // Zvýraznění vypnuté → viditelný záznam s vlastní symbologií.
+          if (!isHighlightZapis()) return createStyleForGeom(geomType, s, resolution);
           const hl = ZAPIS_HIGHLIGHT_COLORS[zo];
           const zapisStyle: ResolvedStyle = {
             ...s,

@@ -136,7 +136,10 @@ const INFO_CONTENT_HTML = `
       rovnou vidíte, co přijetím dávky do DTM přibude, změní se nebo zmizí.
       Po odškrtnutí se záznamy daného typu skryjí. Default je vše zaškrtnuto.
       Funguje i pro nově vytvořené JVF soubory DI/TI, jejichž prvky ještě
-      nemají přidělená DTM ID.
+      nemají přidělená DTM ID. Přepínač <strong>Zvýraznit změny
+      barvou</strong> přebarvení vypne — záznamy zůstanou viditelné, ale
+      kreslí se vlastní symbologií. U souborů <strong>UDM</strong> (data
+      geodeta celá jako nová) je zvýraznění ve výchozím stavu vypnuté.
     </li>
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se

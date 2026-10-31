@@ -21,6 +21,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   ztmavené). Info ikona projektu ukazuje verzi UDM i podkladového JVF.
 - **Ukázkové soubory UDM** v nabídce vedle tlačítka „Nahrát soubor"
   (reálná ukázka ČKZ a minimální testovací soubor).
+- **Přepínač „Zvýraznit změny barvou"** — vypne zelené / oranžové / červené
+  přebarvení nových, editovaných a mazaných záznamů; zůstanou viditelné
+  s vlastní symbologií (2D i 3D). U souborů UDM je ve výchozím stavu vypnutý,
+  protože data geodeta jsou celá jako nová a mapa by byla jen zelená.
 
 ### Změněno
 

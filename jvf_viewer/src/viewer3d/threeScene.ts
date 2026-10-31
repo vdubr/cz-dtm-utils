@@ -3,6 +3,7 @@ import type { ObjektovyTyp, Geometry } from 'jvf-parser';
 import { resolveStyle } from '../map/jvfLayers.js';
 import {
   isShowZapis,
+  shouldHighlightZapis,
   isChangesetZapis,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
@@ -661,7 +662,7 @@ function buildSceneObjects(
                 lineObj.userData['jvfProjectId'] = projectKey;
                 lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
                 lineObj.visible = computeObjectVisibility(lineObj);
-                if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
+                if (isChangesetZapis(zapisObjektu) && shouldHighlightZapis(zapisObjektu)) {
                   lineObj.material.color.setHex(ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
                 }
                 scene.add(lineObj);
@@ -683,7 +684,7 @@ function buildSceneObjects(
           const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
           obj.userData['jvfOrigColorHex'] = origColor.getHex();
           obj.visible = computeObjectVisibility(obj);
-          if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
+          if (isChangesetZapis(zapisObjektu) && shouldHighlightZapis(zapisObjektu)) {
             applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
           }
           scene.add(obj);
@@ -1014,7 +1015,7 @@ export function applyChangesetHighlight(): void {
   state.scene.traverse((obj) => {
     const zapis = obj.userData['jvfZapisObjektu'];
     if (!isChangesetZapis(zapis)) return;
-    const show = isShowZapis(zapis);
+    const show = shouldHighlightZapis(zapis);
     // Viditelnost = AND všech přepínačů (vrstvy / changeset / filtr prvků)
     obj.visible =
       computeObjectVisibility(obj) &&

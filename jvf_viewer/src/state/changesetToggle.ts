@@ -24,8 +24,12 @@
 /** Typy `ZapisObjektu`, pro které existuje changeset přepínač. */
 export type ChangesetZapisType = 'i' | 'u' | 'd';
 
+/**
+ * Posluchač změny flagu — `type` je typ zápisu (viditelnost), nebo
+ * `'highlight'` pro přepínač „zvýraznit změny barvou".
+ */
 export type ChangesetToggleListener = (
-  type: ChangesetZapisType,
+  type: ChangesetZapisType | 'highlight',
   value: boolean,
 ) => void;
 
@@ -34,6 +38,14 @@ const flags: Record<ChangesetZapisType, boolean> = {
   u: false,
   d: false,
 };
+
+/**
+ * Zvýraznit viditelné changeset záznamy barvou typu změny (zelená/oranžová/
+ * červená). Vypnuto → záznamy zůstanou viditelné (dle `flags`), ale kreslí se
+ * vlastní symbologií — typicky u UDM, kde jsou všechna data nová (`i`) a
+ * zelené přebarvení by skrylo vzhled objektů.
+ */
+let highlight = true;
 
 const listeners = new Set<ChangesetToggleListener>();
 
@@ -52,6 +64,23 @@ export function setShowZapis(type: ChangesetZapisType, value: boolean): void {
   for (const listener of listeners) {
     listener(type, value);
   }
+}
+
+export function isHighlightZapis(): boolean {
+  return highlight;
+}
+
+export function setHighlightZapis(value: boolean): void {
+  if (highlight === value) return;
+  highlight = value;
+  for (const listener of listeners) {
+    listener('highlight', value);
+  }
+}
+
+/** Kreslit záznam daného typu zápisu zvýrazňovací barvou? (viditelný + highlight) */
+export function shouldHighlightZapis(type: ChangesetZapisType): boolean {
+  return highlight && flags[type];
 }
 
 export function subscribeChangesetToggle(

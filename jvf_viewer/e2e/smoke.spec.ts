@@ -99,6 +99,10 @@ test.describe('Načtení JVF souboru', () => {
     for (const cast of ['ZPSUDM', 'DIUDM', 'OST']) {
       await expect(page.locator('#jvf-layers-list')).toContainText(cast);
     }
+    // UDM = data geodeta celá jako nová → zvýraznění změn barvou je vypnuté
+    // (kreslí se vlastní symbologií), nové záznamy zůstávají viditelné.
+    await expect(page.locator('#toggle-highlight-zapis')).not.toBeChecked();
+    await expect(page.locator('#toggle-show-inserted')).toBeChecked();
   });
 });
 
