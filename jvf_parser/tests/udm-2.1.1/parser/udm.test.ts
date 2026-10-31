@@ -86,7 +86,7 @@ describe('UDM — parsování (udm_minimal.xml)', () => {
     expect(ins.attributes['VstupDoDTM']).toBe(1);
     expect(ins.attributes['UrovenUmisteniObjektuZPS']).toBe(0);
     expect(ins.attributes['Prilohy']).toBe('foto1.jpg; TZ.pdf');
-    expect(upd.commonAttributes).toMatchObject({ id: 'HB-2', idZmeny: 'Z-77' });
+    expect(upd.commonAttributes).toMatchObject({ id: 'HB-2' });
     expect(upd.attributes['ID']).toBeUndefined();
     expect(del.commonAttributes.id).toBe('HB-3');
     expect(ins.geometrie[0].type).toBe('LineString');
@@ -105,13 +105,29 @@ describe('UDM — parsování (udm_minimal.xml)', () => {
 
     const dz = findTyp(dtm, 'DopravniZarizeniLinie');
     expect(dz.obsahovaCast).toBe('DIUDM');
-    expect(dz.zaznamy[0].commonAttributes.id).toBe('DZ-1');
+    expect(dz.zaznamy[0].commonAttributes).toMatchObject({ id: 'DZ-1', idZmeny: 'Z-77' });
     expect(dz.zaznamy[0].geometrie[0].type).toBe('LineString');
 
     const zp = findTyp(dtm, 'ZajmovaPlocha');
     expect(zp.obsahovaCast).toBe('OST');
     expect(zp.zaznamy[0].geometrie[0].type).toBe('Polygon');
     expect(zp.zaznamy[0].commonAttributes.popisObjektu).toBe('hranice zakázky');
+  });
+
+  it('pontonový most: obvod mostu (typ „jiný" + upřesnění) a dřevěný povrch komunikace', () => {
+    const most = findTyp(dtm, 'ObvodMostu').zaznamy[0];
+    expect(most.attributes['TypMostu']).toBe(402);
+    expect(labelForAttribute('TypMostu', 402, 'udm-2.1.1')).toBe('jiný');
+    expect(most.attributes['Upresneni']).toBe('pontonový most');
+    expect(most.attributes['OznaceniMostu']).toBe('pontonový most přes Volyňku');
+    expect(most.geometrie[0].type).toBe('Polygon');
+
+    for (const name of ['ProvozniPlochaPozemniKomunikacePlocha', 'ProvozniPlochaPozemniKomunikaceDefinicniBod']) {
+      const pk = findTyp(dtm, name).zaznamy[0];
+      expect(pk.attributes['PrevazujiciPovrch']).toBe(205);
+    }
+    // 205 = rozšíření číselníku UDM (nad rámec DTM), ne asfalt (1).
+    expect(labelForAttribute('PrevazujiciPovrch', 205, 'udm-2.1.1')).toBe('dřevo');
   });
 
   it('katalog a popisky číselníků podle verze udm-2.1.1', () => {
