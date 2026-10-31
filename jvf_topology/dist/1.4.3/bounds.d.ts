@@ -14,7 +14,7 @@ import type { JvfDtm } from 'jvf-dtm-types';
 import type { TopologyError } from './types.js';
 /**
  * Kontrola 1.5: Souřadnice XY musí ležet v rozsahu S-JTSK pro území ČR.
- * Pro objekty ZPS (obsahovaCast === 'ZPS') se kontroluje i rozsah Z.
+ * Pro objekty ZPS (obsahovaCast `ZPS`, u UDM i `ZPSUDM`) se kontroluje i rozsah Z.
  *
  * Kódy chyb:
  * - `COORD_OUT_OF_BOUNDS_XY`  — X nebo Y mimo rozsah S-JTSK

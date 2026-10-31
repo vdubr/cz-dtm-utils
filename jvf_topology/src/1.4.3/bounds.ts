@@ -18,7 +18,7 @@ import { collectCoordSets, isDefBodElementName, mkError } from './geometry-math.
 
 /**
  * Kontrola 1.5: Souřadnice XY musí ležet v rozsahu S-JTSK pro území ČR.
- * Pro objekty ZPS (obsahovaCast === 'ZPS') se kontroluje i rozsah Z.
+ * Pro objekty ZPS (obsahovaCast `ZPS`, u UDM i `ZPSUDM`) se kontroluje i rozsah Z.
  *
  * Kódy chyb:
  * - `COORD_OUT_OF_BOUNDS_XY`  — X nebo Y mimo rozsah S-JTSK
@@ -28,7 +28,7 @@ export function checkCoordinateBounds(dtm: JvfDtm): TopologyError[] {
   const errors: TopologyError[] = [];
 
   for (const objTyp of dtm.objekty) {
-    const isZps = objTyp.obsahovaCast === 'ZPS';
+    const isZps = objTyp.obsahovaCast === 'ZPS' || objTyp.obsahovaCast === 'ZPSUDM';
     const isDefBod = isDefBodElementName(objTyp.elementName);
     const zBounds = isDefBod ? Z_BOUNDS_DEFBOD : Z_BOUNDS_ZPS;
 

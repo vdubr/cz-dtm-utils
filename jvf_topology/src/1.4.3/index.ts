@@ -124,6 +124,10 @@ function crossObjectChecksForVersion(version: string | undefined): TopologyCheck
       checkDanglingEnds,
     ];
   }
+  // UDM (Univerzální datový model ČKZ) záměrně bez meziobjektových kontrol:
+  // UDM nepracuje s plošnou mapou ani nevyhodnocuje vazbu def. bod ↔ plocha
+  // (Popis struktury UDM 2.1.1, kap. 5.2) — DTM páry by dávaly false positives.
+  if (version?.startsWith('udm-')) return [];
   // Prázdná/chybějící verze → DEFAULT_VERSION (1.4.3) — zpětná kompatibilita.
   if (!version || version === '1.4.3') {
     return CROSS_OBJECT_CHECKS;
