@@ -12,8 +12,8 @@
    - pontonový most: ObvodMostu (DI, Plocha3D) s typem „jiný" (402)
      a upřesněním, na něm ProvozniPlochaPozemniKomunikace (plocha + def. bod)
      s dřevěným povrchem (PrevazujiciPovrch 205 = dřevo, rozšíření UDM).
-  Soubor je validní proti XSD UDM 2.1.1:
-    xmllint --noout --schema jvf_parser/docs/udm-2.1.1/xsd/index/index_data.xsd udm_minimal.xml
+  Soubor je validní proti XSD UDM 2.1.1 (xmllint se schématem
+  jvf_parser/docs/udm-2.1.1/xsd/index/index_data.xsd).
 -->
 <objtyp:JVFDTM xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:objtyp="objtyp" xmlns:cmn="cmn" xmlns:hrabud="hrabud" xmlns:strbod="strbod" xmlns:dzalin="dzalin" xmlns:zpppol="zpppol" xmlns:omopol="omopol" xmlns:pokpol="pokpol" xmlns:pokdef="pokdef">
   <objtyp:DataJVFDTM>
