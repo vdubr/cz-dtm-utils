@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="1201.581" height="1201.581" viewBox="0 0 45.4140889081843 45.4140889081843">
+<title>1023-1-501</title>
+<desc>Knihovna symbolu_UDM 2 - 1023-1-501</desc>
+<g id="1023-1-501" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 45.4140889081843,0 45.4140889081843,45.4140889081843 0,45.4140889081843" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="22.7070444540921,22.7070444540921 22.7070444540921,11.3684617769253" style="stroke:#a68c00" />
+		<polyline points="19.8723987848004,22.7070444540921 25.5416901233838,22.7070444540921" style="stroke:#a68c00" />
+		<polyline points="26.9590155789069,11.3684616512206 18.4550733292773,11.3684619026301 18.4550730778678,2.86451965300056 26.9590153274973,2.86451940159098 26.9590155789069,11.3684616512206" style="stroke:#a68c00" />
+		<text x="0" y="1.889764" transform="translate(22.7070444540921,7.1164932729878) rotate(0.000217)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291339" font-stretch="condensed" text-anchor="middle" style="fill:#a68c00;stroke:none">S</text>
+	</g>
+</g>
+</svg>

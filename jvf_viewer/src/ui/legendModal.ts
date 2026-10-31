@@ -1,10 +1,11 @@
 // Legend modal — zobrazí kompletní legendu všech objektových typů z ENTITY_CATALOG
 // s reprezentativním swatch (point/line/polygon) podle stylu z Katalogu DTM.
 
-import { getEntityCatalog } from 'jvf-parser';
+import { getEntityCatalog, isUdmVersion } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
+import { markUdmObjekty } from '../map/udmStyle.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -21,7 +22,7 @@ const SVG_BASE = './symboly/';
  * vyžaduje plný ObjektovyTyp; doplníme prázdný `zaznamy` array.
  */
 function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
-  return {
+  const ot: ObjektovyTyp = {
     elementName: meta.elementName,
     nazev: meta.nazev,
     codeBase: meta.codeBase,
@@ -31,6 +32,9 @@ function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
     obsahovaCast: meta.obsahovaCast,
     zaznamy: [],
   };
+  // Legenda aktivní verze UDM → swatche v symbologii UDM.
+  if (isUdmVersion(getActiveVersion())) markUdmObjekty([ot]);
+  return ot;
 }
 
 /** Mapuj `EntityMeta.geomType` na konceptuální typ pro swatch. */

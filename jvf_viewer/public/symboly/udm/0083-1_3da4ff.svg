@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="542.381" height="542.381" viewBox="0 0 20.4994432388898 20.4994432388898">
+<title>0083-1</title>
+<desc>Knihovna symbolu_UDM 2 - 0083-1</desc>
+<g id="0083-1" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 20.4994432388898,0 20.4994432388898,20.4994432388898 0,20.4994432388898" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<circle cx="10.2497216194449" cy="10.2497216194449" r="3.69466942779708" style="stroke:#3da4ff"/>
+		<text x="0" y="1.133858" transform="translate(10.2497216194449,10.2497216194449)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#3da4ff;stroke:none">MEL</text>
+	</g>
+</g>
+</svg>

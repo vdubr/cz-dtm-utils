@@ -16,11 +16,17 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   Soubor UDM se rozpozná automaticky podle `VerzeJVFUDM`. Parser zvládá
   zploštělou strukturu atributů UDM, katalog obsahuje všech 470 objektů
   (393 DTM + 77 UDM s kódem `94…`) včetně českých popisků číselníků
-  `ckz_*`. Objekty UDM tvoří obsahové části ZPSUDM / DIUDM / TIUDM / OST
-  a v mapě i legendě mají barvy z oficiální tabulky UDM (pro světlý podklad
-  ztmavené). Info ikona projektu ukazuje verzi UDM i podkladového JVF.
-- **Ukázkové soubory UDM** v nabídce vedle tlačítka „Nahrát soubor"
-  (reálná ukázka ČKZ a minimální testovací soubor).
+  `ckz_*`. Objekty UDM tvoří obsahové části ZPSUDM / DIUDM / TIUDM / OST.
+  Info ikona projektu ukazuje verzi UDM i podkladového JVF.
+- **Symbologie UDM** — všechny objekty souboru UDM (i objekty DTM) se ve 2D,
+  3D, legendě i panelu vrstev kreslí dle vzhledů UDM: barva, tloušťka čáry,
+  SVG symboly z knihovny ČKZ (přebarvené barvou objektu) a vzhled podle
+  hodnot číselníků. Barvy upravené pro světlý podklad (bílá → černá, světlé
+  odstíny ztmavené); vzory linií jsou aproximace dle typu ČSN 01 3411.
+- **Ukázkové soubory UDM** v nabídce vedle tlačítka „Nahrát soubor":
+  reálná ukázka ČKZ, minimální testovací soubor a samostatná ukázka
+  **pontonového mostu** (obvod mostu typu „jiný" s upřesněním, komunikace
+  s dřevěným povrchem).
 - **Přepínač „Zvýraznit změny barvou"** — vypne zelené / oranžové / červené
   přebarvení nových, editovaných a mazaných záznamů; zůstanou viditelné
   s vlastní symbologií (2D i 3D). U souborů UDM je ve výchozím stavu vypnutý,

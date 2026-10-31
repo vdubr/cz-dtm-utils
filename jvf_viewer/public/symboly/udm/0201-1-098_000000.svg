@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="759.181" height="759.181" viewBox="0 0 28.6934589869223 28.6934589869223">
+<title>0201-1-098</title>
+<desc>Knihovna symbolu_UDM 2 - 0201-1-098</desc>
+<g id="0201-1-098" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 28.6934589869223,0 28.6934589869223,28.6934589869223 0,28.6934589869223" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polygon points="12.4569657139334,3.00814681629437 16.236493272989,3.00814681629437 16.236493272989,10.5672019344056 12.4569657139334,10.5672019344056 12.4569657139334,3.00814681629437" style="stroke:#000000" />
+		<polyline points="12.4569657139334,14.3467294934612 16.236493272989,14.3467294934612" style="stroke:#000000" />
+		<polyline points="14.3467294934612,14.3467294934612 14.3467294934612,10.5672019344056" style="stroke:#000000" />
+		<text x="0" y="1.889764" transform="translate(13.995233430469,6.63649327298774)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291339" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">J</text>
+	</g>
+</g>
+</svg>

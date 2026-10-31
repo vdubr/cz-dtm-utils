@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="631.581" height="631.581" viewBox="0 0 23.8707818215674 23.8707818215674">
+<title>1060-1-510</title>
+<desc>Knihovna symbolu_UDM 2 - 1060-1-510</desc>
+<g id="1060-1-510" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 23.8707818215674,0 23.8707818215674,23.8707818215674 0,23.8707818215674" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="10.801532643067,13.6361783123587 11.9353909107837,13.6361783123587" style="stroke:#9b549b" />
+		<polyline points="13.0692491785004,13.6361783123587 11.9353909107837,13.6361783123587" style="stroke:#9b549b" />
+		<polyline points="10.0456271312559,9.10074524149199 11.9353909107837,9.10074524149199 13.8251546903115,9.10074524149199" style="stroke:#9b549b" />
+		<polyline points="11.9353909107837,14.7700365800754 11.9353909107837,13.6361783123587" style="stroke:#9b549b" />
+		<polyline points="10.801532643067,13.6361783123587 10.0456271312559,9.10074524149199" style="stroke:#9b549b" />
+		<polyline points="13.0692491785004,13.6361783123587 13.8251546903115,9.10074524149199" style="stroke:#9b549b" />
+		<polyline points="10.0456271312559,9.10074524149199 13.0692491785004,13.6361783123587" style="stroke:#9b549b" />
+		<polyline points="10.801532643067,13.6361783123587 13.8251546903115,9.10074524149199" style="stroke:#9b549b" />
+		<text x="0" y="1.133858" transform="translate(14.539485398973,7.96688697377531) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#9b549b;stroke:none">P</text>
+	</g>
+</g>
+</svg>

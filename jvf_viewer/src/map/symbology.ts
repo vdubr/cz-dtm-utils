@@ -2,8 +2,6 @@
 // Source: ČÚZK - Značkový klíč objektů DTM ČR
 // Do not edit manually — regenerate from jvf_parser/scripts/extract_symbology.py
 
-import { UDM_SYMBOLOGY } from './udmSymbology.js';
-
 export interface SymbolVariant {
   /** Attribute key (e.g. 'kategorie pozemní komunikace') */
   attrKey: string | null;
@@ -4617,9 +4615,9 @@ export const DEFAULT_COLOR = '#90a4ae';
 
 /**
  * Look up symbology for a given codeBase.
- * Returns undefined if not in katalog. Objekty UDM nad rámec DTM (94…)
- * se hledají v `UDM_SYMBOLOGY` (generováno z tabulky ČKZ).
+ * Returns undefined if not in katalog. (Objekty souborů UDM se kreslí
+ * vlastní symbologií UDM — viz `udmStyle.ts`.)
  */
 export function getSymbology(codeBase: string): ObjectSymbology | undefined {
-  return SYMBOLOGY[codeBase] ?? UDM_SYMBOLOGY[codeBase];
+  return SYMBOLOGY[codeBase];
 }

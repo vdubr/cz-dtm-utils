@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="843.181" height="843.181" viewBox="0 0 31.868262136529 31.868262136529">
+<title>9999-1-001</title>
+<desc>Knihovna symbolu_UDM 2 - 9999-1-001</desc>
+<g id="9999-1-001" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 31.868262136529,0 31.868262136529,31.868262136529 0,31.868262136529" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<circle cx="15.9341310682645" cy="15.9341310682645" r="2.26771653543336" style="stroke:#e60000"/>
+		<circle cx="15.9341310682645" cy="15.9341310682645" r="0.302362204724448" style="stroke:#e60000"/>
+		<circle cx="15.9341310682645" cy="15.9341310682645" r="6.04724409448895E-02" style="stroke:#e60000"/>
+		<text x="0" y="2.645669" transform="translate(20.3712964225958,10.4160208320433)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="7.407874" font-stretch="condensed" text-anchor="middle" style="fill:#e60000;stroke:none">?</text>
+	</g>
+</g>
+</svg>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="556.781" height="556.781" viewBox="0 0 21.0436952073938 21.0436952073938">
+<title>0124-1-004</title>
+<desc>Knihovna symbolu_UDM 2 - 0124-1-004</desc>
+<g id="0124-1-004" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 21.0436952073938,0 21.0436952073938,21.0436952073938 0,21.0436952073938" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="6.6950759501531,14.3486192572407 14.3486192572407,14.3486192572407 14.3486192572407,6.6950759501531 6.6950759501531,6.6950759501531 6.6950759501531,14.3486192572407" style="stroke:#ff7f00" />
+		<text x="0" y="1.13384" transform="translate(10.6012176824371,10.4198003596024) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174752" font-stretch="condensed" text-anchor="middle" style="fill:#ff7f00;stroke:none">VZP</text>
+	</g>
+</g>
+</svg>

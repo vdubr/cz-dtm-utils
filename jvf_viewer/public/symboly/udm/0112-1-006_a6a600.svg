@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="1163.981" height="1163.981" viewBox="0 0 43.9929865459794 43.9929865459794">
+<title>0112-1-006</title>
+<desc>Knihovna symbolu_UDM 2 - 0112-1-006</desc>
+<g id="0112-1-006" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 43.9929865459794,0 43.9929865459794,43.9929865459794 0,43.9929865459794" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polygon points="13.4925562651146,15.6166507533038 30.5004302808648,15.6166507533038 30.5004302808648,28.3763357926755 13.4925562651146,28.3763357926755 13.4925562651146,15.6166507533038" style="stroke:#a6a600" />
+		<polyline points="21.9964932729897,28.3763357926755 21.9964932729897,32.624524769054" style="stroke:#a6a600" />
+		<polyline points="17.7445247690521,32.624524769054 26.2484617769272,32.624524769054" style="stroke:#a6a600" />
+		<polyline points="18.8103515407058,33.6865720131486 25.1826350052735,33.6865720131486" style="stroke:#a6a600" />
+		<polyline points="19.8723987848004,34.7523987848023 24.1205877611789,34.7523987848023" style="stroke:#a6a600" />
+		<text x="0" y="2.645669" transform="translate(21.9964932729897,21.9964932729897)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="7.407874" font-stretch="condensed" text-anchor="middle" style="fill:#a6a600;stroke:none">SKAO</text>
+	</g>
+</g>
+</svg>

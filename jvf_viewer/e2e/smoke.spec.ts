@@ -23,8 +23,8 @@ test.describe('Základní stav aplikace', () => {
     await page.locator('#btn-upload-menu').click();
     await expect(page.locator('#upload-menu')).toBeVisible();
     await expect(page.locator('.upload-menu-item[data-sample="ukazka_ZPS.xml"]')).toBeVisible();
-    // 4 ukázky JVF 1.4.3 + 2 ukázky UDM 2.1.1.
-    await expect(page.locator('.upload-menu-item')).toHaveCount(6);
+    // 4 ukázky JVF 1.4.3 + 3 ukázky UDM 2.1.1.
+    await expect(page.locator('.upload-menu-item')).toHaveCount(7);
   });
 });
 
@@ -85,8 +85,11 @@ test.describe('Načtení JVF souboru', () => {
 
   test('soubor UDM 2.1.1 se načte bez modalu, s verzí UDM a skupinami UDM', async ({ page }) => {
     // VerzeJVFDTM 1.5.0.2 + VerzeJVFUDM 2.1.1 → UDM (ne odmítnutá verze 1.5.0.2).
+    // Body souboru UDM se kreslí SVG symboly UDM (public/symboly/udm/).
+    const udmSymbol = page.waitForRequest(/\/symboly\/udm\/[\d-]+_[0-9a-f]{6}\.svg$/);
     await page.locator('#btn-upload-menu').click();
     await page.locator('.upload-menu-item[data-sample="udm_minimal.xml"]').click();
+    await udmSymbol;
 
     await expect(page.locator('#confirm-modal')).toBeHidden();
     await expect(page.locator('#loading-overlay')).toBeHidden();
@@ -103,6 +106,16 @@ test.describe('Načtení JVF souboru', () => {
     // (kreslí se vlastní symbologií), nové záznamy zůstávají viditelné.
     await expect(page.locator('#toggle-highlight-zapis')).not.toBeChecked();
     await expect(page.locator('#toggle-show-inserted')).toBeChecked();
+  });
+
+  test('ukázka UDM s pontonovým mostem se načte z nabídky', async ({ page }) => {
+    await page.locator('#btn-upload-menu').click();
+    await page.locator('.upload-menu-item[data-sample="udm_pontonovy_most.xml"]').click();
+
+    await expect(page.locator('#confirm-modal')).toBeHidden();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#jvf-layers-list')).toContainText('obvod mostu');
+    await expect(page.locator('#jvf-layers-list')).toContainText('provozní plocha pozemní komunikace');
   });
 });
 

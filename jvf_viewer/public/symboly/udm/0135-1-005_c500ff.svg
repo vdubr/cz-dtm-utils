@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="505.581" height="505.581" viewBox="0 0 19.1085770971573 19.1085770971573">
+<title>0135-1-005</title>
+<desc>Knihovna symbolu_UDM 2 - 0135-1-005</desc>
+<g id="0135-1-005" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 19.1085770971573,0 19.1085770971573,19.1085770971573 0,19.1085770971573" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="6.20586335172785,12.9027137454295 12.9027137454295,12.9027137454295 12.9027137454295,6.20586335172785 6.20586335172785,6.20586335172785 6.20586335172785,12.9027137454295" style="stroke:#c500ff" />
+		<text x="0" y="1.133858" transform="translate(9.55428854857866,9.55428854857866) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#c500ff;stroke:none">PLYN</text>
+	</g>
+</g>
+</svg>

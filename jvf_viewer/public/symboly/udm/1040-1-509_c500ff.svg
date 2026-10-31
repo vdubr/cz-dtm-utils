@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="911.181" height="911.181" viewBox="0 0 34.4383408766868 34.4383408766868">
+<title>1040-1-509</title>
+<desc>Knihovna symbolu_UDM 2 - 1040-1-509</desc>
+<g id="1040-1-509" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 34.4383408766868,0 34.4383408766868,34.4383408766868 0,34.4383408766868" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polygon points="12.6837373674767,5.88058776117662 21.7546035092101,5.88058776117662 21.7546035092101,17.2191704383434 12.6837373674767,17.2191704383434 12.6837373674767,5.88058776117662" style="stroke:#c500ff" />
+		<polyline points="20.2427924855879,17.2191704383434 20.2427924855879,20.2427924855879 14.1955483910989,20.2427924855879 14.1955483910989,17.2191704383434" style="stroke:#c500ff" />
+		<polyline points="12.6837373674767,5.88058776117662 21.7546035092101,17.2191704383434" style="stroke:#c500ff" />
+	</g>
+</g>
+</svg>

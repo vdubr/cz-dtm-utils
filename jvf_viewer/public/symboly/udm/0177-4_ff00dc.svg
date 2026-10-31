@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="751.581" height="751.581" viewBox="0 0 28.4062148924341 28.4062148924341">
+<title>0177-4</title>
+<desc>Knihovna symbolu_UDM 2 - 0177-4</desc>
+<g id="0177-4" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 28.4062148924341,0 28.4062148924341,28.4062148924341 0,28.4062148924341" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<circle cx="13.0692493740411" cy="8.95651169767546" r="0.566929" style="stroke:none;fill:#ff00dc"/>
+		<ellipse cx="14.2031076417578" cy="8.95651169767546" rx="1.13385826661669" ry="0.302362204724448" style="stroke:#ff00dc"/>
+		<path d="M 12.31334386223 19.1612361089278 A 1.8897637795278 0.831496063766622 0.0 0 0 12.5317278654675 19.5492594286099" style="stroke:#ff00dc"/>
+		<path d="M 16.085360162128 19.2352981744518 A 1.8897637795278 0.831496063766622 0.0 0 0 16.0928714212856 19.1612361089278" style="stroke:#ff00dc"/>
+		<path d="M 12.31334386223 19.1612360512568 A 1.8897637795278 0.831496063766622 0.0 0 0 16.0928714212856 19.1612362224676" style="stroke:#ff00dc"/>
+		<polyline points="13.0692493740411,8.95651169767546 12.31334386223,19.1612361071256" style="stroke:#ff00dc" />
+		<polyline points="16.0928714212856,19.1612361071256 15.3369659094745,8.95651169767546" style="stroke:#ff00dc" />
+	</g>
+</g>
+</svg>

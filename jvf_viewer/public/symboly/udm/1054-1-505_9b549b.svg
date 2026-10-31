@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="579.581" height="579.581" viewBox="0 0 21.9054274908585 21.9054274908585">
+<title>1054-1-505</title>
+<desc>Knihovna symbolu_UDM 2 - 1054-1-505</desc>
+<g id="1054-1-505" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 21.9054274908585,0 21.9054274908585,21.9054274908585 0,21.9054274908585" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="10.9527137454292,10.9527137454292 7.17318618637364,7.17318618637364 14.7322413044848,7.17318618637364 10.9527137454292,10.9527137454292" style="stroke:#9b549b" />
+		<text x="0" y="1.133858" transform="translate(11.0094066588151,5.13224130448361) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#9b549b;stroke:none">VOD</text>
+	</g>
+</g>
+</svg>

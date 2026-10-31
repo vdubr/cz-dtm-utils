@@ -1,8 +1,9 @@
 import 'ol/ol.css';
 import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
-import type { JvfDtm, ObjektovyTyp } from 'jvf-parser';
+import { isUdmVersion, type JvfDtm, type ObjektovyTyp } from 'jvf-parser';
 import { runAllChecks } from 'jvf-topology';
+import { markUdmObjekty } from './map/udmStyle.js';
 import { createOlMap } from './map/olMap.js';
 import { createZmLayer, createOrtofotoLayer, setupBaseLayerSwitcher } from './map/cuzk.js';
 import {
@@ -200,6 +201,8 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
   const allObjekty: ObjektovyTyp[] = [];
   projectExtents.clear();
   for (const project of projects) {
+    // Soubor UDM → všechny jeho objekty kreslit symbologií UDM (2D, 3D, panely).
+    if (isUdmVersion(project.dtm.verze)) markUdmObjekty(project.dtm.objekty);
     const { layers, extent } = buildJvfLayers(project.dtm.objekty);
     allLayers.push(...layers);
     if (!isEmpty(extent)) {

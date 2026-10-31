@@ -245,10 +245,17 @@ const INFO_CONTENT_HTML = `
     pozná podle elementu <code>VerzeJVFUDM</code> a načte se automaticky.
     Objekty nad rámec DTM (kód <code>94…</code>) tvoří obsahové části
     <strong>ZPSUDM</strong>, <strong>DIUDM</strong>, <strong>TIUDM</strong>
-    a <strong>OST</strong> — v mapě se kreslí barvami z tabulky UDM
-    (pro světlý podklad ztmavenými), v legendě i v panelu prvků mají české
+    a <strong>OST</strong>; v legendě i v panelu prvků mají české
     názvy a popisky číselníků <code>ckz_*</code> (např. stav stromu,
     materiál). Info ikona projektu ukáže verzi UDM i podkladového JVF.
+    <strong>Všechny objekty souboru UDM</strong> (i objekty DTM) se kreslí
+    <strong>symbologií UDM</strong> místo katalogu ČÚZK — barva, tloušťka
+    čáry a SVG symboly bodů z knihovny ČKZ, včetně vzhledu podle hodnot
+    číselníků (např. druh stromu, typ dopravního zařízení). Barvy UDM jsou
+    navržené pro tmavé pozadí, na světlém podkladu je bílá kreslena černě
+    a světlé odstíny ztmavené. <em>Vzory linií jsou aproximací</em> podle
+    typu dle ČSN 01 3411 (přesné definice jsou jen v knihovně MicroStation)
+    a texty (popisy, názvy) se jako text nevykreslují.
     Meziobjektová topologie se pro UDM nespouští — UDM nepracuje s plošnou
     mapou ani s vazbou definiční bod ↔ plocha. Ukázkové soubory UDM jsou
     v nabídce vedle tlačítka „Nahrát soubor".
