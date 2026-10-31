@@ -24,8 +24,16 @@ const VERSION = process.argv[2] ?? '1.4.3';
 const ROOT = resolve(import.meta.dirname ?? '.', '..');
 const XSD_DIR = join(ROOT, `docs/${VERSION}/xsd`);
 const OUT_DIR = join(ROOT, `src/${VERSION}/generated`);
+/**
+ * UDM (Univerzální datový model ČKZ, `udm-<verze>`) — XSD odvozené od
+ * JVF 1.5.0.x, ale „zploštělé": atributy inline (`name=` + `type="lst:…"`),
+ * číselníky jako pojmenované `simpleType` v `common/lists.xsd`, žádné
+ * sdílené skupiny ani `atributy.xsd`.
+ */
+const IS_UDM = VERSION.startsWith('udm-');
 /** Struktura objektových XSD 1.5.0.1 (abstraktní ZaznamObjektu). */
 const IS_1501 = VERSION === '1.5.0.1';
+const MODEL_NAME = IS_UDM ? `UDM ${VERSION.slice(4)}` : `JVF DTM ${VERSION}`;
 
 // ---------------------------------------------------------------------------
 // XSD parser
@@ -554,6 +562,152 @@ function extractSharedGroups1501(): Record<string, string[]> {
 }
 
 // ---------------------------------------------------------------------------
+// 2c. UDM — číselníky z lists.xsd, atributy a geometrie inline v objektech
+// ---------------------------------------------------------------------------
+
+/**
+ * Atributy společné všem objektům UDM — v JVF patří do
+ * `SpolecneAtributyVsechObjektu`, parser je mapuje do `commonAttributes`,
+ * proto nejsou mezi `specificAttrs`.
+ */
+const UDM_COMMON_ATTRS = new Set([
+  'ID',
+  'IDZmeny',
+  'IDEditora',
+  'PopisObjektu',
+  'DatumVkladu',
+  'VkladOsoba',
+  'DatumZmeny',
+  'ZmenaOsoba',
+]);
+
+/** Wrapper geometrie (`GeometrieObjektu/<wrapper>`) → `GeomType`. */
+function geomTypeFromWrapperUdm(wrapper: string): GeomType {
+  if (wrapper.startsWith('Plocha')) return 'surface';
+  if (wrapper.startsWith('Linie')) return 'curve';
+  return 'point';
+}
+
+/** Pojmenované číselníky `lst:<Nazev>` z `common/lists.xsd`. */
+function extractListsUdm(): Map<string, EnumDef> {
+  const parsed = parseXsd(join(XSD_DIR, 'common/lists.xsd'));
+  const schema = parsed['xs:schema'] as Record<string, unknown>;
+  const sts = schema['xs:simpleType'];
+  const arr = Array.isArray(sts) ? sts : sts ? [sts] : [];
+  const lists = new Map<string, EnumDef>();
+  for (const st of arr) {
+    const o = st as Record<string, unknown>;
+    const name = o['@_name'] as string | undefined;
+    const restriction = o['xs:restriction'] as Record<string, unknown> | undefined;
+    if (!name || !restriction) continue;
+    const values: EnumValue[] = [];
+    for (const en of (restriction['xs:enumeration'] as unknown[] | undefined) ?? []) {
+      const enObj = en as Record<string, unknown>;
+      const annotation = enObj['xs:annotation'] as Record<string, unknown> | undefined;
+      const docEl = annotation?.['xs:documentation'];
+      values.push({ value: String(enObj['@_value'] ?? ''), doc: typeof docEl === 'string' ? docEl : '' });
+    }
+    const baseType = ((restriction['@_base'] as string | undefined) ?? 'xs:string').replace('xs:', '');
+    lists.set(name, { name, baseType, values });
+  }
+  return lists;
+}
+
+/** Záznamový typ `Ins` (fallback `RefV`) z objektového XSD UDM. */
+function recordTypeUdm(schema: Record<string, unknown>): Record<string, unknown> | null {
+  const typeByName = complexTypesByName(schema);
+  return typeByName.get('Ins') ?? typeByName.get('RefV') ?? null;
+}
+
+/** Inline atributy (`AtributyObjektu/xs:all/xs:element`) záznamového typu. */
+function attributeElementsUdm(recordType: Record<string, unknown>): Record<string, unknown>[] {
+  for (const ri of flattenSequence(recordType)) {
+    const riObj = ri as Record<string, unknown>;
+    if (riObj['@_name'] === 'AtributyObjektu') return flattenAll(riObj) as Record<string, unknown>[];
+  }
+  return [];
+}
+
+/**
+ * Typy atributů napříč všemi objekty UDM. Atribut s `type="lst:X"` je
+ * číselník — pro `ENUM_LABELS` (klíčováno názvem atributu) se z něj odvodí
+ * `EnumDef` s názvem atributu a hodnotami číselníku `X`. Konflikt typů
+ * (např. `ZpusobPorizeniDI` jednou číselník, jindy číslo) → vyhrává číselník.
+ */
+function extractEnumsAndElementsUdm(lists: Map<string, EnumDef>): {
+  enums: EnumDef[];
+  elements: Map<string, ElementTypeDef>;
+} {
+  const elements = new Map<string, ElementTypeDef>();
+  const objDir = join(XSD_DIR, 'objekty');
+  for (const file of readdirSync(objDir).filter((f) => f.endsWith('.xsd')).sort()) {
+    const schema = parseXsd(join(objDir, file))['xs:schema'] as Record<string, unknown>;
+    const recordType = schema ? recordTypeUdm(schema) : null;
+    if (!recordType) continue;
+    for (const el of attributeElementsUdm(recordType)) {
+      const name = el['@_name'] as string | undefined;
+      if (!name) continue;
+      const rawType = el['@_type'] as string | undefined;
+      let def: ElementTypeDef;
+      if (rawType?.startsWith('lst:')) {
+        def = { name, type: 'enum', enumName: rawType.slice(4) };
+      } else if (rawType?.startsWith('xs:')) {
+        def = { name, type: rawType.slice(3) };
+      } else {
+        const st = el['xs:simpleType'] as Record<string, unknown> | undefined;
+        const base = (st?.['xs:restriction'] as Record<string, unknown> | undefined)?.['@_base'];
+        def = { name, type: typeof base === 'string' ? base.replace('xs:', '') : 'string' };
+      }
+      const prev = elements.get(name);
+      if (!prev || (prev.type !== 'enum' && def.type === 'enum')) elements.set(name, def);
+    }
+  }
+
+  const enums: EnumDef[] = [];
+  for (const def of elements.values()) {
+    if (def.type !== 'enum' || !def.enumName) continue;
+    const list = lists.get(def.enumName);
+    if (!list) {
+      console.warn(`  WARN: atribut ${def.name} odkazuje na neznámý číselník lst:${def.enumName}`);
+      continue;
+    }
+    enums.push({ name: def.name, baseType: list.baseType, values: list.values });
+  }
+  enums.sort((a, b) => a.name.localeCompare(b.name));
+  return { enums, elements };
+}
+
+/** Extrakce entity z objektového XSD UDM (metadata jako 1.5.0.1, atributy inline). */
+function extractEntityUdm(xsdPath: string): EntityDef | null {
+  // Metadata (název, kód, kategorie, skupina, obsahová část) má UDM ve stejném
+  // tvaru jako 1.5.0.1 — reuse; liší se jen atributy a geometrie.
+  const base = extractEntity1501(xsdPath);
+  if (!base) return null;
+  const schema = parseXsd(xsdPath)['xs:schema'] as Record<string, unknown>;
+  const recordType = recordTypeUdm(schema);
+  if (!recordType) return null;
+
+  const specificAttrs: string[] = [];
+  for (const el of attributeElementsUdm(recordType)) {
+    const name = el['@_name'] as string | undefined;
+    if (name && !UDM_COMMON_ATTRS.has(name)) specificAttrs.push(name);
+  }
+
+  let geomType: GeomType = 'point';
+  let geomOptional = true;
+  for (const ri of flattenSequence(recordType)) {
+    const riObj = ri as Record<string, unknown>;
+    if (riObj['@_name'] !== 'GeometrieObjektu') continue;
+    geomOptional = riObj['@_minOccurs'] === '0';
+    const ct = riObj['xs:complexType'] as Record<string, unknown> | undefined;
+    const wrapper = ct ? (flattenSequence(ct)[0] as Record<string, unknown> | undefined) : undefined;
+    geomType = geomTypeFromWrapperUdm((wrapper?.['@_name'] as string | undefined) ?? '');
+  }
+
+  return { ...base, sharedAttrGroup: null, specificAttrs, geomType, geomOptional };
+}
+
+// ---------------------------------------------------------------------------
 // 3. Code generation
 // ---------------------------------------------------------------------------
 
@@ -580,7 +734,7 @@ function xsdTypeToTs(type: string): string {
 
 function generateEnumsFile(enums: EnumDef[]): string {
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '// Run: npx tsx scripts/generate-types.ts <version>',
     '',
   ];
@@ -631,7 +785,7 @@ function generateEnumLabelsFile(
   elements: Map<string, ElementTypeDef>
 ): string {
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '// Run: npx tsx scripts/generate-types.ts <version>',
     '//',
     '// ENUM_LABELS: název číselníkového atributu → { kód → český popisek }.',
@@ -818,7 +972,7 @@ function generateSharedAttrsFile1501(
 ): string {
   const enumNames = new Set(enums.map((e) => e.name));
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '',
     "import type { CommonAttributes } from '../types.js';",
     '',
@@ -858,9 +1012,14 @@ function generateEntitiesFile(
 ): string {
   const enumNames = new Set(enums.map((e) => e.name));
   // 1.5.0.1 přidává obsahovou část PSPI (code_base 0200000*).
-  const castUnion = IS_1501 ? "'ZPS' | 'TI' | 'DI' | 'PSPI' | ''" : "'ZPS' | 'TI' | 'DI' | ''";
+  // UDM navíc obsahové části objektů nad rámec DTM (ZPSUDM/DIUDM/TIUDM/OST).
+  const castUnion = IS_UDM
+    ? "'ZPS' | 'TI' | 'DI' | 'PSPI' | 'ZPSUDM' | 'DIUDM' | 'TIUDM' | 'OST' | ''"
+    : IS_1501
+      ? "'ZPS' | 'TI' | 'DI' | 'PSPI' | ''"
+      : "'ZPS' | 'TI' | 'DI' | ''";
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '// Run: npx tsx scripts/generate-types.ts <version>',
     '',
     "import type { Geometry, GmlPolygon, CommonAttributes } from '../types.js';",
@@ -974,9 +1133,14 @@ function generateEntitiesFile(
 // ---------------------------------------------------------------------------
 
 function main(): void {
-  console.log(`Generating JVF DTM ${VERSION} types (structure: ${IS_1501 ? '1.5.0.1' : '1.4.3'})`);
-  console.log('Extracting enums and element types from atributy.xsd...');
-  const { enums, elements } = extractEnumsAndElements();
+  const structure = IS_UDM ? 'UDM' : IS_1501 ? '1.5.0.1' : '1.4.3';
+  console.log(`Generating ${MODEL_NAME} types (structure: ${structure})`);
+  // UDM: enums.ts = pojmenované číselníky z lists.xsd; ENUM_LABELS a typy
+  // atributů = číselníky přemapované na názvy atributů (jako u JVF).
+  const udmLists = IS_UDM ? extractListsUdm() : null;
+  if (udmLists) console.log(`  Found ${udmLists.size} lists in lists.xsd`);
+  console.log(IS_UDM ? 'Extracting attribute types from objekty/*.xsd...' : 'Extracting enums and element types from atributy.xsd...');
+  const { enums, elements } = udmLists ? extractEnumsAndElementsUdm(udmLists) : extractEnumsAndElements();
   console.log(`  Found ${enums.length} enums, ${elements.size} elements`);
 
   console.log('Extracting entity definitions from objekty/*.xsd...');
@@ -988,9 +1152,11 @@ function main(): void {
   const entities: EntityDef[] = [];
   let failed = 0;
   for (const file of xsdFiles) {
-    const entity = IS_1501
-      ? extractEntity1501(join(objDir, file))
-      : extractEntity(join(objDir, file));
+    const entity = IS_UDM
+      ? extractEntityUdm(join(objDir, file))
+      : IS_1501
+        ? extractEntity1501(join(objDir, file))
+        : extractEntity(join(objDir, file));
     if (entity) {
       entities.push(entity);
     } else {
@@ -1003,7 +1169,7 @@ function main(): void {
   // Write output
   mkdirSync(OUT_DIR, { recursive: true });
 
-  const enumsCode = generateEnumsFile(enums);
+  const enumsCode = generateEnumsFile(udmLists ? [...udmLists.values()] : enums);
   writeFileSync(join(OUT_DIR, 'enums.ts'), enumsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enums.ts`);
 
@@ -1011,7 +1177,10 @@ function main(): void {
   writeFileSync(join(OUT_DIR, 'enum-labels.ts'), enumLabelsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enum-labels.ts`);
 
-  const sharedAttrsCode = IS_1501
+  // UDM nemá sdílené skupiny (atributy inline) → shared-attrs jen re-export.
+  const sharedAttrsCode = IS_UDM
+    ? generateSharedAttrsFile1501(elements, enums, {})
+    : IS_1501
     ? generateSharedAttrsFile1501(elements, enums, extractSharedGroups1501())
     : generateSharedAttrsFile(elements, enums);
   writeFileSync(join(OUT_DIR, 'shared-attrs.ts'), sharedAttrsCode, 'utf-8');

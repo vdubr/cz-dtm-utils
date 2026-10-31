@@ -5,13 +5,15 @@
  * souboru nasměruje na parser správné verze. Detekce (R4):
  *   1. kořen `ServisJVFDTM` → protokol chyb (není datový soubor) → chyba
  *      s odkazem na `parseErrorProtocol` (T6),
- *   2. `VerzeJVFDTM` ∈ `SUPPORTED_VERSIONS` → daná větev,
- *   3. neznámá/chybějící verze → **strukturní sniff** (druh `ZaznamObjektu`),
- *   4. jinak `DEFAULT_VERSION` + warn.
+ *   2. `<VerzeJVFUDM>` přítomna → **UDM** (`udm-<verze>`; neznámá verze UDM
+ *      se strukturou 1.5.0.x → nejnovější podporované UDM + warn),
+ *   3. `VerzeJVFDTM` ∈ `SUPPORTED_VERSIONS` → daná větev,
+ *   4. neznámá/chybějící verze → **strukturní sniff** (druh `ZaznamObjektu`),
+ *   5. jinak `DEFAULT_VERSION` + warn.
  * Router nikdy nespadne na detekci — vždy zvolí nějakou větev.
  */
 import { type JvfDtm, type JvfVersion } from 'jvf-dtm-types';
-import { type EntityMeta } from './1.5.0.1/generated/entities.js';
+import { type EntityMeta } from './udm-2.1.1/generated/entities.js';
 /** Přečte hodnotu `<VerzeJVFDTM>` z raw XML (bez plného parsování). */
 export declare function detectVersionString(xml: string): string | null;
 /** Kořen `ServisJVFDTM` = protokol chyb, ne datový soubor. */
@@ -22,10 +24,18 @@ export declare function isErrorProtocolXml(xml: string): boolean;
  * → 1.4.3; jinak `DEFAULT_VERSION`.
  */
 export declare function sniffVersionByStructure(xml: string): JvfVersion;
+/**
+ * Vyřeší UDM verzi souboru z `<VerzeJVFUDM>`, nebo `null` u čistého JVF.
+ * Neznámá verze UDM se strukturou 1.5.0.x → nejnovější podporované UDM
+ * (+ warn); jiná struktura (UDM 1.x nad JVF 1.4.3) → `null` (parsuje se
+ * jako JVF).
+ */
+export declare function resolveUdmVersion(xml: string): JvfVersion | null;
 /** Vyřeší verzi souboru dle R4 (bez ohledu na ServisJVFDTM). */
 export declare function resolveDtmVersion(xml: string): JvfVersion;
 /**
- * Naparsuje JVF DTM datový soubor (1.4.3 nebo 1.5.0.1) — verzní router (R3/R4).
+ * Naparsuje JVF DTM datový soubor (1.4.3, 1.5.0.1) nebo UDM (udm-2.1.1) —
+ * verzní router (R3/R4).
  * Pro protokol chyb (`ServisJVFDTM`) použij `parseErrorProtocol`.
  */
 export declare function parseJvfDtm(xml: string): JvfDtm;

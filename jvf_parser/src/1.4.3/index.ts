@@ -56,8 +56,13 @@ export {
   SUPPORTED_VERSIONS,
   DEFAULT_VERSION,
   isSupportedVersion,
+  UDM_VERSIONS,
+  LATEST_UDM_VERSION,
+  isUdmVersion,
+  udmVersionId,
+  formatVersionLabel,
 } from 'jvf-dtm-types';
-export type { JvfVersion } from 'jvf-dtm-types';
+export type { JvfVersion, UdmVersion } from 'jvf-dtm-types';
 
 export type {
   SharedAttrsZPS,

@@ -1,0 +1,951 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="sipbod" xmlns:lst="lst" xmlns:cmn="cmn" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="sipbod">
+  <xs:import schemaLocation="../common/lists.xsd" namespace="lst"/>
+  <xs:import schemaLocation="../common/common.xsd" namespace="cmn"/>
+  <xs:import schemaLocation="../ext/gml/gml.xsd" namespace="http://www.opengis.net/gml/3.2"/>
+  <xs:element name="SDZTypIPInformativniProvozni" type="SDZTypIPInformativniProvozniType"/>
+  <xs:complexType name="SDZTypIPInformativniProvozniType">
+    <xs:sequence>
+      <xs:element name="ObjektovyTypNazev" fixed="SDZ - typ IP - informativní provozní">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="code_base" type="xs:string" fixed="9400001014" use="required"/>
+              <xs:attribute name="code_suffix" type="xs:string" fixed="01" use="required"/>
+              <xs:attribute name="dim" type="xs:integer" fixed="3" use="prohibited"/>
+              <xs:attribute name="gia" type="xs:boolean" fixed="0" use="prohibited"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:sequence>
+        <xs:element name="KategorieObjektu" type="xs:string" fixed="Objekt UDM - DI">
+          <xs:annotation>
+            <xs:documentation>Kategorie objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="SkupinaObjektu" type="xs:string" fixed="Svislé dopravní značení">
+          <xs:annotation>
+            <xs:documentation>Skupina objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ObsahovaCast" type="xs:string" fixed="DIUDM">
+          <xs:annotation>
+            <xs:documentation>Zařazení objektu do obsahové části dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ZaznamyObjektu">
+          <xs:annotation>
+            <xs:documentation>Jednotlivé záznamy daného objektu</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ZaznamObjektu" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ZaznamObjektu" abstract="true"/>
+  <xs:element name="ZaznamObjektuDel" type="Del" substitutionGroup="ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuIns" type="Ins" substitutionGroup="ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuRefN" type="RefN" substitutionGroup="ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuRefV" type="RefV" substitutionGroup="ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuUpd" type="Upd" substitutionGroup="ZaznamObjektu"/>
+  <xs:complexType name="Del">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="DatumKontroly" type="xs:date" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Datum kontroly</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="DoplnkovyPopis" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Doplňkový popis</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="EvidencniCisloObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Evidenční číslo objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="FunkcniStavObjektu" type="lst:CKZFunkcniStavObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Funkční stav objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="ID">
+              <xs:annotation>
+                <xs:documentation>ID</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDExterni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>ID externí</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDZmeny" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>ID změny</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="KonstrukceDZZ" type="lst:CKZKonstrukceDZZ" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Konstrukce DZZ</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Natoceni" type="xs:nonNegativeInteger" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Natočení</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="NazevSDZIP" type="lst:CKZNazevSDZIP" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Název SDZ typ IP</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="PopisObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Popis objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="Poradi" type="xs:integer" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Pořadí</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Prilohy" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Přílohy</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="TridaPresnostiPoloha" type="lst:TridaPresnostiPoloha" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti v poloze</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TridaPresnostiVyska" type="lst:TridaPresnostiVyska" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti ve výšce</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TypUkotveni" type="lst:CKZTypUkotveni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Typ ukotveni</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="UmisteniObjektu" type="lst:UmisteniObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Umístěni objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Upresneni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Upřesnění</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="UrovenUmisteniObjektuDI" type="lst:UrovenUmisteniObjektuDI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Úroveň umístění objektu DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="VlastnikDITI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Vlastník DI nebo TI</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="ZpusobPorizeniDI" type="lst:ZpusobPorizeniDI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Způsob pořízení DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Geometrie objektu</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Bod3D" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Geometrie objektu</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element ref="gml:pointProperty"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Ins">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="DatumKontroly" type="xs:date" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Datum kontroly</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="DoplnkovyPopis" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Doplňkový popis</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="EvidencniCisloObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Evidenční číslo objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="FunkcniStavObjektu" type="lst:CKZFunkcniStavObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Funkční stav objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="ID" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>ID</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDExterni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>ID externí</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDZmeny" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>ID změny</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="KonstrukceDZZ" type="lst:CKZKonstrukceDZZ" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Konstrukce DZZ</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Natoceni" type="xs:nonNegativeInteger" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Natočení</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="NazevSDZIP" type="lst:CKZNazevSDZIP">
+              <xs:annotation>
+                <xs:documentation>Název SDZ typ IP</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="PopisObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Popis objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="Poradi" type="xs:integer" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Pořadí</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Prilohy" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Přílohy</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="TridaPresnostiPoloha" type="lst:TridaPresnostiPoloha">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti v poloze</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TridaPresnostiVyska" type="lst:TridaPresnostiVyska">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti ve výšce</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TypUkotveni" type="lst:CKZTypUkotveni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Typ ukotveni</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="UmisteniObjektu" type="lst:UmisteniObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Umístěni objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Upresneni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Upřesnění</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="UrovenUmisteniObjektuDI" type="lst:UrovenUmisteniObjektuDI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Úroveň umístění objektu DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="VlastnikDITI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Vlastník DI nebo TI</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="ZpusobPorizeniDI" type="lst:ZpusobPorizeniDI">
+              <xs:annotation>
+                <xs:documentation>Způsob pořízení DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu">
+        <xs:annotation>
+          <xs:documentation>Geometrie objektu</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Bod3D">
+              <xs:annotation>
+                <xs:documentation>Geometrie objektu</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element ref="gml:pointProperty"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RefN">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="DatumKontroly" type="xs:date">
+              <xs:annotation>
+                <xs:documentation>Datum kontroly</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="DoplnkovyPopis">
+              <xs:annotation>
+                <xs:documentation>Doplňkový popis</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="EvidencniCisloObjektu">
+              <xs:annotation>
+                <xs:documentation>Evidenční číslo objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="FunkcniStavObjektu" type="lst:CKZFunkcniStavObjektu">
+              <xs:annotation>
+                <xs:documentation>Funkční stav objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="ID">
+              <xs:annotation>
+                <xs:documentation>ID</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDExterni">
+              <xs:annotation>
+                <xs:documentation>ID externí</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDZmeny">
+              <xs:annotation>
+                <xs:documentation>ID změny</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="KonstrukceDZZ" type="lst:CKZKonstrukceDZZ">
+              <xs:annotation>
+                <xs:documentation>Konstrukce DZZ</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Natoceni" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Natočení</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="NazevSDZIP" type="lst:CKZNazevSDZIP">
+              <xs:annotation>
+                <xs:documentation>Název SDZ typ IP</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="PopisObjektu">
+              <xs:annotation>
+                <xs:documentation>Popis objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="Poradi" type="xs:integer">
+              <xs:annotation>
+                <xs:documentation>Pořadí</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Prilohy">
+              <xs:annotation>
+                <xs:documentation>Přílohy</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="TridaPresnostiPoloha" type="lst:TridaPresnostiPoloha">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti v poloze</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TridaPresnostiVyska" type="lst:TridaPresnostiVyska">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti ve výšce</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TypUkotveni" type="lst:CKZTypUkotveni">
+              <xs:annotation>
+                <xs:documentation>Typ ukotveni</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="UmisteniObjektu" type="lst:UmisteniObjektu">
+              <xs:annotation>
+                <xs:documentation>Umístěni objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Upresneni">
+              <xs:annotation>
+                <xs:documentation>Upřesnění</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="UrovenUmisteniObjektuDI" type="lst:UrovenUmisteniObjektuDI">
+              <xs:annotation>
+                <xs:documentation>Úroveň umístění objektu DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="VlastnikDITI">
+              <xs:annotation>
+                <xs:documentation>Vlastník DI nebo TI</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="ZpusobPorizeniDI" type="lst:ZpusobPorizeniDI">
+              <xs:annotation>
+                <xs:documentation>Způsob pořízení DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu">
+        <xs:annotation>
+          <xs:documentation>Geometrie objektu</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Bod3D">
+              <xs:annotation>
+                <xs:documentation>Geometrie objektu</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element ref="gml:pointProperty"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RefV">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="DatumKontroly" type="xs:date">
+              <xs:annotation>
+                <xs:documentation>Datum kontroly</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="DoplnkovyPopis">
+              <xs:annotation>
+                <xs:documentation>Doplňkový popis</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="EvidencniCisloObjektu">
+              <xs:annotation>
+                <xs:documentation>Evidenční číslo objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="FunkcniStavObjektu" type="lst:CKZFunkcniStavObjektu">
+              <xs:annotation>
+                <xs:documentation>Funkční stav objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="ID">
+              <xs:annotation>
+                <xs:documentation>ID</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDExterni">
+              <xs:annotation>
+                <xs:documentation>ID externí</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDZmeny">
+              <xs:annotation>
+                <xs:documentation>ID změny</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="KonstrukceDZZ" type="lst:CKZKonstrukceDZZ">
+              <xs:annotation>
+                <xs:documentation>Konstrukce DZZ</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Natoceni" type="xs:nonNegativeInteger">
+              <xs:annotation>
+                <xs:documentation>Natočení</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="NazevSDZIP" type="lst:CKZNazevSDZIP">
+              <xs:annotation>
+                <xs:documentation>Název SDZ typ IP</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="PopisObjektu">
+              <xs:annotation>
+                <xs:documentation>Popis objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="Poradi" type="xs:integer">
+              <xs:annotation>
+                <xs:documentation>Pořadí</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Prilohy">
+              <xs:annotation>
+                <xs:documentation>Přílohy</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="TridaPresnostiPoloha" type="lst:TridaPresnostiPoloha">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti v poloze</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TridaPresnostiVyska" type="lst:TridaPresnostiVyska">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti ve výšce</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TypUkotveni" type="lst:CKZTypUkotveni">
+              <xs:annotation>
+                <xs:documentation>Typ ukotveni</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="UmisteniObjektu" type="lst:UmisteniObjektu">
+              <xs:annotation>
+                <xs:documentation>Umístěni objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Upresneni">
+              <xs:annotation>
+                <xs:documentation>Upřesnění</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="UrovenUmisteniObjektuDI" type="lst:UrovenUmisteniObjektuDI">
+              <xs:annotation>
+                <xs:documentation>Úroveň umístění objektu DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="VlastnikDITI">
+              <xs:annotation>
+                <xs:documentation>Vlastník DI nebo TI</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="ZpusobPorizeniDI" type="lst:ZpusobPorizeniDI">
+              <xs:annotation>
+                <xs:documentation>Způsob pořízení DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu">
+        <xs:annotation>
+          <xs:documentation>Geometrie objektu</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Bod3D">
+              <xs:annotation>
+                <xs:documentation>Geometrie objektu</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element ref="gml:pointProperty"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Upd">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="DatumKontroly" type="xs:date" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Datum kontroly</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="DoplnkovyPopis" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Doplňkový popis</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="EvidencniCisloObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Evidenční číslo objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="FunkcniStavObjektu" type="lst:CKZFunkcniStavObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Funkční stav objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="ID">
+              <xs:annotation>
+                <xs:documentation>ID</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="50"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDExterni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>ID externí</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="IDZmeny" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>ID změny</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="KonstrukceDZZ" type="lst:CKZKonstrukceDZZ" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Konstrukce DZZ</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Natoceni" type="xs:nonNegativeInteger" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Natočení</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="NazevSDZIP" type="lst:CKZNazevSDZIP" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Název SDZ typ IP</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="PopisObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Popis objektu</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="Poradi" type="xs:integer" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Pořadí</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Prilohy" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Přílohy</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="TridaPresnostiPoloha" type="lst:TridaPresnostiPoloha" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti v poloze</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TridaPresnostiVyska" type="lst:TridaPresnostiVyska" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Třída přesnosti ve výšce</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="TypUkotveni" type="lst:CKZTypUkotveni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Typ ukotveni</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="UmisteniObjektu" type="lst:UmisteniObjektu" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Umístěni objektu</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="Upresneni" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Upřesnění</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="1000"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="UrovenUmisteniObjektuDI" type="lst:UrovenUmisteniObjektuDI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Úroveň umístění objektu DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element name="VlastnikDITI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Vlastník DI nebo TI</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:maxLength value="255"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="ZpusobPorizeniDI" type="lst:ZpusobPorizeniDI" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Způsob pořízení DI</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Geometrie objektu</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Bod3D" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>Geometrie objektu</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element ref="gml:pointProperty"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

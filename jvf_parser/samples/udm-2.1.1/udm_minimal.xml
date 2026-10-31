@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Ručně sestavený minimální soubor UDM 2.1.1 (Univerzální datový model ČKZ)
+  pro jednotkové testy parseru. Struktura převzata z oficiálních ukázek ČKZ
+  (UDM_ukazka-1.xml, Vzornik_JVFUDM_02010100.xml). Pokrývá:
+   - hlavičku VerzeJVFDTM 1.5.0.2 + VerzeJVFUDM 2.1.1,
+   - objekt DTM (HraniceBudovy) s UDM atributy (MaterialUDM, VstupDoDTM,
+     DatumKontroly, Prilohy) a záznamy Ins / Upd / Del,
+   - zploštělé systémové atributy (ID, IDZmeny, PopisObjektu) i prázdné ID,
+   - objekty nad rámec DTM (code_base 94…): Strom (ZPSUDM, bod),
+     DopravniZarizeniLinie (DIUDM, linie), ZajmovaPlocha (OST, plocha).
+-->
+<objtyp:JVFDTM xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:objtyp="objtyp" xmlns:cmn="cmn" xmlns:hrabud="hrabud" xmlns:strbod="strbod" xmlns:dzalin="dzalin" xmlns:zpppol="zpppol">
+  <objtyp:DataJVFDTM>
+    <cmn:VerzeJVFDTM>1.5.0.2</cmn:VerzeJVFDTM>
+    <cmn:VerzeJVFUDM>2.1.1</cmn:VerzeJVFUDM>
+    <cmn:DatumZapisu>2026-10-31T12:00:00</cmn:DatumZapisu>
+    <cmn:TypZapisu>změnové věty</cmn:TypZapisu>
+    <objtyp:Data>
+      <objtyp:HraniceBudovy>
+        <hrabud:ObjektovyTypNazev code_base="0100000299" code_suffix="02">hranice budovy</hrabud:ObjektovyTypNazev>
+        <hrabud:KategorieObjektu>Konstrukční prvky objektů</hrabud:KategorieObjektu>
+        <hrabud:SkupinaObjektu>Základní konstrukční prvek</hrabud:SkupinaObjektu>
+        <hrabud:ObsahovaCast>ZPS</hrabud:ObsahovaCast>
+        <hrabud:ZaznamyObjektu>
+          <hrabud:ZaznamObjektuIns>
+            <hrabud:AtributyObjektu>
+              <hrabud:PopisObjektu>severní stěna</hrabud:PopisObjektu>
+              <hrabud:UrovenUmisteniObjektuZPS>0</hrabud:UrovenUmisteniObjektuZPS>
+              <hrabud:TridaPresnostiPoloha>3</hrabud:TridaPresnostiPoloha>
+              <hrabud:TridaPresnostiVyska>3</hrabud:TridaPresnostiVyska>
+              <hrabud:ZpusobPorizeniZPS>1</hrabud:ZpusobPorizeniZPS>
+              <hrabud:DatumKontroly>2026-10-20</hrabud:DatumKontroly>
+              <hrabud:MaterialUDM>501</hrabud:MaterialUDM>
+              <hrabud:Prilohy>foto1.jpg; TZ.pdf</hrabud:Prilohy>
+              <hrabud:VstupDoBudovy>0</hrabud:VstupDoBudovy>
+              <hrabud:VstupDoDTM>1</hrabud:VstupDoDTM>
+            </hrabud:AtributyObjektu>
+            <hrabud:GeometrieObjektu>
+              <hrabud:Linie3D>
+                <gml:curveProperty>
+                  <gml:LineString gml:id="ID1_02" srsDimension="3" srsName="EPSG:5514">
+                    <gml:posList>-794995.81 -1138657.21 442.42 -794995.36 -1138650.12 442.40 -794988.20 -1138649.70 442.38</gml:posList>
+                  </gml:LineString>
+                </gml:curveProperty>
+              </hrabud:Linie3D>
+            </hrabud:GeometrieObjektu>
+          </hrabud:ZaznamObjektuIns>
+          <hrabud:ZaznamObjektuUpd>
+            <hrabud:AtributyObjektu>
+              <hrabud:ID>HB-2</hrabud:ID>
+              <hrabud:IDZmeny>Z-77</hrabud:IDZmeny>
+              <hrabud:UrovenUmisteniObjektuZPS>0</hrabud:UrovenUmisteniObjektuZPS>
+              <hrabud:TridaPresnostiPoloha>3</hrabud:TridaPresnostiPoloha>
+              <hrabud:TridaPresnostiVyska>3</hrabud:TridaPresnostiVyska>
+              <hrabud:ZpusobPorizeniZPS>1</hrabud:ZpusobPorizeniZPS>
+              <hrabud:MaterialUDM>500</hrabud:MaterialUDM>
+              <hrabud:VstupDoDTM>1</hrabud:VstupDoDTM>
+            </hrabud:AtributyObjektu>
+            <hrabud:GeometrieObjektu>
+              <hrabud:Linie3D>
+                <gml:curveProperty>
+                  <gml:LineString gml:id="ID2_02" srsDimension="3" srsName="EPSG:5514">
+                    <gml:posList>-794988.20 -1138649.70 442.38 -794987.90 -1138656.80 442.41</gml:posList>
+                  </gml:LineString>
+                </gml:curveProperty>
+              </hrabud:Linie3D>
+            </hrabud:GeometrieObjektu>
+          </hrabud:ZaznamObjektuUpd>
+          <hrabud:ZaznamObjektuDel>
+            <hrabud:AtributyObjektu>
+              <hrabud:ID>HB-3</hrabud:ID>
+            </hrabud:AtributyObjektu>
+            <hrabud:GeometrieObjektu>
+              <hrabud:Linie3D>
+                <gml:curveProperty>
+                  <gml:LineString gml:id="ID3_02" srsDimension="3" srsName="EPSG:5514">
+                    <gml:posList>-794980.00 -1138640.00 442.00 -794975.00 -1138640.00 442.00</gml:posList>
+                  </gml:LineString>
+                </gml:curveProperty>
+              </hrabud:Linie3D>
+            </hrabud:GeometrieObjektu>
+          </hrabud:ZaznamObjektuDel>
+        </hrabud:ZaznamyObjektu>
+      </objtyp:HraniceBudovy>
+      <objtyp:Strom>
+        <strbod:ObjektovyTypNazev code_base="9400001066" code_suffix="01">strom</strbod:ObjektovyTypNazev>
+        <strbod:KategorieObjektu>Objekt UDM - ZPS</strbod:KategorieObjektu>
+        <strbod:SkupinaObjektu>Zeleň</strbod:SkupinaObjektu>
+        <strbod:ObsahovaCast>ZPSUDM</strbod:ObsahovaCast>
+        <strbod:ZaznamyObjektu>
+          <strbod:ZaznamObjektuIns>
+            <strbod:AtributyObjektu>
+              <strbod:ID/>
+              <strbod:Natoceni>0</strbod:Natoceni>
+              <strbod:Okrasny>1</strbod:Okrasny>
+              <strbod:PrumerKmeneCm>35</strbod:PrumerKmeneCm>
+              <strbod:PrumerKorunyM>4,5</strbod:PrumerKorunyM>
+              <strbod:StavStromu>500</strbod:StavStromu>
+              <strbod:TridaPresnostiPoloha>3</strbod:TridaPresnostiPoloha>
+              <strbod:TridaPresnostiVyska>3</strbod:TridaPresnostiVyska>
+              <strbod:ZakladniRozdeleniStromu>500</strbod:ZakladniRozdeleniStromu>
+              <strbod:ZpusobPorizeniZPS>1</strbod:ZpusobPorizeniZPS>
+            </strbod:AtributyObjektu>
+            <strbod:GeometrieObjektu>
+              <strbod:Bod3D>
+                <gml:pointProperty>
+                  <gml:Point gml:id="ID10_01" srsDimension="3" srsName="EPSG:5514">
+                    <gml:pos>-794970.12 -1138660.45 443.10</gml:pos>
+                  </gml:Point>
+                </gml:pointProperty>
+              </strbod:Bod3D>
+            </strbod:GeometrieObjektu>
+          </strbod:ZaznamObjektuIns>
+        </strbod:ZaznamyObjektu>
+      </objtyp:Strom>
+      <objtyp:DopravniZarizeniLinie>
+        <dzalin:ObjektovyTypNazev code_base="9400001001" code_suffix="02">dopravní zařízení</dzalin:ObjektovyTypNazev>
+        <dzalin:KategorieObjektu>Objekt UDM - DI</dzalin:KategorieObjektu>
+        <dzalin:SkupinaObjektu>Silniční zařízení</dzalin:SkupinaObjektu>
+        <dzalin:ObsahovaCast>DIUDM</dzalin:ObsahovaCast>
+        <dzalin:ZaznamyObjektu>
+          <dzalin:ZaznamObjektuIns>
+            <dzalin:AtributyObjektu>
+              <dzalin:ID>DZ-1</dzalin:ID>
+              <dzalin:TridaPresnostiPoloha>3</dzalin:TridaPresnostiPoloha>
+              <dzalin:TridaPresnostiVyska>3</dzalin:TridaPresnostiVyska>
+              <dzalin:TypDopravnihoZarizeniLinie>900</dzalin:TypDopravnihoZarizeniLinie>
+              <dzalin:ZpusobPorizeniDI>1</dzalin:ZpusobPorizeniDI>
+            </dzalin:AtributyObjektu>
+            <dzalin:GeometrieObjektu>
+              <dzalin:Linie3D>
+                <gml:curveProperty>
+                  <gml:LineString gml:id="ID20_02" srsDimension="3" srsName="EPSG:5514">
+                    <gml:posList>-794960.00 -1138670.00 443.00 -794950.00 -1138670.00 443.05</gml:posList>
+                  </gml:LineString>
+                </gml:curveProperty>
+              </dzalin:Linie3D>
+            </dzalin:GeometrieObjektu>
+          </dzalin:ZaznamObjektuIns>
+        </dzalin:ZaznamyObjektu>
+      </objtyp:DopravniZarizeniLinie>
+      <objtyp:ZajmovaPlocha>
+        <zpppol:ObjektovyTypNazev code_base="9400001039" code_suffix="03">zájmová (pomocná) plocha</zpppol:ObjektovyTypNazev>
+        <zpppol:KategorieObjektu>Objekt UDM - ostatní</zpppol:KategorieObjektu>
+        <zpppol:SkupinaObjektu>Zpracovatel</zpppol:SkupinaObjektu>
+        <zpppol:ObsahovaCast>OST</zpppol:ObsahovaCast>
+        <zpppol:ZaznamyObjektu>
+          <zpppol:ZaznamObjektuIns>
+            <zpppol:AtributyObjektu>
+              <zpppol:ID>ZP-1</zpppol:ID>
+              <zpppol:PopisObjektu>hranice zakázky</zpppol:PopisObjektu>
+            </zpppol:AtributyObjektu>
+            <zpppol:GeometrieObjektu>
+              <zpppol:Plocha2D>
+                <gml:surfaceProperty>
+                  <gml:Polygon gml:id="ID30_03" srsDimension="2" srsName="EPSG:5514">
+                    <gml:exterior>
+                      <gml:LinearRing>
+                        <gml:posList>-795000.00 -1138680.00 -794940.00 -1138680.00 -794940.00 -1138630.00 -795000.00 -1138630.00 -795000.00 -1138680.00</gml:posList>
+                      </gml:LinearRing>
+                    </gml:exterior>
+                  </gml:Polygon>
+                </gml:surfaceProperty>
+              </zpppol:Plocha2D>
+            </zpppol:GeometrieObjektu>
+          </zpppol:ZaznamObjektuIns>
+        </zpppol:ZaznamyObjektu>
+      </objtyp:ZajmovaPlocha>
+    </objtyp:Data>
+  </objtyp:DataJVFDTM>
+</objtyp:JVFDTM>

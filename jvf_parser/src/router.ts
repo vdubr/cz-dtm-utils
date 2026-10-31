@@ -5,24 +5,27 @@
  * souboru nasměruje na parser správné verze. Detekce (R4):
  *   1. kořen `ServisJVFDTM` → protokol chyb (není datový soubor) → chyba
  *      s odkazem na `parseErrorProtocol` (T6),
- *   2. `VerzeJVFDTM` ∈ `SUPPORTED_VERSIONS` → daná větev,
- *   3. neznámá/chybějící verze → **strukturní sniff** (druh `ZaznamObjektu`),
- *   4. jinak `DEFAULT_VERSION` + warn.
+ *   2. `<VerzeJVFUDM>` přítomna → **UDM** (`udm-<verze>`; neznámá verze UDM
+ *      se strukturou 1.5.0.x → nejnovější podporované UDM + warn),
+ *   3. `VerzeJVFDTM` ∈ `SUPPORTED_VERSIONS` → daná větev,
+ *   4. neznámá/chybějící verze → **strukturní sniff** (druh `ZaznamObjektu`),
+ *   5. jinak `DEFAULT_VERSION` + warn.
  * Router nikdy nespadne na detekci — vždy zvolí nějakou větev.
  */
 import {
   DEFAULT_VERSION,
+  LATEST_UDM_VERSION,
   isSupportedVersion,
+  isUdmVersion,
+  udmVersionId,
   type JvfDtm,
   type JvfVersion,
 } from 'jvf-dtm-types';
 import { parseJvfDtm as parseJvfDtm143 } from './1.4.3/parser.js';
 import { parseJvfDtm1501 } from './1.5.0.1/parser.js';
+import { detectUdmVersionString, parseUdm } from './udm-2.1.1/parser.js';
 import { ENTITY_CATALOG as CATALOG_143 } from './1.4.3/generated/entities.js';
-import {
-  ENTITY_CATALOG as CATALOG_1501,
-  type EntityMeta,
-} from './1.5.0.1/generated/entities.js';
+import { ENTITY_CATALOG as CATALOG_1501 } from './1.5.0.1/generated/entities.js';
 import {
   ENUM_LABELS as LABELS_143,
   BOOLEAN_ATTRS as BOOL_ATTRS_143,
@@ -31,9 +34,41 @@ import {
   ENUM_LABELS as LABELS_1501,
   BOOLEAN_ATTRS as BOOL_ATTRS_1501,
 } from './1.5.0.1/generated/enum-labels.js';
+// `EntityMeta` z UDM — jeho union `obsahovaCast` je nadmnožinou JVF verzí.
+import {
+  ENTITY_CATALOG as CATALOG_UDM_211,
+  type EntityMeta,
+} from './udm-2.1.1/generated/entities.js';
+import {
+  ENUM_LABELS as LABELS_UDM_211,
+  BOOLEAN_ATTRS as BOOL_ATTRS_UDM_211,
+} from './udm-2.1.1/generated/enum-labels.js';
 
-const BOOL_SET_143 = new Set<string>(BOOL_ATTRS_143);
-const BOOL_SET_1501 = new Set<string>(BOOL_ATTRS_1501);
+/** Katalogy entit podle verze — každá podporovaná verze musí mít záznam. */
+const CATALOGS: Readonly<Record<JvfVersion, Readonly<Record<string, EntityMeta>>>> = {
+  '1.4.3': CATALOG_143,
+  '1.5.0.1': CATALOG_1501,
+  'udm-2.1.1': CATALOG_UDM_211,
+};
+
+const ENUM_LABELS_BY_VERSION: Readonly<
+  Record<JvfVersion, Readonly<Record<string, Record<string, string>>>>
+> = {
+  '1.4.3': LABELS_143,
+  '1.5.0.1': LABELS_1501,
+  'udm-2.1.1': LABELS_UDM_211,
+};
+
+const BOOLEAN_ATTRS_BY_VERSION: Readonly<Record<JvfVersion, ReadonlySet<string>>> = {
+  '1.4.3': new Set<string>(BOOL_ATTRS_143),
+  '1.5.0.1': new Set<string>(BOOL_ATTRS_1501),
+  'udm-2.1.1': new Set<string>(BOOL_ATTRS_UDM_211),
+};
+
+/** Neznámá verze (mimo `JvfVersion`) → `DEFAULT_VERSION` (graceful). */
+function knownVersion(version: string): JvfVersion {
+  return isSupportedVersion(version) ? version : DEFAULT_VERSION;
+}
 
 /** Přečte hodnotu `<VerzeJVFDTM>` z raw XML (bez plného parsování). */
 export function detectVersionString(xml: string): string | null {
@@ -61,8 +96,33 @@ export function sniffVersionByStructure(xml: string): JvfVersion {
   return DEFAULT_VERSION;
 }
 
+/**
+ * Vyřeší UDM verzi souboru z `<VerzeJVFUDM>`, nebo `null` u čistého JVF.
+ * Neznámá verze UDM se strukturou 1.5.0.x → nejnovější podporované UDM
+ * (+ warn); jiná struktura (UDM 1.x nad JVF 1.4.3) → `null` (parsuje se
+ * jako JVF).
+ */
+export function resolveUdmVersion(xml: string): JvfVersion | null {
+  const declared = detectUdmVersionString(xml);
+  if (declared == null) return null;
+  const id = udmVersionId(declared);
+  if (isUdmVersion(id)) return id;
+  if (sniffVersionByStructure(xml) === '1.5.0.1') {
+    console.warn(
+      `jvf-parser: nepodporovaná verze UDM "${declared}" — použije se ${LATEST_UDM_VERSION}.`
+    );
+    return LATEST_UDM_VERSION;
+  }
+  console.warn(
+    `jvf-parser: nepodporovaná verze UDM "${declared}" (struktura JVF 1.4.3) — parsuje se jako JVF DTM bez rozšíření UDM.`
+  );
+  return null;
+}
+
 /** Vyřeší verzi souboru dle R4 (bez ohledu na ServisJVFDTM). */
 export function resolveDtmVersion(xml: string): JvfVersion {
+  const udm = resolveUdmVersion(xml);
+  if (udm) return udm;
   const declared = detectVersionString(xml);
   if (declared && isSupportedVersion(declared)) return declared;
   const sniffed = sniffVersionByStructure(xml);
@@ -75,7 +135,8 @@ export function resolveDtmVersion(xml: string): JvfVersion {
 }
 
 /**
- * Naparsuje JVF DTM datový soubor (1.4.3 nebo 1.5.0.1) — verzní router (R3/R4).
+ * Naparsuje JVF DTM datový soubor (1.4.3, 1.5.0.1) nebo UDM (udm-2.1.1) —
+ * verzní router (R3/R4).
  * Pro protokol chyb (`ServisJVFDTM`) použij `parseErrorProtocol`.
  */
 export function parseJvfDtm(xml: string): JvfDtm {
@@ -85,6 +146,11 @@ export function parseJvfDtm(xml: string): JvfDtm {
     );
   }
   const version = resolveDtmVersion(xml);
+  if (isUdmVersion(version)) {
+    const dtm = parseUdm(xml);
+    // Neznámá verze UDM namapovaná na nejnovější — katalog dle `version`.
+    return { ...dtm, verze: version };
+  }
   return version === '1.5.0.1' ? parseJvfDtm1501(xml) : parseJvfDtm143(xml);
 }
 
@@ -93,17 +159,17 @@ export function parseJvfDtm(xml: string): JvfDtm {
  * zůstává exportován pro zpětnou kompatibilitu.
  */
 export function getEntityCatalog(version: JvfVersion): Readonly<Record<string, EntityMeta>> {
-  return version === '1.5.0.1' ? CATALOG_1501 : CATALOG_143;
+  return CATALOGS[knownVersion(version)];
 }
 
 /** Tabulka číselníků `název atributu → { kód → popisek }` pro danou verzi. */
 export function getEnumLabels(version: JvfVersion): Readonly<Record<string, Record<string, string>>> {
-  return version === '1.5.0.1' ? LABELS_1501 : LABELS_143;
+  return ENUM_LABELS_BY_VERSION[knownVersion(version)];
 }
 
 /** Množina názvů `xs:boolean` atributů (v XML 0/1) pro danou verzi. */
 export function getBooleanAttrs(version: JvfVersion): ReadonlySet<string> {
-  return version === '1.5.0.1' ? BOOL_SET_1501 : BOOL_SET_143;
+  return BOOLEAN_ATTRS_BY_VERSION[knownVersion(version)];
 }
 
 /**

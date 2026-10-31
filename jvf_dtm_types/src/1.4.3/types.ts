@@ -8,8 +8,21 @@ export type ZapisObjektuType = 'i' | 'u' | 'd' | 'r';
  * 1.5.0.1 — neveřejná kategorie, jen 2D plocha, `ObsahovaCast` DI/TI
  * (viz zadání „jvf version", změna #6). Ostatní hodnoty jsou sdílené napříč
  * verzemi.
+ *
+ * UDM (Univerzální datový model ČKZ) přidává obsahové části objektů nad
+ * rámec DTM: `ZPSUDM`, `DIUDM`, `TIUDM` a `OST` (ostatní).
  */
-export type ObsahovaCast = 'ZPS' | 'TI' | 'DI' | 'GAD' | 'OPL' | 'PSPI';
+export type ObsahovaCast =
+  | 'ZPS'
+  | 'TI'
+  | 'DI'
+  | 'GAD'
+  | 'OPL'
+  | 'PSPI'
+  | 'ZPSUDM'
+  | 'DIUDM'
+  | 'TIUDM'
+  | 'OST';
 
 /**
  * Surový druh záznamu podle názvu elementu v JVF DTM 1.5.0.1.
@@ -234,7 +247,16 @@ export interface ErrorProtocol {
 
 // Top-level parsed document
 export interface JvfDtm {
+  /**
+   * Id datového modelu souboru. U JVF DTM hodnota `<VerzeJVFDTM>`
+   * (`1.4.3`, `1.5.0.1`, …). U UDM id `udm-<VerzeJVFUDM>` (např. `udm-2.1.1`)
+   * — podle něj se volí katalog, číselníky i chování topologie.
+   */
   verze: string;
+  /** Surová hodnota `<VerzeJVFDTM>` — vyplněna u UDM (např. `1.5.0.2`). */
+  verzeJvfDtm?: string;
+  /** Surová hodnota `<VerzeJVFUDM>` (jen UDM soubory, např. `2.1.1`). */
+  verzeUdm?: string;
   datumZapisu: string;
   typZapisu: TypZapisu;
   /** Typ datové sady z hlavičky JVF (1.5.0.1+). Ve 1.4.3 typicky `undefined`. */
