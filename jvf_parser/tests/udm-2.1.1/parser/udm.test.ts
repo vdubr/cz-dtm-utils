@@ -114,22 +114,6 @@ describe('UDM — parsování (udm_minimal.xml)', () => {
     expect(zp.zaznamy[0].commonAttributes.popisObjektu).toBe('hranice zakázky');
   });
 
-  it('pontonový most: obvod mostu (typ „jiný" + upřesnění) a dřevěný povrch komunikace', () => {
-    const most = findTyp(dtm, 'ObvodMostu').zaznamy[0];
-    expect(most.attributes['TypMostu']).toBe(402);
-    expect(labelForAttribute('TypMostu', 402, 'udm-2.1.1')).toBe('jiný');
-    expect(most.attributes['Upresneni']).toBe('pontonový most');
-    expect(most.attributes['OznaceniMostu']).toBe('pontonový most přes Volyňku');
-    expect(most.geometrie[0].type).toBe('Polygon');
-
-    for (const name of ['ProvozniPlochaPozemniKomunikacePlocha', 'ProvozniPlochaPozemniKomunikaceDefinicniBod']) {
-      const pk = findTyp(dtm, name).zaznamy[0];
-      expect(pk.attributes['PrevazujiciPovrch']).toBe(205);
-    }
-    // 205 = rozšíření číselníku UDM (nad rámec DTM), ne asfalt (1).
-    expect(labelForAttribute('PrevazujiciPovrch', 205, 'udm-2.1.1')).toBe('dřevo');
-  });
-
   it('katalog a popisky číselníků podle verze udm-2.1.1', () => {
     const catalog = getEntityCatalog('udm-2.1.1');
     for (const ot of dtm.objekty) expect(catalog[ot.elementName]).toBeDefined();
@@ -139,6 +123,29 @@ describe('UDM — parsování (udm_minimal.xml)', () => {
     // V JVF katalogu UDM objekty ani UDM číselníky nejsou.
     expect(getEntityCatalog('1.5.0.1')['Strom']).toBeUndefined();
     expect(labelForAttribute('StavStromu', 500, '1.5.0.1')).toBeUndefined();
+  });
+});
+
+describe('UDM — ukázka pontonového mostu (udm_pontonovy_most.xml)', () => {
+  it('3 objektové typy, most „jiný" + upřesnění, povrch dřevo', () => {
+    const dtm = parseJvfDtm(S('udm-2.1.1', 'udm_pontonovy_most.xml'));
+    expect(dtm.verze).toBe('udm-2.1.1');
+    expect(dtm.objekty.map((o) => o.elementName)).toEqual([
+      'ObvodMostu',
+      'ProvozniPlochaPozemniKomunikacePlocha',
+      'ProvozniPlochaPozemniKomunikaceDefinicniBod',
+    ]);
+    const most = dtm.objekty[0].zaznamy[0];
+    expect(most.attributes['TypMostu']).toBe(402);
+    expect(labelForAttribute('TypMostu', 402, 'udm-2.1.1')).toBe('jiný');
+    expect(most.attributes['Upresneni']).toBe('pontonový most');
+    expect(most.attributes['OznaceniMostu']).toBe('pontonový most přes Volyňku');
+    expect(most.geometrie[0].type).toBe('Polygon');
+    // Povrch plochy i definičního bodu: 205 = dřevo (rozšíření UDM), ne asfalt (1).
+    for (const ot of dtm.objekty.slice(1)) {
+      expect(ot.zaznamy[0].attributes['PrevazujiciPovrch']).toBe(205);
+    }
+    expect(labelForAttribute('PrevazujiciPovrch', 205, 'udm-2.1.1')).toBe('dřevo');
   });
 });
 

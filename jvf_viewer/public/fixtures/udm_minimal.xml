@@ -8,14 +8,12 @@
      DatumKontroly, Prilohy) a záznamy Ins / Upd / Del,
    - zploštělé systémové atributy (ID, IDZmeny, PopisObjektu) i prázdné ID,
    - objekty nad rámec DTM (code_base 94…): Strom (ZPSUDM, bod),
-     DopravniZarizeniLinie (DIUDM, linie), ZajmovaPlocha (OST, plocha),
-   - pontonový most: ObvodMostu (DI, Plocha3D) s typem „jiný" (402)
-     a upřesněním, na něm ProvozniPlochaPozemniKomunikace (plocha + def. bod)
-     s dřevěným povrchem (PrevazujiciPovrch 205 = dřevo, rozšíření UDM).
+     DopravniZarizeniLinie (DIUDM, linie), ZajmovaPlocha (OST, plocha).
+  Pontonový most je samostatná ukázka udm_pontonovy_most.xml.
   Soubor je validní proti XSD UDM 2.1.1 (xmllint se schématem
   jvf_parser/docs/udm-2.1.1/xsd/index/index_data.xsd).
 -->
-<objtyp:JVFDTM xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:objtyp="objtyp" xmlns:cmn="cmn" xmlns:hrabud="hrabud" xmlns:strbod="strbod" xmlns:dzalin="dzalin" xmlns:zpppol="zpppol" xmlns:omopol="omopol" xmlns:pokpol="pokpol" xmlns:pokdef="pokdef">
+<objtyp:JVFDTM xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:objtyp="objtyp" xmlns:cmn="cmn" xmlns:hrabud="hrabud" xmlns:strbod="strbod" xmlns:dzalin="dzalin" xmlns:zpppol="zpppol">
   <objtyp:DataJVFDTM>
     <cmn:VerzeJVFDTM>1.5.0.2</cmn:VerzeJVFDTM>
     <cmn:VerzeJVFUDM>2.1.1</cmn:VerzeJVFUDM>
@@ -172,96 +170,6 @@
           </zpppol:ZaznamObjektuIns>
         </zpppol:ZaznamyObjektu>
       </objtyp:ZajmovaPlocha>
-      <objtyp:ObvodMostu>
-        <omopol:ObjektovyTypNazev code_base="0100000057" code_suffix="03">obvod mostu</omopol:ObjektovyTypNazev>
-        <omopol:KategorieObjektu>Dopravní stavby</omopol:KategorieObjektu>
-        <omopol:SkupinaObjektu>Dopravní stavba společná pro více skupin</omopol:SkupinaObjektu>
-        <omopol:ObsahovaCast>DI</omopol:ObsahovaCast>
-        <omopol:ZaznamyObjektu>
-          <omopol:ZaznamObjektuIns>
-            <omopol:AtributyObjektu>
-              <omopol:IDEditora/>
-              <omopol:IDExterni/>
-              <omopol:UrovenUmisteniObjektuDI>0</omopol:UrovenUmisteniObjektuDI>
-              <omopol:TridaPresnostiPoloha>3</omopol:TridaPresnostiPoloha>
-              <omopol:TridaPresnostiVyska>3</omopol:TridaPresnostiVyska>
-              <omopol:ZpusobPorizeniDI>1</omopol:ZpusobPorizeniDI>
-              <omopol:TypMostu>402</omopol:TypMostu>
-              <omopol:Upresneni>pontonový most</omopol:Upresneni>
-              <omopol:OznaceniMostu>pontonový most přes Volyňku</omopol:OznaceniMostu>
-              <omopol:OznaceniKomunikaceTrate>účelová komunikace</omopol:OznaceniKomunikaceTrate>
-              <omopol:VstupDoDTM>1</omopol:VstupDoDTM>
-            </omopol:AtributyObjektu>
-            <omopol:GeometrieObjektu>
-              <omopol:Plocha3D>
-                <gml:surfaceProperty>
-                  <gml:Polygon gml:id="ID40_03" srsDimension="3" srsName="EPSG:5514">
-                    <gml:exterior>
-                      <gml:LinearRing>
-                        <gml:posList>-795031.00 -1138702.00 440.20 -795025.00 -1138702.00 440.20 -795025.00 -1138668.00 440.20 -795031.00 -1138668.00 440.20 -795031.00 -1138702.00 440.20</gml:posList>
-                      </gml:LinearRing>
-                    </gml:exterior>
-                  </gml:Polygon>
-                </gml:surfaceProperty>
-              </omopol:Plocha3D>
-            </omopol:GeometrieObjektu>
-          </omopol:ZaznamObjektuIns>
-        </omopol:ZaznamyObjektu>
-      </objtyp:ObvodMostu>
-      <objtyp:ProvozniPlochaPozemniKomunikacePlocha>
-        <pokpol:ObjektovyTypNazev code_base="0100000005" code_suffix="03">provozní plocha pozemní komunikace</pokpol:ObjektovyTypNazev>
-        <pokpol:KategorieObjektu>Dopravní stavby</pokpol:KategorieObjektu>
-        <pokpol:SkupinaObjektu>Silniční doprava</pokpol:SkupinaObjektu>
-        <pokpol:ObsahovaCast>ZPS</pokpol:ObsahovaCast>
-        <pokpol:ZaznamyObjektu>
-          <pokpol:ZaznamObjektuIns>
-            <pokpol:AtributyObjektu>
-              <pokpol:UrovenUmisteniObjektuZPS>0</pokpol:UrovenUmisteniObjektuZPS>
-              <pokpol:TridaPresnostiPoloha>3</pokpol:TridaPresnostiPoloha>
-              <pokpol:TridaPresnostiVyska>3</pokpol:TridaPresnostiVyska>
-              <pokpol:TypPozemniKomunikace>1</pokpol:TypPozemniKomunikace>
-              <pokpol:PrevazujiciPovrch>205</pokpol:PrevazujiciPovrch>
-              <pokpol:VstupDoDTM>1</pokpol:VstupDoDTM>
-            </pokpol:AtributyObjektu>
-            <pokpol:GeometrieObjektu>
-              <pokpol:Plocha2D>
-                <gml:Polygon gml:id="ID41_03" srsDimension="2" srsName="EPSG:5514">
-                  <gml:exterior>
-                    <gml:LinearRing>
-                      <gml:posList>-795030.00 -1138701.00 -795026.00 -1138701.00 -795026.00 -1138669.00 -795030.00 -1138669.00 -795030.00 -1138701.00</gml:posList>
-                    </gml:LinearRing>
-                  </gml:exterior>
-                </gml:Polygon>
-              </pokpol:Plocha2D>
-            </pokpol:GeometrieObjektu>
-          </pokpol:ZaznamObjektuIns>
-        </pokpol:ZaznamyObjektu>
-      </objtyp:ProvozniPlochaPozemniKomunikacePlocha>
-      <objtyp:ProvozniPlochaPozemniKomunikaceDefinicniBod>
-        <pokdef:ObjektovyTypNazev code_base="0100000005" code_suffix="04">provozní plocha pozemní komunikace</pokdef:ObjektovyTypNazev>
-        <pokdef:KategorieObjektu>Dopravní stavby</pokdef:KategorieObjektu>
-        <pokdef:SkupinaObjektu>Silniční doprava</pokdef:SkupinaObjektu>
-        <pokdef:ObsahovaCast>ZPS</pokdef:ObsahovaCast>
-        <pokdef:ZaznamyObjektu>
-          <pokdef:ZaznamObjektuIns>
-            <pokdef:AtributyObjektu>
-              <pokdef:UrovenUmisteniObjektuZPS>0</pokdef:UrovenUmisteniObjektuZPS>
-              <pokdef:TypPozemniKomunikace>1</pokdef:TypPozemniKomunikace>
-              <pokdef:PrevazujiciPovrch>205</pokdef:PrevazujiciPovrch>
-              <pokdef:VstupDoDTM>1</pokdef:VstupDoDTM>
-            </pokdef:AtributyObjektu>
-            <pokdef:GeometrieObjektu>
-              <pokdef:Bod3D>
-                <gml:pointProperty>
-                  <gml:Point gml:id="ID42_04" srsDimension="3" srsName="EPSG:5514">
-                    <gml:pos>-795028.00 -1138685.00 440.20</gml:pos>
-                  </gml:Point>
-                </gml:pointProperty>
-              </pokdef:Bod3D>
-            </pokdef:GeometrieObjektu>
-          </pokdef:ZaznamObjektuIns>
-        </pokdef:ZaznamyObjektu>
-      </objtyp:ProvozniPlochaPozemniKomunikaceDefinicniBod>
     </objtyp:Data>
   </objtyp:DataJVFDTM>
 </objtyp:JVFDTM>
