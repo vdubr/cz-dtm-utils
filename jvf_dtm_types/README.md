@@ -71,7 +71,9 @@ from it, and parsers/validators dispatch by it.
 ```
 src/
 ├── index.ts        — barrel export
-├── versions.ts     — SUPPORTED_VERSIONS, DEFAULT_VERSION, isSupportedVersion
+├── versions.ts     — JVF_VERSIONS, JvfVersion, DEFAULT_VERSION, isSupportedVersion,
+│                     baseJvfVersionOf, formatVersionLabel
+├── dialects.ts     — dialect registry DIALECTS (UDM, ŽXML), dialectOf, UDM_/ZXML_VERSIONS
 └── 1.4.3/
     └── types.ts    — domain types for JVF DTM 1.4.3
 ```

@@ -23,7 +23,7 @@ test.describe('Základní stav aplikace', () => {
     await page.locator('#btn-upload-menu').click();
     await expect(page.locator('#upload-menu')).toBeVisible();
     await expect(page.locator('.upload-menu-item[data-sample="ukazka_ZPS.xml"]')).toBeVisible();
-    // Výchozí režim JVF: jen 4 ukázky JVF, ukázky UDM jsou skryté.
+    // Výchozí režim JVF: jen 4 ukázky JVF, ukázky UDM a ŽXML jsou skryté.
     await expect(page.locator('.upload-menu-item:visible')).toHaveCount(4);
     await expect(page.locator('.upload-menu-item[data-sample="udm_minimal.xml"]')).toBeHidden();
   });
@@ -119,7 +119,7 @@ test.describe('Načtení JVF souboru', () => {
   });
 
   test('soubor s nepodporovanou verzí (1.5.0) je odmítnut', async ({ page }) => {
-    // Verze 1.5.0 není v SUPPORTED_VERSIONS (1.4.3, 1.5.0.1) → blokující modal
+    // Verze 1.5.0 není mezi JVF_VERSIONS (1.4.3, 1.5.0.1, 1.5.0.2) → blokující modal
     // (#confirm-modal, ne nativní alert). Soubor se nenačte a tlačítka
     // zůstanou zakázaná.
     await page.setInputFiles('#file-input', fixturePath('test_verze_1.5.0.xml'));
@@ -209,6 +209,84 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#jvf-layers-list')).toContainText('obvod mostu');
     await expect(page.locator('#jvf-layers-list')).toContainText('provozní plocha pozemní komunikace');
+  });
+});
+
+test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
+  test('?mode=jzm: ukázky ŽXML v nabídce, Export do CAD a Legenda znaků viditelné', async ({ page }) => {
+    await page.goto('./?mode=jzm');
+    await expect(page.locator('#app-mode-switch [data-mode-btn="jzm"]')).toHaveClass(/active/);
+    await page.locator('#btn-upload-menu').click();
+    await expect(page.locator('.upload-menu-item:visible')).toHaveCount(3);
+    await expect(page.locator('.upload-menu-item[data-sample="zxml_nadrazi.xml"]')).toBeVisible();
+    await expect(page.locator('#btn-export-cad')).toBeVisible();
+    await expect(page.locator('#btn-symbol-legend')).toBeVisible();
+  });
+
+  test('soubor ŽXML v režimu JVF nabídne přepnutí do JŽM', async ({ page }) => {
+    await expect(page.locator('#btn-symbol-legend')).toBeHidden();
+    await page.setInputFiles('#file-input', fixturePath('zxml-prvky-sz.xml'));
+    await expect(page.locator('#confirm-modal-title')).toHaveText(/režimu JŽM/);
+    await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do JŽM' }).click();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#app-mode-switch [data-mode-btn="jzm"]')).toHaveClass(/active/);
+    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+      'title',
+      'Verze ŽXML 1.4.2.1 (JVF 1.4.3)',
+    );
+  });
+
+  test('nádraží ŽXML 1.5.1.6: symboly SŽ, obsahové části SŽ, export DXF', async ({ page }) => {
+    await switchMode(page, 'jzm');
+    const szSymbol = page.waitForRequest(/\/symboly\/zxml\/sz-[0-9a-f]+_[0-9a-f]{6}\.svg$/);
+    await page.locator('#btn-upload-menu').click();
+    await page.locator('.upload-menu-item[data-sample="zxml_nadrazi.xml"]').click();
+    await szSymbol;
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+      'title',
+      'Verze ŽXML 1.5.1.6 (JVF 1.5.0.2)',
+    );
+    for (const cast of ['ZDT', 'ZDD', 'H3D', 'ODSZ', 'SKLEP']) {
+      await expect(page.locator('#jvf-layers-list')).toContainText(cast);
+    }
+
+    await page.locator('#btn-export-cad').click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();
+    const download = await downloadPromise;
+    const { readFile } = await import('node:fs/promises');
+    const dxf = await readFile((await download.path())!, 'utf-8');
+    expect(dxf).toContain('ZDT_Baliza');
+    expect(dxf).toMatch(/SZ_[0-9a-f]{8}/);
+  });
+
+  test('Legenda znaků JŽM stáhne SVG v balíku ZIP', async ({ page }) => {
+    await switchMode(page, 'jzm');
+    await page.locator('#btn-symbol-legend').click();
+    await expect(page.locator('#symbol-legend-modal')).toBeVisible();
+    await expect(page.locator('#symbol-legend-modal-title')).toHaveText(/ŽXML 1\.5\.1\.6/);
+    await expect(page.locator('.symbol-legend-item').first()).toBeVisible();
+    await page.locator('#symbol-legend-modal-search').fill('balíza');
+    await expect(page.locator('.symbol-legend-item').first()).toContainText(/Balíza/);
+    await page.locator('#symbol-legend-modal-search').fill('');
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#symbol-legend-download').click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('znaky-zxml-1.5.1.6.zip');
+    const { readFile } = await import('node:fs/promises');
+    const zip = await readFile((await download.path())!);
+    expect(zip.subarray(0, 4).toString('hex')).toBe('504b0304');
+    expect(zip.toString('utf-8')).toContain('znaky.csv');
+    expect(zip.toString('utf-8')).toContain('<svg');
+  });
+
+  test('Legenda znaků UDM ukáže knihovnu znaků ČKZ', async ({ page }) => {
+    await switchMode(page, 'udm');
+    await page.locator('#btn-symbol-legend').click();
+    await expect(page.locator('#symbol-legend-modal-title')).toHaveText(/UDM 2\.1\.1/);
+    expect(await page.locator('.symbol-legend-item').count()).toBeGreaterThan(100);
   });
 });
 

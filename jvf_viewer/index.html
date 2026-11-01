@@ -85,6 +85,9 @@
             <button class="upload-menu-item" data-mode="udm" data-sample="UDM_ukazka-1.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — ukázka reálných dat (ČKZ)">UDM_ukazka-1.xml</button>
             <button class="upload-menu-item" data-mode="udm" data-sample="udm_minimal.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — minimální testovací soubor">udm_minimal.xml</button>
             <button class="upload-menu-item" data-mode="udm" data-sample="udm_pontonovy_most.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — pontonový most (obvod mostu + komunikace s dřevěným povrchem)">udm_pontonovy_most.xml</button>
+            <button class="upload-menu-item" data-mode="jzm" data-sample="zxml_nadrazi.xml" role="menuitem" title="ŽXML 1.5.1.6 — schematické nádraží v místě stanice Řevnice (koleje, nástupiště, výhybky, návěstidla, balízy, přejezd, staničení; smyšlená data)">zxml_nadrazi.xml</button>
+            <button class="upload-menu-item" data-mode="jzm" data-sample="zxml_minimal.xml" role="menuitem" title="ŽXML 1.5.1.6 — minimální změnové věty (Ins / Upd / Del, staničení)">zxml_minimal.xml</button>
+            <button class="upload-menu-item" data-mode="jzm" data-sample="zxml-prvky-sz.xml" role="menuitem" title="ŽXML 1.4.2.1 — oficiální ukázka Správy železnic (kolejnicový mazník, přejezd)">zxml-prvky-sz.xml</button>
           </div>
         </div>
         <input type="file" id="file-input" accept=".xml,.jvf" multiple style="display:none" />
@@ -94,7 +97,7 @@
         <button id="btn-features" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           Přehled prvků
         </button>
-        <button id="btn-export-cad" class="btn btn-secondary" data-mode="udm" disabled title="Nejprve nahrajte JVF soubor">
+        <button id="btn-export-cad" class="btn btn-secondary" data-mode="udm jzm" disabled title="Nejprve nahrajte JVF soubor">
           Export do CAD
         </button>
         <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>
@@ -129,12 +132,15 @@
             <button id="btn-legend" class="section-icon-btn" title="Zobrazit legendu všech typů DTM">
               <span class="material-symbols-outlined">legend_toggle</span>
             </button>
+            <button id="btn-symbol-legend" class="section-icon-btn" data-mode="udm jzm" title="Legenda znaků dialektu (symboly) — náhled a stažení SVG v balíku ZIP">
+              <span class="material-symbols-outlined">category</span>
+            </button>
           </div>
           <div id="jvf-layers-list" class="jvf-layers-list">
             <div class="empty-hint">Nahrajte JVF soubor</div>
           </div>
           <div id="changeset-options-section" class="three-options-footer" style="display:none">
-            <label class="toggle-row" id="row-highlight-zapis" title="Přebarvit nové / editované / mazané záznamy barvou typu změny. Vypnuto = záznamy se kreslí vlastní symbologií (u souborů UDM výchozí).">
+            <label class="toggle-row" id="row-highlight-zapis" title="Přebarvit nové / editované / mazané záznamy barvou typu změny. Vypnuto = záznamy se kreslí vlastní symbologií (u souborů UDM a ŽXML výchozí).">
               <input type="checkbox" id="toggle-highlight-zapis" />
               <span>Zvýraznit změny barvou</span>
             </label>
@@ -285,6 +291,19 @@
         </button>
       </div>
       <div class="modal-body" id="legend-modal-body"></div>
+    </div>
+  </div>
+  <div id="symbol-legend-modal" class="modal-overlay" style="display:none">
+    <div class="modal-dialog modal-dialog-lg" role="dialog" aria-modal="true" aria-labelledby="symbol-legend-modal-title">
+      <div class="modal-header">
+        <h2 id="symbol-legend-modal-title">Legenda znaků</h2>
+        <input type="text" id="symbol-legend-modal-search" class="legend-search" placeholder="Hledat (objekt, hodnota, kód znaku)…" />
+        <button id="symbol-legend-download" class="btn btn-secondary" title="Stáhnout zobrazené znaky jako SVG soubory v balíku ZIP (se seznamem znaky.csv)">Stáhnout SVG (ZIP)</button>
+        <button id="symbol-legend-modal-close" class="modal-close" title="Zavřít">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body" id="symbol-legend-modal-body"></div>
     </div>
   </div>
   <div id="confirm-modal" class="modal-overlay" style="display:none">

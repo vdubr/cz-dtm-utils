@@ -102,9 +102,9 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
 
   const present = new Set<ChangesetZapisType>();
   // Zvýraznění změn barvou je default ON, pokud changeset záznamy obsahuje
-  // aspoň jeden soubor JVF DTM. Jsou-li jen v souborech UDM, default OFF —
-  // UDM jsou typicky data geodeta celá jako nová (`i`) a zelená by překryla
-  // vzhled objektů.
+  // aspoň jeden soubor čistého JVF DTM. Jsou-li jen v souborech dialektů
+  // (UDM, ŽXML), default OFF — jde typicky o data geodeta celá jako nová
+  // (`i`) a zelená by překryla vlastní symbologii dialektu.
   let highlightDefault = false;
   for (const dtm of dtms) {
     let hasChangeset = false;
@@ -116,7 +116,7 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
         }
       }
     }
-    if (hasChangeset && dialectOf(dtm.verze)?.id !== 'udm') highlightDefault = true;
+    if (hasChangeset && !dialectOf(dtm.verze)) highlightDefault = true;
   }
   setHighlightZapis(highlightDefault);
   const highlightCheckbox = getHighlightCheckbox();

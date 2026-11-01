@@ -7,7 +7,10 @@
 TypeScript monorepo for working with **JVF DTM** — the Czech *Jednotný Výměnný
 Formát Digitální Technické Mapy* (Unified Exchange Format for the Digital
 Technical Map). It provides a parser, a topological validator, and a browser-based
-viewer/validator UI for JVF DTM 1.4.3 files.
+viewer/validator UI for JVF DTM files (1.4.3, 1.5.0.1, 1.5.0.2) and the
+dialects UDM 2.1.1 (ČKZ) and ŽXML 1.4.2.1 / 1.5.1.6 (railway DTMŽ data of
+Správa železnic) — the viewer has dedicated modes JVF / UDM / JŽM with
+dialect symbology, a symbol legend with SVG download and DXF export.
 
 > **Live demo:** https://cz-dtm-utils.vercel.app/jvf_viewer/
 >
@@ -66,7 +69,8 @@ clean public APIs.
 | Package | Path | Purpose |
 |---|---|---|
 | **[`jvf-dtm-types`](./jvf_dtm_types/)** | `jvf_dtm_types/` | Shared TypeScript domain types — pure types, zero runtime dependencies. Single source of truth for `JvfDtm`, `ObjektovyTyp`, `ZaznamObjektu`, `Geometry`, GML primitives, enums. |
-| **[`jvf-parser`](./jvf_parser/)** | `jvf_parser/` | XML → typed object parser for JVF DTM 1.4.3. Auto-generated entity catalog (~358 object types) and shared attribute groups from the official XSD schemas. |
+| **[`jvf-parser`](./jvf_parser/)** | `jvf_parser/` | XML → typed object parser for JVF DTM 1.4.3 / 1.5.0.1 / 1.5.0.2 and dialects UDM and ŽXML (dialect registry, version router). Auto-generated entity catalogs and code lists from the official XSD schemas. |
+| **[`jvf-cad`](./jvf_cad/)** | `jvf_cad/` | Export to AutoCAD DXF (R2013 / R2000) with dialect appearance — layers, symbol blocks (UDM, ŽXML), texts, XDATA attributes. |
 | **[`jvf-topology`](./jvf_topology/)** | `jvf_topology/` | Topological validation of parsed JVF data — three layers of checks (geometric validity, intra-record consistency, inter-object topology). 185 fixture-based tests. |
 | **[`jvf-viewer`](./jvf_viewer/)** | `jvf_viewer/` | Browser application — Vite + OpenLayers (2D) + Three.js (3D with ČÚZK DMR5G terrain). Loads JVF files locally, renders all geometries, runs topology checks and lists errors with click-to-zoom. |
 

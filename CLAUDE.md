@@ -88,8 +88,18 @@ cz-dtm-utils/              # npm workspaces monorepo
 ├── jvf_dtm_types/       # Sdílené doménové typy (jvf-dtm-types)
 │   └── src/
 │       ├── index.ts             # re-export
+│       ├── versions.ts          # JVF_VERSIONS, JvfVersion, formatVersionLabel, baseJvfVersionOf
+│       ├── dialects.ts          # registr dialektů DIALECTS (UDM, ŽXML), dialectOf, *_VERSIONS
 │       └── 1.4.3/types.ts       # JvfDtm, ObjektovyTyp, ZaznamObjektu, Geometry, GmlPoint/LineString/Polygon/MultiCurve, …
 ├── jvf_parser/          # TypeScript parser JVF DTM souborů (jvf-parser)
+│   ├── src/router.ts    # verzní router: dialekty → JVF → strukturní sniff; katalogy/číselníky per verze
+│   ├── src/catalog.ts   # obecný EntityMeta (origin, objektovyKod, dialectAttrGroup)
+│   ├── src/dialects/    # PARSER_DIALECTS: udm.ts, zxml.ts (detekce + parse nad jádrem JVF)
+│   ├── src/styles/      # obecný model vzhledu dialektu (Appearance, resolveAppearance, getStyleTable)
+│   ├── src/1.5.0.1/     # jádro parseru JVF 1.5.x (records, geometry, attributes, doprovodné info)
+│   ├── src/1.5.0.2/     # jen generated/ (parser sdílený s 1.5.0.1)
+│   ├── src/udm-2.1.1/   # UDM ČKZ: parser atributů, styly, generated/
+│   ├── src/zxml-1.4.2.1/, src/zxml-1.5.1.6/   # ŽXML SŽ: generated/ (katalog, číselníky, styles.ts)
 │   ├── src/1.4.3/       # Implementace pro verzi 1.4.3
 │   │   ├── types.ts             # re-export z jvf-dtm-types (pro interní ../types.js importy)
 │   │   ├── geometry-primitives.ts  # parsePoint, parseLineString, parsePolygon, parseMultiCurve
@@ -134,7 +144,41 @@ cz-dtm-utils/              # npm workspaces monorepo
 
 UDM (Univerzální datový model ČKZ) 2.1.1: XSD, specifikace a knihovna
 symbolů v `jvf_parser/docs/udm-2.1.1/`; generátory v `scripts/udm/`
-(styly + symboly) a `scripts/cad/` (šablony DXF, vyžaduje ezdxf).
+(styly + symboly) a `scripts/cad/` (šablony DXF, vyžaduje ezdxf;
+`build-cad-symbols.py --profile udm|zxml` = bloky symbolů).
+
+ŽXML (data DTMŽ Správy železnic) 1.4.2.1 a 1.5.1.6: XSD v
+`jvf_parser/docs/zxml-*/`, znaky SŽ vektorizované z fotokatalogu MOZeK v
+`jvf_parser/docs/zxml-1.5.1.6/{mozek,knihovny}/`; skripty v `scripts/zxml/`
+(vektorizace, styly, generátor ukázek `samplegen.py`).
+
+## Dialekty JVF DTM (UDM, ŽXML) a režimy aplikace
+
+Dialekt = datový model nad některou verzí JVF DTM s vlastním číslem verze
+v hlavičce (`VerzeJVFUDM`, `VerzeZXML`). Id verze má tvar `<dialekt>-<verze>`
+(`udm-2.1.1`, `zxml-1.5.1.6`) a `JvfDtm.verze` je **vždy vyřešené id**
+(surová hlavička je v `verzeJvfDtm`, dialekt v `dialect`).
+
+Přidání dalšího dialektu / verze:
+1. `jvf_dtm_types/src/dialects.ts` — `*_VERSIONS` + položka `DIALECTS`
+   (`headerElement`, `baseJvfVersion`).
+2. XSD do `jvf_parser/docs/<id>/xsd`, profil v `scripts/generate-types.ts`
+   (`profileFor`), skript `generate:<id>`, `src/<id>/types.ts` (re-export).
+3. Parser dialektu v `src/dialects/<id>.ts` (+ registrace v `registry.ts`),
+   katalog/číselníky do map v `src/router.ts`.
+4. Styly (`src/<id>/generated/styles.ts`) → `STYLES_BY_DIALECT` v
+   `src/styles/resolve.ts`; SVG do `jvf_viewer/public/symboly/<dialekt>/`.
+5. Topologie: `crossObjectChecksForVersion` (`jvf_topology/src/1.4.3/index.ts`).
+6. Viewer: režim v `APP_MODES` (`state/appMode.ts`), ukázky s `data-mode`
+   v `index.html`, info modal, CHANGELOG.
+
+### Aktualizace verze datového modelu
+
+`npm run check:upstream` porovná verze zveřejněné ČÚZK / SŽ / ČKZ s registrem
+(týdně i GitHub Action `upstream-versions.yml`). Při nové verzi: stáhnout
+balík XSD → `jvf_parser/docs/<verze>/` → `generate` → testy katalogu →
+verze do registru → fixture → CHANGELOG. `npm run check:generated` (i v CI)
+hlídá, že generované typy odpovídají XSD.
 
 **Závislosti mezi workspaces:**
 - `jvf-dtm-types` — bez závislostí (čisté typy)

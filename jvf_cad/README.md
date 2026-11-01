@@ -1,6 +1,12 @@
 # jvf-cad
 
-Export JVF DTM / **UDM** (Univerzální datový model ČKZ) do **AutoCAD DXF**.
+Export JVF DTM / **UDM** (Univerzální datový model ČKZ) / **ŽXML** (data DTMŽ
+Správy železnic) do **AutoCAD DXF**.
+
+Vzhled se volí podle verze souboru (`dtm.verze`): ŽXML → znaky SŽ
+vektorizované z fotokatalogu MOZeK (bloky `SZ_<id>`, natočení podle
+atributu `Natoceni`), UDM i čisté JVF DTM → vzhled UDM (bloky `UDM_<kód>`).
+Jinou tabulku vzhledu lze předat volbou `styles`.
 
 ```ts
 import { parseJvfDtm } from 'jvf-parser';

@@ -1,11 +1,12 @@
 // Info modal — zobrazí README o aplikaci v překryvném dialogu.
 // Obsah je staticky vložený HTML (bez závislosti na markdown parseru).
 
-import { SUPPORTED_VERSIONS, UDM_VERSIONS, formatVersionLabel } from 'jvf-parser';
+import { JVF_VERSIONS, UDM_VERSIONS, ZXML_VERSIONS, formatVersionLabel } from 'jvf-parser';
 import { buildChangelogHtml } from './changelog.js';
 
-const VERSIONS_DISPLAY = SUPPORTED_VERSIONS.join(', ');
+const VERSIONS_DISPLAY = JVF_VERSIONS.join(', ');
 const UDM_DISPLAY = UDM_VERSIONS.map(formatVersionLabel).join(', ');
+const ZXML_DISPLAY = ZXML_VERSIONS.map(formatVersionLabel).join(', ');
 
 const INFO_CONTENT_HTML = `
   <h3>Co to je</h3>
@@ -13,7 +14,8 @@ const INFO_CONTENT_HTML = `
     Webový prohlížeč souborů <strong>JVF DTM</strong> (Jednotný výměnný formát
     Digitální technické mapy ČR). Podporované verze specifikace:
     <strong>${VERSIONS_DISPLAY}</strong> a rozšíření
-    <strong>${UDM_DISPLAY}</strong> (Univerzální datový model ČKZ)
+    <strong>${UDM_DISPLAY}</strong> (Univerzální datový model ČKZ) a
+    <strong>${ZXML_DISPLAY}</strong> (železniční data DTMŽ Správy železnic)
     (verze se detekuje automaticky
     z načteného souboru; konkrétní verzi každého souboru ukáže info ikona
     <code>i</code> za názvem projektu v panelu „Projekty").
@@ -30,7 +32,8 @@ const INFO_CONTENT_HTML = `
       <strong>přetažení souborů myší</strong> (drag &amp; drop)
       kamkoli nad okno aplikace. Parsování probíhá v prohlížeči. Vedle
       tlačítka je šipka s rychlým výběrem přiložených
-      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL a UDM).
+      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL, UDM a ŽXML —
+      nabídka ukazuje ukázky aktivního režimu).
     </li>
     <li>
       <strong>Více projektů naráz</strong> — každý načtený soubor se přidá
@@ -138,21 +141,32 @@ const INFO_CONTENT_HTML = `
       Funguje i pro nově vytvořené JVF soubory DI/TI, jejichž prvky ještě
       nemají přidělená DTM ID. Přepínač <strong>Zvýraznit změny
       barvou</strong> přebarvení vypne — záznamy zůstanou viditelné, ale
-      kreslí se vlastní symbologií. U souborů <strong>UDM</strong> (data
-      geodeta celá jako nová) je zvýraznění ve výchozím stavu vypnuté.
+      kreslí se vlastní symbologií. U souborů <strong>UDM</strong> a
+      <strong>ŽXML</strong> (data geodeta celá jako nová) je zvýraznění ve
+      výchozím stavu vypnuté.
     </li>
     <li>
-      <strong>Export do CAD</strong> (v režimu UDM) — tlačítko v hlavičce
-      vyexportuje načtený projekt do <strong>AutoCAD DXF</strong> ve vzhledu UDM:
-      hladiny podle objektových typů (barva, tloušťka, typ čáry), symboly
-      UDM z knihovny ČKZ jako bloky, popisy a názvy jako texty (výšky dle
-      UDM pro 1:500) a atributy objektů v XDATA „UDM" (v AutoCADu příkaz
+      <strong>Export do CAD</strong> (v režimech UDM a JŽM) — tlačítko
+      v hlavičce vyexportuje načtený projekt do <strong>AutoCAD DXF</strong>
+      ve vzhledu datového modelu: hladiny podle objektových typů (barva,
+      tloušťka, typ čáry), symboly jako bloky (UDM z knihovny ČKZ, ŽXML
+      znaky SŽ natočené podle atributu <code>Natoceni</code>), popisy
+      a názvy jako texty (výšky dle UDM pro 1:500) a atributy objektů
+      v XDATA „UDM" (v AutoCADu příkaz
       <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy UDM
       přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
       a 2D výkres. Souřadnice zůstávají v EPSG:5514. Typy čar mají
       čárkování dle vzorníku UDM (bez vložených značek).
       <strong>DWG</strong> získáte tak, že DXF otevřete
       v AutoCADu a uložíte jako DWG. Export běží lokálně v prohlížeči.
+    </li>
+    <li>
+      <strong>Legenda znaků</strong> (v režimech UDM a JŽM) — ikona vedle
+      „Legendy DTM" v panelu vrstev otevře přehled všech znaků datového
+      modelu po objektech a hodnotách číselníků (s hledáním). Tlačítkem
+      <strong>Stáhnout SVG (ZIP)</strong> získáte znaky jako SVG soubory
+      v balíku ZIP (složka podle objektu) se seznamem
+      <code>znaky.csv</code> (objekt, kód, atribut, hodnota, barva).
     </li>
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
@@ -243,6 +257,13 @@ const INFO_CONTENT_HTML = `
     nenačte a zobrazí se upozornění.
   </p>
   <p>
+    <strong>JVF DTM 1.5.0.2</strong> je opravná verze 1.5.0.1 (ČÚZK, 9. 9. 2026)
+    a od <strong>18. 11. 2026</strong> produkční verze IS DMVS (verze 1.5.0.1
+    do produkce nasazena nebyla, soubory v ní se dál načtou). Oproti 1.5.0.1
+    upravuje hlavně povinnost a <code>nillable</code> některých atributů
+    a přidává atribut <code>IDRDTI</code> objektu O6.
+  </p>
+  <p>
     <strong>Novinky 1.5.0.1:</strong> nová obsahová část
     <strong>PSPI</strong> (plánované stavební práce infrastruktury) —
     zobrazuje se v mapě i jako samostatná sekce v legendě; nový typ datové
@@ -276,18 +297,47 @@ const INFO_CONTENT_HTML = `
     mapou ani s vazbou definiční bod ↔ plocha. Ukázkové soubory UDM jsou
     v režimu UDM v nabídce vedle tlačítka „Nahrát soubor".
   </p>
+  <p>
+    <strong>ŽXML — železniční data Správy železnic (${ZXML_DISPLAY}):</strong>
+    výměnný formát Digitální technické mapy železnice (DTMŽ). Od 1. 7. 2024
+    přijímá Správa železnic geodetickou dokumentaci jen v ŽXML; verze
+    <strong>1.4.2.1</strong> stojí na JVF DTM 1.4.3, verze
+    <strong>1.5.1.6</strong> (platná od <strong>23. 11. 2026</strong>,
+    datový model DTMŽ 1.5.0.2 V23) na JVF DTM 1.5.0.2. S ŽXML se pracuje
+    v <strong>režimu JŽM</strong> (Jednotná železniční mapa); soubor se pozná
+    podle elementu <code>VerzeZXML</code>. Objekty Správy železnic (kód
+    <code>999…</code>, např. balízy, návěstidla, výhybky, staničníky,
+    přejezdová zařízení) tvoří obsahové části <strong>ZDT</strong>
+    (železniční technická infrastruktura), <strong>ZDD</strong> (železniční
+    dopravní infrastruktura), <strong>H3D</strong> (hrany 3D doplňující
+    kresbu ZPS), <strong>ODSZ</strong> (ostatní data SŽ) a
+    <strong>SKLEP</strong> (data ze starších dokumentací). Atributy SŽ
+    (správce, zdroj dat, typy zařízení…) mají české popisky číselníků;
+    staničení objektů (<code>StaniceniData</code>, verze 1.5.x) parser čte
+    také. Objekty SŽ se kreslí <strong>znaky SŽ</strong> zpětně
+    vektorizovanými z obrázků fotokatalogu <em>MOZeK</em> (předpis SŽ
+    M20/MP014) — jednotná výška znaku 3 mm při 1:500, natočení podle
+    atributu <code>Natoceni</code>; barvy podle obsahové části (katalog
+    je černobílý). Objekty JVF bez vlastní značky SŽ zůstávají v symbologii
+    ČÚZK. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
+    verzi JVF (objekty SŽ do párů nevstupují). Ukázky ŽXML jsou v režimu JŽM
+    v nabídce vedle tlačítka „Nahrát soubor" (oficiální ukázka SŽ a
+    schematické nádraží v Řevnicích se smyšlenými daty).
+  </p>
 
   <h3>Režimy aplikace</h3>
   <p>
-    Přepínač <strong>JVF / UDM</strong> v hlavičce určuje, s jakým datovým
-    modelem pracujete. Výchozí je <strong>JVF</strong> (JVF DTM, symbologie
-    dle Katalogu ČÚZK). Režim <strong>UDM</strong> přidává symbologii UDM,
-    ukázkové soubory UDM a <em>Export do CAD</em>. Přepnutí zavře načtené
-    soubory (při načtených datech se aplikace nejdřív zeptá). Načtete-li
-    soubor jiného modelu (UDM v režimu JVF nebo JVF v režimu UDM), aplikace
+    Přepínač <strong>JVF / UDM / JŽM</strong> v hlavičce určuje, s jakým
+    datovým modelem pracujete. Výchozí je <strong>JVF</strong> (JVF DTM,
+    symbologie dle Katalogu ČÚZK). Režim <strong>UDM</strong> přidává
+    symbologii UDM, režim <strong>JŽM</strong> (Jednotná železniční mapa)
+    data ŽXML Správy železnic se znaky SŽ; oba mají vlastní ukázkové
+    soubory, <em>Export do CAD</em> a <em>Legendu znaků</em>. Přepnutí zavře
+    načtené soubory (při načtených datech se aplikace nejdřív zeptá).
+    Načtete-li soubor jiného modelu (např. ŽXML v režimu JVF), aplikace
     nabídne přepnutí — bez něj se soubor nenačte. Režim je v adrese stránky
-    (<code>?mode=udm</code>), takže odkaz lze sdílet; bez parametru se
-    aplikace otevře v režimu JVF. Do budoucna přibude režim pro JŽM.
+    (<code>?mode=udm</code>, <code>?mode=jzm</code>), takže odkaz lze sdílet;
+    bez parametru se aplikace otevře v režimu JVF.
   </p>
 
   <h3>Omezení</h3>
@@ -325,9 +375,10 @@ const INFO_CONTENT_HTML = `
     </li>
     <li>
       <strong>jvf-parser</strong> — parser JVF XML do typovaných objektů.
-      Postavený nad <code>fast-xml-parser</code>, podporuje verze 1.4.3
-      i 1.5.0.1 a Univerzální datový model ČKZ (UDM 2.1.1) — verzní router
-      s auto-detekcí — a samostatný parser protokolu chyb.
+      Postavený nad <code>fast-xml-parser</code>, podporuje JVF DTM 1.4.3,
+      1.5.0.1 a 1.5.0.2 a dialekty UDM 2.1.1 (ČKZ) a ŽXML 1.4.2.1 / 1.5.1.6
+      (Správa železnic) — verzní router s registrem dialektů
+      a auto-detekcí — a samostatný parser protokolu chyb.
     </li>
     <li>
       <strong>jvf-topology</strong> — topologická a geometrická validace.
@@ -336,8 +387,8 @@ const INFO_CONTENT_HTML = `
       (rozsahy S-JTSK, duplicity, blízkost). Závisí pouze na typech.
     </li>
     <li>
-      <strong>jvf-cad</strong> — export JVF DTM / UDM do AutoCAD DXF
-      (R2013 i R2000) ve vzhledu UDM, bez externích závislostí.
+      <strong>jvf-cad</strong> — export JVF DTM, UDM a ŽXML do AutoCAD DXF
+      (R2013 i R2000) ve vzhledu datového modelu, bez externích závislostí.
     </li>
     <li>
       <strong>jvf-viewer</strong> — tato webová aplikace. Vite + OpenLayers

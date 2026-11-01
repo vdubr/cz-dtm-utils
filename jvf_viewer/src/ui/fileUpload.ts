@@ -18,9 +18,16 @@ import { ensureAppModeForFile } from './appModeSwitch.js';
  *     souboru a načíst (`setActiveVersion`),
  *   - nedeklarovaná verze → tolerovat (router parseru ji vyřešil strukturně),
  *   - **nepodporovaná** verze → blokující modal a `false` (soubor se nenačte).
+ *
+ * `data.verze` je id vyřešené routerem (neznámou verzi JVF odhadne podle
+ * struktury) — o odmítnutí čistého JVF proto rozhoduje surová hlavička
+ * `verzeJvfDtm`. U dialektů (UDM, ŽXML) router neznámou verzi mapuje na
+ * nejnovější verzi dialektu a soubor se načte.
  */
 async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<boolean> {
-  const fileVersion = data.verze.trim();
+  const declared = data.verzeJvfDtm?.trim() ?? '';
+  const fileVersion =
+    !data.dialect && declared !== '' && !isSupportedVersion(declared) ? declared : data.verze.trim();
   const activeVersion = getActiveVersion();
 
   if (fileVersion === activeVersion) return true;

@@ -1766,6 +1766,64 @@ html, body {
   min-height: 36px;
 }
 
+/* Legenda znaků (UDM, JŽM) — mřížka karet se symbolem a popisem. */
+.symbol-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.symbol-legend-item {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 4px;
+  background: #f6f8fa;
+  border: 1px solid #21262d;
+  text-align: center;
+}
+
+.symbol-legend-item img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.symbol-legend-item figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  font-size: 11px;
+  color: #24292f;
+}
+
+.symbol-legend-item figcaption span {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  text-overflow: clip;
+  font-family: inherit;
+}
+
+.symbol-legend-item .legend-name {
+  color: #24292f;
+  font-weight: 600;
+}
+
+.symbol-legend-item .legend-meta {
+  color: #57606a;
+}
+
+#symbol-legend-download {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .legend-swatch {
   flex-shrink: 0;
   width: 28px;

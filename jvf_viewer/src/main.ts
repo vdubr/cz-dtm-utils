@@ -32,6 +32,7 @@ import {
 import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
+import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
 import { showErrorProtocol } from './ui/errorProtocolModal.js';
 import {
   setupChangesetToggle,
@@ -115,6 +116,7 @@ setup3dToggle(olMap, () => currentObjekty);
 // Setup info modal (footer)
 setupInfoModal();
 setupLegendModal();
+setupSymbolLegendModal();
 
 // Wiring checkboxů „Zobrazit nové / editované / mazané" — sekce se zobrazí
 // jen pro JVF obsahující záznamy se `ZapisObjektu` ∈ {i, u, d} (changeset

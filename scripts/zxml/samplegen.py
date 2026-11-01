@@ -357,11 +357,12 @@ def pretty(xml: str) -> str:
 # Geometrie ukázkového nádraží (schematicky, osa kolejí ve směru stanice Řevnice)
 # ---------------------------------------------------------------------------
 
-# Kotevní bod: stanice Řevnice (WGS84 49.91355 N, 14.23636 E → S-JTSK cs2cs).
-ORIGIN = (-758598.90, -1060348.42)
+# Kotevní bod: stanice Řevnice (OSM railway=station, WGS84 49.91651 N, 14.23869 E → S-JTSK cs2cs);
+# osa kolejí a směr doladěny nad Základní mapou ČÚZK (kolejiště žst. Řevnice).
+ORIGIN = (-758387.50, -1060054.00)
 Z0 = 213.40
 # Směr kolejí (jednotkový vektor podél trati, z bodu stanice k severovýchodu).
-_d = (263.17, 97.89)
+_d = (151.80, -4.30)
 _n = math.hypot(*_d)
 U = (_d[0] / _n, _d[1] / _n)
 V = (-U[1], U[0])  # kolmice (vlevo)

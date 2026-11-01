@@ -1,7 +1,16 @@
 # jvf-parser
 
-TypeScript parser for **JVF DTM 1.4.3** — the Czech *Jednotný Výměnný Formát
-Digitální Technické Mapy* exchange format.
+TypeScript parser for **JVF DTM** (1.4.3, 1.5.0.1, 1.5.0.2) — the Czech
+*Jednotný Výměnný Formát Digitální Technické Mapy* exchange format — and its
+dialects **UDM 2.1.1** (ČKZ Univerzální datový model) and **ŽXML 1.4.2.1 /
+1.5.1.6** (railway data of Správa železnic, DTMŽ).
+
+`parseJvfDtm(xml)` detects the model automatically (dialect header element,
+`VerzeJVFDTM`, record structure) and returns `JvfDtm` whose `verze` is the
+resolved model id (`'1.5.0.2'`, `'udm-2.1.1'`, `'zxml-1.5.1.6'`). Catalogs and
+code-list labels per version: `getEntityCatalog(v)`, `labelForAttribute(a, code, v)`;
+dialect appearance (symbols, colours, dashes): `getStyleTable(v)`,
+`resolveAppearance(...)`. See `docs/<version>/README.md` for each model.
 
 Reads a JVF DTM XML document and returns a fully typed in-memory tree of
 content parts (ZPS / TI / DI / GAD / OPL), object types and records, with all

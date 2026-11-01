@@ -9,11 +9,30 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
-- **Režimy aplikace JVF / UDM** — přepínač v hlavičce; výchozí je JVF,
-  do UDM (symbologie UDM, ukázky UDM, Export do CAD) se přepíná ručně.
-  Přepnutí zavře načtené soubory (s potvrzením); soubor jiného modelu
-  nabídne přepnutí režimu, bez něj se nenačte. Režim je v adrese stránky
-  (`?mode=udm`). Připraveno pro další režim (JŽM).
+- **Režimy aplikace JVF / UDM / JŽM** — přepínač v hlavičce; výchozí je JVF,
+  do UDM a JŽM se přepíná ručně. Přepnutí zavře načtené soubory
+  (s potvrzením); soubor jiného modelu nabídne přepnutí režimu, bez něj se
+  nenačte. Režim je v adrese stránky (`?mode=udm`, `?mode=jzm`).
+- **Režim JŽM — data ŽXML Správy železnic (DTMŽ)** — podpora ŽXML 1.4.2.1
+  (nad JVF 1.4.3) a 1.5.1.6 (nad JVF 1.5.0.2, platí od 23. 11. 2026).
+  Soubor se rozpozná podle `VerzeZXML`. Katalog obsahuje všechny objekty
+  (1.4.2.1: 357 JVF + 136 SŽ, 1.5.1.6: 372 JVF + 141 SŽ s kódem `999…`)
+  včetně českých popisků číselníků SŽ; objekty SŽ tvoří obsahové části
+  ZDT / ZDD / H3D / ODSZ / SKLEP. Parser čte i staničení objektů
+  (`StaniceniData`). Info ikona projektu ukazuje verzi ŽXML i podkladového JVF.
+- **Znaky SŽ** — objekty ŽXML se kreslí znaky zpětně vektorizovanými
+  z obrázků fotokatalogu MOZeK (SŽ M20/MP014): 206 bodových znaků
+  a 49 vzorů čar, vzhled podle hodnot číselníků, natočení symbolu podle
+  atributu `Natoceni`; barvy podle obsahové části. Stejné znaky jsou
+  i v exportu do CAD jako bloky.
+- **Legenda znaků (UDM, JŽM)** — přehled všech znaků datového modelu po
+  objektech a hodnotách číselníků s hledáním; tlačítko **Stáhnout SVG (ZIP)**
+  zabalí znaky jako SVG do složek podle objektů se seznamem `znaky.csv`.
+- **Ukázkové soubory ŽXML** — oficiální ukázka SŽ (1.4.2.1), minimální
+  změnové věty a schematické nádraží v místě stanice Řevnice (1.5.1.6,
+  smyšlená data, validní proti XSD SŽ).
+- **Podpora JVF DTM 1.5.0.2** — opravná verze 1.5.0.1 (ČÚZK 9. 9. 2026),
+  produkční verze IS DMVS od 18. 11. 2026. Výchozí verze režimu JVF.
 - **Podpora UDM 2.1.1 (Univerzální datový model ČKZ)** — otevřeného
   datového modelu České komory zeměměřičů, který rozšiřuje JVF DTM
   (1.5.0.2) o objekty a atributy nad rámec DTM (stromy, mobiliář, svislé
@@ -34,8 +53,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   reálná ukázka ČKZ, minimální testovací soubor a samostatná ukázka
   **pontonového mostu** (obvod mostu typu „jiný" s upřesněním, komunikace
   s dřevěným povrchem).
-- **Export do CAD (AutoCAD DXF)** — tlačítko v hlavičce vyexportuje projekt
-  do DXF ve vzhledu UDM: hladiny podle objektových typů (barva, tloušťka,
+- **Export do CAD (AutoCAD DXF)** — tlačítko v hlavičce (režimy UDM a JŽM)
+  vyexportuje projekt do DXF ve vzhledu datového modelu (UDM, znaky SŽ):
+  hladiny podle objektových typů (barva, tloušťka,
   typ čáry), symboly UDM z knihovny ČKZ jako bloky, popisy a názvy jako
   texty (výšky dle UDM pro 1:500) a atributy objektů v XDATA „UDM". DXF pro
   AutoCAD 2013+ (true color) nebo R2000; volitelně mazané záznamy a 2D.
@@ -43,16 +63,38 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   uložit jako DWG.
 - **Přepínač „Zvýraznit změny barvou"** — vypne zelené / oranžové / červené
   přebarvení nových, editovaných a mazaných záznamů; zůstanou viditelné
-  s vlastní symbologií (2D i 3D). U souborů UDM je ve výchozím stavu vypnutý,
-  protože data geodeta jsou celá jako nová a mapa by byla jen zelená.
+  s vlastní symbologií (2D i 3D). U souborů UDM a ŽXML je ve výchozím stavu
+  vypnutý, protože data geodeta jsou celá jako nová a mapa by byla jen zelená.
+- **Hlídání nových verzí** — `npm run check:upstream` porovná verze
+  zveřejněné ČÚZK (JVF DTM), SŽ (ŽXML) a ČKZ (UDM) s podporovanými;
+  týdenní GitHub Action při nálezu založí issue. CI ověřuje, že generované
+  typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
 
+- **Dialekty JVF DTM jako registr** (revize UDM / DTM) — UDM i ŽXML jsou
+  položky jednoho registru (`DIALECTS` v `jvf-dtm-types`, `PARSER_DIALECTS`
+  v parseru); router, topologie, export do CAD i viewer se řídí registrem
+  místo natvrdo zadaného UDM. Generátor typů pracuje s profily verzí.
+- `JvfDtm.verze` je vždy vyřešené id datového modelu (`1.5.0.2`,
+  `udm-2.1.1`, `zxml-1.5.1.6`); surová hlavička je ve `verzeJvfDtm`,
+  dialekt v `dialect` (`verzeUdm` zůstává jako zastaralý alias).
+- Symbologie dialektu se volí podle verze projektu (ne podle režimu);
+  popisky číselníků v panelu prvku podle verze projektu, ze kterého prvek je.
 - Meziobjektová topologie se pro soubory UDM nespouští (UDM nepracuje
-  s plošnou mapou ani s vazbou definiční bod ↔ plocha); kontrola rozsahu
-  výšek ZPS se vztahuje i na objekty ZPSUDM.
+  s plošnou mapou ani s vazbou definiční bod ↔ plocha); ŽXML se kontroluje
+  dle podkladové verze JVF. Kontrola rozsahu výšek ZPS se vztahuje i na
+  objekty ZPSUDM a H3D.
 
 ### Opraveno
+
+- Uzavřené obvody ploch (`Obvod3D`) se už nehlásí jako křížení linie
+  (`LINE_SELF_INTERSECTION`) — dotyk první a poslední úsečky v uzavíracím
+  vrcholu je povolený (falešné chyby i v ukázkách JVF 1.4.3 a 1.5.0.1).
+- Soubor JVF s neznámou verzí 1.5.x dostával katalog a číselníky 1.4.3;
+  nově se použije verze podle struktury souboru.
+- Katalog entit obsahuje i atributy, které se vyskytují jen v referenčních
+  nebo aktualizačních záznamech (např. `IDRDTI` u O6 v 1.5.0.2).
 
 - Legenda se po načtení souboru jiné verze při dalším otevření překreslí
   (dřív zůstal katalog verze platné při prvním otevření).

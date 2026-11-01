@@ -26,7 +26,7 @@ export async function loadSample(page: Page, name = 'ukazka_ZPS.xml'): Promise<v
 }
 
 /** Přepne režim aplikace přepínačem v hlavičce (bez načtených dat — bez dialogu). */
-export async function switchMode(page: Page, mode: 'jvf' | 'udm'): Promise<void> {
+export async function switchMode(page: Page, mode: 'jvf' | 'udm' | 'jzm'): Promise<void> {
   await page.locator(`#app-mode-switch [data-mode-btn="${mode}"]`).click();
   await expect(page.locator(`#app-mode-switch [data-mode-btn="${mode}"]`)).toHaveClass(/active/);
 }
