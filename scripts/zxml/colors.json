@@ -1,0 +1,19 @@
+{
+ "_comment": "Barvy objektů ŽXML podle obsahové části (TYP_OBJEKTU v LDM). Části SŽ pevně; části JVF build-zxml-styles.py obnovuje z FALLBACK_COLORS v jvf_viewer/src/map/symbology.ts (pokud tam jsou). aliases: obsahová část LDM → klíč FALLBACK_COLORS.",
+ "default": "#000000",
+ "aliases": {"OP": "OPL", "BP": "OPL"},
+ "byObsahovaCast": {
+  "ZDD": "#c00000",
+  "ZDT": "#0070c0",
+  "ODSZ": "#7030a0",
+  "H3D": "#808080",
+  "SKLEP": "#8d6e63",
+  "ZPS": "#64b5f6",
+  "TI": "#ff9800",
+  "DI": "#ffeb3b",
+  "GAD": "#66bb6a",
+  "OPL": "#ce93d8",
+  "PSPI": "#ab47bc"
+ },
+ "jvfParts": ["ZPS", "TI", "DI", "GAD", "OPL", "PSPI"]
+}

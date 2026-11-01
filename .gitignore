@@ -24,3 +24,7 @@ dist/
 # VS Code Local History plugin
 .history/
 
+
+# Python
+__pycache__/
+*.pyc
