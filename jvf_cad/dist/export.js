@@ -1,0 +1,239 @@
+/**
+ * Export JVF DTM / UDM do DXF ve vzhledu UDM (Univerzální datový model ČKZ).
+ *
+ * - hladina = obsahová část + objektový typ (`ZPS_HraniceBudovy`, mazané
+ *   záznamy `…_DEL`), barva / tloušťka / typ čáry hladiny = vzhled UDM;
+ *   vzhled podle hodnot číselníků se zapisuje jako přepis na entitě,
+ * - linie → LWPOLYLINE (konstantní výška) / 3D POLYLINE, plochy → uzavřené
+ *   obvody (UDM plochy nevyplňuje), body → blok symbolu UDM / POINT,
+ *   popisy a názvy → TEXT s `PopisObjektu`,
+ * - XDATA aplikace „UDM": objektový typ, kód, ID, druh záznamu a atributy
+ *   (`Název=kód (popisek)`).
+ *
+ * Souřadnice beze změny (EPSG:5514, metry), měřítko symbolů a textů 1:500.
+ */
+import { labelForAttribute, resolveUdmAppearance, resolveUdmRepresentativeAppearance, } from 'jvf-parser';
+import { DxfDocument } from './dxf/document.js';
+import { UDM_CAD_SYMBOLS } from './symbols.js';
+import { textHeightFor, isTextObject } from './text.js';
+const BLACK = '#000000';
+/** Tloušťky DXF (setiny mm) — povolené hodnoty AutoCADu. */
+const LINEWEIGHTS = [0, 5, 9, 13, 15, 18, 20, 25, 30, 35, 40, 50, 53, 60, 70, 80, 90, 100, 106, 120, 140, 158, 200, 211];
+/** 1 mm papíru = 0,5 m při 1:500. */
+const MM_TO_M = 0.5;
+/** Kurzíva symbolů jako sklon písma. */
+const ITALIC_OBLIQUE = 15;
+function lineweight(widthMm) {
+    const target = Math.round((widthMm ?? 0.25) * 100);
+    return LINEWEIGHTS.reduce((best, v) => (Math.abs(v - target) < Math.abs(best - target) ? v : best), 25);
+}
+/** Název typu čáry z čárkování (mm papíru), např. `UDM_3-0p5-0p2-0p5`. */
+function linetypeName(dashMm) {
+    return 'UDM_' + dashMm.map((d) => String(d).replace('.', 'p')).join('-');
+}
+/** Bezpečný název hladiny / bloku (ASCII, bez znaků zakázaných v AutoCADu). */
+function safeName(s) {
+    return s
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[<>/\\":;?*|=`,]/g, '_');
+}
+function layerName(ot, zaznam) {
+    const base = safeName(`${ot.obsahovaCast || 'X'}_${ot.elementName}`);
+    return zaznam.zapisObjektu === 'd' ? `${base}_DEL` : base;
+}
+/** XDATA: identita objektu + atributy s popisky číselníků. */
+function xdataFor(ot, zaznam, version) {
+    const c = zaznam.commonAttributes;
+    const out = [
+        `ObjektovyTyp=${ot.elementName}`,
+        `Kod=${ot.codeBase}-${ot.codeSuffix}`,
+        `Nazev=${ot.nazev}`,
+        `Zaznam=${zaznam.recordKind ?? zaznam.zapisObjektu}`,
+    ];
+    if (c.id)
+        out.push(`ID=${c.id}`);
+    if (c.idZmeny)
+        out.push(`IDZmeny=${c.idZmeny}`);
+    if (c.popisObjektu)
+        out.push(`PopisObjektu=${c.popisObjektu}`);
+    for (const [k, v] of Object.entries(zaznam.attributes)) {
+        if (v === null || v === '')
+            continue;
+        const label = labelForAttribute(k, v, version);
+        out.push(label !== undefined ? `${k}=${v} (${label})` : `${k}=${v}`);
+    }
+    return out;
+}
+/** Souřadnice GML (ploché pole) → vrcholy [x, y, z]. */
+function toPoints(flat, dim, flatten) {
+    const d = dim > 0 ? dim : 2;
+    const pts = [];
+    for (let i = 0; i + 1 < flat.length; i += d) {
+        const z = d >= 3 && !flatten ? (flat[i + 2] ?? 0) : 0;
+        pts.push([flat[i], flat[i + 1], z]);
+    }
+    return pts;
+}
+export function exportDxf(dtm, options = {}) {
+    const version = options.version ?? 'R2013';
+    const flatten = options.flatten2D ?? false;
+    const doc = new DxfDocument(version);
+    let entities = 0;
+    let skipped = 0;
+    const ensureLinetype = (dashMm) => {
+        if (!dashMm?.length)
+            return undefined;
+        const name = linetypeName(dashMm);
+        if (!doc.hasLinetype(name)) {
+            doc.addLinetype(name, `UDM ${dashMm.join(' ')} mm (1:500)`, dashMm.map((d) => d * MM_TO_M));
+        }
+        return name;
+    };
+    const ensureBlock = (symbol) => {
+        const prims = UDM_CAD_SYMBOLS[symbol];
+        if (!prims)
+            return undefined;
+        const name = `UDM_${safeName(symbol)}`;
+        if (!doc.hasBlock(name))
+            doc.addBlock(name, (owner) => blockEntities(doc, prims, owner));
+        return name;
+    };
+    for (const ot of dtm.objekty) {
+        const rep = resolveUdmRepresentativeAppearance(ot) ?? {};
+        const layerColor = rep.color ?? BLACK;
+        const layerLw = lineweight(rep.widthMm);
+        const layerLt = ensureLinetype(rep.dashMm) ?? 'Continuous';
+        const textObject = isTextObject(ot.elementName);
+        for (const zaznam of ot.zaznamy) {
+            if (zaznam.zapisObjektu === 'd' && !options.includeDeleted)
+                continue;
+            const layer = layerName(ot, zaznam);
+            doc.addLayer(layer, layerColor, layerLw, layerLt);
+            // Vzhled záznamu (pravidla podle číselníků) jako přepis hladiny.
+            const app = resolveUdmAppearance(ot, zaznam) ?? {};
+            const style = { layer, xdata: xdataFor(ot, zaznam, dtm.verze) };
+            const color = app.color ?? layerColor;
+            if (color !== layerColor)
+                style.color = color;
+            const lw = lineweight(app.widthMm ?? rep.widthMm);
+            if (lw !== layerLw)
+                style.lineweight = lw;
+            const lt = ensureLinetype(app.dashMm) ?? layerLt;
+            if (lt !== layerLt)
+                style.linetype = lt;
+            const rotation = Number(zaznam.attributes['Natoceni'] ?? 0) || 0;
+            for (const geom of zaznam.geometrie) {
+                const n = writeGeometry(doc, geom, style, {
+                    flatten,
+                    rotation,
+                    color,
+                    text: textObject ? zaznam.commonAttributes.popisObjektu : undefined,
+                    textHeight: textObject ? textHeightFor(ot.elementName, zaznam) : 0,
+                    block: !textObject && app.symbol ? ensureBlock(app.symbol) : undefined,
+                });
+                if (n === 0)
+                    skipped++;
+                entities += n;
+            }
+        }
+    }
+    return {
+        dxf: doc.toString(),
+        layers: doc.layerCount,
+        entities,
+        blocks: doc.blockCount,
+        skipped,
+    };
+}
+/** Zapíše geometrii záznamu; vrací počet entit. */
+function writeGeometry(doc, geom, style, ctx) {
+    switch (geom.type) {
+        case 'Point': {
+            const [x, y, z = 0] = geom.data.coordinates;
+            const zz = ctx.flatten ? 0 : z;
+            if (ctx.text) {
+                doc.text(x, y, zz, ctx.textHeight, ctx.rotation, ctx.text, 'left', style);
+            }
+            else if (ctx.block) {
+                // Barva symbolu = barva objektu (geometrie bloku je ByBlock).
+                doc.insert(ctx.block, x, y, zz, ctx.rotation, { ...style, color: style.color ?? ctx.color });
+            }
+            else {
+                doc.point(x, y, zz, style);
+            }
+            return 1;
+        }
+        case 'LineString':
+            return writeLine(doc, toPoints(geom.data.coordinates, geom.data.srsDimension, ctx.flatten), false, style);
+        case 'MultiCurve':
+            return geom.data.curves.reduce((n, c) => n + writeLine(doc, toPoints(c.coordinates, c.srsDimension, ctx.flatten), false, style), 0);
+        case 'Polygon': {
+            const dim = geom.data.srsDimension;
+            let n = writeLine(doc, toPoints(geom.data.exterior, dim, ctx.flatten), true, style);
+            for (const ring of geom.data.interiors)
+                n += writeLine(doc, toPoints(ring, dim, ctx.flatten), true, style);
+            return n;
+        }
+        default:
+            return 0;
+    }
+}
+/** Linie / obvod: konstantní výška → LWPOLYLINE, jinak 3D POLYLINE. */
+function writeLine(doc, pts, closed, style) {
+    if (pts.length < 2)
+        return 0;
+    // Uzavřený prstenec GML končí opakováním prvního bodu — v DXF stačí příznak.
+    if (closed && pts.length > 2) {
+        const [a, b] = [pts[0], pts[pts.length - 1]];
+        if (a[0] === b[0] && a[1] === b[1])
+            pts = pts.slice(0, -1);
+    }
+    const z0 = pts[0][2];
+    if (pts.every((p) => p[2] === z0)) {
+        doc.lwpolyline(pts.map(([x, y]) => [x, y]), closed, z0, style);
+    }
+    else {
+        doc.polyline3d(pts, closed, style);
+    }
+    return 1;
+}
+/** Entity bloku symbolu (barva i tloušťka ByBlock → převezme INSERT). */
+function blockEntities(doc, prims, owner) {
+    const style = { layer: '0', color: 'byblock', lineweight: -2 };
+    const out = [];
+    for (const p of prims) {
+        switch (p[0]) {
+            case 'p': {
+                const [, closed, fill, flat] = p;
+                const verts = [];
+                for (let i = 0; i + 2 < flat.length; i += 3)
+                    verts.push([flat[i], flat[i + 1], flat[i + 2]]);
+                if (verts.length >= 2)
+                    out.push(doc.lwpolyline(verts, closed === 1, 0, style, owner));
+                if (fill && verts.length >= 3)
+                    out.push(doc.solidHatch(verts, style, owner));
+                break;
+            }
+            case 'c': {
+                const [, x, y, r, fill] = p;
+                out.push(doc.circle(x, y, r, style, owner));
+                if (fill)
+                    out.push(doc.solidHatch([[x - r, y, 1], [x + r, y, 1]], style, owner));
+                break;
+            }
+            case 'e': {
+                const [, x, y, rx, ry, rot] = p;
+                out.push(doc.ellipse(x, y, rx, ry, rot, style, owner));
+                break;
+            }
+            case 't': {
+                const [, x, y, h, rot, value, italic] = p;
+                out.push(doc.text(x, y, 0, h, rot, value, 'center', style, owner, italic ? ITALIC_OBLIQUE : 0));
+                break;
+            }
+        }
+    }
+    return out;
+}
+//# sourceMappingURL=export.js.map

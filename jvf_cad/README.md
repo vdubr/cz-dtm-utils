@@ -1,0 +1,49 @@
+# jvf-cad
+
+Export JVF DTM / **UDM** (Univerzální datový model ČKZ) do **AutoCAD DXF**.
+
+```ts
+import { parseJvfDtm } from 'jvf-parser';
+import { exportDxf } from 'jvf-cad';
+
+const { dxf } = exportDxf(parseJvfDtm(xml), { version: 'R2013' });
+```
+
+## Co výkres obsahuje
+
+- **Hladiny** podle objektových typů (`ZPS_HraniceBudovy`, `ZPSUDM_Strom`, …;
+  mazané záznamy `…_DEL` jen s `includeDeleted`), barva / tloušťka / typ čáry
+  hladiny dle vzhledu UDM; vzhled podle hodnot číselníků jako přepis entity.
+- **Linie** → LWPOLYLINE (konstantní výška) nebo 3D POLYLINE, **plochy** →
+  uzavřené obvody (UDM plochy nevyplňuje), **body** → bloky symbolů z knihovny
+  ČKZ (barva ByBlock, natočení `Natoceni`) nebo POINT.
+- **Popisy a názvy** (PopisyZPS/DI/TI, Nazvy, ObecnePoznamky, PopisySmeru,
+  čísla/kódy/výšky bodů, popisy vrstevnic) → TEXT s `PopisObjektu`, výška dle
+  UDM kap. 15.2 (3–12 m při 1:500), styl „UDM" (Arial Narrow).
+- **XDATA** aplikace `UDM` na každé entitě: objektový typ, kód, ID, druh
+  záznamu a atributy `Název=kód (popisek)` (v AutoCADu příkaz `XDLIST`).
+- Souřadnice **EPSG:5514** (záporné, metry), jednotky výkresu metry.
+
+## Verze DXF
+
+| `version` | AutoCAD | Barvy | Texty |
+|---|---|---|---|
+| `R2013` (výchozí) | AC1027 | true color | UTF-8 |
+| `R2000` | AC1015 | nejbližší ACI | `\U+XXXX`, ANSI_1250 |
+
+R2000 slouží jako vstup pro převod do DWG (LibreDWG zapisuje jen R2000).
+
+## Omezení
+
+- **Vzory linií jsou aproximace** typů ČSN 01 3411 — přesné definice UDM jsou
+  jen v binárním `Vzory_linii_UDM.rsc` (MicroStation); vložené značky (ploty,
+  sítě TI) se nekreslí.
+- Barvy UDM (navržené pro tmavé pozadí) jsou upravené pro světlý podklad
+  (bílá → černá, světlé odstíny ztmavené) — stejně jako ve vieweru.
+
+## Generovaná data
+
+- `src/generated/templates.ts` — prázdné výkresy (kostra pro AutoCAD) z ezdxf:
+  `python scripts/cad/build-dxf-templates.py` (vyžaduje `pip install ezdxf`).
+- `src/generated/symbols.ts` — geometrie symbolů UDM z knihovny ČKZ:
+  `python3 scripts/udm/build-udm-cad-symbols.py`.

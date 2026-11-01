@@ -11,12 +11,13 @@
     "jvf_dtm_types",
     "jvf_parser",
     "jvf_topology",
+    "jvf_cad",
     "jvf_viewer"
   ],
   "scripts": {
-    "build": "npm run build -w jvf-dtm-types && npm run build -w jvf-parser && npm run build -w jvf-topology && npm run build -w jvf-viewer",
-    "typecheck": "npm run typecheck -w jvf-dtm-types && npm run typecheck -w jvf-parser && npm run typecheck -w jvf-topology && npm run typecheck -w jvf-viewer",
-    "test": "npm run test -w jvf-parser && npm run test -w jvf-topology",
+    "build": "npm run build -w jvf-dtm-types && npm run build -w jvf-parser && npm run build -w jvf-topology && npm run build -w jvf-cad && npm run build -w jvf-viewer",
+    "typecheck": "npm run typecheck -w jvf-dtm-types && npm run typecheck -w jvf-parser && npm run typecheck -w jvf-topology && npm run typecheck -w jvf-cad && npm run typecheck -w jvf-viewer",
+    "test": "npm run test -w jvf-parser && npm run test -w jvf-topology && npm run test -w jvf-cad",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
