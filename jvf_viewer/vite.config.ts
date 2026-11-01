@@ -12,7 +12,7 @@ export default defineConfig({
   base: '/jvf_viewer/',
   optimizeDeps: {
     include: ['ol', 'proj4', 'three'],
-    exclude: ['jvf-parser', 'geotiff'],
+    exclude: ['jvf-parser', 'jvf-cad', 'geotiff'],
   },
   build: {
     target: 'es2022',

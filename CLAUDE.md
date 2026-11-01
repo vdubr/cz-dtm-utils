@@ -23,7 +23,7 @@ nasazení nové verze — nikdy ne průběžně.
    a. Z `develop` vyčerpat plánované změny (smoke test, build, tests).
    b. Aktualizovat `CHANGELOG.md` v rootu — přidat sekci pro novou verzi.
       Formát: viz níže (Keep a Changelog, česky).
-   c. Bumpnout `version` ve všech `package.json` (root + 4 workspace
+   c. Bumpnout `version` ve všech `package.json` (root + 5 workspace
       balíčky) na novou verzi (viz Verzování).
    d. Commit `chore(release): vYYYY.M.D` v `develop`.
    e. Merge `develop → main` (`git checkout main && git merge --no-ff develop`).
@@ -42,7 +42,7 @@ Formát **`YYYY.M.D`** (bez leading zeros, např. `2026.4.29`, `2026.11.3`).
 Důvod: npm/semver leading zeros nedovoluje. Pokud v jednom dni vyjde víc
 verzí, suffix `.N`: `2026.4.29.2`. Git tagy s prefixem `v`: `v2026.4.29`.
 
-Verze se synchronizuje napříč všemi 4 workspace `package.json` (root nemá
+Verze se synchronizuje napříč všemi 5 workspace `package.json` (root nemá
 `version` field, jen `private: true`).
 
 ### Changelog — formát a propagace do UI
@@ -123,15 +123,25 @@ cz-dtm-utils/              # npm workspaces monorepo
 │   │   ├── duplicates.ts      # 3.6 + 3.8 + 3.9: duplicity a blízkost
 │   │   └── relations.ts       # Vrstva 3: DefBod/Plocha, Osa/Obvod, volné konce
 │   └── tests/1.4.3/topology/  # 160 testů (Vitest)
+├── jvf_cad/             # Export JVF/UDM → AutoCAD DXF (jvf-cad)
+│   └── src/
+│       ├── export.ts            # exportDxf: hladiny, bloky symbolů, texty, XDATA
+│       ├── dxf/document.ts      # zápis DXF nad šablonou (handly, tabulky, bloky)
+│       └── generated/           # templates.ts (ezdxf), symbols.ts (knihovna ČKZ)
 └── jvf_viewer/          # Vite/OpenLayers viewer (jvf-viewer)
     └── src/map/jvfLayers.ts   # Renderování geometrií do OL vrstev
 ```
+
+UDM (Univerzální datový model ČKZ) 2.1.1: XSD, specifikace a knihovna
+symbolů v `jvf_parser/docs/udm-2.1.1/`; generátory v `scripts/udm/`
+(styly + symboly) a `scripts/cad/` (šablony DXF, vyžaduje ezdxf).
 
 **Závislosti mezi workspaces:**
 - `jvf-dtm-types` — bez závislostí (čisté typy)
 - `jvf-parser` → `jvf-dtm-types`
 - `jvf-topology` → `jvf-dtm-types` (prod), `jvf-parser` (dev — jen pro fixture testy)
-- `jvf-viewer` → `jvf-parser`, `jvf-topology`
+- `jvf-cad` → `jvf-parser`, `jvf-dtm-types`
+- `jvf-viewer` → `jvf-parser`, `jvf-topology`, `jvf-cad` (líně načítaný export)
 
 ## DTM geometrie — jak to funguje
 

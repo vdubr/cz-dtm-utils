@@ -13,6 +13,7 @@ import {
   type JvfVectorLayer,
 } from './map/jvfLayers.js';
 import { setupFileUpload } from './ui/fileUpload.js';
+import { openExportCadDialog } from './ui/exportCad.js';
 import { setupDragAndDrop } from './ui/dragDrop.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
 import { renderProjectsPanel } from './ui/projectsPanel.js';
@@ -161,6 +162,12 @@ btnFeatures.addEventListener('click', () => {
   }
 });
 
+// Export do CAD (AutoCAD DXF ve vzhledu UDM) — dialog + stažení souboru.
+const btnExportCad = document.getElementById('btn-export-cad') as HTMLButtonElement;
+btnExportCad.addEventListener('click', () => {
+  void openExportCadDialog(getProjects());
+});
+
 // Setup file upload — každý vybraný soubor se přidá jako nový projekt.
 // Soubor s protokolem chyb (ServisJVFDTM) se místo mapy zobrazí jako report.
 setupFileUpload(
@@ -247,6 +254,10 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
   btnFeatures.disabled = !hasData;
   btnFeatures.title = hasData
     ? 'Zobrazit přehled všech načtených objektů (klik na řádek = zoom + atributy)'
+    : 'Nejprve nahrajte JVF soubor';
+  btnExportCad.disabled = !hasData;
+  btnExportCad.title = hasData
+    ? 'Exportovat projekt do AutoCADu (DXF) ve vzhledu UDM — hladiny, symboly, texty, atributy'
     : 'Nejprve nahrajte JVF soubor';
 
   // 5. Otevřené panely: validace se musí spustit znovu nad novými daty →

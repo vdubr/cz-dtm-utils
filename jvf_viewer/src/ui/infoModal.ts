@@ -142,6 +142,18 @@ const INFO_CONTENT_HTML = `
       geodeta celá jako nová) je zvýraznění ve výchozím stavu vypnuté.
     </li>
     <li>
+      <strong>Export do CAD</strong> — tlačítko v hlavičce vyexportuje
+      načtený projekt do <strong>AutoCAD DXF</strong> ve vzhledu UDM:
+      hladiny podle objektových typů (barva, tloušťka, typ čáry), symboly
+      UDM z knihovny ČKZ jako bloky, popisy a názvy jako texty (výšky dle
+      UDM pro 1:500) a atributy objektů v XDATA „UDM" (v AutoCADu příkaz
+      <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy UDM
+      přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
+      a 2D výkres. Souřadnice zůstávají v EPSG:5514. Vzory linií jsou
+      přibližné. DWG zatím exportovat nelze — DXF otevřete v AutoCADu
+      a uložte jako DWG. Export běží lokálně v prohlížeči.
+    </li>
+    <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
       seznamem všech načtených objektů seskupených podle typu. Hlavička
       kategorie zůstává při scrollování přišpendlená nahoře, takže je
@@ -286,7 +298,7 @@ const INFO_CONTENT_HTML = `
     Projekt je open-source pod licencí <strong>MIT</strong> a celý zdrojový
     kód je k dispozici na GitHubu:
     <a href="https://github.com/vdubr/cz-dtm-utils" target="_blank" rel="noopener noreferrer">github.com/vdubr/cz-dtm-utils</a>.
-    Repozitář je rozdělen do čtyř npm workspace balíčků:
+    Repozitář je rozdělen do pěti npm workspace balíčků:
   </p>
   <ul>
     <li>
@@ -305,6 +317,10 @@ const INFO_CONTENT_HTML = `
       Tři vrstvy kontrol (validita geometrie, konzistence Polygon ↔
       MultiCurve, meziobjektová topologie) plus IS DMVS kontroly
       (rozsahy S-JTSK, duplicity, blízkost). Závisí pouze na typech.
+    </li>
+    <li>
+      <strong>jvf-cad</strong> — export JVF DTM / UDM do AutoCAD DXF
+      (R2013 i R2000) ve vzhledu UDM, bez externích závislostí.
     </li>
     <li>
       <strong>jvf-viewer</strong> — tato webová aplikace. Vite + OpenLayers

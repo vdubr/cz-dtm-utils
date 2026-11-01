@@ -27,6 +27,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   reálná ukázka ČKZ, minimální testovací soubor a samostatná ukázka
   **pontonového mostu** (obvod mostu typu „jiný" s upřesněním, komunikace
   s dřevěným povrchem).
+- **Export do CAD (AutoCAD DXF)** — tlačítko v hlavičce vyexportuje projekt
+  do DXF ve vzhledu UDM: hladiny podle objektových typů (barva, tloušťka,
+  typ čáry), symboly UDM z knihovny ČKZ jako bloky, popisy a názvy jako
+  texty (výšky dle UDM pro 1:500) a atributy objektů v XDATA „UDM". DXF pro
+  AutoCAD 2013+ (true color) nebo R2000; volitelně mazané záznamy a 2D.
+  Nový balíček `jvf-cad` (MIT). DWG zatím ne — DXF lze v AutoCADu uložit
+  jako DWG.
 - **Přepínač „Zvýraznit změny barvou"** — vypne zelené / oranžové / červené
   přebarvení nových, editovaných a mazaných záznamů; zůstanou viditelné
   s vlastní symbologií (2D i 3D). U souborů UDM je ve výchozím stavu vypnutý,

@@ -2364,3 +2364,38 @@ html, body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Dialog „Export do CAD" (jvf_viewer/src/ui/exportCad.ts) */
+.cad-export {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+.cad-export .cad-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.cad-export fieldset.cad-row {
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 6px;
+  padding: 6px 10px 8px;
+  margin: 0;
+}
+.cad-export fieldset label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.cad-export .cad-disabled {
+  opacity: 0.55;
+}
+.cad-export .cad-note {
+  margin: 0;
+  opacity: 0.75;
+  font-size: 12px;
+  line-height: 1.4;
+}

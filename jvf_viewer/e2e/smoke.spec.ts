@@ -108,6 +108,28 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#toggle-show-inserted')).toBeChecked();
   });
 
+  test('Export do CAD stáhne DXF ve vzhledu UDM', async ({ page }) => {
+    await expect(page.locator('#btn-export-cad')).toBeDisabled();
+    await page.locator('#btn-upload-menu').click();
+    await page.locator('.upload-menu-item[data-sample="udm_pontonovy_most.xml"]').click();
+    await expect(page.locator('#btn-export-cad')).toBeEnabled();
+
+    await page.locator('#btn-export-cad').click();
+    await expect(page.locator('#confirm-modal-title')).toHaveText(/Export do CAD/);
+    // DWG zatím nedostupné (převod přes LibreDWG čeká na sestavení).
+    await expect(page.locator('input[name="cad-format"][value="DWG"]')).toBeDisabled();
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('udm_pontonovy_most.dxf');
+    const { readFile } = await import('node:fs/promises');
+    const dxf = await readFile((await download.path())!, 'utf-8');
+    expect(dxf).toContain('AC1027');
+    expect(dxf).toContain('DI_ObvodMostu');
+    expect(dxf).toContain('Upresneni=pontonový most');
+  });
+
   test('ukázka UDM s pontonovým mostem se načte z nabídky', async ({ page }) => {
     await page.locator('#btn-upload-menu').click();
     await page.locator('.upload-menu-item[data-sample="udm_pontonovy_most.xml"]').click();
