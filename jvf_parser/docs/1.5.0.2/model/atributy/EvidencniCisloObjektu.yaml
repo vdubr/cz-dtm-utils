@@ -1,0 +1,7 @@
+id: EvidencniCisloObjektu
+nazev: Evidenční číslo objektu
+namespace: atr
+popis: Evidenční číslo objektu
+nillable: false
+typ: String
+maxDelka: 50

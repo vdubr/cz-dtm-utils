@@ -1,0 +1,7 @@
+id: Plocha2DPolygon
+nazev: Plocha 2D (Polygon)
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: Polygon
+dim: 2

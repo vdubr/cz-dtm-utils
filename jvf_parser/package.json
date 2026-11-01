@@ -25,7 +25,11 @@
     "typecheck": "tsc --noEmit",
     "generate": "tsx scripts/generate-types.ts",
     "generate:1501": "tsx scripts/generate-types.ts 1.5.0.1",
-    "generate:udm": "tsx scripts/generate-types.ts udm-2.1.1"
+    "generate:1502": "tsx scripts/generate-types.ts 1.5.0.2",
+    "generate:udm": "tsx scripts/generate-types.ts udm-2.1.1",
+    "generate:zxml1421": "tsx scripts/generate-types.ts zxml-1.4.2.1",
+    "generate:zxml1516": "tsx scripts/generate-types.ts zxml-1.5.1.6",
+    "generate:all": "npm run generate && npm run generate:1501 && npm run generate:1502 && npm run generate:udm && npm run generate:zxml1421 && npm run generate:zxml1516"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

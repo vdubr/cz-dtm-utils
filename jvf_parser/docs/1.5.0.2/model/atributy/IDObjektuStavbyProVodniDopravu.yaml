@@ -1,0 +1,7 @@
+id: IDObjektuStavbyProVodniDopravu
+nazev: ID objektu stavby pro vodní dopravu
+namespace: atr
+popis: ID objektu stavby pro vodní dopravu
+nillable: false
+typ: String
+maxDelka: 50

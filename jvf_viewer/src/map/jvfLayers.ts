@@ -22,12 +22,10 @@ import {
 } from './symbology.js';
 import { VARIANT_ATTR } from './variantAttrMap.js';
 import {
-  isUdmStyled,
-  resolveUdmAppearance,
-  resolveUdmRepresentativeAppearance,
-  udmSymbolPath,
-} from './udmStyle.js';
-import type { UdmAppearance } from 'jvf-parser';
+  resolveDialectLook,
+  resolveDialectRepresentativeLook,
+  type DialectLook,
+} from './dialectStyle.js';
 import {
   isShowZapis,
   isHighlightZapis,
@@ -188,6 +186,8 @@ export interface ResolvedStyle {
   lineDashMm?: number[];
   /** SVG filename for point symbol, if available */
   pointSvg?: string;
+  /** Natočení symbolu bodu ve stupních (proti směru hodinových ručiček, jako v CAD). */
+  pointRotationDeg?: number;
 }
 
 /**
@@ -241,18 +241,20 @@ function buildResolvedStyle(
 }
 
 /**
- * ResolvedStyle ze vzhledu UDM. UDM neřeší vzhled ploch (jen obvod) →
- * výplň je jen průsvitný nádech barvy objektu; symbol bodu je SVG
- * přebarvené barvou objektu / položky číselníku.
+ * ResolvedStyle ze vzhledu dialektu (UDM, ŽXML). Dialekty neřeší vzhled
+ * ploch (jen obvod) → výplň je jen průsvitný nádech barvy objektu; symbol
+ * bodu je SVG přebarvené barvou objektu / položky číselníku.
  */
-function buildUdmResolvedStyle(app: UdmAppearance): ResolvedStyle {
+function buildDialectResolvedStyle(look: DialectLook): ResolvedStyle {
+  const app = look.appearance;
   const color = app.color ?? '#000000';
   return {
     fillColor: color + '1a',
     strokeColor: color,
     strokeWidthPx: mmToPx(app.widthMm ?? 0.25),
     lineDashMm: app.dashMm,
-    pointSvg: app.symbol ? udmSymbolPath(app.symbol, color) : undefined,
+    pointSvg: look.symbolPath,
+    ...(look.rotationDeg ? { pointRotationDeg: look.rotationDeg } : {}),
   };
 }
 
@@ -261,10 +263,8 @@ function buildUdmResolvedStyle(app: UdmAppearance): ResolvedStyle {
  * Exported so threeScene.ts can use the same logic.
  */
 export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
-  if (isUdmStyled(ot)) {
-    const app = resolveUdmAppearance(ot);
-    if (app) return buildUdmResolvedStyle(app);
-  }
+  const dialect = resolveDialectLook(ot);
+  if (dialect) return buildDialectResolvedStyle(dialect);
   const sym = getSymbology(ot.codeBase);
   if (sym) {
     return buildResolvedStyle(mergeSymbologyWithVariant(sym, undefined), ot.obsahovaCast);
@@ -283,10 +283,8 @@ export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
  * s {@link resolveStyle}.
  */
 export function resolveRepresentativeStyle(ot: ObjektovyTyp): ResolvedStyle {
-  if (isUdmStyled(ot)) {
-    const app = resolveUdmRepresentativeAppearance(ot);
-    if (app) return buildUdmResolvedStyle(app);
-  }
+  const dialect = resolveDialectRepresentativeLook(ot);
+  if (dialect) return buildDialectResolvedStyle(dialect);
   const sym = getSymbology(ot.codeBase);
   if (!sym) return resolveStyle(ot);
 
@@ -305,10 +303,8 @@ export function resolveStyleForZaznam(
   ot: ObjektovyTyp,
   zaznam: ZaznamObjektu,
 ): ResolvedStyle {
-  if (isUdmStyled(ot)) {
-    const app = resolveUdmAppearance(ot, zaznam);
-    if (app) return buildUdmResolvedStyle(app);
-  }
+  const dialect = resolveDialectLook(ot, zaznam);
+  if (dialect) return buildDialectResolvedStyle(dialect);
   const sym = getSymbology(ot.codeBase);
   if (!sym) return resolveStyle(ot);
 
@@ -349,6 +345,8 @@ function createStyleForGeom(
           image: new IconStyle({
             src: SVG_BASE + s.pointSvg,
             scale: iconScale,
+            // OL otáčí po směru hodinových ručiček, natočení v DTM je proti.
+            ...(s.pointRotationDeg ? { rotation: (-s.pointRotationDeg * Math.PI) / 180 } : {}),
           }),
         });
       }

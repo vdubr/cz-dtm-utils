@@ -1,0 +1,143 @@
+id: JinaTechnologickaStavbaTIPlocha
+namespace: jitpol
+nazev: jiná technologická stavba TI
+skupinaPrvku: SdilenaStavbaObjektTechnickeInfrastruktury
+obsahovaCast: TI
+typGeometrie: Plocha
+code:
+  base: "0100000096"
+  suffix: "03"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuTI
+   typ: sada
+   sada: SpolecneAtributyObjektuTI
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuPlocha3DDTI
+ - id: StavObjektu
+   typ: atribut
+   volitelny: false
+   atribut: StavObjektu
+
+kontexty:
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuTI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: StavObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

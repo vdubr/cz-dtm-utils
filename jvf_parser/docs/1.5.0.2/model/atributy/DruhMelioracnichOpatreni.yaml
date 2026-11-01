@@ -1,0 +1,23 @@
+id: DruhMelioracnichOpatreni
+nazev: Druh melioračních opatření
+namespace: atr
+popis: Druh melioračních opatření
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: odvodnění
+ - hodnota: 2
+   popis: závlaha
+ - hodnota: 3
+   popis: opatření proti vodní erozi - příkop
+ - hodnota: 4
+   popis: opatření proti vodní erozi - průleh
+ - hodnota: 5
+   popis: opatření proti větrné erozi
+ - hodnota: 6
+   popis: revitalizace půdy
+ - hodnota: 7
+   popis: vsakovací objekt
+ - hodnota: 99
+   popis: nezjištěno

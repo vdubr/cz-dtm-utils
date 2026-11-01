@@ -1,0 +1,7 @@
+id: RokVystavby
+nazev: Rok výstavby
+namespace: atr
+popis: Rok výstavby
+nillable: true
+typ: Integer
+min: 0

@@ -1,0 +1,11 @@
+id: TypZarizeniSiteProduktovodu
+nazev: Typ zařízení sítě produktovodu
+namespace: atr
+popis: Typ zařízení sítě produktovodu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: šachta
+ - hodnota: 99
+   popis: nezjištěno

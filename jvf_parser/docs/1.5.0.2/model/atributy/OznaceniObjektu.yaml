@@ -1,0 +1,7 @@
+id: OznaceniObjektu
+nazev: Označení objektu
+namespace: atr
+popis: Označení objektu
+nillable: false
+typ: String
+maxDelka: 255

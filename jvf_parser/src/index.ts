@@ -12,15 +12,33 @@ export {
   getBooleanAttrs,
   labelForAttribute,
   resolveDtmVersion,
+  resolveDialectVersion,
   resolveUdmVersion,
   detectVersionString,
   sniffVersionByStructure,
   isErrorProtocolXml,
 } from './router.js';
+export type { EntityCatalog, EntityMeta as CatalogEntityMeta, GeomKind } from './catalog.js';
+
+// Registr dialektů (UDM, ŽXML) — detekce a parsování.
+export { PARSER_DIALECTS, getParserDialect } from './dialects/registry.js';
+export type { ParserDialect } from './dialects/registry.js';
+export { parseStaniceniData } from './dialects/zxml.js';
 
 // UDM (Univerzální datový model ČKZ) — přímý vstup bez routeru.
 export { parseUdm, detectUdmVersionString } from './udm-2.1.1/parser.js';
-// Vzhled UDM (barvy, tloušťky, vzory linií, symboly) — viewer i export do CAD.
+
+// Vzhled objektů dialektů (barvy, tloušťky, vzory linií, symboly, natočení)
+// — viewer i export do CAD.
+export {
+  getStyleTable,
+  getObjectStyle,
+  resolveAppearance,
+  resolveRepresentativeAppearance,
+  resolveRotationDeg,
+} from './styles/resolve.js';
+export type { Appearance, AttrRule, ObjectStyle, StyleTable } from './styles/types.js';
+export { ZXML_STYLES } from './zxml-1.5.1.6/generated/styles.js';
 export {
   UDM_STYLES,
   getUdmStyle,

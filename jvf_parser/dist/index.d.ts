@@ -1,6 +1,13 @@
 export * from './1.4.3/index.js';
-export { parseJvfDtm, getEntityCatalog, getEnumLabels, getBooleanAttrs, labelForAttribute, resolveDtmVersion, resolveUdmVersion, detectVersionString, sniffVersionByStructure, isErrorProtocolXml, } from './router.js';
+export { parseJvfDtm, getEntityCatalog, getEnumLabels, getBooleanAttrs, labelForAttribute, resolveDtmVersion, resolveDialectVersion, resolveUdmVersion, detectVersionString, sniffVersionByStructure, isErrorProtocolXml, } from './router.js';
+export type { EntityCatalog, EntityMeta as CatalogEntityMeta, GeomKind } from './catalog.js';
+export { PARSER_DIALECTS, getParserDialect } from './dialects/registry.js';
+export type { ParserDialect } from './dialects/registry.js';
+export { parseStaniceniData } from './dialects/zxml.js';
 export { parseUdm, detectUdmVersionString } from './udm-2.1.1/parser.js';
+export { getStyleTable, getObjectStyle, resolveAppearance, resolveRepresentativeAppearance, resolveRotationDeg, } from './styles/resolve.js';
+export type { Appearance, AttrRule, ObjectStyle, StyleTable } from './styles/types.js';
+export { ZXML_STYLES } from './zxml-1.5.1.6/generated/styles.js';
 export { UDM_STYLES, getUdmStyle, resolveUdmAppearance, resolveUdmRepresentativeAppearance, } from './udm-2.1.1/styles.js';
 export type { UdmAppearance, UdmAttrRule, UdmObjectStyle } from './udm-2.1.1/styles.js';
 export { parseErrorProtocol } from './1.5.0.1/error-protocol.js';

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="cmn" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns="cmn">
+  <xs:import schemaLocation="../ext/gml/gml.xsd" namespace="http://www.opengis.net/gml/3.2"/>
+  <xs:element name="VerzeJVFDTM">
+    <xs:annotation>
+      <xs:documentation>Verze JVF DTM</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="1.5.0.2"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="DatumZapisu" type="xs:dateTime">
+    <xs:annotation>
+      <xs:documentation>Datum a čas vytvoření souboru</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="TypZapisu">
+    <xs:annotation>
+      <xs:documentation>Typ zápisu</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="kompletní zápis"/>
+        <xs:enumeration value="změnové věty"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:complexType name="GeometrieObjektuBod2DType">
+    <xs:sequence>
+      <xs:element name="Bod2D">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:pointProperty"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GeometrieObjektuBod3DType">
+    <xs:sequence>
+      <xs:element name="Bod3D">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:pointProperty"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GeometrieObjektuLinie2DType">
+    <xs:sequence>
+      <xs:element name="Linie2D">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:curveProperty"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GeometrieObjektuLinie3DType">
+    <xs:sequence>
+      <xs:element name="Linie3D">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:curveProperty"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GeometrieObjektuPlocha2DDTIType">
+    <xs:annotation>
+      <xs:documentation>2D geometrie pro plochu DTI</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Plocha2D">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:surfaceProperty"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GeometrieObjektuPlocha3DDTIType">
+    <xs:annotation>
+      <xs:documentation>3D geometrie pro plochu DTI</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Plocha3D">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:surfaceProperty"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GeometrieObjektuPlochaZPSType">
+    <xs:sequence>
+      <xs:element name="Plocha2D">
+        <xs:annotation>
+          <xs:documentation>2D geometrie pro plochu ZPS</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:Polygon"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Obvod3D">
+        <xs:annotation>
+          <xs:documentation>3D geometrie pro obvod ZPS</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="gml:LineString" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="VerzeZXML">
+    <xs:annotation>
+      <xs:documentation>Verze ŽXML</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="1.5.1.6"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:simpleType name="ZpusobVypoctuType">
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="0">
+        <xs:annotation>
+          <xs:documentation>automaticky</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="1">
+        <xs:annotation>
+          <xs:documentation>uživatelsky</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TypStaniceniType">
+    <xs:restriction base="xs:integer">
+      <xs:enumeration value="1">
+        <xs:annotation>
+          <xs:documentation>Střed</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="2">
+        <xs:annotation>
+          <xs:documentation>Začátek</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="3">
+        <xs:annotation>
+          <xs:documentation>Konec</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="4">
+        <xs:annotation>
+          <xs:documentation>Centroid</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TUDUType">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="6"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="StaniceniInfo">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ID" type="xs:string"/>
+        <xs:element ref="Staniceni" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Staniceni">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="TypStaniceni" type="TypStaniceniType"/>
+        <xs:element name="ZpusobVypoctu" type="ZpusobVypoctuType"/>
+        <xs:element name="GeometrieObjektu" type="GeometrieObjektuBod3DType"/>
+        <xs:element name="TUDU" type="TUDUType"/>
+        <xs:element name="Staniceni" type="xs:decimal"/>
+        <xs:element name="DatumVypoctu" type="xs:dateTime"/>
+        <xs:element name="DatumPlatnostiOd" type="xs:dateTime"/>
+        <xs:element name="DatumPlatnostiDo" type="xs:dateTime"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StaniceniData">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="StaniceniInfo" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

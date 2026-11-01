@@ -19,6 +19,11 @@ export declare const Z_BOUNDS_ZPS: {
     readonly min: 1;
     readonly max: 1620;
 };
+/**
+ * Obsahové části, u kterých se kontroluje rozsah Z (kontrola 1.5): ZPS,
+ * u UDM `ZPSUDM`, u ŽXML `H3D` (3D hrany doplňující kresbu ZPS).
+ */
+export declare const Z_CHECKED_CASTS: ReadonlySet<string>;
 /** Rozsah výšek Z pro definiční body (m n. m.) */
 export declare const Z_BOUNDS_DEFBOD: {
     readonly min: 0;

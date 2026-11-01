@@ -5,69 +5,80 @@
  * souboru nasměruje na parser správné verze. Detekce (R4):
  *   1. kořen `ServisJVFDTM` → protokol chyb (není datový soubor) → chyba
  *      s odkazem na `parseErrorProtocol` (T6),
- *   2. `<VerzeJVFUDM>` přítomna → **UDM** (`udm-<verze>`; neznámá verze UDM
- *      se strukturou 1.5.0.x → nejnovější podporované UDM + warn),
- *   3. `VerzeJVFDTM` ∈ `SUPPORTED_VERSIONS` → daná větev,
+ *   2. **dialekt** (registr `PARSER_DIALECTS`): element verze dialektu
+ *      v hlavičce (`VerzeJVFUDM`, `VerzeZXML`) → `<dialekt>-<verze>`;
+ *      neznámá verze dialektu → nejnovější verze téhož dialektu se stejnou
+ *      strukturou XSD (+ warn), jinak se soubor čte jako čisté JVF DTM,
+ *   3. `VerzeJVFDTM` ∈ `JVF_VERSIONS` → daná verze,
  *   4. neznámá/chybějící verze → **strukturní sniff** (druh `ZaznamObjektu`),
- *   5. jinak `DEFAULT_VERSION` + warn.
+ *   5. jinak `DEFAULT_VERSION`.
  * Router nikdy nespadne na detekci — vždy zvolí nějakou větev.
+ *
+ * Výsledné `JvfDtm.verze` je vždy vyřešené id (viz `jvf-dtm-types`).
  */
 import {
   DEFAULT_VERSION,
-  LATEST_UDM_VERSION,
+  baseJvfVersionOf,
+  dialectOf,
+  dialectVersionId,
+  isJvfBaseVersion,
   isSupportedVersion,
-  isUdmVersion,
-  udmVersionId,
+  type DialectVersion,
   type JvfDtm,
   type JvfVersion,
 } from 'jvf-dtm-types';
 import { parseJvfDtm as parseJvfDtm143 } from './1.4.3/parser.js';
 import { parseJvfDtm1501 } from './1.5.0.1/parser.js';
-import { detectUdmVersionString, parseUdm } from './udm-2.1.1/parser.js';
+import { PARSER_DIALECTS, getParserDialect } from './dialects/registry.js';
+import type { EntityCatalog } from './catalog.js';
 import { ENTITY_CATALOG as CATALOG_143 } from './1.4.3/generated/entities.js';
 import { ENTITY_CATALOG as CATALOG_1501 } from './1.5.0.1/generated/entities.js';
-import {
-  ENUM_LABELS as LABELS_143,
-  BOOLEAN_ATTRS as BOOL_ATTRS_143,
-} from './1.4.3/generated/enum-labels.js';
-import {
-  ENUM_LABELS as LABELS_1501,
-  BOOLEAN_ATTRS as BOOL_ATTRS_1501,
-} from './1.5.0.1/generated/enum-labels.js';
-// `EntityMeta` z UDM — jeho union `obsahovaCast` je nadmnožinou JVF verzí.
-import {
-  ENTITY_CATALOG as CATALOG_UDM_211,
-  type EntityMeta,
-} from './udm-2.1.1/generated/entities.js';
-import {
-  ENUM_LABELS as LABELS_UDM_211,
-  BOOLEAN_ATTRS as BOOL_ATTRS_UDM_211,
-} from './udm-2.1.1/generated/enum-labels.js';
+import { ENTITY_CATALOG as CATALOG_1502 } from './1.5.0.2/generated/entities.js';
+import { ENTITY_CATALOG as CATALOG_UDM_211 } from './udm-2.1.1/generated/entities.js';
+import { ENTITY_CATALOG as CATALOG_ZXML_1421 } from './zxml-1.4.2.1/generated/entities.js';
+import { ENTITY_CATALOG as CATALOG_ZXML_1516 } from './zxml-1.5.1.6/generated/entities.js';
+import * as L143 from './1.4.3/generated/enum-labels.js';
+import * as L1501 from './1.5.0.1/generated/enum-labels.js';
+import * as L1502 from './1.5.0.2/generated/enum-labels.js';
+import * as LUDM211 from './udm-2.1.1/generated/enum-labels.js';
+import * as LZXML1421 from './zxml-1.4.2.1/generated/enum-labels.js';
+import * as LZXML1516 from './zxml-1.5.1.6/generated/enum-labels.js';
 
 /** Katalogy entit podle verze — každá podporovaná verze musí mít záznam. */
-const CATALOGS: Readonly<Record<JvfVersion, Readonly<Record<string, EntityMeta>>>> = {
+const CATALOGS: Readonly<Record<JvfVersion, EntityCatalog>> = {
   '1.4.3': CATALOG_143,
   '1.5.0.1': CATALOG_1501,
+  '1.5.0.2': CATALOG_1502,
   'udm-2.1.1': CATALOG_UDM_211,
+  'zxml-1.4.2.1': CATALOG_ZXML_1421,
+  'zxml-1.5.1.6': CATALOG_ZXML_1516,
 };
 
-const ENUM_LABELS_BY_VERSION: Readonly<
-  Record<JvfVersion, Readonly<Record<string, Record<string, string>>>>
-> = {
-  '1.4.3': LABELS_143,
-  '1.5.0.1': LABELS_1501,
-  'udm-2.1.1': LABELS_UDM_211,
+interface LabelModule {
+  ENUM_LABELS: Record<string, Record<string, string>>;
+  BOOLEAN_ATTRS: readonly string[];
+}
+
+const LABELS: Readonly<Record<JvfVersion, LabelModule>> = {
+  '1.4.3': L143,
+  '1.5.0.1': L1501,
+  '1.5.0.2': L1502,
+  'udm-2.1.1': LUDM211,
+  'zxml-1.4.2.1': LZXML1421,
+  'zxml-1.5.1.6': LZXML1516,
 };
 
-const BOOLEAN_ATTRS_BY_VERSION: Readonly<Record<JvfVersion, ReadonlySet<string>>> = {
-  '1.4.3': new Set<string>(BOOL_ATTRS_143),
-  '1.5.0.1': new Set<string>(BOOL_ATTRS_1501),
-  'udm-2.1.1': new Set<string>(BOOL_ATTRS_UDM_211),
-};
+const BOOLEAN_ATTRS_BY_VERSION = new Map<JvfVersion, ReadonlySet<string>>(
+  (Object.keys(LABELS) as JvfVersion[]).map((v) => [v, new Set(LABELS[v].BOOLEAN_ATTRS)])
+);
 
-/** Neznámá verze (mimo `JvfVersion`) → `DEFAULT_VERSION` (graceful). */
+/**
+ * Neznámá verze → nejnovější verze téhož dialektu, u JVF `DEFAULT_VERSION`
+ * (graceful — volající může mít v ruce surové id ze staršího/novějšího souboru).
+ */
 function knownVersion(version: string): JvfVersion {
-  return isSupportedVersion(version) ? version : DEFAULT_VERSION;
+  if (isSupportedVersion(version)) return version;
+  return dialectOf(version)?.latest ?? DEFAULT_VERSION;
 }
 
 /** Přečte hodnotu `<VerzeJVFDTM>` z raw XML (bez plného parsování). */
@@ -96,35 +107,55 @@ export function sniffVersionByStructure(xml: string): JvfVersion {
   return DEFAULT_VERSION;
 }
 
+/** Struktura XSD verze: `1.4` (jeden ZaznamObjektu) nebo `1.5` (Ins/Upd/…). */
+function structureFamily(version: string): '1.4' | '1.5' | undefined {
+  const base = baseJvfVersionOf(version);
+  if (!base) return undefined;
+  return base.startsWith('1.5') ? '1.5' : '1.4';
+}
+
 /**
- * Vyřeší UDM verzi souboru z `<VerzeJVFUDM>`, nebo `null` u čistého JVF.
- * Neznámá verze UDM se strukturou 1.5.0.x → nejnovější podporované UDM
- * (+ warn); jiná struktura (UDM 1.x nad JVF 1.4.3) → `null` (parsuje se
- * jako JVF).
+ * Vyřeší verzi dialektu souboru, nebo `null` u čistého JVF DTM.
+ * Neznámá verze dialektu → nejnovější verze téhož dialektu se stejnou
+ * strukturou XSD (+ warn); jiná struktura → `null` (čte se jako JVF DTM).
+ */
+export function resolveDialectVersion(xml: string): DialectVersion | null {
+  for (const dialect of PARSER_DIALECTS) {
+    const declared = dialect.detect(xml);
+    if (declared == null) continue;
+    const id = dialectVersionId(dialect.def.id, declared);
+    if ((dialect.def.versions as readonly string[]).includes(id)) return id as DialectVersion;
+    const family = structureFamily(sniffVersionByStructure(xml));
+    const candidate = [...dialect.def.versions].reverse().find((v) => structureFamily(v) === family);
+    if (candidate) {
+      console.warn(
+        `jvf-parser: nepodporovaná verze ${dialect.def.label} "${declared}" — použije se ${candidate}.`
+      );
+      return candidate;
+    }
+    console.warn(
+      `jvf-parser: nepodporovaná verze ${dialect.def.label} "${declared}" — parsuje se jako JVF DTM bez rozšíření.`
+    );
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Vyřeší verzi UDM souboru z `<VerzeJVFUDM>`, nebo `null`.
+ * @deprecated použij `resolveDialectVersion` (pokrývá všechny dialekty).
  */
 export function resolveUdmVersion(xml: string): JvfVersion | null {
-  const declared = detectUdmVersionString(xml);
-  if (declared == null) return null;
-  const id = udmVersionId(declared);
-  if (isUdmVersion(id)) return id;
-  if (sniffVersionByStructure(xml) === '1.5.0.1') {
-    console.warn(
-      `jvf-parser: nepodporovaná verze UDM "${declared}" — použije se ${LATEST_UDM_VERSION}.`
-    );
-    return LATEST_UDM_VERSION;
-  }
-  console.warn(
-    `jvf-parser: nepodporovaná verze UDM "${declared}" (struktura JVF 1.4.3) — parsuje se jako JVF DTM bez rozšíření UDM.`
-  );
-  return null;
+  const v = resolveDialectVersion(xml);
+  return v && dialectOf(v)?.id === 'udm' ? v : null;
 }
 
 /** Vyřeší verzi souboru dle R4 (bez ohledu na ServisJVFDTM). */
 export function resolveDtmVersion(xml: string): JvfVersion {
-  const udm = resolveUdmVersion(xml);
-  if (udm) return udm;
+  const dialect = resolveDialectVersion(xml);
+  if (dialect) return dialect;
   const declared = detectVersionString(xml);
-  if (declared && isSupportedVersion(declared)) return declared;
+  if (declared && isJvfBaseVersion(declared)) return declared;
   const sniffed = sniffVersionByStructure(xml);
   if (declared) {
     console.warn(
@@ -135,8 +166,8 @@ export function resolveDtmVersion(xml: string): JvfVersion {
 }
 
 /**
- * Naparsuje JVF DTM datový soubor (1.4.3, 1.5.0.1) nebo UDM (udm-2.1.1) —
- * verzní router (R3/R4).
+ * Naparsuje datový soubor JVF DTM (1.4.3, 1.5.0.1, 1.5.0.2) nebo dialektu
+ * (UDM, ŽXML) — verzní router (R3/R4). `verze` výsledku je vždy vyřešené id.
  * Pro protokol chyb (`ServisJVFDTM`) použij `parseErrorProtocol`.
  */
 export function parseJvfDtm(xml: string): JvfDtm {
@@ -146,30 +177,34 @@ export function parseJvfDtm(xml: string): JvfDtm {
     );
   }
   const version = resolveDtmVersion(xml);
-  if (isUdmVersion(version)) {
-    const dtm = parseUdm(xml);
-    // Neznámá verze UDM namapovaná na nejnovější — katalog dle `version`.
-    return { ...dtm, verze: version };
-  }
-  return version === '1.5.0.1' ? parseJvfDtm1501(xml) : parseJvfDtm143(xml);
+  const dialect = dialectOf(version);
+  if (dialect) return getParserDialect(dialect.id).parse(xml, version as DialectVersion);
+  // Varování o verzi už vydal resolveDtmVersion — jádra parserů mlčí.
+  const dtm =
+    version === '1.4.3'
+      ? parseJvfDtm143(xml, { warnUnsupportedVersion: false })
+      : parseJvfDtm1501(xml, { warnUnsupportedVersion: false });
+  return { ...dtm, verze: version };
 }
 
 /**
  * Katalog entit pro danou verzi (R3). `ENTITY_CATALOG` (bez argumentu, =1.4.3)
  * zůstává exportován pro zpětnou kompatibilitu.
  */
-export function getEntityCatalog(version: JvfVersion): Readonly<Record<string, EntityMeta>> {
+export function getEntityCatalog(version: JvfVersion | string): EntityCatalog {
   return CATALOGS[knownVersion(version)];
 }
 
 /** Tabulka číselníků `název atributu → { kód → popisek }` pro danou verzi. */
-export function getEnumLabels(version: JvfVersion): Readonly<Record<string, Record<string, string>>> {
-  return ENUM_LABELS_BY_VERSION[knownVersion(version)];
+export function getEnumLabels(
+  version: JvfVersion | string
+): Readonly<Record<string, Record<string, string>>> {
+  return LABELS[knownVersion(version)].ENUM_LABELS;
 }
 
 /** Množina názvů `xs:boolean` atributů (v XML 0/1) pro danou verzi. */
-export function getBooleanAttrs(version: JvfVersion): ReadonlySet<string> {
-  return BOOLEAN_ATTRS_BY_VERSION[knownVersion(version)];
+export function getBooleanAttrs(version: JvfVersion | string): ReadonlySet<string> {
+  return BOOLEAN_ATTRS_BY_VERSION.get(knownVersion(version)) ?? new Set();
 }
 
 /**
@@ -186,7 +221,7 @@ export function getBooleanAttrs(version: JvfVersion): ReadonlySet<string> {
 export function labelForAttribute(
   attrName: string,
   value: unknown,
-  version: JvfVersion = DEFAULT_VERSION
+  version: JvfVersion | string = DEFAULT_VERSION
 ): string | undefined {
   const enumLabel = getEnumLabels(version)[attrName]?.[String(value)];
   if (enumLabel !== undefined) return enumLabel;

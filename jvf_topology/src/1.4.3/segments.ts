@@ -65,8 +65,15 @@ function lineStringHasSelfIntersection(geom: GmlLineString): boolean {
   if (pts.length < 4) return false;
   // LineString: otevřená polyčára — úsečky i→i+1, žádná "uzavírací" hrana
   const n = pts.length;
+  const first = pts[0];
+  const last = pts[n - 1];
+  // Uzavřená linie (obvod plochy): první a poslední úsečka se legitimně
+  // dotýkají v uzavíracím vrcholu — tento pár se nekontroluje.
+  const closed =
+    first !== undefined && last !== undefined && first.x === last.x && first.y === last.y;
   for (let i = 0; i < n - 1; i++) {
     for (let j = i + 2; j < n - 1; j++) {
+      if (closed && i === 0 && j === n - 2) continue;
       const pi = pts[i];
       const pi1 = pts[i + 1];
       const pj = pts[j];

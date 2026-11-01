@@ -1,0 +1,13 @@
+id: DruhElektrickehoProuduTrakcnihoVedeni
+nazev: Druh elektrického proudu trakčního vedení
+namespace: atr
+popis: Druh elektrického proudu trakčního vedení
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: AC
+ - hodnota: 2
+   popis: DC
+ - hodnota: 99
+   popis: nezjištěno

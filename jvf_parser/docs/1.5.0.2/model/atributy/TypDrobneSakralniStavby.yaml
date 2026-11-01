@@ -1,0 +1,15 @@
+id: TypDrobneSakralniStavby
+nazev: Typ drobné sakrální stavby
+namespace: atr
+popis: Typ drobné sakrální stavby
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: kříž
+ - hodnota: 2
+   popis: boží muka
+ - hodnota: 3
+   popis: kaplička
+ - hodnota: 99
+   popis: nezjištěno

@@ -1,16 +1,10 @@
 import 'ol/ol.css';
 import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
-import {
-  LATEST_UDM_VERSION,
-  SUPPORTED_VERSIONS,
-  type JvfDtm,
-  type JvfVersion,
-  type ObjektovyTyp,
-} from 'jvf-parser';
+import { type JvfDtm, type ObjektovyTyp } from 'jvf-parser';
 import { runAllChecks } from 'jvf-topology';
-import { markUdmObjekty } from './map/udmStyle.js';
-import { getAppMode, onAppModeChange, type AppMode } from './state/appMode.js';
+import { markDialectObjekty } from './map/dialectStyle.js';
+import { appModeDef, getAppMode, onAppModeChange } from './state/appMode.js';
 import { setActiveVersion } from './state/activeVersion.js';
 import { setupAppModeSwitch } from './ui/appModeSwitch.js';
 import { createOlMap } from './map/olMap.js';
@@ -127,16 +121,13 @@ setupLegendModal();
 // nebo nově vytvořený soubor).
 setupChangesetToggle(() => currentJvfLayers);
 
-// Režim aplikace (JVF / UDM): verze pro legendu a číselníky podle režimu;
-// přepnutí režimu zavře načtené projekty (potvrzení řeší appModeSwitch).
-function activeVersionForMode(mode: AppMode): JvfVersion {
-  return mode === 'udm' ? LATEST_UDM_VERSION : SUPPORTED_VERSIONS[SUPPORTED_VERSIONS.length - 1]!;
-}
-setActiveVersion(activeVersionForMode(getAppMode()));
+// Režim aplikace (JVF / UDM / JŽM): verze pro legendu a číselníky podle
+// režimu; přepnutí režimu zavře načtené projekty (potvrzení řeší appModeSwitch).
+setActiveVersion(appModeDef(getAppMode()).defaultVersion);
 setupAppModeSwitch();
 onAppModeChange((mode) => {
   clearProjects();
-  setActiveVersion(activeVersionForMode(mode));
+  setActiveVersion(appModeDef(mode).defaultVersion);
   rebuildAll();
 });
 
@@ -185,7 +176,7 @@ btnFeatures.addEventListener('click', () => {
   }
 });
 
-// Export do CAD (AutoCAD DXF ve vzhledu UDM) — dialog + stažení souboru.
+// Export do CAD (AutoCAD DXF ve vzhledu dialektu) — dialog + stažení souboru.
 const btnExportCad = document.getElementById('btn-export-cad') as HTMLButtonElement;
 btnExportCad.addEventListener('click', () => {
   void openExportCadDialog(getProjects());
@@ -231,8 +222,9 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
   const allObjekty: ObjektovyTyp[] = [];
   projectExtents.clear();
   for (const project of projects) {
-    // Soubor UDM → všechny jeho objekty kreslit symbologií UDM (2D, 3D, panely).
-    if (getAppMode() === 'udm') markUdmObjekty(project.dtm.objekty);
+    // Soubor dialektu (UDM, ŽXML) → objekty kreslit symbologií dialektu
+    // (2D, 3D, panely) podle verze projektu.
+    markDialectObjekty(project.dtm.objekty, project.dtm.verze);
     const { layers, extent } = buildJvfLayers(project.dtm.objekty);
     allLayers.push(...layers);
     if (!isEmpty(extent)) {
@@ -280,7 +272,7 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
     : 'Nejprve nahrajte JVF soubor';
   btnExportCad.disabled = !hasData;
   btnExportCad.title = hasData
-    ? 'Exportovat projekt do AutoCADu (DXF) ve vzhledu UDM — hladiny, symboly, texty, atributy'
+    ? `Exportovat projekt do AutoCADu (DXF) ve vzhledu ${appModeDef(getAppMode()).label} — hladiny, symboly, texty, atributy`
     : 'Nejprve nahrajte JVF soubor';
 
   // 5. Otevřené panely: validace se musí spustit znovu nad novými daty →

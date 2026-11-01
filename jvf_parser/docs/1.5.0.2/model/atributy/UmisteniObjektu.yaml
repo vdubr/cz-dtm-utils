@@ -1,0 +1,13 @@
+id: UmisteniObjektu
+nazev: Umístění objektu
+namespace: atr
+popis: Umístění objektu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: samostatně stojící
+ - hodnota: 2
+   popis: na objektu
+ - hodnota: 99
+   popis: nezjištěno

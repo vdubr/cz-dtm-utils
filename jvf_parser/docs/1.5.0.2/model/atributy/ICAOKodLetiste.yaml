@@ -1,0 +1,7 @@
+id: ICAOKodLetiste
+nazev: ICAO kód letiště
+namespace: atr
+popis: ICAO kód letiště
+nillable: false
+typ: String
+maxDelka: 255

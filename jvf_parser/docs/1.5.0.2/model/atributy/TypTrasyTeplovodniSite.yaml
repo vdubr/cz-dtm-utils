@@ -1,0 +1,13 @@
+id: TypTrasyTeplovodniSite
+nazev: Typ trasy teplovodní sítě
+namespace: atr
+popis: Typ trasy teplovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: primární
+ - hodnota: 2
+   popis: sekundární
+ - hodnota: 99
+   popis: nezjištěno

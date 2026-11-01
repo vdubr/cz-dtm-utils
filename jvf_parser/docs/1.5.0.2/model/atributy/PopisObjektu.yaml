@@ -1,0 +1,7 @@
+id: PopisObjektu
+nazev: Popis objektu
+namespace: atr
+popis: Popis objektu
+nillable: false
+typ: String
+maxDelka: 1000

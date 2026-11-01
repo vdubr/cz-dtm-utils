@@ -338,7 +338,10 @@ function renderAttributes(z: ZaznamObjektu): HTMLElement {
     h.className = 'feature-detail-section-title';
     h.textContent = 'Atributy objektu';
     wrap.appendChild(h);
-    wrap.appendChild(buildKVTable(attrEntries, true));
+    // Popisky číselníků podle verze projektu záznamu (více projektů různých verzí).
+    const projectId = resolveProjectKey(z);
+    const version = (projectId ? getProject(projectId)?.dtm.verze : undefined) ?? getActiveVersion();
+    wrap.appendChild(buildKVTable(attrEntries, true, version));
   }
 
   // Geometrie summary
@@ -383,11 +386,14 @@ function renderAttributes(z: ZaznamObjektu): HTMLElement {
  *   český popisek z číselníku DTM (`kód — text`). Zapíná se jen pro sekci
  *   „Atributy objektu" (A5), ne pro „Společné atributy" (identifikátory/data).
  */
-function buildKVTable(entries: [string, unknown][], translate = false): HTMLElement {
+function buildKVTable(
+  entries: [string, unknown][],
+  translate = false,
+  version: string = getActiveVersion(),
+): HTMLElement {
   const tbl = document.createElement('table');
   tbl.className = 'feature-detail-table';
   const tbody = document.createElement('tbody');
-  const version = getActiveVersion();
   for (const [k, v] of entries) {
     const tr = document.createElement('tr');
     const tdK = document.createElement('td');

@@ -1,0 +1,53 @@
+id: MaximalniProvozniNapeti
+nazev: Maximální provozní napětí
+namespace: atr
+popis: Maximální provozní napětí
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 0
+   popis: uzemnění
+ - hodnota: 1
+   popis: 0,4 kV
+ - hodnota: 2
+   popis: 0,5 kV
+ - hodnota: 3
+   popis: 3 kV
+ - hodnota: 4
+   popis: 5 kV
+ - hodnota: 5
+   popis: 6 kV
+ - hodnota: 6
+   popis: 10 kV
+ - hodnota: 7
+   popis: 22 kV
+ - hodnota: 8
+   popis: 35 kV
+ - hodnota: 9
+   popis: 110 kV
+ - hodnota: 10
+   popis: 220 kV
+ - hodnota: 11
+   popis: 400 kV
+ - hodnota: 12
+   popis: 0,11 kV
+ - hodnota: 13
+   popis: 0,23 kV
+ - hodnota: 14
+   popis: 0,6 kV
+ - hodnota: 15
+   popis: 0,75 kV
+ - hodnota: 16
+   popis: 1,5 kV
+ - hodnota: 17
+   popis: 15 kV
+ - hodnota: 18
+   popis: 25 kV
+ - hodnota: 19
+   popis: 2x25 kV
+ - hodnota: 20
+   popis: 800 kV
+ - hodnota: 98
+   popis: jiné
+ - hodnota: 99
+   popis: nezjištěno

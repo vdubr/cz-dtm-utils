@@ -1,0 +1,13 @@
+id: PovoleniNakladaniNebezpecnymOdpadem
+nazev: Povolení nakládání s nebezpečným odpadem
+namespace: atr
+popis: Povolení nakládání s nebezpečným odpadem
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: povoleno
+ - hodnota: 2
+   popis: bez povolení
+ - hodnota: 99
+   popis: nezjištěno

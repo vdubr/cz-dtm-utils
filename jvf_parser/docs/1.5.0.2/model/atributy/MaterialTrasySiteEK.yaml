@@ -1,0 +1,15 @@
+id: MaterialTrasySiteEK
+nazev: Materiál trasy sítě EK
+namespace: atr
+popis: Materiál trasy sítě elektronických komunikací
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: metalická
+ - hodnota: 2
+   popis: optická
+ - hodnota: 3
+   popis: metalická + optická
+ - hodnota: 99
+   popis: nezjištěno

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ukázka ŽXML 1.5.1.6 — minimální (smyšlená data, generuje scripts/zxml/samplegen.py) -->
+<objtyp:JVFDTM xmlns:atr="atr" xmlns:atrsz="atrsz" xmlns:baliza="baliza" xmlns:brzda="brzda" xmlns:cmn="cmn" xmlns:naspol="naspol" xmlns:ns5="http://www.opengis.net/gml/3.2" xmlns:objtyp="objtyp" xmlns:sklbod="sklbod">
+  <objtyp:DataJVFDTM>
+    <cmn:VerzeJVFDTM>1.5.0.2</cmn:VerzeJVFDTM>
+    <cmn:VerzeZXML>1.5.1.6</cmn:VerzeZXML>
+    <cmn:DatumZapisu>2026-11-01T10:00:00</cmn:DatumZapisu>
+    <cmn:TypZapisu>změnové věty</cmn:TypZapisu>
+    <objtyp:Data>
+      <objtyp:NastupistePlocha>
+        <naspol:ObjektovyKod>53</naspol:ObjektovyKod>
+        <naspol:ObjektovyTypNazev code_base="0100000053" code_suffix="03">nástupiště</naspol:ObjektovyTypNazev>
+        <naspol:KategorieObjektu>Dopravní stavby</naspol:KategorieObjektu>
+        <naspol:SkupinaObjektu>Dopravní stavba společná pro více skupin</naspol:SkupinaObjektu>
+        <naspol:ObsahovaCast>ZPS</naspol:ObsahovaCast>
+        <naspol:ZaznamyObjektu>
+          <naspol:ZaznamObjektuIns>
+            <naspol:AtributyObjektu>
+              <naspol:SpolecneAtributyObjektuZPS>
+                <atr:UrovenUmisteniObjektuZPS>0</atr:UrovenUmisteniObjektuZPS>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+              </naspol:SpolecneAtributyObjektuZPS>
+              <naspol:SpolecneAtributyObjektuZPSSZ>
+                <atrsz:SynchronizaceDatDoISDTMKraju>101503</atrsz:SynchronizaceDatDoISDTMKraju>
+              </naspol:SpolecneAtributyObjektuZPSSZ>
+              <atrsz:TypNastupiste>100486</atrsz:TypNastupiste>
+              <atr:PrevazujiciPovrch>1</atr:PrevazujiciPovrch>
+            </naspol:AtributyObjektu>
+            <naspol:GeometrieObjektu>
+              <cmn:Plocha2D>
+                <ns5:Polygon ns5:id="ID00001" srsName="EPSG:5514" srsDimension="2">
+                  <ns5:exterior>
+                    <ns5:LinearRing>
+                      <ns5:posList>-758656.53 -1060365.59 -758544.06 -1060323.75 -758545.10 -1060320.94 -758657.58 -1060362.78 -758656.53 -1060365.59</ns5:posList>
+                    </ns5:LinearRing>
+                  </ns5:exterior>
+                </ns5:Polygon>
+              </cmn:Plocha2D>
+              <cmn:Obvod3D>
+                <ns5:LineString ns5:id="ID00002" srsName="EPSG:5514" srsDimension="3">
+                  <ns5:posList>-758656.53 -1060365.59 213.28 -758544.06 -1060323.75 213.52 -758545.10 -1060320.94 213.52 -758657.58 -1060362.78 213.28 -758656.53 -1060365.59 213.28</ns5:posList>
+                </ns5:LineString>
+              </cmn:Obvod3D>
+            </naspol:GeometrieObjektu>
+          </naspol:ZaznamObjektuIns>
+        </naspol:ZaznamyObjektu>
+      </objtyp:NastupistePlocha>
+      <objtyp:Baliza>
+        <baliza:ObjektovyKod>100447</baliza:ObjektovyKod>
+        <baliza:ObjektovyTypNazev code_base="9990000447" code_suffix="01">Balíza (do 1,0 m délky)</baliza:ObjektovyTypNazev>
+        <baliza:KategorieObjektu>Stavby technické infrastruktury</baliza:KategorieObjektu>
+        <baliza:SkupinaObjektu>Zabezpečovací zařízení umístěné v kolejišti</baliza:SkupinaObjektu>
+        <baliza:ObsahovaCast>ZDT</baliza:ObsahovaCast>
+        <baliza:ZaznamyObjektu>
+          <baliza:ZaznamObjektuIns>
+            <baliza:AtributyObjektu>
+              <baliza:SpolecneAtributyObjektuZDTSZ>
+                <atr:ZpusobPorizeniTI>1</atr:ZpusobPorizeniTI>
+                <atr:StavObjektu>1</atr:StavObjektu>
+                <atrsz:SpravceTI>100752</atrsz:SpravceTI>
+                <atr:TridaPresnostiPoloha>3</atr:TridaPresnostiPoloha>
+                <atr:TridaPresnostiVyska>3</atr:TridaPresnostiVyska>
+                <atr:UrovenUmisteniObjektuTI>0</atr:UrovenUmisteniObjektuTI>
+                <atrsz:SpravceTISZ>101038</atrsz:SpravceTISZ>
+                <atrsz:ZdrojDatTI>101470</atrsz:ZdrojDatTI>
+                <atrsz:StatusHarmonizaceDatTI>101486</atrsz:StatusHarmonizaceDatTI>
+              </baliza:SpolecneAtributyObjektuZDTSZ>
+              <atrsz:TypBalizy>100151</atrsz:TypBalizy>
+              <atrsz:Natoceni>20</atrsz:Natoceni>
+            </baliza:AtributyObjektu>
+            <baliza:GeometrieObjektu>
+              <cmn:Bod3D>
+                <ns5:pointProperty>
+                  <ns5:Point ns5:id="ID00003" srsName="EPSG:5514" srsDimension="3">
+                    <ns5:pos>-758673.88 -1060376.31 213.24</ns5:pos>
+                  </ns5:Point>
+                </ns5:pointProperty>
+              </cmn:Bod3D>
+            </baliza:GeometrieObjektu>
+          </baliza:ZaznamObjektuIns>
+        </baliza:ZaznamyObjektu>
+      </objtyp:Baliza>
+      <objtyp:Brzda>
+        <brzda:ObjektovyKod>100461</brzda:ObjektovyKod>
+        <brzda:ObjektovyTypNazev code_base="9990000461" code_suffix="02">Brzda</brzda:ObjektovyTypNazev>
+        <brzda:KategorieObjektu>Dopravní stavby</brzda:KategorieObjektu>
+        <brzda:SkupinaObjektu>Brzdy</brzda:SkupinaObjektu>
+        <brzda:ObsahovaCast>ZDD</brzda:ObsahovaCast>
+        <brzda:ZaznamyObjektu>
+          <brzda:ZaznamObjektuUpd>
+            <brzda:AtributyObjektu>
+              <brzda:SpolecneAtributyVsechObjektu>
+                <atr:ID>900000001</atr:ID>
+              </brzda:SpolecneAtributyVsechObjektu>
+            </brzda:AtributyObjektu>
+            <brzda:GeometrieObjektu>
+              <cmn:Linie3D>
+                <ns5:curveProperty>
+                  <ns5:LineString ns5:id="ID00004" srsName="EPSG:5514" srsDimension="3">
+                    <ns5:posList>-758486.43 -1060306.58 213.64 -758458.31 -1060296.13 213.70</ns5:posList>
+                  </ns5:LineString>
+                </ns5:curveProperty>
+              </cmn:Linie3D>
+            </brzda:GeometrieObjektu>
+          </brzda:ZaznamObjektuUpd>
+        </brzda:ZaznamyObjektu>
+      </objtyp:Brzda>
+      <objtyp:SklepBod>
+        <sklbod:ObjektovyKod>100582</sklbod:ObjektovyKod>
+        <sklbod:ObjektovyTypNazev code_base="9990000582" code_suffix="01">Sklep - bod</sklbod:ObjektovyTypNazev>
+        <sklbod:KategorieObjektu>Konsolidace dat</sklbod:KategorieObjektu>
+        <sklbod:SkupinaObjektu>Sklep</sklbod:SkupinaObjektu>
+        <sklbod:ObsahovaCast>SKLEP</sklbod:ObsahovaCast>
+        <sklbod:ZaznamyObjektu>
+          <sklbod:ZaznamObjektuDel>
+            <sklbod:AtributyObjektu>
+              <sklbod:SpolecneAtributyVsechObjektu>
+                <atr:ID>900000002</atr:ID>
+              </sklbod:SpolecneAtributyVsechObjektu>
+            </sklbod:AtributyObjektu>
+          </sklbod:ZaznamObjektuDel>
+        </sklbod:ZaznamyObjektu>
+      </objtyp:SklepBod>
+    </objtyp:Data>
+    <cmn:StaniceniData>
+      <cmn:StaniceniInfo>
+        <cmn:ID>900000001</cmn:ID>
+        <cmn:Staniceni>
+          <cmn:TypStaniceni>1</cmn:TypStaniceni>
+          <cmn:ZpusobVypoctu>0</cmn:ZpusobVypoctu>
+          <cmn:GeometrieObjektu>
+            <cmn:Bod3D>
+              <ns5:pointProperty>
+                <ns5:Point ns5:id="ID00005" srsName="EPSG:5514" srsDimension="3">
+                  <ns5:pos>-758486.43 -1060306.58 213.64</ns5:pos>
+                </ns5:Point>
+              </ns5:pointProperty>
+            </cmn:Bod3D>
+          </cmn:GeometrieObjektu>
+          <cmn:TUDU>351102</cmn:TUDU>
+          <cmn:Staniceni>22.418</cmn:Staniceni>
+          <cmn:DatumVypoctu>2026-11-01T10:00:00</cmn:DatumVypoctu>
+          <cmn:DatumPlatnostiOd>2026-11-23T00:00:00</cmn:DatumPlatnostiOd>
+          <cmn:DatumPlatnostiDo>9999-12-31T00:00:00</cmn:DatumPlatnostiDo>
+        </cmn:Staniceni>
+      </cmn:StaniceniInfo>
+    </cmn:StaniceniData>
+  </objtyp:DataJVFDTM>
+</objtyp:JVFDTM>

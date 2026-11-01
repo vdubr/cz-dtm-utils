@@ -1,0 +1,19 @@
+id: TypDopravneVyznamnehoMistaDraze
+nazev: Typ dopravně významného místa na dráze
+namespace: atr
+popis: Typ dopravně významného místa na dráze
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: stanice
+ - hodnota: 2
+   popis: zastávka
+ - hodnota: 3
+   popis: odbočka
+ - hodnota: 4
+   popis: nákladiště
+ - hodnota: 98
+   popis: jiné
+ - hodnota: 99
+   popis: nezjištěno

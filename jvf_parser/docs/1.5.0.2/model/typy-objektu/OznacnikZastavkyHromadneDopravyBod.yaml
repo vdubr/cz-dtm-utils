@@ -1,0 +1,244 @@
+id: OznacnikZastavkyHromadneDopravyBod
+namespace: oznbod
+nazev: označník zastávky hromadné dopravy
+skupinaPrvku: DopravniStavbaSpolecnaProViceSkupin
+obsahovaCast: DI
+typGeometrie: Bod
+code:
+  base: "0100000374"
+  suffix: "01"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuDI
+   typ: sada
+   sada: SpolecneAtributyObjektuDI
+ - id: UmisteniOznacniku
+   typ: atribut
+   volitelny: false
+   atribut: UmisteniOznacniku
+ - id: DruhHromadneDopravy
+   typ: atribut
+   volitelny: false
+   atribut: DruhHromadneDopravy
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuBod3D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: UmisteniOznacniku
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: DruhHromadneDopravy
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

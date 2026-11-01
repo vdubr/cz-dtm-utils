@@ -12,6 +12,12 @@ export interface EntityMeta {
     geomType: GeomKind;
     geomOptional: boolean;
     hasOblastKI: boolean;
+    /** Dialekt, ze kterého objekt pochází; u objektů JVF DTM chybí. */
+    origin?: string;
+    /** Kód objektu v datovém modelu dialektu (ŽXML `ObjektovyKod`). */
+    objektovyKod?: string;
+    /** Sdílená skupina atributů dialektu (ŽXML `SpolecneAtributyObjektu…SZ`). */
+    dialectAttrGroup?: string;
 }
 export interface BodovyPrvekNaBudoveAttrs {
     DatumKontroly?: string;
@@ -7335,7 +7341,7 @@ export interface ZemedelskaPlochaPlochaAttrs {
     VstupDoDTM?: boolean;
     ZpusobPorizeniZPS?: number;
 }
-/** Catalog of all 470 JVF DTM entity types, keyed by XML element name */
+/** Catalog of all 470 UDM 2.1.1 entity types, keyed by XML element name */
 export declare const ENTITY_CATALOG: Record<string, EntityMeta>;
 /** Map of element names to their specific attribute interface types */
 export type EntityAttrsMap = {

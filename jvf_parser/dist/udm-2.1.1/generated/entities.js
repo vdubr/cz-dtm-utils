@@ -1,6 +1,6 @@
 // Auto-generated from UDM 2.1.1 XSD — DO NOT EDIT
 // Run: npx tsx scripts/generate-types.ts <version>
-/** Catalog of all 470 JVF DTM entity types, keyed by XML element name */
+/** Catalog of all 470 UDM 2.1.1 entity types, keyed by XML element name */
 export const ENTITY_CATALOG = {
     "BodovyPrvekNaBudove": {
         elementName: "BodovyPrvekNaBudove",
@@ -15,6 +15,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "BPPlynovodniSite": {
         elementName: "BPPlynovodniSite",
@@ -281,6 +282,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "DopravneVyznamneMistoDrazeBod": {
         elementName: "DopravneVyznamneMistoDrazeBod",
@@ -365,6 +367,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "DopravniZarizeniLinie": {
         elementName: "DopravniZarizeniLinie",
@@ -379,6 +382,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "DrazniDopravaKoridorZameruLinie": {
         elementName: "DrazniDopravaKoridorZameruLinie",
@@ -575,6 +579,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "DvurNadvoriDefinicniBod": {
         elementName: "DvurNadvoriDefinicniBod",
@@ -757,6 +762,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "HeliportBod": {
         elementName: "HeliportBod",
@@ -1093,6 +1099,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "HydrantVodovodniSiteBod": {
         elementName: "HydrantVodovodniSiteBod",
@@ -1135,6 +1142,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "JaderneZarizeniBod": {
         elementName: "JaderneZarizeniBod",
@@ -1457,6 +1465,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "Ker": {
         elementName: "Ker",
@@ -1471,6 +1480,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "Kolektor": {
         elementName: "Kolektor",
@@ -1541,6 +1551,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "LesDefinicniBod": {
         elementName: "LesDefinicniBod",
@@ -1695,6 +1706,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ManipulacniPlochaDefinicniBod": {
         elementName: "ManipulacniPlochaDefinicniBod",
@@ -1779,6 +1791,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "MostniVahaDefinicniBod": {
         elementName: "MostniVahaDefinicniBod",
@@ -1933,6 +1946,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "NeidentifikovanyObjekt": {
         elementName: "NeidentifikovanyObjekt",
@@ -1961,6 +1975,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "NosicTechnickehoZarizeni": {
         elementName: "NosicTechnickehoZarizeni",
@@ -2003,6 +2018,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektZeleznicniDopravy": {
         elementName: "ObjektZeleznicniDopravy",
@@ -2017,6 +2033,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektLanoveDopravy": {
         elementName: "ObjektLanoveDopravy",
@@ -2031,6 +2048,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMEK": {
         elementName: "ObjektNadRamecDTMEK",
@@ -2045,6 +2063,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMElektrickeVedeni": {
         elementName: "ObjektNadRamecDTMElektrickeVedeni",
@@ -2059,6 +2078,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMStokovesite": {
         elementName: "ObjektNadRamecDTMStokovesite",
@@ -2073,6 +2093,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMKolektory": {
         elementName: "ObjektNadRamecDTMKolektory",
@@ -2087,6 +2108,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMPlynovody": {
         elementName: "ObjektNadRamecDTMPlynovody",
@@ -2101,6 +2123,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMProduktovody": {
         elementName: "ObjektNadRamecDTMProduktovody",
@@ -2115,6 +2138,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMTeplovody": {
         elementName: "ObjektNadRamecDTMTeplovody",
@@ -2129,6 +2153,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMVodovody": {
         elementName: "ObjektNadRamecDTMVodovody",
@@ -2143,6 +2168,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektNadRamecDTMZarizeniStaveb": {
         elementName: "ObjektNadRamecDTMZarizeniStaveb",
@@ -2157,6 +2183,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektOdvodneniStavbyBod": {
         elementName: "ObjektOdvodneniStavbyBod",
@@ -2241,6 +2268,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektTrolejbusoveDopravy": {
         elementName: "ObjektTrolejbusoveDopravy",
@@ -2255,6 +2283,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektVodovodniSiteBod": {
         elementName: "ObjektVodovodniSiteBod",
@@ -2297,6 +2326,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObjektZarizeniOchranaPredPovodnemiBod": {
         elementName: "ObjektZarizeniOchranaPredPovodnemiBod",
@@ -2367,6 +2397,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ObvodPozemniKomunikace": {
         elementName: "ObvodPozemniKomunikace",
@@ -2507,6 +2538,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "OPDalniceProReklamniZarizeni": {
         elementName: "OPDalniceProReklamniZarizeni",
@@ -2829,6 +2861,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "OsaKolejePozemniLanoveDrahy": {
         elementName: "OsaKolejePozemniLanoveDrahy",
@@ -2969,6 +3002,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "OsaTramvajoveDrahy": {
         elementName: "OsaTramvajoveDrahy",
@@ -3011,6 +3045,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "OstatniZastresenaStavbaDefinicniBod": {
         elementName: "OstatniZastresenaStavbaDefinicniBod",
@@ -3333,6 +3368,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PodrobnyBodDI": {
         elementName: "PodrobnyBodDI",
@@ -3347,6 +3383,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PodrobnyBodKod": {
         elementName: "PodrobnyBodKod",
@@ -3361,6 +3398,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PodrobnyBodTI": {
         elementName: "PodrobnyBodTI",
@@ -3375,6 +3413,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PodrobnyBodVyska": {
         elementName: "PodrobnyBodVyska",
@@ -3389,6 +3428,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PodrobnyBodZPS": {
         elementName: "PodrobnyBodZPS",
@@ -3417,6 +3457,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PodzemniObjektZPSDefinicniBod": {
         elementName: "PodzemniObjektZPSDefinicniBod",
@@ -3459,6 +3500,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PopisySmeru": {
         elementName: "PopisySmeru",
@@ -3473,6 +3515,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PopisyTI": {
         elementName: "PopisyTI",
@@ -3487,6 +3530,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PopisyZPS": {
         elementName: "PopisyZPS",
@@ -3501,6 +3545,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "PortalPodchoduDefinicniBod": {
         elementName: "PortalPodchoduDefinicniBod",
@@ -3837,6 +3882,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ProtihlukovaStena": {
         elementName: "ProtihlukovaStena",
@@ -4075,6 +4121,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "RampaDefinicniBod": {
         elementName: "RampaDefinicniBod",
@@ -4173,6 +4220,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SdilenaStavbaTIKoridorZameruLinie": {
         elementName: "SdilenaStavbaTIKoridorZameruLinie",
@@ -4243,6 +4291,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypAVystrazneZeleznice": {
         elementName: "SDZTypAVystrazneZeleznice",
@@ -4257,6 +4306,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypBZakazove": {
         elementName: "SDZTypBZakazove",
@@ -4271,6 +4321,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypCPrikazove": {
         elementName: "SDZTypCPrikazove",
@@ -4285,6 +4336,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypEDodatkove": {
         elementName: "SDZTypEDodatkove",
@@ -4299,6 +4351,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypIJInformativniJine": {
         elementName: "SDZTypIJInformativniJine",
@@ -4313,6 +4366,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypIPInformativniProvozni": {
         elementName: "SDZTypIPInformativniProvozni",
@@ -4327,6 +4381,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypIPPInformativniProvozniParkoviste": {
         elementName: "SDZTypIPPInformativniProvozniParkoviste",
@@ -4341,6 +4396,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypISNInformativniSmeroveNavesti": {
         elementName: "SDZTypISNInformativniSmeroveNavesti",
@@ -4355,6 +4411,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypISInformativniSmeroveOstatni": {
         elementName: "SDZTypISInformativniSmeroveOstatni",
@@ -4369,6 +4426,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypISSInformativniSmeroveSmerovky": {
         elementName: "SDZTypISSInformativniSmeroveSmerovky",
@@ -4383,6 +4441,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypIZInformativniZonove": {
         elementName: "SDZTypIZInformativniZonove",
@@ -4397,6 +4456,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SDZTypPPrednosti": {
         elementName: "SDZTypPPrednosti",
@@ -4411,6 +4471,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SilnicniDopravaKoridorZameruLinie": {
         elementName: "SilnicniDopravaKoridorZameruLinie",
@@ -4677,6 +4738,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "StaniceElektrickeSiteBod": {
         elementName: "StaniceElektrickeSiteBod",
@@ -4719,6 +4781,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "StavbaProPesiPS": {
         elementName: "StavbaProPesiPS",
@@ -4859,6 +4922,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "StudnaNaVerejnemProstranstvi": {
         elementName: "StudnaNaVerejnemProstranstvi",
@@ -4957,6 +5021,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "SvetelneMisto": {
         elementName: "SvetelneMisto",
@@ -4971,6 +5036,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "Svodidlo": {
         elementName: "Svodidlo",
@@ -5363,6 +5429,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "TrasaMistniElektrickeSite": {
         elementName: "TrasaMistniElektrickeSite",
@@ -5587,6 +5654,7 @@ export const ENTITY_CATALOG = {
         geomType: "surface",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "UdrzovanaPlochaZeleneDefinicniBod": {
         elementName: "UdrzovanaPlochaZeleneDefinicniBod",
@@ -5657,6 +5725,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "VegetacniMisaDefinicniBod": {
         elementName: "VegetacniMisaDefinicniBod",
@@ -5895,6 +5964,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "VodorovneDopravniZnaceniBod": {
         elementName: "VodorovneDopravniZnaceniBod",
@@ -5909,6 +5979,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "VodorovneDopravniZnaceniLinie": {
         elementName: "VodorovneDopravniZnaceniLinie",
@@ -5923,6 +5994,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "VodorovneDopravniZnaceniPlocha": {
         elementName: "VodorovneDopravniZnaceniPlocha",
@@ -5937,6 +6009,7 @@ export const ENTITY_CATALOG = {
         geomType: "surface",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "VodovodKoridorZameruLinie": {
         elementName: "VodovodKoridorZameruLinie",
@@ -6021,6 +6094,7 @@ export const ENTITY_CATALOG = {
         geomType: "curve",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "VrstevnicePopis": {
         elementName: "VrstevnicePopis",
@@ -6035,6 +6109,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "Vrt": {
         elementName: "Vrt",
@@ -6203,6 +6278,7 @@ export const ENTITY_CATALOG = {
         geomType: "surface",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ZakladaniASanace": {
         elementName: "ZakladaniASanace",
@@ -6217,6 +6293,7 @@ export const ENTITY_CATALOG = {
         geomType: "point",
         geomOptional: false,
         hasOblastKI: false,
+        origin: "udm",
     },
     "ZarizeniElektrickeSite": {
         elementName: "ZarizeniElektrickeSite",

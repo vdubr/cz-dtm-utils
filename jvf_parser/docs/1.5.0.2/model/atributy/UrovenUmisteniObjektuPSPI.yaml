@@ -1,0 +1,13 @@
+id: UrovenUmisteniObjektuPSPI
+nazev: Úroveň umístění objektu PSPI
+namespace: atr
+popis: Úroveň umístění objektu PSPI vzhledem k povrchu
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: -1
+   popis: pod povrchem
+ - hodnota: 0
+   popis: na povrchu
+ - hodnota: 1
+   popis: nad povrchem

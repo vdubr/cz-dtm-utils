@@ -10,6 +10,11 @@ export interface ParseOptions1501 {
     parseAttributes?: AttributeParser;
     /** Varovat při nepodporované `VerzeJVFDTM` (default `true`). */
     warnUnsupportedVersion?: boolean;
+    /**
+     * Data dokumentu nad rámec JVF DTM (dialekty) — dostane surový element
+     * `DataJVFDTM`, výsledek se uloží do `JvfDtm.ext` (např. staničení ŽXML).
+     */
+    parseDocumentExtras?: (dataJvfDtm: Record<string, unknown>) => JvfDtm['ext'] | undefined;
 }
 export declare function parseJvfDtm1501(xml: string, options?: ParseOptions1501): JvfDtm;
 export {};

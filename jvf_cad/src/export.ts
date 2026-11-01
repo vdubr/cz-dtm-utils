@@ -1,5 +1,7 @@
 /**
- * Export JVF DTM / UDM do DXF ve vzhledu UDM (Univerzální datový model ČKZ).
+ * Export JVF DTM a dialektů do DXF ve vzhledu dialektu: ŽXML → symbologie SŽ
+ * (fotokatalog MOZeK), UDM i čisté JVF DTM → vzhled UDM (Univerzální datový
+ * model ČKZ, pokrývá všechny objekty DTM).
  *
  * - hladina = obsahová část + objektový typ (`ZPS_HraniceBudovy`, mazané
  *   záznamy `…_DEL`), barva / tloušťka / typ čáry hladiny = vzhled UDM;
@@ -13,15 +15,17 @@
  * Souřadnice beze změny (EPSG:5514, metry), měřítko symbolů a textů 1:500.
  */
 import {
+  UDM_STYLES,
+  getStyleTable,
   labelForAttribute,
-  resolveUdmAppearance,
-  resolveUdmRepresentativeAppearance,
-  type JvfVersion,
-  type UdmAppearance,
+  resolveAppearance,
+  resolveRepresentativeAppearance,
+  type Appearance,
+  type StyleTable,
 } from 'jvf-parser';
 import type { Geometry, JvfDtm, ObjektovyTyp, ZaznamObjektu } from 'jvf-dtm-types';
 import { DxfDocument, type DxfVersion, type EntityStyle, type Vertex2 } from './dxf/document.js';
-import { UDM_CAD_SYMBOLS, type CadSymbolPrimitive } from './symbols.js';
+import { CAD_SYMBOLS, blockNameFor, type CadSymbolPrimitive } from './symbols.js';
 import { textHeightFor, isTextObject } from './text.js';
 
 export interface ExportDxfOptions {
@@ -31,6 +35,11 @@ export interface ExportDxfOptions {
   includeDeleted?: boolean;
   /** Zapsat geometrii ve 2D (výška 0) místo 3D (výchozí `false`). */
   flatten2D?: boolean;
+  /**
+   * Tabulka vzhledu (výchozí podle `dtm.verze`: dialekt → jeho styly,
+   * čisté JVF DTM → styly UDM).
+   */
+  styles?: StyleTable;
 }
 
 /** Statistika exportu (pro UI / testy). */
@@ -87,7 +96,7 @@ function xdataFor(ot: ObjektovyTyp, zaznam: ZaznamObjektu, version: string): str
   if (c.popisObjektu) out.push(`PopisObjektu=${c.popisObjektu}`);
   for (const [k, v] of Object.entries(zaznam.attributes)) {
     if (v === null || v === '') continue;
-    const label = labelForAttribute(k, v, version as JvfVersion);
+    const label = labelForAttribute(k, v, version);
     out.push(label !== undefined ? `${k}=${v} (${label})` : `${k}=${v}`);
   }
   return out;
@@ -108,6 +117,7 @@ export function exportDxf(dtm: JvfDtm, options: ExportDxfOptions = {}): ExportDx
   const version = options.version ?? 'R2013';
   const flatten = options.flatten2D ?? false;
   const doc = new DxfDocument(version);
+  const styles = options.styles ?? getStyleTable(dtm.verze) ?? UDM_STYLES;
   let entities = 0;
   let skipped = 0;
 
@@ -121,15 +131,15 @@ export function exportDxf(dtm: JvfDtm, options: ExportDxfOptions = {}): ExportDx
   };
 
   const ensureBlock = (symbol: string): string | undefined => {
-    const prims = UDM_CAD_SYMBOLS[symbol];
+    const prims = CAD_SYMBOLS[symbol];
     if (!prims) return undefined;
-    const name = `UDM_${safeName(symbol)}`;
+    const name = safeName(blockNameFor(symbol));
     if (!doc.hasBlock(name)) doc.addBlock(name, (owner) => blockEntities(doc, prims, owner));
     return name;
   };
 
   for (const ot of dtm.objekty) {
-    const rep: UdmAppearance = resolveUdmRepresentativeAppearance(ot) ?? {};
+    const rep: Appearance = resolveRepresentativeAppearance(styles, ot) ?? {};
     const layerColor = rep.color ?? BLACK;
     const layerLw = lineweight(rep.widthMm);
     const layerLt = ensureLinetype(rep.dashMm) ?? 'Continuous';
@@ -141,7 +151,7 @@ export function exportDxf(dtm: JvfDtm, options: ExportDxfOptions = {}): ExportDx
       doc.addLayer(layer, layerColor, layerLw, layerLt);
 
       // Vzhled záznamu (pravidla podle číselníků) jako přepis hladiny.
-      const app = resolveUdmAppearance(ot, zaznam) ?? {};
+      const app = resolveAppearance(styles, ot, zaznam) ?? {};
       const style: EntityStyle = { layer, xdata: xdataFor(ot, zaznam, dtm.verze) };
       const color = app.color ?? layerColor;
       if (color !== layerColor) style.color = color;
@@ -150,7 +160,8 @@ export function exportDxf(dtm: JvfDtm, options: ExportDxfOptions = {}): ExportDx
       const lt = ensureLinetype(app.dashMm) ?? layerLt;
       if (lt !== layerLt) style.linetype = lt;
 
-      const rotation = Number(zaznam.attributes['Natoceni'] ?? 0) || 0;
+      // Natočení symbolu/textu: atribut ze stylu (ŽXML), jinak `Natoceni` (UDM).
+      const rotation = Number(zaznam.attributes[app.rotationAttr ?? 'Natoceni'] ?? 0) || 0;
       for (const geom of zaznam.geometrie) {
         const n = writeGeometry(doc, geom, style, {
           flatten,

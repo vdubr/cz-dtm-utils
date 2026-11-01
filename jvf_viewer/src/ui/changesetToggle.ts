@@ -1,4 +1,4 @@
-import { isUdmVersion, type JvfDtm } from 'jvf-parser';
+import { dialectOf, type JvfDtm } from 'jvf-parser';
 import {
   isShowZapis,
   setShowZapis,
@@ -116,7 +116,7 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
         }
       }
     }
-    if (hasChangeset && !isUdmVersion(dtm.verze)) highlightDefault = true;
+    if (hasChangeset && dialectOf(dtm.verze)?.id !== 'udm') highlightDefault = true;
   }
   setHighlightZapis(highlightDefault);
   const highlightCheckbox = getHighlightCheckbox();

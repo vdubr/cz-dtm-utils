@@ -1,51 +1,59 @@
 /**
- * Centrální definice podporovaných verzí JVF DTM.
+ * Centrální definice podporovaných verzí JVF DTM a jejich dialektů.
  *
- * `SUPPORTED_VERSIONS` je seznam všech verzí specifikace, pro které má
- * monorepo (parser, topologie, viewer) implementaci. Po přidání další verze
- * stačí rozšířit toto pole — UI version selector ve vieweru se generuje
- * z této konstanty.
+ * `JVF_VERSIONS` jsou verze specifikace JVF DTM (ČÚZK), pro které má monorepo
+ * implementaci. Verze dialektů (UDM, ŽXML) jsou v registru `dialects.ts`.
+ * `JvfVersion` = id libovolného podporovaného datového modelu — po
+ * parsování nese vyřešené id `JvfDtm.verze` (router parseru).
  *
- * `DEFAULT_VERSION` je výchozí volba (fallback pro neznámou/nedetekovanou
- * verzi) — používá se jako default routeru parseru a jako "active version"
- * pro validaci, jestli vstupní JVF soubor odpovídá aktuálně aktivnímu režimu
- * aplikace. Záměrně zůstává `1.4.3` (auto-detekce podle `<VerzeJVFDTM>`
- * v souboru řeší reálné 1.5.0.1 soubory sama — viz router R4).
+ * `1.5.0.2` je produkční verze IS DMVS od 18. 11. 2026; `1.5.0.1` (opravená
+ * verzí 1.5.0.2, do produkce nenasazena) se dál přijímá.
  */
-export const SUPPORTED_VERSIONS = ['1.4.3', '1.5.0.1'];
+import { DIALECTS, dialectOf, isDialectVersion, rawDialectVersion, } from './dialects.js';
+export const JVF_VERSIONS = ['1.4.3', '1.5.0.1', '1.5.0.2'];
 /**
- * Podporované verze **UDM** (Univerzální datový model ČKZ) — nadmnožina
- * JVF DTM (objekty `94…`, rozšířené atributy a číselníky `ckz_*`).
- *
- * Drženo **odděleně** od `SUPPORTED_VERSIONS`: ta popisuje verze JVF DTM
- * a viewer bere její poslední prvek jako výchozí aktivní verzi. Id má tvar
- * `udm-<verze UDM>` (např. `udm-2.1.1` ↔ `<cmn:VerzeJVFUDM>2.1.1`).
+ * Verze JVF DTM (bez dialektů). Viewer bere poslední prvek jako výchozí
+ * verzi režimu JVF.
+ * @deprecated použij `JVF_VERSIONS`.
  */
-export const UDM_VERSIONS = ['udm-2.1.1'];
+export const SUPPORTED_VERSIONS = JVF_VERSIONS;
+/**
+ * Výchozí verze — fallback pro nedetekovatelnou strukturu (router) a výchozí
+ * argument `labelForAttribute`.
+ */
 export const DEFAULT_VERSION = '1.4.3';
-/** Nejnovější podporovaná verze UDM (fallback pro neznámou `VerzeJVFUDM`). */
-export const LATEST_UDM_VERSION = 'udm-2.1.1';
+/** Nejnovější podporovaná verze JVF DTM. */
+export const LATEST_JVF_VERSION = '1.5.0.2';
+export function isJvfBaseVersion(v) {
+    return JVF_VERSIONS.includes(v);
+}
 /**
- * Type guard — ověří, že daný řetězec je jedna z podporovaných verzí
- * (JVF DTM i UDM). Používá se při čtení `verze` z parsovaného souboru.
+ * Type guard — ověří, že daný řetězec je id podporovaného datového modelu
+ * (JVF DTM i dialekty).
  */
 export function isSupportedVersion(v) {
-    return (SUPPORTED_VERSIONS.includes(v) ||
-        UDM_VERSIONS.includes(v));
+    return isJvfBaseVersion(v) || isDialectVersion(v);
 }
-/** Je id verze UDM (`udm-…`)? */
-export function isUdmVersion(v) {
-    return UDM_VERSIONS.includes(v);
-}
-/** Id verze UDM z hodnoty `<VerzeJVFUDM>` (např. `2.1.1` → `udm-2.1.1`). */
-export function udmVersionId(verzeJvfUdm) {
-    return `udm-${verzeJvfUdm.trim()}`;
+/** Všechna podporovaná id (JVF i dialekty) — pro hlášky a výběry v UI. */
+export function allSupportedVersions() {
+    return [...JVF_VERSIONS, ...DIALECTS.flatMap((d) => d.versions)];
 }
 /**
- * Čitelný popisek verze pro UI: `1.5.0.1` → `JVF 1.5.0.1`,
- * `udm-2.1.1` → `UDM 2.1.1`.
+ * Verze JVF DTM, nad kterou je id postaveno (`zxml-1.4.2.1` → `1.4.3`,
+ * `1.5.0.2` → `1.5.0.2`). Neznámé id → `undefined`.
+ */
+export function baseJvfVersionOf(v) {
+    if (isJvfBaseVersion(v))
+        return v;
+    const d = dialectOf(v);
+    return d?.baseJvfVersion[v];
+}
+/**
+ * Čitelný popisek verze pro UI: `1.5.0.2` → `JVF 1.5.0.2`,
+ * `udm-2.1.1` → `UDM 2.1.1`, `zxml-1.5.1.6` → `ŽXML 1.5.1.6`.
  */
 export function formatVersionLabel(v) {
-    return v.startsWith('udm-') ? `UDM ${v.slice(4)}` : `JVF ${v}`;
+    const d = dialectOf(v);
+    return d ? `${d.label} ${rawDialectVersion(v)}` : `JVF ${v}`;
 }
 //# sourceMappingURL=versions.js.map

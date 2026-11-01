@@ -23,6 +23,12 @@ export const SJTSK_BOUNDS = {
 /** Rozsah výšek Z pro ZPS (m n. m.) */
 export const Z_BOUNDS_ZPS = { min: 1.0, max: 1620.0 } as const;
 
+/**
+ * Obsahové části, u kterých se kontroluje rozsah Z (kontrola 1.5): ZPS,
+ * u UDM `ZPSUDM`, u ŽXML `H3D` (3D hrany doplňující kresbu ZPS).
+ */
+export const Z_CHECKED_CASTS: ReadonlySet<string> = new Set(['ZPS', 'ZPSUDM', 'H3D']);
+
 /** Rozsah výšek Z pro definiční body (m n. m.) */
 export const Z_BOUNDS_DEFBOD = { min: 0.0, max: 1620.0 } as const;
 

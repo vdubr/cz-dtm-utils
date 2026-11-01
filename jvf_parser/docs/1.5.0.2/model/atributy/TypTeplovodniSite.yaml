@@ -1,0 +1,15 @@
+id: TypTeplovodniSite
+nazev: Typ teplovodní sítě
+namespace: atr
+popis: Typ teplovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: teplovod
+ - hodnota: 2
+   popis: horkovod
+ - hodnota: 3
+   popis: parovod
+ - hodnota: 99
+   popis: nezjištěno

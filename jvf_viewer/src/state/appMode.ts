@@ -3,17 +3,26 @@
  *
  *   - `jvf` — JVF DTM (výchozí): symbologie dle Katalogu ČÚZK, ukázky JVF,
  *   - `udm` — Univerzální datový model ČKZ: symbologie UDM, ukázky UDM,
- *     Export do CAD.
+ *     Export do CAD,
+ *   - `jzm` — Jednotná železniční mapa: data DTMŽ Správy železnic ve
+ *     formátu ŽXML, symbologie SŽ (fotokatalog MOZeK), Export do CAD.
  *
  * Do jiného režimu se uživatel přepíná vědomě (přepínač v hlavičce, nebo
  * nabídka při načtení souboru jiného modelu); přepnutí zavře načtené projekty.
  * Režim je v URL (`?mode=udm`), takže jde sdílet odkaz; bez parametru se
- * aplikace otevře v JVF. Další režim (např. JŽM) = nová položka `APP_MODES`
- * s vlastní detekcí `matches`.
+ * aplikace otevře v JVF. Režim dialektu se váže na registr dialektů
+ * (`DIALECTS` v jvf-dtm-types) — další režim = nová položka `APP_MODES`.
  */
-import { isUdmVersion, type JvfDtm } from 'jvf-parser';
+import {
+  LATEST_JVF_VERSION,
+  dialectOf,
+  getDialect,
+  type DialectId,
+  type JvfDtm,
+  type JvfVersion,
+} from 'jvf-parser';
 
-export type AppMode = 'jvf' | 'udm';
+export type AppMode = 'jvf' | 'udm' | 'jzm';
 
 export interface AppModeDef {
   id: AppMode;
@@ -21,18 +30,21 @@ export interface AppModeDef {
   label: string;
   /** Plný název (dialogy, nápověda). */
   title: string;
-  /** Patří načtený soubor do tohoto režimu? (`jvf` je záchytný.) */
-  matches(dtm: JvfDtm): boolean;
+  /** Dialekt JVF DTM, se kterým režim pracuje (`undefined` = čisté JVF DTM). */
+  dialect?: DialectId;
+  /** Aktivní verze po přepnutí do režimu (legenda, číselníky). */
+  defaultVersion: JvfVersion;
+}
+
+/** Režim dialektu — název, výchozí verze a detekce souboru z registru dialektů. */
+function dialectMode(id: AppMode, label: string, title: string, dialect: DialectId): AppModeDef {
+  return { id, label, title, dialect, defaultVersion: getDialect(dialect).latest };
 }
 
 export const APP_MODES: readonly AppModeDef[] = [
-  { id: 'jvf', label: 'JVF', title: 'JVF DTM', matches: () => true },
-  {
-    id: 'udm',
-    label: 'UDM',
-    title: 'UDM — Univerzální datový model ČKZ',
-    matches: (dtm) => isUdmVersion(dtm.verze),
-  },
+  { id: 'jvf', label: 'JVF', title: 'JVF DTM', defaultVersion: LATEST_JVF_VERSION },
+  dialectMode('udm', 'UDM', 'UDM — Univerzální datový model ČKZ', 'udm'),
+  dialectMode('jzm', 'JŽM', 'JŽM — Jednotná železniční mapa (ŽXML, DTMŽ Správy železnic)', 'zxml'),
 ];
 
 export const DEFAULT_APP_MODE: AppMode = 'jvf';
@@ -42,10 +54,15 @@ export function appModeDef(mode: AppMode): AppModeDef {
   return APP_MODES.find((m) => m.id === mode)!;
 }
 
-/** Režim, do kterého soubor patří (nejspecifičtější shoda; `jvf` nakonec). */
+/** Režim, do kterého patří verze datového modelu (dialekt → jeho režim, jinak `jvf`). */
+export function appModeForVersion(version: string): AppMode {
+  const dialect = dialectOf(version)?.id;
+  return APP_MODES.find((m) => m.dialect !== undefined && m.dialect === dialect)?.id ?? DEFAULT_APP_MODE;
+}
+
+/** Režim, do kterého soubor patří. */
 export function appModeForDtm(dtm: JvfDtm): AppMode {
-  const specific = APP_MODES.find((m) => m.id !== DEFAULT_APP_MODE && m.matches(dtm));
-  return specific?.id ?? DEFAULT_APP_MODE;
+  return appModeForVersion(dtm.verze);
 }
 
 function isAppMode(v: string | null): v is AppMode {

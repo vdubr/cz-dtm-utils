@@ -30,6 +30,11 @@ export interface ParseOptions1501 {
   parseAttributes?: AttributeParser;
   /** Varovat při nepodporované `VerzeJVFDTM` (default `true`). */
   warnUnsupportedVersion?: boolean;
+  /**
+   * Data dokumentu nad rámec JVF DTM (dialekty) — dostane surový element
+   * `DataJVFDTM`, výsledek se uloží do `JvfDtm.ext` (např. staničení ŽXML).
+   */
+  parseDocumentExtras?: (dataJvfDtm: Record<string, unknown>) => JvfDtm['ext'] | undefined;
 }
 
 function createParser(): XMLParser {
@@ -180,13 +185,16 @@ export function parseJvfDtm1501(xml: string, options: ParseOptions1501 = {}): Jv
   }
 
   const { doprovodneInformace, typDatoveSady } = parseDoprovodneInformace1501(dataJvfDtm);
+  const ext = options.parseDocumentExtras?.(dataJvfDtm);
 
   return {
     verze,
+    verzeJvfDtm: verze,
     datumZapisu,
     typZapisu,
     ...(typDatoveSady !== undefined ? { typDatoveSady } : {}),
     objekty,
     ...(doprovodneInformace !== undefined ? { doprovodneInformace } : {}),
+    ...(ext !== undefined ? { ext } : {}),
   };
 }

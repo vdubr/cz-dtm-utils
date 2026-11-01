@@ -1,0 +1,17 @@
+id: TypOPLeteckychZabezpecovacichZarizeni
+nazev: Typ ochranného pásma leteckých zabezpečovacích zařízení
+namespace: atr
+popis: Typ ochranného pásma leteckých zabezpečovacích zařízení
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: OP přehledového systému
+ - hodnota: 2
+   popis: OP radionavigačního zařízení
+ - hodnota: 3
+   popis: OP radiokomunikačního systému
+ - hodnota: 4
+   popis: OP světelného zařízení
+ - hodnota: 5
+   popis: OP podzemní letecké stavby

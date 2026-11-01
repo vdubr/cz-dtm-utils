@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:atr="atr" xmlns:atrsz="atrsz" xmlns:cmn="cmn" xmlns:gml="http://www.opengis.net/gml/3.2" targetNamespace="zardravod" xmlns:zardravod="zardravod" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="../common/atributy.xsd" namespace="atr"/>
+  <xs:import schemaLocation="../common/atributy_sz.xsd" namespace="atrsz"/>
+  <xs:import schemaLocation="../common/common.xsd" namespace="cmn"/>
+  <xs:import schemaLocation="../ext/gml/gml.xsd" namespace="http://www.opengis.net/gml/3.2"/>
+  <xs:element name="ZarizeniDratovodu" type="zardravod:ZarizeniDratovoduType"/>
+  <xs:complexType name="ZarizeniDratovoduType">
+    <xs:sequence>
+      <xs:element name="ObjektovyKod" type="xs:string" fixed="100151"/>
+      <xs:element name="ObjektovyTypNazev" fixed="Zařízení drátovodů (bodové)">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="code_base" type="xs:string" fixed="9990000151" use="required"/>
+              <xs:attribute name="code_suffix" type="xs:string" fixed="01" use="required"/>
+              <xs:attribute name="dim" type="xs:integer" fixed="3" use="prohibited"/>
+              <xs:attribute name="gia" type="xs:boolean" fixed="0" use="prohibited"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:sequence>
+        <xs:element name="KategorieObjektu" type="xs:string" fixed="Stavby technické infrastruktury">
+          <xs:annotation>
+            <xs:documentation>Kategorie objektu dle metodiky SŽ</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="SkupinaObjektu" type="xs:string" fixed="Drátovod">
+          <xs:annotation>
+            <xs:documentation>Skupina objektu dle metodiky SŽ</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ObsahovaCast" type="xs:string" fixed="ZDT">
+          <xs:annotation>
+            <xs:documentation>Zařazení objektu do obsahové části dle metodiky SŽ</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ZaznamyObjektu">
+          <xs:annotation>
+            <xs:documentation>Jednotlivé záznamy daného objektu</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="zardravod:ZaznamObjektu" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ZaznamObjektu" abstract="true"/>
+  <xs:element name="ZaznamObjektuRefN" type="zardravod:RefN" substitutionGroup="zardravod:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuIns" type="zardravod:Ins" substitutionGroup="zardravod:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuUpd" type="zardravod:Upd" substitutionGroup="zardravod:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuDel" type="zardravod:Del" substitutionGroup="zardravod:ZaznamObjektu"/>
+  <xs:complexType name="RefN">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuRefNType"/>
+            <xs:element name="SpolecneAtributyObjektuZDTSZ" type="atrsz:SpolecneAtributyObjektuZDTSZRefNType"/>
+            <xs:element ref="atrsz:PopisZarizeniDratovodu" minOccurs="0"/>
+            <xs:element ref="atrsz:TypZarizeniDratovodu"/>
+            <xs:element ref="atrsz:Natoceni"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Ins">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyObjektuZDTSZ" type="atrsz:SpolecneAtributyObjektuZDTSZInsType"/>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuInsType" minOccurs="0"/>
+            <xs:element ref="atrsz:PopisZarizeniDratovodu" minOccurs="0"/>
+            <xs:element ref="atrsz:TypZarizeniDratovodu"/>
+            <xs:element ref="atrsz:Natoceni"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Upd">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuUpdType"/>
+            <xs:element name="SpolecneAtributyObjektuZDTSZ" type="atrsz:SpolecneAtributyObjektuZDTSZUpdType" minOccurs="0"/>
+            <xs:element ref="atrsz:PopisZarizeniDratovodu" minOccurs="0"/>
+            <xs:element ref="atrsz:TypZarizeniDratovodu" minOccurs="0"/>
+            <xs:element ref="atrsz:Natoceni" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Del">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuDelType"/>
+            <xs:element name="SpolecneAtributyObjektuZDTSZ" type="atrsz:SpolecneAtributyObjektuZDTSZDelType" minOccurs="0"/>
+            <xs:element ref="atrsz:PopisZarizeniDratovodu" minOccurs="0"/>
+            <xs:element ref="atrsz:TypZarizeniDratovodu" minOccurs="0"/>
+            <xs:element ref="atrsz:Natoceni" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

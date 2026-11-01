@@ -1,0 +1,17 @@
+id: TypZdi
+nazev: Typ zdi
+namespace: atr
+popis: Typ zdi
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: volně stojící
+ - hodnota: 2
+   popis: opěrná
+ - hodnota: 3
+   popis: zárubní
+ - hodnota: 4
+   popis: městské hradby
+ - hodnota: 99
+   popis: nezjištěno

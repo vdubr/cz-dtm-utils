@@ -3,8 +3,7 @@ import {
   isSupportedVersion,
   isErrorProtocolXml,
   parseErrorProtocol,
-  SUPPORTED_VERSIONS,
-  UDM_VERSIONS,
+  allSupportedVersions,
   formatVersionLabel,
 } from 'jvf-parser';
 import type { JvfDtm, ErrorProtocol } from 'jvf-parser';
@@ -37,15 +36,15 @@ async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<b
 
   // Nepodporovaná verze → blokující modal.
   await showConfirm({
-    title: 'Nepodporovaná verze JVF DTM',
+    title: 'Nepodporovaná verze datového modelu',
     bodyHtml: `
       <p>
         Soubor <strong>${escapeHtml(sourceLabel)}</strong> deklaruje verzi
-        JVF DTM <strong>${escapeHtml(fileVersion)}</strong>, kterou aplikace
-        zatím nepodporuje.
+        <strong>${escapeHtml(formatVersionLabel(fileVersion))}</strong>, kterou
+        aplikace zatím nepodporuje.
       </p>
       <p>
-        Podporované verze: <strong>${[...SUPPORTED_VERSIONS, ...UDM_VERSIONS]
+        Podporované verze: <strong>${allSupportedVersions()
           .map(formatVersionLabel)
           .join(', ')}</strong>.
       </p>

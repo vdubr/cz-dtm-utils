@@ -1,0 +1,156 @@
+id: SterkovaPrehrazkaPlocha
+namespace: stppol
+nazev: štěrková přehrážka
+skupinaPrvku: VzdouvaciStavba
+obsahovaCast: ZPS
+typGeometrie: Plocha
+code:
+  base: "0100000333"
+  suffix: "03"
+dim: 3
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuZPS
+   typ: sada
+   sada: SpolecneAtributyObjektuZPS
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuPlochaZPS
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsZPS
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdZPS
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  PeIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  PeUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  PeDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true

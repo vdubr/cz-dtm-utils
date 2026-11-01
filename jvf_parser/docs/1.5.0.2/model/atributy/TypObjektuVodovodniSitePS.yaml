@@ -1,0 +1,19 @@
+id: TypObjektuVodovodniSitePS
+nazev: Typ objektu vodovodní sítě - plánované stavby
+namespace: atr
+popis: Typ objektu vodovodní sítě - plánované stavby
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: zdroj vody
+ - hodnota: 2
+   popis: vodojem
+ - hodnota: 3
+   popis: úpravna vody
+ - hodnota: 4
+   popis: trasa vodovodní sítě
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: neurčeno

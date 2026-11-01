@@ -1,0 +1,17 @@
+id: TypObjektuSilnicniDopravyPS
+nazev: Typ objektu silniční dopravy - plánované stavby
+namespace: atr
+popis: Typ objektu silniční dopravy - plánované stavby
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: dálnice
+ - hodnota: 2
+   popis: silnice
+ - hodnota: 3
+   popis: místní komunikace
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: neurčeno

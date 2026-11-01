@@ -1,7 +1,8 @@
 /**
  * Aktivní verze JVF DTM v aplikaci.
  *
- * Podporované verze jsou `1.4.3` a `1.5.0.1` (viz `SUPPORTED_VERSIONS`).
+ * Podporované verze: JVF DTM (`JVF_VERSIONS`) a dialekty UDM / ŽXML (registr
+ * `DIALECTS`).
  * Aktivní verze je **interní stav** (v UI se přímo nezobrazuje — verze
  * konkrétního souboru se ukazuje u projektu v panelu „Projekty") a řídí:
  *   1. Překlad číselníkových/boolean atributů v panelu prvku
@@ -15,10 +16,10 @@
  * (ta zůstává `1.4.3` jako fallback routeru parseru).
  */
 
-import { SUPPORTED_VERSIONS, type JvfVersion } from 'jvf-parser';
+import { LATEST_JVF_VERSION, type JvfVersion } from 'jvf-parser';
 
-/** Nejnovější podporovaná verze = poslední prvek `SUPPORTED_VERSIONS`. */
-const NEWEST_VERSION = SUPPORTED_VERSIONS[SUPPORTED_VERSIONS.length - 1] as JvfVersion;
+/** Nejnovější podporovaná verze JVF DTM (režim JVF; dialekty nastavuje main.ts). */
+const NEWEST_VERSION: JvfVersion = LATEST_JVF_VERSION;
 
 let activeVersion: JvfVersion = NEWEST_VERSION;
 

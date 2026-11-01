@@ -1,0 +1,29 @@
+id: TypObjektuElektrickeSitePS
+nazev: Typ objektu elektrické sítě - plánované stavby
+namespace: atr
+popis: Typ objektu elektrické sítě - plánované stavby
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: geotermální elektrárna
+ - hodnota: 2
+   popis: jaderná elektrárna
+ - hodnota: 3
+   popis: vodní elektrárna
+ - hodnota: 4
+   popis: fotovoltaická elektrárna
+ - hodnota: 5
+   popis: tepelná elektrárna
+ - hodnota: 6
+   popis: větrná elektrárna
+ - hodnota: 7
+   popis: bioplynová elektrárna
+ - hodnota: 8
+   popis: stanice elektrické sítě
+ - hodnota: 9
+   popis: trasa elektrické sítě
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: neurčeno

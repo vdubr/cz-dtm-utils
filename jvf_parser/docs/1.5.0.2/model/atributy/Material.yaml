@@ -1,0 +1,7 @@
+id: Material
+nazev: Materiál
+namespace: atr
+popis: Materiál
+nillable: false
+typ: String
+maxDelka: 255

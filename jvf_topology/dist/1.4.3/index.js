@@ -10,7 +10,7 @@
  * IS DTM 3.4+3.5+3.10 (self-intersection, nulový/krátký segment)    → `segments.ts`
  * IS DTM 3.6+3.8+3.9 (duplicitní linie/body, blízkost bodů)         → `duplicates.ts`
  */
-import { TYP_DATOVE_SADY_VYDEJ_PSPI } from 'jvf-dtm-types';
+import { TYP_DATOVE_SADY_VYDEJ_PSPI, baseJvfVersionOf, dialectOf, } from 'jvf-dtm-types';
 import { DEFBOD_PLOCHA_PAIRS_1501, OSA_OBVOD_PAIRS_1501 } from './constants.js';
 import { checkGeometricValidity } from './validity.js';
 import { checkPolygonMultiCurveConsistency } from './consistency.js';
@@ -47,23 +47,26 @@ function resolveMode(dtm, mode) {
  * (R7: bezpečný default, žádné false positives).
  */
 function crossObjectChecksForVersion(version) {
-    if (version === '1.5.0.1') {
+    // Prázdná/chybějící verze → DEFAULT_VERSION (1.4.3) — zpětná kompatibilita.
+    if (!version)
+        return CROSS_OBJECT_CHECKS;
+    // UDM (Univerzální datový model ČKZ) záměrně bez meziobjektových kontrol:
+    // UDM nepracuje s plošnou mapou ani nevyhodnocuje vazbu def. bod ↔ plocha
+    // (Popis struktury UDM 2.1.1, kap. 5.2) — DTM páry by dávaly false positives.
+    if (dialectOf(version)?.id === 'udm')
+        return [];
+    // JVF DTM a ŽXML (objekty SŽ do párů nevstupují) podle základní verze JVF.
+    const base = baseJvfVersionOf(version);
+    if (base === '1.4.3')
+        return CROSS_OBJECT_CHECKS;
+    if (base === '1.5.0.1' || base === '1.5.0.2') {
         return [
             (dtm) => checkDefBodInPlocha(dtm, DEFBOD_PLOCHA_PAIRS_1501),
             (dtm) => checkOsaInObvod(dtm, OSA_OBVOD_PAIRS_1501),
             checkDanglingEnds,
         ];
     }
-    // UDM (Univerzální datový model ČKZ) záměrně bez meziobjektových kontrol:
-    // UDM nepracuje s plošnou mapou ani nevyhodnocuje vazbu def. bod ↔ plocha
-    // (Popis struktury UDM 2.1.1, kap. 5.2) — DTM páry by dávaly false positives.
-    if (version?.startsWith('udm-'))
-        return [];
-    // Prázdná/chybějící verze → DEFAULT_VERSION (1.4.3) — zpětná kompatibilita.
-    if (!version || version === '1.4.3') {
-        return CROSS_OBJECT_CHECKS;
-    }
-    // Známá, ale nepodporovaná verze (např. „9.9.9") — jen generické checky (R7).
+    // Neznámá (nepodporovaná) verze (např. „9.9.9") — jen generické checky (R7).
     return [];
 }
 /**

@@ -1,0 +1,7 @@
+id: OznaceniCyklostezky
+nazev: Označení cyklostezky
+namespace: atr
+popis: Označení cyklostezky (evidenční číslo)
+nillable: false
+typ: String
+maxDelka: 255

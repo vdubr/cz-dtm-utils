@@ -142,13 +142,16 @@ export function parseJvfDtm1501(xml, options = {}) {
         }
     }
     const { doprovodneInformace, typDatoveSady } = parseDoprovodneInformace1501(dataJvfDtm);
+    const ext = options.parseDocumentExtras?.(dataJvfDtm);
     return {
         verze,
+        verzeJvfDtm: verze,
         datumZapisu,
         typZapisu,
         ...(typDatoveSady !== undefined ? { typDatoveSady } : {}),
         objekty,
         ...(doprovodneInformace !== undefined ? { doprovodneInformace } : {}),
+        ...(ext !== undefined ? { ext } : {}),
     };
 }
 //# sourceMappingURL=parser.js.map

@@ -1,0 +1,21 @@
+id: DruhPlotu
+nazev: Druh plotu
+namespace: atr
+popis: Druh plotu
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: dřevěný
+ - hodnota: 2
+   popis: drátěný
+ - hodnota: 3
+   popis: kovový
+ - hodnota: 4
+   popis: zděný
+ - hodnota: 5
+   popis: živý
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: nezjištěno

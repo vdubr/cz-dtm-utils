@@ -1,0 +1,23 @@
+id: TypInzenyrskeSitePKO
+nazev: Typ inženýrské sítě PKO
+namespace: atr
+popis: Typ inženýrské sítě s protikorozní ochranou
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: plynovod
+ - hodnota: 2
+   popis: vodovod
+ - hodnota: 3
+   popis: kanalizace
+ - hodnota: 4
+   popis: produktovod
+ - hodnota: 5
+   popis: teplovod
+ - hodnota: 6
+   popis: síť elektronických komunikací
+ - hodnota: 7
+   popis: sdílená
+ - hodnota: 99
+   popis: nezjištěno

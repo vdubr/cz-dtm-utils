@@ -1,0 +1,13 @@
+id: TypOdpadu
+nazev: Typ odpadu
+namespace: atr
+popis: Typ odpadu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: ostatní odpad
+ - hodnota: 2
+   popis: nebezpečný odpad
+ - hodnota: 99
+   popis: nezjištěno

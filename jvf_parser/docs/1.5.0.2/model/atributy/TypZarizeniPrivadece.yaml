@@ -1,0 +1,13 @@
+id: TypZarizeniPrivadece
+nazev: Typ zařízení přivaděče
+namespace: atr
+popis: Typ zařízení přivaděče
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: šachta
+ - hodnota: 98
+   popis: jiné
+ - hodnota: 99
+   popis: nezjištěno

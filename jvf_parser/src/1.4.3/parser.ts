@@ -108,7 +108,13 @@ function parseObjektovyTyp(elementName: string, typEl: Record<string, unknown>):
   };
 }
 
-export function parseJvfDtm(xml: string): JvfDtm {
+/** Volby parseru 1.4.3 — používá je router a dialekt ŽXML 1.4.2.1. */
+export interface ParseOptions143 {
+  /** Varovat při nepodporované `VerzeJVFDTM` (default `true`). */
+  warnUnsupportedVersion?: boolean;
+}
+
+export function parseJvfDtm(xml: string, options: ParseOptions143 = {}): JvfDtm {
   const validation = XMLValidator.validate(xml);
   if (validation !== true) {
     const { msg, line, col } = validation.err;
@@ -129,7 +135,7 @@ export function parseJvfDtm(xml: string): JvfDtm {
   }
 
   const verze = extractText(dataJvfDtm['VerzeJVFDTM']) ?? '';
-  if (verze !== '' && !isSupportedVersion(verze)) {
+  if (verze !== '' && !isSupportedVersion(verze) && options.warnUnsupportedVersion !== false) {
     console.warn(
       `jvf-parser: nepodporovaná verze JVF DTM specifikace "${verze}" — očekávána jedna z podporovaných verzí. Parsování pokračuje, ale výsledek nemusí odpovídat schématu.`
     );
@@ -171,6 +177,7 @@ export function parseJvfDtm(xml: string): JvfDtm {
 
   return {
     verze,
+    verzeJvfDtm: verze,
     datumZapisu,
     typZapisu,
     objekty,

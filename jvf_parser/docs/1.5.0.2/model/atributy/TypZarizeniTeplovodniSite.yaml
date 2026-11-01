@@ -1,0 +1,13 @@
+id: TypZarizeniTeplovodniSite
+nazev: Typ zařízení teplovodní sítě
+namespace: atr
+popis: Typ zařízení teplovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: odvětrávání teplovodu
+ - hodnota: 2
+   popis: šachta
+ - hodnota: 98
+   popis: jiné

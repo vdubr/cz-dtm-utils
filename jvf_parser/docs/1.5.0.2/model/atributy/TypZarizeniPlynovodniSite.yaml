@@ -1,0 +1,15 @@
+id: TypZarizeniPlynovodniSite
+nazev: Typ zařízení plynovodní sítě
+namespace: atr
+popis: Typ zařízení plynovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: šoupě
+ - hodnota: 2
+   popis: skříň
+ - hodnota: 4
+   popis: šachta
+ - hodnota: 98
+   popis: jiné

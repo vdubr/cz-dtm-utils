@@ -1,0 +1,21 @@
+id: TypZemedelskePlochy
+nazev: Typ zemědělské plochy
+namespace: atr
+popis: Typ zemědělské plochy
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: orná půda
+ - hodnota: 2
+   popis: vinice
+ - hodnota: 3
+   popis: chmelnice
+ - hodnota: 4
+   popis: ovocný sad
+ - hodnota: 5
+   popis: trvalý travní porost
+ - hodnota: 98
+   popis: jiná
+ - hodnota: 99
+   popis: nezjištěno

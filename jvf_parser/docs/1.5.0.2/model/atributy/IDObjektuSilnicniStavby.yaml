@@ -1,0 +1,7 @@
+id: IDObjektuSilnicniStavby
+nazev: ID objektu silniční stavby
+namespace: atr
+popis: Identifikátor objektu silniční stavby
+nillable: false
+typ: String
+maxDelka: 50

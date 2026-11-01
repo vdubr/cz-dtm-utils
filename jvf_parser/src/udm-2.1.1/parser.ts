@@ -10,15 +10,15 @@
  * Výsledné `verze` = id `udm-<VerzeJVFUDM>`; surové hodnoty hlavičky jsou
  * v `verzeJvfDtm` a `verzeUdm`.
  */
-import { udmVersionId } from 'jvf-dtm-types';
+import { dialectVersionId } from 'jvf-dtm-types';
 import { parseJvfDtm1501 } from '../1.5.0.1/parser.js';
 import { parseAtributyObjektuUdm } from './attributes.js';
+import { detectHeaderElement } from '../dialects/types.js';
 import type { JvfDtm } from './types.js';
 
 /** Přečte hodnotu `<VerzeJVFUDM>` z raw XML (bez plného parsování). */
 export function detectUdmVersionString(xml: string): string | null {
-  const m = xml.match(/<(?:[A-Za-z0-9_]+:)?VerzeJVFUDM>\s*([^<\s]+)/);
-  return m?.[1]?.trim() ?? null;
+  return detectHeaderElement(xml, 'VerzeJVFUDM');
 }
 
 /**
@@ -35,8 +35,9 @@ export function parseUdm(xml: string, verzeUdm?: string): JvfDtm {
   });
   return {
     ...dtm,
-    verze: udmVersionId(udm),
+    verze: dialectVersionId('udm', udm),
     verzeJvfDtm: dtm.verze,
+    dialect: { id: 'udm', version: udm },
     verzeUdm: udm,
   };
 }

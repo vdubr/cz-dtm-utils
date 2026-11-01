@@ -1,11 +1,11 @@
 // Legend modal — zobrazí kompletní legendu všech objektových typů z ENTITY_CATALOG
 // s reprezentativním swatch (point/line/polygon) podle stylu z Katalogu DTM.
 
-import { getEntityCatalog, isUdmVersion } from 'jvf-parser';
+import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
-import { markUdmObjekty } from '../map/udmStyle.js';
+import { markDialectObjekty } from '../map/dialectStyle.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -32,8 +32,8 @@ function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
     obsahovaCast: meta.obsahovaCast,
     zaznamy: [],
   };
-  // Legenda aktivní verze UDM → swatche v symbologii UDM.
-  if (isUdmVersion(getActiveVersion())) markUdmObjekty([ot]);
+  // Legenda aktivní verze dialektu (UDM, ŽXML) → swatche v symbologii dialektu.
+  markDialectObjekty([ot], getActiveVersion());
   return ot;
 }
 
@@ -154,8 +154,12 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
   }
 
   // Stabilní pořadí: ZPS, TI, DI, GAD, OPL, PSPI, UDM (ZPSUDM, TIUDM, DIUDM,
-  // OST), ostatní (alfa).
-  const CAST_ORDER = ['ZPS', 'TI', 'DI', 'GAD', 'OPL', 'PSPI', 'ZPSUDM', 'TIUDM', 'DIUDM', 'OST'];
+  // OST), ŽXML (ZDT, ZDD, H3D, ODSZ, SKLEP), ostatní (alfa).
+  const CAST_ORDER = [
+    'ZPS', 'TI', 'DI', 'GAD', 'OPL', 'PSPI',
+    'ZPSUDM', 'TIUDM', 'DIUDM', 'OST',
+    'ZDT', 'ZDD', 'H3D', 'ODSZ', 'SKLEP',
+  ];
   const sortedCasts = [...groups.keys()].sort((a, b) => {
     const ai = CAST_ORDER.indexOf(a);
     const bi = CAST_ORDER.indexOf(b);

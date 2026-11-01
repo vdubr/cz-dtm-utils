@@ -1,0 +1,17 @@
+id: TypNadrzeZdrzeSeVzdouvacimObjektem
+nazev: Typ nádrže, zdrže se vzdouvacím objektem
+namespace: atr
+popis: Typ nádrže, zdrže se vzdouvacím objektem
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: vodní nádrž
+ - hodnota: 6
+   popis: vyrovnávací nádrž
+ - hodnota: 7
+   popis: jezová zdrž
+ - hodnota: 98
+   popis: jiná
+ - hodnota: 99
+   popis: nezjištěno

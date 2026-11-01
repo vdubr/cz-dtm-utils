@@ -87,7 +87,7 @@ function parseObjektovyTyp(elementName, typEl) {
         zaznamy,
     };
 }
-export function parseJvfDtm(xml) {
+export function parseJvfDtm(xml, options = {}) {
     const validation = XMLValidator.validate(xml);
     if (validation !== true) {
         const { msg, line, col } = validation.err;
@@ -104,7 +104,7 @@ export function parseJvfDtm(xml) {
         throw new Error('Invalid JVF DTM XML: missing <DataJVFDTM> element');
     }
     const verze = extractText(dataJvfDtm['VerzeJVFDTM']) ?? '';
-    if (verze !== '' && !isSupportedVersion(verze)) {
+    if (verze !== '' && !isSupportedVersion(verze) && options.warnUnsupportedVersion !== false) {
         console.warn(`jvf-parser: nepodporovaná verze JVF DTM specifikace "${verze}" — očekávána jedna z podporovaných verzí. Parsování pokračuje, ale výsledek nemusí odpovídat schématu.`);
     }
     const datumZapisu = extractText(dataJvfDtm['DatumZapisu']) ?? '';
@@ -138,6 +138,7 @@ export function parseJvfDtm(xml) {
     const doprovodneInformace = parseDoprovodneInformace(dataJvfDtm['DoprovodneInformace']);
     return {
         verze,
+        verzeJvfDtm: verze,
         datumZapisu,
         typZapisu,
         objekty,

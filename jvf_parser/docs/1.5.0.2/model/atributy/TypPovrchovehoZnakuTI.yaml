@@ -1,0 +1,27 @@
+id: TypPovrchovehoZnakuTI
+nazev: Typ povrchového znaku TI
+namespace: atr
+popis: Typ povrchového znaku TI
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: šachta vstupní
+ - hodnota: 2
+   popis: šachta kabelovodní
+ - hodnota: 3
+   popis: zařízení elektrické sítě
+ - hodnota: 4
+   popis: zařízení sítě EK
+ - hodnota: 5
+   popis: zařízení plynovodní sítě
+ - hodnota: 6
+   popis: objekt vodovodní sítě
+ - hodnota: 7
+   popis: objekt stokové sítě
+ - hodnota: 8
+   popis: zařízení sítě produktovodu
+ - hodnota: 9
+   popis: zařízení teplovodní sítě
+ - hodnota: 98
+   popis: jiný

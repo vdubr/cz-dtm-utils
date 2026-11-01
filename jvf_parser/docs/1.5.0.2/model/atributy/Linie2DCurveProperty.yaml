@@ -1,0 +1,7 @@
+id: Linie2DCurveProperty
+nazev: Linie 2D
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: curveProperty
+dim: 2
