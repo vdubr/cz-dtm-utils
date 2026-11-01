@@ -28,3 +28,6 @@ dist/
 # Python
 __pycache__/
 *.pyc
+
+# Pracovní kopie canvasu návrhu (claude.ai Design)
+.design-canvas/
