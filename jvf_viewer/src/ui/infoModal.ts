@@ -149,8 +149,9 @@ const INFO_CONTENT_HTML = `
       UDM pro 1:500) a atributy objektů v XDATA „UDM" (v AutoCADu příkaz
       <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy UDM
       přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
-      a 2D výkres. Souřadnice zůstávají v EPSG:5514. Vzory linií jsou
-      přibližné. <strong>DWG</strong> získáte tak, že DXF otevřete
+      a 2D výkres. Souřadnice zůstávají v EPSG:5514. Typy čar mají
+      čárkování dle vzorníku UDM (bez vložených značek).
+      <strong>DWG</strong> získáte tak, že DXF otevřete
       v AutoCADu a uložíte jako DWG. Export běží lokálně v prohlížeči.
     </li>
     <li>
@@ -265,9 +266,10 @@ const INFO_CONTENT_HTML = `
     čáry a SVG symboly bodů z knihovny ČKZ, včetně vzhledu podle hodnot
     číselníků (např. druh stromu, typ dopravního zařízení). Barvy UDM jsou
     navržené pro tmavé pozadí, na světlém podkladu je bílá kreslena černě
-    a světlé odstíny ztmavené. <em>Vzory linií jsou aproximací</em> podle
-    typu dle ČSN 01 3411 (přesné definice jsou jen v knihovně MicroStation)
-    a texty (popisy, názvy) se jako text nevykreslují.
+    a světlé odstíny ztmavené. <strong>Vzory linií</strong> (čárkování)
+    jsou změřené z vektorového vzorníku ČKZ ve skutečné velikosti při 1:500;
+    značky vložené do čar (ploty, sítě TI, alej) se nekreslí. Texty (popisy,
+    názvy) se v mapě jako text nevykreslují.
     Meziobjektová topologie se pro UDM nespouští — UDM nepracuje s plošnou
     mapou ani s vazbou definiční bod ↔ plocha. Ukázkové soubory UDM jsou
     v nabídce vedle tlačítka „Nahrát soubor".

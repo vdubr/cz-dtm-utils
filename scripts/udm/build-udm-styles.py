@@ -25,10 +25,11 @@ Vzhled v UDM (Popis struktury UDM 2.1.1, kap. 15):
   - SVG symboly jsou v papírových px (96 dpi) — 1 px = 0,2646 mm; viewer
     počítá s konvencí ČÚZK 1 SVG-px = 0,01 mm → škálování ×26,458.
 
-**Vzory linií jsou APROXIMACE.** Přesné definice jsou jen v binárním
-MicroStation souboru `Vzory_linii_UDM.rsc`; vzorník (PDF) ukazuje jen jejich
-vzhled. Čárkování níže odpovídá typu vzoru dle ČSN 01 3411 (plná, čárkovaná,
-tečkovaná, střídavá, …); vložené značky (plot, sítě TI) se nekreslí.
+**Vzory linií** (čárkování základní čáry) jsou ZMĚŘENÉ z vektorového vzorníku
+ČKZ (`knihovny/Vzory_symbolu_a_stylu_UDM.pdf`, list 4) skriptem
+`extract-line-patterns.py` → `line-patterns.json` (mm papíru při 1:500).
+Vložené značky (ploty, sítě TI, alej, kynety) se nekreslí — přesné definice
+celých stylů jsou jen v binárním MicroStation `Vzory_linii_UDM.rsc`.
 
 Spuštění z rootu repa (volitelně jiná cesta k adresáři SVG symbolů):
     python3 scripts/udm/build-udm-styles.py [<Knihovny/SVG>]
@@ -55,51 +56,17 @@ LIST_RE = re.compile(r'^(ckz|c|ost)_')
 HEX_RE = re.compile(r'^#[0-9A-Fa-f]{6}$')
 BLACK = '#000000'
 
-# Čárkování (mm na papíře při 1:500) — aproximace vzorů UDM / ČSN 01 3411.
-_BORDER = [3.0, 0.5, 0.5, 0.5]
-_NETWORK = [4.0, 1.0, 0.5, 1.0]  # „— značka —" sítí TI (n6.15–n6.82)
+# Čárkování (mm papíru při 1:500) změřené ze vzorníku ČKZ — viz docstring.
+LINE_PATTERNS = Path(__file__).resolve().parent / 'line-patterns.json'
 DASH_MM: dict[str, list[float] | None] = {
-    'n0.01': None,                       # plná
-    'n0.03': [1.0, 0.5],                 # čárkovaná 1
-    'n0.05': [2.0, 1.0],                 # čárkovaná 2
-    'n0.09': [0.2, 0.6],                 # tečkovaná
-    'n0.12': [2.0, 0.5, 0.2, 0.5],       # střídavá 1
-    'n0.13': [3.0, 0.5, 0.2, 0.5],       # střídavá 2
-    'n0.16': [3.0, 0.7, 0.6, 0.7],       # střídavá 3
-    'n0.17': [2.0, 0.5, 0.2, 0.5, 0.2, 0.5],  # střídavá 4
-    **{f'n2.0{i}': _BORDER for i in (1, 3, 4, 5, 6, 7)},  # správní hranice
-    **{f'n2.{i}': None for i in range(9, 18)},             # ploty (značky se nekreslí)
-    'n2.09': None,
-    'n2.23': [4.0, 1.0, 0.5, 1.0],       # hranice chráněného území
-    'n2.24': [4.0, 1.0, 0.5, 1.0, 0.5, 1.0],  # hranice ochranného pásma
-    'n2.25': [3.0, 0.7, 0.5, 0.7],       # hranice tech. ochranného pásma
-    'n2.26': [1.5, 0.7],                 # hranice podzemní
-    'n4.22': None,                       # svislá opěrná zeď
-    'n5.02': [1.0, 1.0],                 # osa trolejového vedení
-    'n5.21': [1.5, 0.7],                 # visutá lanová dráha
-    'n5.22': None, 'n5.290': None, 'n5.291': None, 'n5.30': None,
-    'n6.05': [1.0, 0.5],                 # osa nadzemního vedení
-    'n6.06': [3.0, 1.5],                 # osa podzemního vedení
-    # Vlastní vzory UDM; VDZ ve skutečné velikosti (m v terénu × 2 = mm)
-    'ckz001': [0.3, 1.2],                # alej, stromořadí
-    'ckz002': [0.3, 0.3],                # trasa kynety – podvrt
-    'ckz003': None, 'ckz004': None,      # překop, shybka
-    'ckz005': None, 'ckz006': None, 'ckz007': None, 'ckz010': None,  # VDZ souvislé
-    'ckz008': [1.0, 1.0],                # VDZ čárkovaná (25 cm)
-    'ckz009': [2.0, 2.0],                # VDZ čárkovaná (50 cm)
-    'ckz011': [6.0, 12.0],               # VDZ přerušovaná s rozhledem 3/6 m
-    'ckz012': [6.0, 3.0],                # VDZ přerušovaná bez rozhledu 3/1,5 m
-    'ckz013': [6.0, 3.0],                # VDZ dvojitá přerušovaná
-    'ckz014': [6.0, 3.0],                # VDZ souvislá s přerušovanou
+    name: v['dashMm'] for name, v in json.loads(LINE_PATTERNS.read_text(encoding='utf-8')).items()
 }
 
 
 def dash_for(pattern: str) -> list[float] | None:
     if pattern in DASH_MM:
         return DASH_MM[pattern]
-    if re.match(r'^n6\.\d+$', pattern):
-        return _NETWORK
-    print(f'  WARN: neznámý vzor linie {pattern} → plná', file=sys.stderr)
+    print(f'  WARN: vzor linie {pattern} není ve vzorníku → plná', file=sys.stderr)
     return None
 
 
@@ -275,14 +242,14 @@ def main(svg_dir: Path) -> None:
         '// Regenerate: python3 scripts/udm/build-udm-styles.py',
         '//',
         '// Symbologie UDM pro všechny objekty (DTM i 94…), klíč `<code_base>-<suffix>`.',
-        '// Barvy upravené pro světlý podklad; vzory linií jsou aproximace (viz skript).',
+        '// Barvy upravené pro světlý podklad; čárkování změřené ze vzorníku ČKZ (line-patterns.json).',
         '',
         '/** Vzhled objektu nebo položky číselníku dle UDM. */',
         'export interface UdmAppearance {',
         '  color?: string;',
         '  /** Tloušťka čáry v mm (papír, 1:500). */',
         '  widthMm?: number;',
-        '  /** Čárkování v mm (papír, 1:500) — aproximace vzoru linie UDM. */',
+        '  /** Čárkování v mm (papír, 1:500) dle vzorníku UDM (bez vložených značek). */',
         '  dashMm?: number[];',
         '  /** Kód symbolu `AAAA-B[-CCC]` (SVG v public/symboly/udm/). */',
         '  symbol?: string;',

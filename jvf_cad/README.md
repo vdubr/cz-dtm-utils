@@ -37,9 +37,10 @@ knihovnu LibreDWG, viz rozhodnutí v historii projektu).
 
 ## Omezení
 
-- **Vzory linií jsou aproximace** typů ČSN 01 3411 — přesné definice UDM jsou
-  jen v binárním `Vzory_linii_UDM.rsc` (MicroStation); vložené značky (ploty,
-  sítě TI) se nekreslí.
+- **Typy čar** mají čárkování změřené z vektorového vzorníku ČKZ
+  (`scripts/udm/line-patterns.json`, mm papíru při 1:500 = m × 2). Vložené
+  značky (ploty, sítě TI, alej) se nekreslí — kompletní složené styly jsou jen
+  v binárním `Vzory_linii_UDM.rsc` (MicroStation).
 - Barvy UDM (navržené pro tmavé pozadí) jsou upravené pro světlý podklad
   (bílá → černá, světlé odstíny ztmavené) — stejně jako ve vieweru.
 

@@ -28,8 +28,14 @@ npm run generate:udm -w jvf-parser             # src/udm-2.1.1/generated/*
 python3 scripts/udm/build-udm-styles.py
 ```
 
-- `knihovny/` — knihovna symbolů ČKZ z balíku „UDM 2.1.1.zip" (`Knihovny/SVG`
-  + `Knihovna symbolu_udm.csv`), zdroj symbolů pro viewer i export do CAD.
+- `knihovny/` — z balíku ČKZ „UDM 2.1.1.zip":
+  - `SVG/` + `Knihovna symbolu_udm.csv` — knihovna symbolů (viewer i export do CAD),
+  - `Vzory_symbolu_a_stylu_UDM.pdf` — vektorový vzorník; z listu 4 se měří
+    čárkování 75 vzorů linií (`scripts/udm/extract-line-patterns.py` →
+    `scripts/udm/line-patterns.json`, vyžaduje PyMuPDF; 1 pt = 1 mm papíru
+    při 1:500, kalibrováno podle VDZ ve skutečné velikosti),
+  - `Vzory_linii_UDM.rsc` — knihovna linií MicroStation (binární, nečte se;
+    archiv pro případné úplné složené styly se značkami).
 
 Ukázky: `jvf_parser/samples/udm-2.1.1/` (ukázka ČKZ, vzorník objektů,
 ruční minimální fixture, pontonový most) — ruční soubory jsou validní proti

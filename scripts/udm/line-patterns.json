@@ -1,0 +1,559 @@
+{
+ "n0.01": {
+  "dashMm": null,
+  "markers": false
+ },
+ "n0.03": {
+  "dashMm": [
+   4.0,
+   2.0
+  ],
+  "markers": false
+ },
+ "n0.05": {
+  "dashMm": [
+   6.0,
+   1.9
+  ],
+  "markers": false
+ },
+ "n0.09": {
+  "dashMm": [
+   0.6,
+   4.0
+  ],
+  "markers": false
+ },
+ "n0.12": {
+  "dashMm": [
+   1.9,
+   1.7,
+   0.6,
+   1.6
+  ],
+  "markers": false
+ },
+ "n0.13": {
+  "dashMm": [
+   4.0,
+   1.6,
+   0.6,
+   1.7
+  ],
+  "markers": false
+ },
+ "n0.16": {
+  "dashMm": [
+   12.0,
+   3.6,
+   0.6,
+   3.6,
+   0.6,
+   3.6
+  ],
+  "markers": false
+ },
+ "n0.17": {
+  "dashMm": [
+   4.0,
+   2.0,
+   1.9,
+   2.0,
+   4.1,
+   6.0
+  ],
+  "markers": false
+ },
+ "n2.01": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.03": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.04": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.05": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.06": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.07": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.09": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.10": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.11": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.12": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.13": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.14": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.15": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.16": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.17": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n2.23": {
+  "dashMm": [
+   6.0,
+   4.0,
+   6.0,
+   2.6,
+   0.6,
+   2.6
+  ],
+  "markers": false
+ },
+ "n2.24": {
+  "dashMm": [
+   10.0,
+   4.1,
+   10.0,
+   2.6,
+   0.6,
+   2.5
+  ],
+  "markers": false
+ },
+ "n2.25": {
+  "dashMm": [
+   10.0,
+   1.7,
+   0.6,
+   1.6,
+   0.6,
+   1.6,
+   10.1,
+   4.0,
+   10.0,
+   1.7,
+   0.6,
+   1.6,
+   0.6,
+   1.6,
+   10.1,
+   3.4
+  ],
+  "markers": false
+ },
+ "n2.26": {
+  "dashMm": [
+   6.0,
+   1.9
+  ],
+  "markers": false
+ },
+ "n4.22": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n5.02": {
+  "dashMm": [
+   4.0,
+   4.1
+  ],
+  "markers": false
+ },
+ "n5.21": {
+  "dashMm": [
+   4.0,
+   3.0
+  ],
+  "markers": true
+ },
+ "n5.22": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n5.290": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n5.291": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n5.30": {
+  "dashMm": null,
+  "markers": true
+ },
+ "n6.05": {
+  "dashMm": [
+   4.0,
+   4.1
+  ],
+  "markers": false
+ },
+ "n6.06": {
+  "dashMm": [
+   14.0,
+   6.0
+  ],
+  "markers": false
+ },
+ "n6.15": {
+  "dashMm": [
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.16": {
+  "dashMm": [
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.17": {
+  "dashMm": [
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.23": {
+  "dashMm": [
+   14.0,
+   6.0,
+   12.0,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.24": {
+  "dashMm": [
+   14.0,
+   6.0,
+   12.0,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.26": {
+  "dashMm": [
+   14.0,
+   6.0,
+   12.0,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.27": {
+  "dashMm": [
+   14.0,
+   6.0,
+   12.0,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.28": {
+  "dashMm": [
+   14.0,
+   4.9,
+   12.0,
+   5.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.32": {
+  "dashMm": [
+   14.0,
+   4.0,
+   4.0,
+   6.0,
+   4.1,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.33": {
+  "dashMm": [
+   14.0,
+   4.0,
+   4.0,
+   6.0,
+   4.1,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.34": {
+  "dashMm": [
+   14.0,
+   4.0,
+   4.0,
+   6.0,
+   4.1,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.35": {
+  "dashMm": [
+   14.0,
+   4.0,
+   4.0,
+   6.0,
+   4.1,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.36": {
+  "dashMm": [
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.37": {
+  "dashMm": [
+   14.0,
+   4.0,
+   4.0,
+   6.0,
+   4.1,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.51": {
+  "dashMm": [
+   13.9,
+   4.1
+  ],
+  "markers": true
+ },
+ "n6.52": {
+  "dashMm": [
+   13.9,
+   4.1
+  ],
+  "markers": true
+ },
+ "n6.55": {
+  "dashMm": [
+   13.9,
+   4.1
+  ],
+  "markers": true
+ },
+ "n6.59": {
+  "dashMm": [
+   13.9,
+   5.0,
+   2.0,
+   4.0,
+   6.0,
+   5.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.60": {
+  "dashMm": [
+   13.9,
+   5.0,
+   2.0,
+   4.0,
+   6.0,
+   5.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.61": {
+  "dashMm": [
+   13.9,
+   5.0,
+   2.0,
+   4.0,
+   6.0,
+   5.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.62": {
+  "dashMm": [
+   13.9,
+   5.0,
+   2.0,
+   4.0,
+   6.0,
+   5.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.63": {
+  "dashMm": [
+   13.9,
+   3.0,
+   14.0,
+   5.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.74": {
+  "dashMm": [
+   13.9,
+   22.1,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.80": {
+  "dashMm": [
+   13.9,
+   4.1,
+   5.5,
+   3.0,
+   5.5,
+   4.0,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "n6.82": {
+  "dashMm": [
+   13.9,
+   22.1,
+   14.0,
+   4.0
+  ],
+  "markers": true
+ },
+ "ckz001": {
+  "dashMm": null,
+  "markers": true
+ },
+ "ckz002": {
+  "dashMm": null,
+  "markers": true
+ },
+ "ckz003": {
+  "dashMm": null,
+  "markers": true
+ },
+ "ckz004": {
+  "dashMm": null,
+  "markers": true
+ },
+ "ckz005": {
+  "dashMm": null,
+  "markers": false
+ },
+ "ckz006": {
+  "dashMm": null,
+  "markers": false
+ },
+ "ckz007": {
+  "dashMm": null,
+  "markers": false
+ },
+ "ckz008": {
+  "dashMm": [
+   1.0,
+   1.1
+  ],
+  "markers": false
+ },
+ "ckz009": {
+  "dashMm": [
+   1.0,
+   1.0
+  ],
+  "markers": false
+ },
+ "ckz010": {
+  "dashMm": null,
+  "markers": false
+ },
+ "ckz011": {
+  "dashMm": [
+   6.0,
+   6.0
+  ],
+  "markers": false
+ },
+ "ckz012": {
+  "dashMm": [
+   6.0,
+   3.0
+  ],
+  "markers": false
+ },
+ "ckz013": {
+  "dashMm": [
+   6.0,
+   3.0
+  ],
+  "markers": true
+ },
+ "ckz014": {
+  "dashMm": null,
+  "markers": true
+ }
+}

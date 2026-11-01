@@ -3,7 +3,7 @@ export interface UdmAppearance {
     color?: string;
     /** Tloušťka čáry v mm (papír, 1:500). */
     widthMm?: number;
-    /** Čárkování v mm (papír, 1:500) — aproximace vzoru linie UDM. */
+    /** Čárkování v mm (papír, 1:500) dle vzorníku UDM (bez vložených značek). */
     dashMm?: number[];
     /** Kód symbolu `AAAA-B[-CCC]` (SVG v public/symboly/udm/). */
     symbol?: string;

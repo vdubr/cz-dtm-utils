@@ -45,7 +45,8 @@ function bodyHtml(projects: readonly JvfProject[]): string {
         Hladiny podle objektových typů, symboly UDM jako bloky, popisy jako texty,
         atributy objektů v XDATA „UDM" (AutoCAD: <code>XDLIST</code>).
         Souřadnice EPSG:5514, měřítko symbolů a textů 1:500.
-        Vzory linií jsou přibližné (přesné definice UDM jsou jen pro MicroStation).
+        Typy čar mají čárkování dle vzorníku UDM; značky vložené do čar
+        (ploty, sítě TI) se nekreslí.
       </p>
     </div>`;
 }

@@ -22,7 +22,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   3D, legendě i panelu vrstev kreslí dle vzhledů UDM: barva, tloušťka čáry,
   SVG symboly z knihovny ČKZ (přebarvené barvou objektu) a vzhled podle
   hodnot číselníků. Barvy upravené pro světlý podklad (bílá → černá, světlé
-  odstíny ztmavené); vzory linií jsou aproximace dle typu ČSN 01 3411.
+  odstíny ztmavené). Vzory linií (čárkování 75 typů čar) změřené
+  z vektorového vzorníku ČKZ ve skutečné velikosti; značky vložené do čar
+  (ploty, sítě TI) se nekreslí.
 - **Ukázkové soubory UDM** v nabídce vedle tlačítka „Nahrát soubor":
   reálná ukázka ČKZ, minimální testovací soubor a samostatná ukázka
   **pontonového mostu** (obvod mostu typu „jiný" s upřesněním, komunikace
