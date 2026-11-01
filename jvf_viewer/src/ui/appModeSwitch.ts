@@ -40,7 +40,8 @@ export function applyAppModeToUi(mode: AppMode = getAppMode()): void {
     const modes = (el.dataset['mode'] ?? '').split(/\s+/);
     el.hidden = !modes.includes(mode);
   });
-  document.querySelectorAll<HTMLButtonElement>('#app-mode-switch button').forEach((btn) => {
+  // Hlavička i kopie v panelu vrstev (mobil, `#app-mode-switch-drawer`).
+  document.querySelectorAll<HTMLButtonElement>('.app-mode-switch button').forEach((btn) => {
     const active = btn.dataset['modeBtn'] === mode;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', String(active));
@@ -98,8 +99,9 @@ export async function ensureAppModeForFile(data: JvfDtm, fileName: string): Prom
 
 /** Vykreslí přepínač do `#app-mode-switch` a navěsí obsluhu. */
 export function setupAppModeSwitch(): void {
-  const host = document.getElementById('app-mode-switch');
-  if (host) {
+  for (const id of ['app-mode-switch', 'app-mode-switch-drawer']) {
+    const host = document.getElementById(id);
+    if (!host) continue;
     host.innerHTML = '';
     for (const m of APP_MODES) {
       const btn = document.createElement('button');

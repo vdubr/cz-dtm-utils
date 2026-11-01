@@ -191,6 +191,12 @@ export function setup3dToggle(
   const themeBtn = document.getElementById('btn-theme') as HTMLButtonElement | null;
 
   function applyTheme(theme: 'light' | 'dark'): void {
+    // Motiv celé aplikace (tokeny M3 v m3.css podle `data-theme` na <html>).
+    document.documentElement.dataset['theme'] = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute(
+      'content',
+      theme === 'light' ? '#ededf4' : '#1e1f25',
+    );
     setThreeBackground(BG_COLORS[theme]!);
     if (mapArea) mapArea.style.background = BG_COLORS[theme]!;
     if (themeBtn) {
@@ -198,8 +204,9 @@ export function setup3dToggle(
       const icon = themeBtn.querySelector('.material-symbols-outlined');
       if (icon) icon.textContent = theme === 'light' ? 'dark_mode' : 'light_mode';
       themeBtn.title = theme === 'light'
-        ? 'Přepnout na tmavý režim (pozadí 2D mapy i 3D scény)'
-        : 'Přepnout na světlý režim (pozadí 2D mapy i 3D scény)';
+        ? 'Přepnout na tmavý motiv (aplikace, 2D mapa i 3D scéna)'
+        : 'Přepnout na světlý motiv (aplikace, 2D mapa i 3D scéna)';
+      themeBtn.setAttribute('aria-label', themeBtn.title);
     }
   }
 

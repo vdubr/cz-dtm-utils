@@ -178,6 +178,28 @@ btnFeatures.addEventListener('click', () => {
   }
 });
 
+// Zavírací tlačítko v hlavičce bočního panelu = stejné přepnutí jako tlačítko
+// v horní liště (`data-close-for` = id tlačítka).
+document.querySelectorAll<HTMLButtonElement>('.sheet-close-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.getElementById(btn.dataset['closeFor'] ?? '')?.click();
+  });
+});
+
+// Navigation drawer na úzkém displeji — tlačítko menu, scrim, Escape.
+const drawerBtn = document.getElementById('btn-drawer') as HTMLButtonElement | null;
+const drawerScrim = document.getElementById('drawer-scrim');
+function setDrawerOpen(open: boolean): void {
+  document.body.classList.toggle('drawer-open', open);
+  drawerBtn?.setAttribute('aria-expanded', String(open));
+  if (drawerScrim) drawerScrim.hidden = !open;
+}
+drawerBtn?.addEventListener('click', () => setDrawerOpen(!document.body.classList.contains('drawer-open')));
+drawerScrim?.addEventListener('click', () => setDrawerOpen(false));
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape' && document.body.classList.contains('drawer-open')) setDrawerOpen(false);
+});
+
 // Export do CAD (AutoCAD DXF ve vzhledu dialektu) — dialog + stažení souboru.
 const btnExportCad = document.getElementById('btn-export-cad') as HTMLButtonElement;
 btnExportCad.addEventListener('click', () => {

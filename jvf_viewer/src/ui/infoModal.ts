@@ -64,9 +64,9 @@ const INFO_CONTENT_HTML = `
       JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
       kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
       tlačítky řídí průhlednost podkladu — platí společně pro 2D mapu
-      i 3D scénu. Tlačítko ☀️/🌙 v hlavičce přepíná
-      <em>světlý (výchozí) / tmavý režim</em> — barvu pozadí pod vrstvami
-      ve 2D i 3D.
+      i 3D scénu. Tlačítko motivu v hlavičce přepíná
+      <em>světlý (výchozí) / tmavý motiv</em> celé aplikace — panely,
+      dialogy, pozadí pod vrstvami ve 2D i 3D.
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).
@@ -75,6 +75,16 @@ const INFO_CONTENT_HTML = `
       se s mapou přibližují a oddalují stejně jako linie a polygony.
       Při velkém oddálení (zhruba nad 4 m/pixel) se symbol nahradí malou
       barevnou tečkou, jinak by byl menší než pixel obrazovky.
+    </li>
+    <li>
+      <strong>Ovládání</strong> — rozhraní používá standardní komponenty
+      <em>Material Design 3</em> (tlačítka, přepínače, segmentové volby,
+      filtrační čipy, boční panely, dialogy). Boční panely Kontrol
+      a Přehledu prvků se zavírají křížkem v hlavičce nebo znovu tlačítkem
+      v liště. Na úzké obrazovce (mobil, tablet na výšku) je levý panel
+      vrstev <strong>výsuvný</strong> — otevře se ikonou nabídky vlevo
+      nahoře, zavře klepnutím vedle panelu nebo klávesou Esc; v panelu je
+      i přepínač režimu JVF / UDM / JŽM.
     </li>
     <li>
       <strong>3D pohled</strong> — vizualizace Z-souřadnic geometrií. Procházení

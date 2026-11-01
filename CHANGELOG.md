@@ -72,6 +72,16 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Nový vzhled podle Material Design 3** — jednotná tlačítka (plná,
+  tonální, obrysová, ikonová), segmentové přepínače režimu a podkladu,
+  přepínače vrstev, filtrační čipy, vyhledávací pole, boční panely
+  a dialogy se standardními tvary, typografií Roboto a barevnými rolemi.
+- **Světlý / tmavý motiv celé aplikace** — tlačítko motivu dřív měnilo jen
+  pozadí mapy, nyní přepíná celé rozhraní; výchozí je světlý motiv.
+- **Mobilní rozložení** — panel vrstev je na úzké obrazovce výsuvný
+  (ikona nabídky, zavření klepnutím vedle nebo Esc) a obsahuje přepínač
+  režimu; popisky tlačítek v liště se na užší obrazovce skryjí do ikon.
+- **Zavírací tlačítka** v hlavičce panelů Kontrol a Přehledu prvků.
 - **Dialekty JVF DTM jako registr** (revize UDM / DTM) — UDM i ŽXML jsou
   položky jednoho registru (`DIALECTS` v `jvf-dtm-types`, `PARSER_DIALECTS`
   v parseru); router, topologie, export do CAD i viewer se řídí registrem

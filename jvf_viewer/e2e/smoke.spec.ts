@@ -290,6 +290,37 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
   });
 });
 
+test.describe('Vzhled (Material Design 3)', () => {
+  test('motiv se přepíná pro celou aplikaci (data-theme na <html>)', async ({ page }) => {
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await page.locator('#btn-theme').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    const bg = await page.locator('#app-header').evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bg).toBe('rgb(30, 31, 37)'); // surface-container (tmavý)
+  });
+
+  test('zavírací tlačítko bočního panelu zavře Přehled prvků', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.locator('#btn-features').click();
+    await expect(page.locator('#features-panel')).toBeVisible();
+    await page.locator('.sheet-close-btn[data-close-for="btn-features"]').click();
+    await expect(page.locator('#features-panel')).toBeHidden();
+    await expect(page.locator('#btn-features')).not.toHaveClass(/active/);
+  });
+
+  test('na mobilu je panel vrstev výsuvný (menu, scrim)', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const panel = page.locator('#layer-panel');
+    await expect(page.locator('#btn-drawer')).toBeVisible();
+    await expect(panel).not.toBeInViewport();
+    await page.locator('#btn-drawer').click();
+    await expect(panel).toBeInViewport();
+    await expect(page.locator('#app-mode-switch-drawer [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    await page.locator('#drawer-scrim').click({ position: { x: 370, y: 400 } });
+    await expect(panel).not.toBeInViewport();
+  });
+});
+
 test.describe('Sekce Projekty', () => {
   test('sekce se sbalí a rozbalí klikem na hlavičku', async ({ page }) => {
     await loadSample(page, 'ukazka_ZPS.xml');
