@@ -95,7 +95,7 @@ export function nearestAci(hex: string): number {
 
 /**
  * R2000 DXF používá kódovou stránku (ANSI_1250); znaky mimo ASCII se zapisují
- * jako `\U+XXXX`, které AutoCAD i LibreDWG dekódují. R2013 DXF je UTF-8.
+ * jako `\U+XXXX`, které AutoCAD dekóduje. R2013 DXF je UTF-8.
  */
 function encodeText(s: string, version: DxfVersion): string {
   const clean = s.replace(/[\r\n]+/g, ' ');

@@ -31,7 +31,9 @@ const { dxf } = exportDxf(parseJvfDtm(xml), { version: 'R2013' });
 | `R2013` (výchozí) | AC1027 | true color | UTF-8 |
 | `R2000` | AC1015 | nejbližší ACI | `\U+XXXX`, ANSI_1250 |
 
-R2000 slouží jako vstup pro převod do DWG (LibreDWG zapisuje jen R2000).
+R2000 je pro starší CAD programy. **DWG** se neexportuje — DXF otevřete
+v AutoCADu a uložte jako DWG (zápis DWG v prohlížeči by vyžadoval GPL
+knihovnu LibreDWG, viz rozhodnutí v historii projektu).
 
 ## Omezení
 

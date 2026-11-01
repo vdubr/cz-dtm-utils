@@ -1,7 +1,7 @@
 import type { JvfDtm } from 'jvf-dtm-types';
 import { type DxfVersion } from './dxf/document.js';
 export interface ExportDxfOptions {
-    /** Verze DXF: `R2013` (true color, UTF-8; výchozí) nebo `R2000` (ACI, vstup pro DWG). */
+    /** Verze DXF: `R2013` (true color, UTF-8; výchozí) nebo `R2000` (ACI, pro starší CAD). */
     version?: DxfVersion;
     /** Zahrnout mazané záznamy (Del) na hladiny `…_DEL` (výchozí `false`). */
     includeDeleted?: boolean;

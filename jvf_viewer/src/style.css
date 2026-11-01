@@ -2390,9 +2390,6 @@ html, body {
   gap: 6px;
   align-items: center;
 }
-.cad-export .cad-disabled {
-  opacity: 0.55;
-}
 .cad-export .cad-note {
   margin: 0;
   opacity: 0.75;

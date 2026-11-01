@@ -32,10 +32,11 @@ function bodyHtml(projects: readonly JvfProject[]): string {
           DXF (AutoCAD 2013+) — barvy UDM přesně (true color)</label>
         <label><input type="radio" name="cad-format" value="R2000">
           DXF R2000 — pro starší CAD, barvy zaokrouhlené na paletu AutoCADu</label>
-        <label class="cad-disabled" title="Převod do DWG (LibreDWG) zatím není k dispozici — DXF otevřete v AutoCADu a uložte jako DWG.">
-          <input type="radio" name="cad-format" value="DWG" disabled>
-          DWG — připravujeme (zatím DXF uložte v AutoCADu jako DWG)</label>
       </fieldset>
+      <p class="cad-note cad-dwg">
+        <strong>DWG:</strong> DXF otevřete v AutoCADu a uložte jako DWG
+        (Uložit jako → Výkres AutoCADu *.dwg).
+      </p>
       <label class="cad-row"><input type="checkbox" id="cad-deleted">
         Zahrnout mazané záznamy (na hladiny <code>…_DEL</code>)</label>
       <label class="cad-row"><input type="checkbox" id="cad-flat">

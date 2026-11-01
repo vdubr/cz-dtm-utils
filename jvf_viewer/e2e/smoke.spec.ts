@@ -116,8 +116,9 @@ test.describe('Načtení JVF souboru', () => {
 
     await page.locator('#btn-export-cad').click();
     await expect(page.locator('#confirm-modal-title')).toHaveText(/Export do CAD/);
-    // DWG zatím nedostupné (převod přes LibreDWG čeká na sestavení).
-    await expect(page.locator('input[name="cad-format"][value="DWG"]')).toBeDisabled();
+    // DWG se neexportuje — dialog radí uložit DXF v AutoCADu jako DWG.
+    await expect(page.locator('input[name="cad-format"]')).toHaveCount(2);
+    await expect(page.locator('.cad-dwg')).toContainText('uložte jako DWG');
 
     const downloadPromise = page.waitForEvent('download');
     await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();

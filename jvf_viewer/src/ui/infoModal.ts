@@ -150,8 +150,8 @@ const INFO_CONTENT_HTML = `
       <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy UDM
       přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
       a 2D výkres. Souřadnice zůstávají v EPSG:5514. Vzory linií jsou
-      přibližné. DWG zatím exportovat nelze — DXF otevřete v AutoCADu
-      a uložte jako DWG. Export běží lokálně v prohlížeči.
+      přibližné. <strong>DWG</strong> získáte tak, že DXF otevřete
+      v AutoCADu a uložíte jako DWG. Export běží lokálně v prohlížeči.
     </li>
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se

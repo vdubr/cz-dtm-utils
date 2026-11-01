@@ -11,7 +11,7 @@ AutoCAD spolehlivě otevírá; jvf-cad do šablony jen doplňuje hladiny, typy
   - jednotky metry ($INSUNITS = 6, $MEASUREMENT = 1),
   - APPID „UDM" (registrace aplikace pro XDATA s atributy objektů),
   - textový styl „UDM" s fontem Arial Narrow (doporučení UDM, kap. 15.2),
-  - R2000: kódová stránka ANSI_1250 (čeština; vstup pro převod do DWG).
+  - R2000: kódová stránka ANSI_1250 (čeština; pro starší CAD).
 
 Potřebuje ezdxf (jen pro vývojáře, ne runtime):
     python3 -m venv .venv && .venv/bin/pip install ezdxf

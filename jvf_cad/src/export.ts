@@ -25,7 +25,7 @@ import { UDM_CAD_SYMBOLS, type CadSymbolPrimitive } from './symbols.js';
 import { textHeightFor, isTextObject } from './text.js';
 
 export interface ExportDxfOptions {
-  /** Verze DXF: `R2013` (true color, UTF-8; výchozí) nebo `R2000` (ACI, vstup pro DWG). */
+  /** Verze DXF: `R2013` (true color, UTF-8; výchozí) nebo `R2000` (ACI, pro starší CAD). */
   version?: DxfVersion;
   /** Zahrnout mazané záznamy (Del) na hladiny `…_DEL` (výchozí `false`). */
   includeDeleted?: boolean;
@@ -64,7 +64,7 @@ function linetypeName(dashMm: readonly number[]): string {
 function safeName(s: string): string {
   return s
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[<>/\\":;?*|=`,]/g, '_');
 }
 

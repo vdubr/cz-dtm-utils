@@ -32,8 +32,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typ čáry), symboly UDM z knihovny ČKZ jako bloky, popisy a názvy jako
   texty (výšky dle UDM pro 1:500) a atributy objektů v XDATA „UDM". DXF pro
   AutoCAD 2013+ (true color) nebo R2000; volitelně mazané záznamy a 2D.
-  Nový balíček `jvf-cad` (MIT). DWG zatím ne — DXF lze v AutoCADu uložit
-  jako DWG.
+  Nový balíček `jvf-cad` (MIT). DWG se neexportuje — DXF stačí v AutoCADu
+  uložit jako DWG.
 - **Přepínač „Zvýraznit změny barvou"** — vypne zelené / oranžové / červené
   přebarvení nových, editovaných a mazaných záznamů; zůstanou viditelné
   s vlastní symbologií (2D i 3D). U souborů UDM je ve výchozím stavu vypnutý,
