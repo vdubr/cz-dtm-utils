@@ -9,6 +9,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Režimy aplikace JVF / UDM** — přepínač v hlavičce; výchozí je JVF,
+  do UDM (symbologie UDM, ukázky UDM, Export do CAD) se přepíná ručně.
+  Přepnutí zavře načtené soubory (s potvrzením); soubor jiného modelu
+  nabídne přepnutí režimu, bez něj se nenačte. Režim je v adrese stránky
+  (`?mode=udm`). Připraveno pro další režim (JŽM).
 - **Podpora UDM 2.1.1 (Univerzální datový model ČKZ)** — otevřeného
   datového modelu České komory zeměměřičů, který rozšiřuje JVF DTM
   (1.5.0.2) o objekty a atributy nad rámec DTM (stromy, mobiliář, svislé

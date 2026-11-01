@@ -142,8 +142,8 @@ const INFO_CONTENT_HTML = `
       geodeta celá jako nová) je zvýraznění ve výchozím stavu vypnuté.
     </li>
     <li>
-      <strong>Export do CAD</strong> — tlačítko v hlavičce vyexportuje
-      načtený projekt do <strong>AutoCAD DXF</strong> ve vzhledu UDM:
+      <strong>Export do CAD</strong> (v režimu UDM) — tlačítko v hlavičce
+      vyexportuje načtený projekt do <strong>AutoCAD DXF</strong> ve vzhledu UDM:
       hladiny podle objektových typů (barva, tloušťka, typ čáry), symboly
       UDM z knihovny ČKZ jako bloky, popisy a názvy jako texty (výšky dle
       UDM pro 1:500) a atributy objektů v XDATA „UDM" (v AutoCADu příkaz
@@ -254,8 +254,10 @@ const INFO_CONTENT_HTML = `
     <strong>UDM — Univerzální datový model ČKZ (${UDM_DISPLAY}):</strong>
     otevřený datový model České komory zeměměřičů, nadmnožina JVF DTM pro
     data nad rámec DTM (stromy, mobiliář, svislé a vodorovné dopravní
-    značení, popisy, vrstevnice, pasportní atributy, přílohy). Soubor UDM se
-    pozná podle elementu <code>VerzeJVFUDM</code> a načte se automaticky.
+    značení, popisy, vrstevnice, pasportní atributy, přílohy). S UDM se
+    pracuje v <strong>režimu UDM</strong> (přepínač <em>JVF / UDM</em>
+    v hlavičce, viz Režimy aplikace). Soubor UDM se pozná podle elementu
+    <code>VerzeJVFUDM</code>.
     Objekty nad rámec DTM (kód <code>94…</code>) tvoří obsahové části
     <strong>ZPSUDM</strong>, <strong>DIUDM</strong>, <strong>TIUDM</strong>
     a <strong>OST</strong>; v legendě i v panelu prvků mají české
@@ -272,7 +274,20 @@ const INFO_CONTENT_HTML = `
     názvy) se v mapě jako text nevykreslují.
     Meziobjektová topologie se pro UDM nespouští — UDM nepracuje s plošnou
     mapou ani s vazbou definiční bod ↔ plocha. Ukázkové soubory UDM jsou
-    v nabídce vedle tlačítka „Nahrát soubor".
+    v režimu UDM v nabídce vedle tlačítka „Nahrát soubor".
+  </p>
+
+  <h3>Režimy aplikace</h3>
+  <p>
+    Přepínač <strong>JVF / UDM</strong> v hlavičce určuje, s jakým datovým
+    modelem pracujete. Výchozí je <strong>JVF</strong> (JVF DTM, symbologie
+    dle Katalogu ČÚZK). Režim <strong>UDM</strong> přidává symbologii UDM,
+    ukázkové soubory UDM a <em>Export do CAD</em>. Přepnutí zavře načtené
+    soubory (při načtených datech se aplikace nejdřív zeptá). Načtete-li
+    soubor jiného modelu (UDM v režimu JVF nebo JVF v režimu UDM), aplikace
+    nabídne přepnutí — bez něj se soubor nenačte. Režim je v adrese stránky
+    (<code>?mode=udm</code>), takže odkaz lze sdílet; bez parametru se
+    aplikace otevře v režimu JVF. Do budoucna přibude režim pro JŽM.
   </p>
 
   <h3>Omezení</h3>

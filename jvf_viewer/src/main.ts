@@ -1,9 +1,18 @@
 import 'ol/ol.css';
 import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
-import { isUdmVersion, type JvfDtm, type ObjektovyTyp } from 'jvf-parser';
+import {
+  LATEST_UDM_VERSION,
+  SUPPORTED_VERSIONS,
+  type JvfDtm,
+  type JvfVersion,
+  type ObjektovyTyp,
+} from 'jvf-parser';
 import { runAllChecks } from 'jvf-topology';
 import { markUdmObjekty } from './map/udmStyle.js';
+import { getAppMode, onAppModeChange, type AppMode } from './state/appMode.js';
+import { setActiveVersion } from './state/activeVersion.js';
+import { setupAppModeSwitch } from './ui/appModeSwitch.js';
 import { createOlMap } from './map/olMap.js';
 import { createZmLayer, createOrtofotoLayer, setupBaseLayerSwitcher } from './map/cuzk.js';
 import {
@@ -37,6 +46,7 @@ import {
 import { resetFeatureFilter } from './state/featureFilter.js';
 import {
   addProject,
+  clearProjects,
   getProjectCount,
   getProjects,
   isMultiProject,
@@ -116,6 +126,19 @@ setupLegendModal();
 // jen pro JVF obsahující záznamy se `ZapisObjektu` ∈ {i, u, d} (changeset
 // nebo nově vytvořený soubor).
 setupChangesetToggle(() => currentJvfLayers);
+
+// Režim aplikace (JVF / UDM): verze pro legendu a číselníky podle režimu;
+// přepnutí režimu zavře načtené projekty (potvrzení řeší appModeSwitch).
+function activeVersionForMode(mode: AppMode): JvfVersion {
+  return mode === 'udm' ? LATEST_UDM_VERSION : SUPPORTED_VERSIONS[SUPPORTED_VERSIONS.length - 1]!;
+}
+setActiveVersion(activeVersionForMode(getAppMode()));
+setupAppModeSwitch();
+onAppModeChange((mode) => {
+  clearProjects();
+  setActiveVersion(activeVersionForMode(mode));
+  rebuildAll();
+});
 
 // Vercel Web Analytics + Speed Insights — pageviews a Core Web Vitals.
 // Cookieless, GDPR-compliant; aktivní jen na produkčním Vercel hostu (auto-detect).
@@ -209,7 +232,7 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
   projectExtents.clear();
   for (const project of projects) {
     // Soubor UDM → všechny jeho objekty kreslit symbologií UDM (2D, 3D, panely).
-    if (isUdmVersion(project.dtm.verze)) markUdmObjekty(project.dtm.objekty);
+    if (getAppMode() === 'udm') markUdmObjekty(project.dtm.objekty);
     const { layers, extent } = buildJvfLayers(project.dtm.objekty);
     allLayers.push(...layers);
     if (!isEmpty(extent)) {

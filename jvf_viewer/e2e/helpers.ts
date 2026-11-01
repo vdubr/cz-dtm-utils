@@ -24,3 +24,9 @@ export async function loadSample(page: Page, name = 'ukazka_ZPS.xml'): Promise<v
   await expect(page.locator('#jvf-layers-list .empty-hint')).toHaveCount(0);
   await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
 }
+
+/** Přepne režim aplikace přepínačem v hlavičce (bez načtených dat — bez dialogu). */
+export async function switchMode(page: Page, mode: 'jvf' | 'udm'): Promise<void> {
+  await page.locator(`#app-mode-switch [data-mode-btn="${mode}"]`).click();
+  await expect(page.locator(`#app-mode-switch [data-mode-btn="${mode}"]`)).toHaveClass(/active/);
+}

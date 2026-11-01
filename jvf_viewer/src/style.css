@@ -2396,3 +2396,35 @@ html, body {
   font-size: 12px;
   line-height: 1.4;
 }
+
+/* Režim aplikace (JVF / UDM) — jvf_viewer/src/ui/appModeSwitch.ts */
+[data-mode][hidden] {
+  display: none !important;
+}
+.app-mode-switch {
+  display: inline-flex;
+  margin-left: 8px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.app-mode-switch button {
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.app-mode-switch button + button {
+  border-left: 1px solid #30363d;
+}
+.app-mode-switch button:hover {
+  color: #e6edf3;
+}
+.app-mode-switch button.active {
+  background: #1f6feb;
+  color: #ffffff;
+}

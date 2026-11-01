@@ -10,6 +10,7 @@ import {
 import type { JvfDtm, ErrorProtocol } from 'jvf-parser';
 import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
+import { ensureAppModeForFile } from './appModeSwitch.js';
 
 /**
  * Validace verze souboru (1.5.0.1+ chování):
@@ -94,6 +95,8 @@ export function loadJvfFile(
           return;
         }
         const data = parseJvfDtm(xml);
+        // Soubor jiného režimu (UDM v JVF a naopak) → nabídnout přepnutí.
+        if (!(await ensureAppModeForFile(data, file.name))) return;
         const ok = await validateFileVersion(data, file.name);
         if (!ok) return;
         onLoad(data, file.name);
@@ -210,6 +213,7 @@ async function loadSample(
       return;
     }
     const data = parseJvfDtm(xml);
+    if (!(await ensureAppModeForFile(data, name))) return;
     const ok = await validateFileVersion(data, name);
     if (!ok) return;
     onLoad(data, name);

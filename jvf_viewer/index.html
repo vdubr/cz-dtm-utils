@@ -66,6 +66,7 @@
       <div class="header-left">
         <span class="app-logo">&#11041;</span>
         <h1>JVF DTM Prohlížeč</h1>
+        <div id="app-mode-switch" class="app-mode-switch" role="group" aria-label="Režim aplikace"></div>
       </div>
       <div class="header-right">
         <div class="upload-wrapper">
@@ -77,13 +78,13 @@
           </button>
           <div id="upload-menu" class="upload-menu" hidden role="menu">
             <div class="upload-menu-title">Ukázkové soubory</div>
-            <button class="upload-menu-item" data-sample="ukazka_ZPS.xml" role="menuitem" title="Základní prostorová situace">ukazka_ZPS.xml</button>
-            <button class="upload-menu-item" data-sample="ukazka_DI.xml" role="menuitem" title="Dopravní infrastruktura">ukazka_DI.xml</button>
-            <button class="upload-menu-item" data-sample="ukazka_KI.xml" role="menuitem" title="Komunikační infrastruktura">ukazka_KI.xml</button>
-            <button class="upload-menu-item" data-sample="ukazka_OPL.xml" role="menuitem" title="Ochranná pásma a linie">ukazka_OPL.xml</button>
-            <button class="upload-menu-item" data-sample="UDM_ukazka-1.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — ukázka reálných dat (ČKZ)">UDM_ukazka-1.xml</button>
-            <button class="upload-menu-item" data-sample="udm_minimal.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — minimální testovací soubor">udm_minimal.xml</button>
-            <button class="upload-menu-item" data-sample="udm_pontonovy_most.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — pontonový most (obvod mostu + komunikace s dřevěným povrchem)">udm_pontonovy_most.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_ZPS.xml" role="menuitem" title="Základní prostorová situace">ukazka_ZPS.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_DI.xml" role="menuitem" title="Dopravní infrastruktura">ukazka_DI.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_KI.xml" role="menuitem" title="Komunikační infrastruktura">ukazka_KI.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_OPL.xml" role="menuitem" title="Ochranná pásma a linie">ukazka_OPL.xml</button>
+            <button class="upload-menu-item" data-mode="udm" data-sample="UDM_ukazka-1.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — ukázka reálných dat (ČKZ)">UDM_ukazka-1.xml</button>
+            <button class="upload-menu-item" data-mode="udm" data-sample="udm_minimal.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — minimální testovací soubor">udm_minimal.xml</button>
+            <button class="upload-menu-item" data-mode="udm" data-sample="udm_pontonovy_most.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — pontonový most (obvod mostu + komunikace s dřevěným povrchem)">udm_pontonovy_most.xml</button>
           </div>
         </div>
         <input type="file" id="file-input" accept=".xml,.jvf" multiple style="display:none" />
@@ -93,7 +94,7 @@
         <button id="btn-features" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           Přehled prvků
         </button>
-        <button id="btn-export-cad" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
+        <button id="btn-export-cad" class="btn btn-secondary" data-mode="udm" disabled title="Nejprve nahrajte JVF soubor">
           Export do CAD
         </button>
         <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>

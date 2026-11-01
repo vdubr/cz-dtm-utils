@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loadSample, fixturePath } from './helpers';
+import { loadSample, fixturePath, switchMode } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('./');
@@ -23,8 +23,72 @@ test.describe('Základní stav aplikace', () => {
     await page.locator('#btn-upload-menu').click();
     await expect(page.locator('#upload-menu')).toBeVisible();
     await expect(page.locator('.upload-menu-item[data-sample="ukazka_ZPS.xml"]')).toBeVisible();
-    // 4 ukázky JVF 1.4.3 + 3 ukázky UDM 2.1.1.
-    await expect(page.locator('.upload-menu-item')).toHaveCount(7);
+    // Výchozí režim JVF: jen 4 ukázky JVF, ukázky UDM jsou skryté.
+    await expect(page.locator('.upload-menu-item:visible')).toHaveCount(4);
+    await expect(page.locator('.upload-menu-item[data-sample="udm_minimal.xml"]')).toBeHidden();
+  });
+});
+
+test.describe('Režimy aplikace (JVF / UDM)', () => {
+  test('výchozí režim je JVF; ?mode=udm otevře rovnou UDM', async ({ page }) => {
+    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).not.toHaveClass(/active/);
+    expect(new URL(page.url()).searchParams.get('mode')).toBeNull();
+
+    await page.goto('./?mode=udm');
+    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).toHaveClass(/active/);
+    await page.locator('#btn-upload-menu').click();
+    await expect(page.locator('.upload-menu-item:visible')).toHaveCount(3);
+    await expect(page.locator('.upload-menu-item[data-sample="udm_minimal.xml"]')).toBeVisible();
+  });
+
+  test('přepnutí bez dat je okamžité a zapíše režim do URL', async ({ page }) => {
+    await switchMode(page, 'udm');
+    await expect(page.locator('#confirm-modal')).toBeHidden();
+    expect(new URL(page.url()).searchParams.get('mode')).toBe('udm');
+    await switchMode(page, 'jvf');
+    expect(new URL(page.url()).searchParams.get('mode')).toBeNull();
+  });
+
+  test('soubor UDM v režimu JVF: Zrušit = nenačte se, Přepnout = načte se v UDM', async ({ page }) => {
+    await page.setInputFiles('#file-input', fixturePath('udm_minimal.xml'));
+    await expect(page.locator('#confirm-modal-title')).toHaveText(/režimu UDM/);
+    await page.locator('#confirm-modal-footer button', { hasText: 'Zrušit' }).click();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#btn-validate')).toBeDisabled();
+    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
+
+    await page.setInputFiles('#file-input', fixturePath('udm_minimal.xml'));
+    await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do UDM' }).click();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).toHaveClass(/active/);
+    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute('title', /UDM 2\.1\.1/);
+  });
+
+  test('soubor JVF v režimu UDM nabídne přepnutí do JVF', async ({ page }) => {
+    await switchMode(page, 'udm');
+    await page.setInputFiles('#file-input', fixturePath('ukazka_ZPS.xml'));
+    await expect(page.locator('#confirm-modal-title')).toHaveText(/režimu JVF/);
+    await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do JVF' }).click();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute('title', 'Verze JVF 1.4.3');
+  });
+
+  test('přepnutí s načtenými daty se ptá a zavře projekty', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.locator('#app-mode-switch [data-mode-btn="udm"]').click();
+    await expect(page.locator('#confirm-modal-body')).toContainText('zavře načtený soubor');
+    // Zrušit → nic se nemění
+    await page.locator('#confirm-modal-footer button', { hasText: 'Zrušit' }).click();
+    await expect(page.locator('#projects-list .project-item')).toHaveCount(1);
+    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    // Přepnout → projekty pryč, prázdný stav
+    await page.locator('#app-mode-switch [data-mode-btn="udm"]').click();
+    await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do UDM' }).click();
+    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).toHaveClass(/active/);
+    await expect(page.locator('#projects-section')).toBeHidden();
+    await expect(page.locator('#btn-validate')).toBeDisabled();
   });
 });
 
@@ -83,9 +147,10 @@ test.describe('Načtení JVF souboru', () => {
     );
   });
 
-  test('soubor UDM 2.1.1 se načte bez modalu, s verzí UDM a skupinami UDM', async ({ page }) => {
+  test('soubor UDM 2.1.1 se v režimu UDM načte bez modalu, s verzí UDM a skupinami UDM', async ({ page }) => {
     // VerzeJVFDTM 1.5.0.2 + VerzeJVFUDM 2.1.1 → UDM (ne odmítnutá verze 1.5.0.2).
     // Body souboru UDM se kreslí SVG symboly UDM (public/symboly/udm/).
+    await switchMode(page, 'udm');
     const udmSymbol = page.waitForRequest(/\/symboly\/udm\/[\d-]+_[0-9a-f]{6}\.svg$/);
     await page.locator('#btn-upload-menu').click();
     await page.locator('.upload-menu-item[data-sample="udm_minimal.xml"]').click();
@@ -108,7 +173,11 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#toggle-show-inserted')).toBeChecked();
   });
 
-  test('Export do CAD stáhne DXF ve vzhledu UDM', async ({ page }) => {
+  test('Export do CAD (jen režim UDM) stáhne DXF ve vzhledu UDM', async ({ page }) => {
+    // V režimu JVF tlačítko není, v UDM je (bez dat zakázané).
+    await expect(page.locator('#btn-export-cad')).toBeHidden();
+    await switchMode(page, 'udm');
+    await expect(page.locator('#btn-export-cad')).toBeVisible();
     await expect(page.locator('#btn-export-cad')).toBeDisabled();
     await page.locator('#btn-upload-menu').click();
     await page.locator('.upload-menu-item[data-sample="udm_pontonovy_most.xml"]').click();
@@ -132,6 +201,7 @@ test.describe('Načtení JVF souboru', () => {
   });
 
   test('ukázka UDM s pontonovým mostem se načte z nabídky', async ({ page }) => {
+    await switchMode(page, 'udm');
     await page.locator('#btn-upload-menu').click();
     await page.locator('.upload-menu-item[data-sample="udm_pontonovy_most.xml"]').click();
 
