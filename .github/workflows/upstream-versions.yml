@@ -1,0 +1,38 @@
+name: Hlídání nových verzí datových modelů
+
+# Jednou týdně zkontroluje stránky ČÚZK (JVF DTM), SŽ (ŽXML) a ČKZ (UDM).
+# Při nalezení nepodporované novější verze založí (nebo doplní) issue.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Kontrola verzí
+        id: check
+        run: |
+          set +e
+          python3 scripts/check-upstream-versions.py | tee report.txt
+          echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Založit issue
+        if: steps.check.outputs.status == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          title="Nová verze datového modelu (JVF DTM / ŽXML / UDM)"
+          existing=$(gh issue list --state open --search "$title in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file report.txt
+          else
+            gh issue create --title "$title" --body-file report.txt
+          fi

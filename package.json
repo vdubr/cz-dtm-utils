@@ -18,6 +18,9 @@
     "build": "npm run build -w jvf-dtm-types && npm run build -w jvf-parser && npm run build -w jvf-topology && npm run build -w jvf-cad && npm run build -w jvf-viewer",
     "typecheck": "npm run typecheck -w jvf-dtm-types && npm run typecheck -w jvf-parser && npm run typecheck -w jvf-topology && npm run typecheck -w jvf-cad && npm run typecheck -w jvf-viewer",
     "test": "npm run test -w jvf-parser && npm run test -w jvf-topology && npm run test -w jvf-cad",
+    "generate": "npm run generate:all -w jvf-parser",
+    "check:generated": "npm run generate:all -w jvf-parser && git diff --exit-code -- ':(glob)jvf_parser/src/*/generated/*.ts' ':(exclude,glob)jvf_parser/src/*/generated/styles.ts'",
+    "check:upstream": "python3 scripts/check-upstream-versions.py",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

@@ -34,6 +34,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Generované typy odpovídají XSD
+        run: npm run check:generated
+
   build:
     needs: test
     runs-on: ubuntu-latest
