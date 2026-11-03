@@ -19,7 +19,8 @@ import { loadSample } from '../helpers/fixtures.js';
  *  3. Mazané záznamy (`'d'`) si zachovávají ID i geometrii (downstream
  *     komponenty jako viewer je potřebují pro vizualizaci a topologii).
  *  4. Insert záznamy (`'i'`) mají prázdné `<atr:ID/>` (ID přiděluje IS DMVS)
- *     a parser to tlumí na `null`/prázdný string, nikoli na crash.
+ *     a parser je vrací jako chybějící ID (`undefined`), ne jako prázdný string
+ *     — viewer podle toho přidělí prvku interní klíč.
  */
 describe('Changeset s mazanými záznamy (changeset-cimer.xml)', () => {
   let doc: JvfDtm;
@@ -172,16 +173,14 @@ describe('Changeset s mazanými záznamy (changeset-cimer.xml)', () => {
   });
 
   describe('insert záznamy (`i`) — chybějící ID', () => {
-    it('mají buď null, prázdný string, nebo undefined ID (ID přiděluje IS DMVS)', () => {
+    it('prázdné <atr:ID/> = chybějící ID (undefined, ne prázdný string)', () => {
       const allInserts = doc.objekty.flatMap((o) =>
         o.zaznamy.filter((z) => z.zapisObjektu === 'i'),
       );
       expect(allInserts.length).toBeGreaterThan(0);
       for (const z of allInserts) {
         const id = z.commonAttributes?.id;
-        // <atr:ID/> může být parserem zpracovaný jako null, undefined, nebo prázdný string —
-        // všechny tři varianty jsou pro insert legitimní.
-        expect(id === null || id === undefined || id === '').toBe(true);
+        expect(id).toBeUndefined();
       }
     });
 
