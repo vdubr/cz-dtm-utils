@@ -60,9 +60,9 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní
       mapa nebo Ortofoto), přepínání jednotlivých vrstev v levém panelu.
-      Druhý klik na aktivní podkladové tlačítko podklad <em>vypne</em> —
-      JVF vrstvy zůstanou viditelné nad prázdným pozadím (užitečné pro
-      kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
+      Volba <em>Prázdná</em> podklad vypne — JVF vrstvy zůstanou nad
+      prázdným pozadím, které je ve světlém motivu bílé a v tmavém černé
+      (užitečné pro kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
       tlačítky řídí průhlednost podkladu — platí společně pro 2D mapu
       i 3D scénu. Tlačítko motivu v hlavičce přepíná
       <em>světlý (výchozí) / tmavý motiv</em> celé aplikace — panely,

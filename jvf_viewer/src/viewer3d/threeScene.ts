@@ -203,7 +203,7 @@ function computeObjectVisibility(obj: THREE.Object3D): boolean {
  *  přežila re-init při přepnutí 2D ↔ 3D a při rebuildu geometrie.
  *  Výchozí je světlé pozadí — barvy prvků z Katalogu ČÚZK počítají se
  *  světlým podkladem (stejně jako 2D mapa). */
-let currentBackground = '#f5f5f5';
+let currentBackground = '#ffffff';
 
 /** Přepínač: renderovat Point features jako SVG sprity (true) nebo jako
  *  `THREE.Points` (false, původní chování). Platí jen pro 3D. */

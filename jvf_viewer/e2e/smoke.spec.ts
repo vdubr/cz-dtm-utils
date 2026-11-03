@@ -756,4 +756,35 @@ test.describe('Modály a ovládání', () => {
     await expect(ortofoto).toHaveClass(/active/);
     await expect(zm).not.toHaveClass(/active/);
   });
+
+  test('podklad „Prázdná" vypne podklad; pozadí je bílé, v tmavém motivu černé', async ({ page }) => {
+    const prazdna = page.locator('.base-btn[data-layer="none"]');
+    await expect(prazdna).toHaveText('Prázdná');
+    await prazdna.click();
+    await expect(prazdna).toHaveClass(/active/);
+    await expect(page.locator('.base-btn[data-layer="zm"]')).not.toHaveClass(/active/);
+    await expect(page.locator('#basemap-opacity')).toBeDisabled();
+
+    // Žádná dlaždicová vrstva podkladu není viditelná.
+    const visibleBase = await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      return d.olMap.getLayers().getArray()
+        .filter((l) => ['zm', 'ortofoto'].includes(l.get('name')) && l.getVisible()).length;
+    });
+    expect(visibleBase).toBe(0);
+
+    const bg = () => page.locator('#map-area').evaluate((el) => getComputedStyle(el).backgroundColor);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    expect(await bg()).toBe('rgb(255, 255, 255)');
+    await page.locator('#btn-theme').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    expect(await bg()).toBe('rgb(0, 0, 0)');
+
+    // Opakovaný klik na aktivní volbu nic nevypíná (segmentový přepínač).
+    const zm = page.locator('.base-btn[data-layer="zm"]');
+    await zm.click();
+    await zm.click();
+    await expect(zm).toHaveClass(/active/);
+    await expect(page.locator('#basemap-opacity')).toBeEnabled();
+  });
 });

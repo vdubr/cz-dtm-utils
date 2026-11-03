@@ -72,6 +72,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Podklad „Prázdná"** — třetí volba podkladových map vedle Základní mapy
+  a Ortofota: bez podkladu, pozadí je ve světlém motivu bílé a v tmavém
+  černé (dřív světle / tmavě šedé). Nahrazuje skryté vypnutí podkladu
+  druhým klikem na aktivní tlačítko; posuvník sytosti je bez podkladu
+  neaktivní.
 - **Nový vzhled podle Material Design 3** — jednotná tlačítka (plná,
   tonální, obrysová, ikonová), segmentové přepínače režimu a podkladu,
   přepínače vrstev, filtrační čipy, vyhledávací pole, boční panely

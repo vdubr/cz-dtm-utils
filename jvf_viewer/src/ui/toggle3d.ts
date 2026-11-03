@@ -182,10 +182,11 @@ export function setup3dToggle(
 
   // Obecný přepínač světlý/tmavý režim (☀️/🌙 v hlavičce) — platí pro 3D
   // scénu i pro 2D mapu (pozadí #map-area viditelné pod vrstvami při
-  // vypnutém podkladu). Ikona ukazuje režim, NA který se kliknutím přepne.
+  // podkladu „Prázdná" a prosvítá při snížené sytosti podkladu): ve světlém
+  // motivu bílé, v tmavém černé. Ikona ukazuje režim, NA který se přepne.
   const BG_COLORS: Record<string, string> = {
-    dark: '#0a0a0f',
-    light: '#f5f5f5',
+    dark: '#000000',
+    light: '#ffffff',
   };
   const mapArea = document.getElementById('map-area') as HTMLElement | null;
   const themeBtn = document.getElementById('btn-theme') as HTMLButtonElement | null;

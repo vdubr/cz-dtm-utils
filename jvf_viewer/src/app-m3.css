@@ -303,6 +303,9 @@ html, body {
 #basemap-opacity::-moz-range-track { height: 4px; border-radius: 2px; background: var(--md-sys-color-secondary-container); }
 #basemap-opacity::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
 #basemap-opacity::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--md-sys-color-primary); border: none; }
+/* Bez podkladu (volba „Prázdná") nemá sytost smysl — vypnutý stav M3. */
+#basemap-opacity:disabled { opacity: 0.38; cursor: default; }
+.basemap-opacity-row:has(#basemap-opacity:disabled) .basemap-opacity-icon { opacity: 0.38; }
 
 /* Vrstvy = list (dense). */
 .layer-group-header {

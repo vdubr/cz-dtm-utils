@@ -99,19 +99,20 @@ export function setupBaseLayerSwitcher(
     ortofotoLayer.setOpacity(opacity);
     btns.forEach((b) => {
       b.classList.toggle('active', b.dataset['layer'] === kind);
+      b.setAttribute('aria-pressed', String(b.dataset['layer'] === kind));
     });
+    // Sytost nemá bez podkladu smysl.
+    if (opacitySlider) opacitySlider.disabled = kind === 'none';
   }
   subscribeBasemapChoice(applyChoiceTo2d);
   applyChoiceTo2d();
 
+  // Segmentový přepínač: Základní mapa / Ortofoto / Prázdná. „Prázdná"
+  // (`none`) = bez podkladu, pod vrstvami je pozadí mapy podle motivu
+  // (bílé / černé, viz toggle3d.ts).
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      const layer = (btn.dataset['layer'] ?? 'none') as BasemapChoice;
-      // Toggle: kliknutí na aktivní tlačítko podkladovou vrstvu vypne
-      // (žádný podklad — vidíme jen JVF vrstvy nad pozadím mapy). Druhým
-      // klikem se vrstva opět zapne.
-      const wasActive = btn.classList.contains('active');
-      setBasemapChoice(wasActive ? 'none' : layer);
+      setBasemapChoice((btn.dataset['layer'] ?? 'none') as BasemapChoice);
     });
   });
 
