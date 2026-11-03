@@ -1,5 +1,32 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { loadSample, fixturePath, switchMode } from './helpers';
+
+/**
+ * Kolik prvků 2D mapy style funkce vrstev opravdu kreslí, seskupeno podle
+ * vlastnosti prvku (`jvfPart`, `jvfLevel`, …). Odfiltrovaný prvek má styl
+ * `undefined` → nepočítá se. Vyžaduje dev háček `window.__jvfDebug`.
+ */
+function drawnBy(page: Page, prop: string): Promise<Record<string, number>> {
+  return page.evaluate((prop) => {
+    const d = (window as unknown as { __jvfDebug: {
+      olMap: import('ol/Map').default;
+      getJvfLayers: () => Array<{ olLayer: import('ol/layer/Vector').default }>;
+    } }).__jvfDebug;
+    const res = d.olMap.getView().getResolution() ?? 1;
+    const out: Record<string, number> = {};
+    for (const { olLayer } of d.getJvfLayers()) {
+      const fn = olLayer.getStyleFunction()!;
+      for (const f of olLayer.getSource()!.getFeatures()) {
+        const style = fn(f, res);
+        if (Array.isArray(style) ? style.length > 0 : !!style) {
+          const key = String(f.get(prop));
+          out[key] = (out[key] ?? 0) + 1;
+        }
+      }
+    }
+    return out;
+  }, prop);
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto('./');
@@ -508,11 +535,61 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#features-summary')).toHaveText('30 typů, 821 záznamů');
   });
 
-  test('filtr obsahových částí se skryje, když mají data jen jednu část', async ({ page }) => {
+  test('filtr obsahových částí je i v režimu JVF (i s jedinou částí)', async ({ page }) => {
     await loadSample(page, 'ukazka_ZPS.xml');
     await page.locator('#btn-features').click();
     await expect(page.locator('#features-panel')).toBeVisible();
-    await expect(page.locator('.features-filters')).toBeHidden();
+    await expect(page.locator('.features-filter-btn')).toHaveText(['Vše', 'ZPS']);
+  });
+
+  test('filtr úrovní umístění je vidět i s jedinou úrovní a filtruje tabulku i mapu', async ({ page }) => {
+    // Ukázka ZPS: vše na úrovni 0 → řádek úrovní je vidět s jediným čipem.
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.locator('#btn-features').click();
+    await expect(page.locator('#features-level-filter .level-chip')).toHaveText(['0']);
+
+    // Ukázka KI: úrovně 0 a -1 (podzemí).
+    await page.goto('./');
+    await loadSample(page, 'ukazka_KI.xml');
+    await page.locator('#btn-features').click();
+    const chips = page.locator('#features-level-filter .level-chip');
+    await expect(chips).toHaveText(['-1', '0']);
+    const all = await drawnBy(page, 'jvfLevel');
+    expect(all['-1']).toBeGreaterThan(0);
+    expect(all['0']).toBeGreaterThan(0);
+    const rowsAll = await page.locator('.feature-row').count();
+
+    // Skrýt úroveň -1 → zmizí z mapy i z tabulky.
+    await chips.filter({ hasText: '-1' }).click();
+    await expect(chips.filter({ hasText: '-1' })).not.toHaveClass(/active/);
+    const filtered = await drawnBy(page, 'jvfLevel');
+    expect(filtered['-1']).toBeUndefined();
+    expect(filtered['0']).toBe(all['0']);
+    expect(await page.locator('.feature-row').count()).toBeLessThan(rowsAll);
+
+    await chips.filter({ hasText: '-1' }).click();
+    expect(await drawnBy(page, 'jvfLevel')).toEqual(all);
+  });
+
+  test('filtr obsahové části filtruje i mapu', async ({ page }) => {
+    await page.goto('./?mode=udm');
+    await page.setInputFiles('#file-input', fixturePath('UDM_ukazka-1.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled({ timeout: 30_000 });
+    await page.locator('#btn-features').click();
+
+    const drawnByPart = () => drawnBy(page, 'jvfPart');
+    const all = await drawnByPart();
+    expect(all['ZPS']).toBeGreaterThan(0);
+    expect(all['DIUDM']).toBeGreaterThan(0);
+
+    await page.locator('.features-filter-btn[data-filter="DIUDM"]').click();
+    await expect(page.locator('.features-filter-btn.active')).toHaveText('DIUDM');
+    const filtered = await drawnByPart();
+    expect(Object.keys(filtered)).toEqual(['DIUDM']);
+    expect(filtered['DIUDM']).toBe(all['DIUDM']);
+
+    await page.locator('.features-filter-btn[data-filter="all"]').click();
+    expect(await drawnByPart()).toEqual(all);
   });
 
   test('klik v mapě vybere správný řádek i u prvků bez ID a s duplicitním ID', async ({ page }) => {

@@ -34,6 +34,7 @@ import {
 } from '../state/changesetToggle.js';
 import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import {
+  isContentPartVisible,
   isLevelVisible,
   isProjectVisible,
   resolveLevelKey,
@@ -409,6 +410,8 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     // Provenience: id projektu, ze kterého objektový typ pochází — dimenze
     // filtru prvků (state/featureFilter.ts) při více načtených projektech.
     const projectId = resolveProjectKey(ot);
+    // Obsahová část — dimenze filtru prvků (tlačítka v Přehledu prvků).
+    const part = String(ot.obsahovaCast);
 
     for (const zaznam of ot.zaznamy) {
       const sFeature = resolveStyleForZaznam(ot, zaznam);
@@ -465,6 +468,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfZapisObjektu', zaznam.zapisObjektu);
                 mcFeature.set('jvfLevel', levelKey);
                 mcFeature.set('jvfProjectId', projectId);
+                mcFeature.set('jvfPart', part);
                 features.push(mcFeature);
               }
             }
@@ -481,6 +485,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfZapisObjektu', zaznam.zapisObjektu);
           feature.set('jvfLevel', levelKey);
           feature.set('jvfProjectId', projectId);
+          feature.set('jvfPart', part);
           features.push(feature);
         }
       }
@@ -517,6 +522,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         if (!isLevelVisible(levelKey)) return undefined;
         const projectKey = feature.get('jvfProjectId') as string | null | undefined;
         if (!isProjectVisible(projectKey)) return undefined;
+        if (!isContentPartVisible(feature.get('jvfPart') as string | undefined)) return undefined;
         // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — buď skryjeme úplně,
         // nebo přebarvíme podle typu změny (zelená/oranžová/červená).
         // Globální flagy řídí checkboxy v UI.

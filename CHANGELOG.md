@@ -101,8 +101,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 - **Filtr obsahových částí v Přehledu prvků** nabízel pevně jen ZPS / TI /
   DI / GAD / OPL — části UDM (ZPSUDM, DIUDM, OST) a ŽXML (ZDT, ZDD, H3D,
   ODSZ, SKLEP) nešlo vyfiltrovat a souhrn ukazoval vždy celkové počty.
-  Tlačítka se nyní tvoří podle částí přítomných v datech (při jediné části
-  se skryjí) a souhrn ukazuje počty ve filtru.
+  Tlačítka se nyní tvoří podle částí přítomných v datech, souhrn ukazuje
+  počty ve filtru a filtr platí i pro 2D a 3D mapu (dřív jen tabulka).
+- Filtry obsahové části a úrovní umístění jsou v Přehledu prvků vidět
+  vždy, když jsou data — dřív se při jediné části / úrovni (běžné u JVF,
+  vše na úrovni 0) skryly, takže v režimu JVF chyběly.
 - **Klik do mapy neoznačil nový prvek v Přehledu prvků** — prvky s prázdným
   `<ID/>` (nové záznamy changesetu, ID přiděluje IS DMVS) měly prázdný
   identifikátor a klik je ignoroval. Prvky bez ID a s duplicitním ID nyní

@@ -12,6 +12,9 @@ import { scrollIntoViewFast } from '../util/scroll.js';
 import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
 import {
   LEVEL_NONE,
+  getContentPartFilter,
+  isContentPartVisible,
+  setContentPartFilter,
   isLevelVisible,
   isProjectVisible,
   levelKeyLabel,
@@ -44,7 +47,6 @@ const filtersEl    = panel.querySelector('.features-filters')          as HTMLDi
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentObjekty: ObjektovyTyp[] = [];
-let currentFilter: ContentFilter = 'all';
 let currentSearch = '';
 let activeRow: HTMLElement | null = null;
 let activeTarget: { elementName: string; objectId: string } | null = null;
@@ -78,9 +80,9 @@ function zapisLabel(z: ZapisObjektuType): { label: string; cls: string } {
   }
 }
 
+/** Prochází typ filtrem obsahové části (společný stav s 2D a 3D)? */
 function matchesFilter(ot: ObjektovyTyp): boolean {
-  if (currentFilter === 'all') return true;
-  return ot.obsahovaCast === currentFilter;
+  return isContentPartVisible(String(ot.obsahovaCast));
 }
 
 function matchesSearch(ot: ObjektovyTyp, z: ZaznamObjektu): boolean {
@@ -112,15 +114,16 @@ function collectPresentLevelKeys(objekty: ObjektovyTyp[]): LevelKey[] {
 }
 
 /**
- * Vykreslí chips filtru úrovní umístění podle aktuálních dat. Když je
- * v datech jen jedna skupina úrovní (nebo žádná), filtr nedává smysl —
- * řádek se skryje. Aktivní chip = úroveň viditelná; klik přepíná.
+ * Vykreslí chips filtru úrovní umístění podle aktuálních dat. Řádek je
+ * vidět vždy, když jsou data (i s jedinou úrovní — jednotné ovládání ve
+ * všech režimech, uživatel vidí, na jaké úrovni data jsou). Aktivní chip =
+ * úroveň viditelná; klik přepíná.
  * Filtr se promítá do tabulky, 2D mapy i 3D scény (viz subscribe
  * v `initFeaturesPanel`).
  */
 function renderLevelChips(): void {
   const keys = collectPresentLevelKeys(currentObjekty);
-  if (keys.length < 2) {
+  if (keys.length === 0) {
     levelFilterEl.style.display = 'none';
     levelFilterEl.innerHTML = '';
     return;
@@ -204,7 +207,8 @@ function renderSummary(): void {
   }
   const typy = (n: number): string => (n === 1 ? 'typ' : n > 1 && n < 5 ? 'typy' : 'typů');
   const zaznamu = (n: number): string => (n === 1 ? 'záznam' : n > 1 && n < 5 ? 'záznamy' : 'záznamů');
-  if (currentFilter === 'all') {
+  const currentFilter = getContentPartFilter();
+  if (currentFilter === null) {
     summaryEl.textContent = `${totalTypes} ${typy(totalTypes)}, ${totalRecords} ${zaznamu(totalRecords)}`;
   } else {
     // Aktivní filtr obsahové části → počty ve filtru „z celkem".
@@ -563,21 +567,21 @@ function renderRows(): void {
 }
 
 // ── Filter / search ───────────────────────────────────────────────────────────
+/**
+ * Nastaví filtr obsahové části. Je to dimenze společného filtru prvků
+ * (`state/featureFilter.ts`) — změna se přes posluchače promítne do
+ * tlačítek, souhrnu, tabulky, 2D mapy i 3D scény.
+ */
 function setFilter(filter: ContentFilter): void {
-  currentFilter = filter;
-  filtersEl.querySelectorAll<HTMLButtonElement>('.features-filter-btn').forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset['filter'] === filter);
-  });
-  renderSummary();
-  renderRows();
+  setContentPartFilter(filter === 'all' ? null : filter);
 }
 
 /**
  * Vykreslí tlačítka filtru obsahových částí podle načtených dat — jen části,
  * které v datech jsou (JVF: ZPS/TI/DI/…, UDM navíc ZPSUDM/DIUDM/OST, ŽXML
- * ZDT/ZDD/H3D/ODSZ/SKLEP), v pořadí `CONTENT_PART_ORDER`. Při jediné části
- * filtr nedává smysl a skryje se. Zmizí-li aktivní část z dat, filtr se
- * vrátí na „Vše".
+ * ZDT/ZDD/H3D/ODSZ/SKLEP), v pořadí `CONTENT_PART_ORDER`. Řada je vidět
+ * vždy, když jsou data (i s jedinou částí — jednotné ovládání ve všech
+ * režimech). Zmizí-li vybraná část z dat, filtr se vrátí na „Vše".
  */
 function renderContentFilterChips(): void {
   const counts = new Map<string, number>();
@@ -586,10 +590,15 @@ function renderContentFilterChips(): void {
     counts.set(part, (counts.get(part) ?? 0) + ot.zaznamy.length);
   }
   const parts = [...counts.keys()].sort(compareContentParts);
-  if (currentFilter !== 'all' && !counts.has(currentFilter)) currentFilter = 'all';
+  const selected = getContentPartFilter();
+  if (selected !== null && !counts.has(selected)) {
+    setContentPartFilter(null); // posluchač tlačítka překreslí znovu
+    return;
+  }
+  const currentFilter: ContentFilter = selected ?? 'all';
 
   filtersEl.innerHTML = '';
-  filtersEl.style.display = parts.length < 2 ? 'none' : '';
+  filtersEl.style.display = parts.length === 0 ? 'none' : '';
   const addChip = (filter: ContentFilter, label: string, title: string): void => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -682,7 +691,7 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
   // Pokud filtr / search skryje typ, zruš filtr (uživatel klikl, chce vidět)
   if (found) {
     const { ot, z } = found;
-    if (currentFilter !== 'all' && ot.obsahovaCast !== currentFilter) {
+    if (!matchesFilter(ot)) {
       setFilter('all');
       needsRender = true;
     }
@@ -755,13 +764,16 @@ export function initFeaturesPanel(
     renderRows();
   });
 
-  // Filtr prvků (úrovně umístění) — při každé změně promítnout do:
+  // Filtr prvků (obsahová část, úroveň umístění, projekt) — při každé
+  // změně promítnout do:
   //   1. chips UI (sync active tříd),
   //   2. tabulky Přehledu prvků,
   //   3. 2D mapy (`layer.changed()` → style fn se přepočítá, vzor
   //      changesetToggle),
   //   4. 3D scény (přepočet visibility per objekt).
   subscribeFeatureFilter(() => {
+    renderContentFilterChips();
+    renderSummary();
     renderLevelChips();
     renderProjectChips();
     renderRows();

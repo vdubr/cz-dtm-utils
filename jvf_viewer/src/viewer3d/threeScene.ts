@@ -9,6 +9,7 @@ import {
 } from '../state/changesetToggle.js';
 import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import {
+  isContentPartVisible,
   isLevelVisible,
   isProjectVisible,
   resolveLevelKey,
@@ -176,8 +177,8 @@ const hiddenLayers = new Set<string>();
  *      více projektech kvalifikovaný projektem — viz `resolveLayerKey`
  *      ve `state/projects.ts`),
  *   2. changeset přepínače (`isShowZapis` pro `ZapisObjektu` ∈ {i, u, d}),
- *   3. filtr prvků — úroveň umístění (`isLevelVisible`) a projekt
- *      (`isProjectVisible`).
+ *   3. filtr prvků — úroveň umístění (`isLevelVisible`), projekt
+ *      (`isProjectVisible`) a obsahová část (`isContentPartVisible`).
  *
  * Jediné místo, kde se viditelnost skládá — používají ho build scény,
  * `setThreeLayerVisible`, `applyChangesetHighlight` i `applyFeatureFilter`,
@@ -194,6 +195,7 @@ function computeObjectVisibility(obj: THREE.Object3D): boolean {
   if (!isLevelVisible(levelKey)) return false;
   const projectKey = obj.userData['jvfProjectId'] as string | null | undefined;
   if (!isProjectVisible(projectKey)) return false;
+  if (!isContentPartVisible(obj.userData['jvfPart'] as string | undefined)) return false;
   return true;
 }
 
@@ -517,6 +519,8 @@ function buildSceneObjects(
     // + provenience projektu pro filtr prvků.
     const layerVisKey = resolveLayerKey(ot);
     const projectKey = resolveProjectKey(ot);
+    // Obsahová část — dimenze filtru prvků (tlačítka v Přehledu prvků).
+    const part = String(ot.obsahovaCast);
 
     for (const zaz of ot.zaznamy) {
       // Identifikace záznamu: DTM ID, nebo interní UUID pro záznamy bez ID
@@ -663,6 +667,7 @@ function buildSceneObjects(
                 lineObj.userData['jvfZapisObjektu'] = zapisObjektu;
                 lineObj.userData['jvfLevel'] = levelKey;
                 lineObj.userData['jvfProjectId'] = projectKey;
+                lineObj.userData['jvfPart'] = part;
                 lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
                 lineObj.visible = computeObjectVisibility(lineObj);
                 if (isChangesetZapis(zapisObjektu) && shouldHighlightZapis(zapisObjektu)) {
@@ -683,6 +688,7 @@ function buildSceneObjects(
           obj.userData['jvfZapisObjektu'] = zapisObjektu;
           obj.userData['jvfLevel'] = levelKey;
           obj.userData['jvfProjectId'] = projectKey;
+          obj.userData['jvfPart'] = part;
           // Polygon používá fillColor, ostatní geometrie používají strokeColor —
           // pro restoraci po toggle off potřebujeme znát ten správný.
           const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
