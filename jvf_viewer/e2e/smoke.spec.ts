@@ -792,6 +792,79 @@ test.describe('Modály a ovládání', () => {
     await expect.poll(async () => btn.getAttribute('data-theme')).not.toBe(before);
   });
 
+  test('měření: klikáním vzdálenost, od 3 bodů plocha, Backspace vrátí bod, Esc zavře', async ({ page }) => {
+    const btn = page.locator('#btn-measure');
+    const card = page.locator('#measure-card');
+    await expect(btn).toBeVisible();
+    await expect(card).toBeHidden();
+    await btn.click();
+    await expect(btn).toHaveAttribute('aria-pressed', 'true');
+    await expect(card).toBeVisible();
+    await expect(card.locator('[data-measure="area"]')).toHaveText('od 3 bodů');
+
+    const box = (await page.locator('#map-container').boundingBox())!;
+    const px = [
+      [box.width * 0.4, box.height * 0.4],
+      [box.width * 0.6, box.height * 0.4],
+      [box.width * 0.6, box.height * 0.65],
+      [box.width * 0.42, box.height * 0.6],
+    ] as const;
+    // Očekávané hodnoty ze stejných funkcí (modul načtený z dev serveru).
+    const expected = (n: number) => page.evaluate(async ({ px, n }) => {
+      const m = await import('/jvf_viewer/src/map/measureMath.ts');
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      const coords = px.slice(0, n).map((p) => d.olMap.getCoordinateFromPixel([p[0], p[1]])!);
+      return {
+        length: m.formatLength(m.polylineLength(coords)),
+        area: n >= 3 ? m.formatArea(m.polygonArea(coords)) : 'od 3 bodů',
+      };
+    }, { px: px.map((p) => [p[0], p[1]]), n });
+    const click = async (i: number) => {
+      await page.mouse.click(box.x + px[i]![0], box.y + px[i]![1]);
+      await page.waitForTimeout(350);
+    };
+
+    await click(0);
+    await click(1);
+    let e = await expected(2);
+    await expect(card.locator('[data-measure="length"]')).toHaveText(e.length);
+    await expect(card.locator('[data-measure="area"]')).toHaveText('od 3 bodů');
+    await expect(card.locator('[data-measure="points"]')).toHaveText('2');
+
+    await click(2);
+    e = await expected(3);
+    await expect(card.locator('[data-measure="length"]')).toHaveText(e.length);
+    await expect(card.locator('[data-measure="area"]')).toHaveText(e.area);
+
+    // Dvojklik přidá 4. bod a měření ukončí.
+    await page.mouse.dblclick(box.x + px[3]![0], box.y + px[3]![1]);
+    e = await expected(4);
+    await expect(card.locator('[data-measure="points"]')).toHaveText('4');
+    await expect(card.locator('[data-measure="length"]')).toHaveText(e.length);
+    await expect(card.locator('[data-measure="area"]')).toHaveText(e.area);
+
+    await page.keyboard.press('Backspace');
+    await expect(card.locator('[data-measure="points"]')).toHaveText('3');
+    e = await expected(3);
+    await expect(card.locator('[data-measure="area"]')).toHaveText(e.area);
+
+    await page.keyboard.press('Escape');
+    await expect(card).toBeHidden();
+    await expect(btn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('měření: klik do mapy nevybírá prvek', async ({ page }) => {
+    await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.waitForTimeout(700);
+    await page.locator('#btn-measure').click();
+    const box = (await page.locator('#map-container').boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(600);
+    await expect(page.locator('#features-panel')).toBeHidden();
+    await expect(page.locator('#measure-card [data-measure="points"]')).toHaveText('1');
+  });
+
   test('přepínání podkladových map přepíná aktivní tlačítko', async ({ page }) => {
     const zm = page.locator('.base-btn[data-layer="zm"]');
     const ortofoto = page.locator('.base-btn[data-layer="ortofoto"]');

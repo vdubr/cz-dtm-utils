@@ -741,3 +741,104 @@ html, body {
 
 /* Panel vrstev — část skrytá filtrem obsahové části v Přehledu prvků. */
 .layer-group.filtered-out { opacity: 0.45; }
+
+/* ===== Měření vzdálenosti a plochy (map/measure.ts) ===== */
+/* ol/ol.css se vkládá skriptem až po app-m3.css — proto vyšší specifičnost. */
+.measure-control.ol-control { top: 12px; left: 12px; padding: 0; background: transparent; border-radius: 0; }
+.measure-control.ol-control .measure-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-3);
+  cursor: pointer;
+}
+.measure-control.ol-control .measure-btn:hover,
+.measure-control.ol-control .measure-btn:focus {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, var(--md-sys-color-surface-container-high));
+  outline: none;
+}
+.measure-control.ol-control .measure-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+.measure-control.ol-control .measure-btn .material-symbols-outlined { font-size: 22px; }
+.measure-control.ol-control .measure-btn.active,
+.measure-control.ol-control .measure-btn.active:hover,
+.measure-control.ol-control .measure-btn.active:focus {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+.measure-active canvas { cursor: crosshair; }
+
+.measure-card {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 280px;
+  max-width: calc(100% - 24px);
+  padding: 12px 12px 8px 16px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-2);
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  z-index: 5;
+}
+.measure-card[hidden] { display: none; }
+.measure-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.measure-card-head > .material-symbols-outlined { color: #d81b60; font-size: 20px; }
+.measure-card-title { flex: 1; font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
+.measure-icon-btn,
+.measure-text-btn {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.measure-icon-btn {
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--md-sys-shape-corner-full);
+}
+.measure-icon-btn .material-symbols-outlined { font-size: 20px; }
+.measure-text-btn {
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-primary);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+}
+.measure-text-btn .material-symbols-outlined { font-size: 18px; }
+.measure-icon-btn:hover,
+.measure-text-btn:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+.measure-icon-btn:focus-visible,
+.measure-text-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+.measure-values {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 16px;
+  margin: 0 0 8px;
+}
+.measure-values dt { color: var(--md-sys-color-on-surface-variant); }
+.measure-values dd {
+  margin: 0;
+  text-align: right;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  font-variant-numeric: tabular-nums;
+}
+.measure-hint {
+  margin: 0 0 4px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.measure-actions { display: flex; justify-content: flex-end; gap: 4px; margin-right: -4px; }

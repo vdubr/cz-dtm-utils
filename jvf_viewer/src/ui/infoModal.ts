@@ -87,6 +87,18 @@ const INFO_CONTENT_HTML = `
       i přepínač režimu JVF / UDM / JŽM.
     </li>
     <li>
+      <strong>Měření</strong> — tlačítko s pravítkem v levém horním rohu 2D
+      mapy zapne měření (podobně jako na mapy.cz). Klikáním přidáváte body;
+      vzdálenost se počítá průběžně i k pozici kurzoru a od tří bodů se
+      zároveň ukazuje <strong>plocha</strong> mnohoúhelníku z bodů. V mapě
+      jsou popsané délky úseků, celková délka a plocha, v kartě vlevo dole
+      souhrn. Body se přichytávají k vrcholům viditelných vrstev dat.
+      Dvojklik nebo klik na poslední bod měření ukončí (další klik začne
+      nové), <em>Backspace</em> vrátí poslední bod, <em>Esc</em> nástroj
+      zavře. Během měření klik nevybírá prvky a dvojklik nepřibližuje.
+      Délky a plochy jsou rovinné v S-JTSK (metry).
+    </li>
+    <li>
       <strong>3D pohled</strong> — vizualizace Z-souřadnic geometrií. Procházení
       scénou klávesami <code>W</code>/<code>A</code>/<code>S</code>/<code>D</code>
       nebo šipkami, výškové posouvání (<code>Q</code>/<code>E</code>),

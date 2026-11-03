@@ -9,6 +9,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Měření vzdálenosti a plochy v mapě** — tlačítko s pravítkem v levém
+  horním rohu 2D mapy (inspirace mapy.cz): klikáním se přidávají body,
+  vzdálenost se počítá průběžně a od 3 bodů zároveň plocha mnohoúhelníku.
+  Popisky délek úseků, celkové délky a plochy v mapě, souhrn v kartě
+  (Zpět, Nové měření). Body se přichytávají k vrcholům dat; dvojklik
+  měření ukončí, Backspace vrátí bod, Esc zavře. Rovinně v S-JTSK.
 - **Režimy aplikace JVF / UDM / JŽM** — přepínač v hlavičce; výchozí je JVF,
   do UDM a JŽM se přepíná ručně. Přepnutí zavře načtené soubory
   (s potvrzením); soubor jiného modelu nabídne přepnutí režimu, bez něj se

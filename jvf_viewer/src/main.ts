@@ -30,6 +30,7 @@ import {
   selectFeatureInPanel,
 } from './ui/featuresPanel.js';
 import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
+import { setupMeasure, isMeasureActive, refreshMeasureSnap } from './map/measure.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
@@ -129,7 +130,17 @@ subscribeLayerVisibility(() => {
     if (layer.olLayer.getVisible() !== visible) layer.olLayer.setVisible(visible);
     setThreeLayerVisible(key, visible);
   }
+  refreshMeasureSnap(); // přichytávat jen k viditelným vrstvám
 });
+
+// Měření vzdálenosti a plochy (tlačítko s pravítkem v mapě). Body se
+// přichytávají k vrcholům viditelných JVF vrstev.
+setupMeasure(olMap, () =>
+  currentJvfLayers
+    .filter((l) => l.olLayer.getVisible())
+    .map((l) => l.olLayer.getSource())
+    .filter((s): s is NonNullable<typeof s> => s !== null),
+);
 
 // Add CUZK base layers
 const zmLayer = createZmLayer();
@@ -291,6 +302,7 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
   currentObjekty = allObjekty;
 
   addJvfLayersToMap(olMap, allLayers);
+  refreshMeasureSnap(); // nové vrstvy → nové zdroje přichytávání
 
   // 3. UI panely.
   renderProjectsPanel({
@@ -374,6 +386,8 @@ function ensureFeaturesPanelOpen(): void {
 
 // 2D: OL singleclick → forEachFeatureAtPixel hledá první feature s jvfElementName.
 olMap.on('singleclick', (evt) => {
+  // Během měření klik přidává body — prvky nevybírat.
+  if (isMeasureActive()) return;
   let picked: { elementName: string; objectId: string } | null = null;
   olMap.forEachFeatureAtPixel(
     evt.pixel,
