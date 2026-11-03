@@ -40,6 +40,11 @@ import {
 } from './ui/changesetToggle.js';
 import { resetFeatureFilter } from './state/featureFilter.js';
 import {
+  isLayerVisible,
+  resetLayerVisibility,
+  subscribeLayerVisibility,
+} from './state/layerVisibility.js';
+import {
   addProject,
   clearProjects,
   getProjectCount,
@@ -112,6 +117,18 @@ initErrorPanel(olMap, () => currentJvfLayers, {
 });
 initFeaturesPanel(olMap, () => currentJvfLayers, {
   onHide: () => btnFeatures.classList.remove('active'),
+});
+
+// Viditelnost vrstev (panel vrstev, oko u kategorie v Přehledu prvků) →
+// 2D vrstvy a 3D scéna. Klíč vrstvy je při více projektech kvalifikovaný
+// projektem, takže skrytí typu v jednom projektu neskryje ostatní.
+subscribeLayerVisibility(() => {
+  for (const layer of currentJvfLayers) {
+    const key = resolveLayerKey(layer.objektovyTyp);
+    const visible = isLayerVisible(key);
+    if (layer.olLayer.getVisible() !== visible) layer.olLayer.setVisible(visible);
+    setThreeLayerVisible(key, visible);
+  }
 });
 
 // Add CUZK base layers
@@ -244,6 +261,9 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
   clearHighlight();
   clearThreeHighlight();
   resetThreeLayerVisibility();
+  // Viditelnost vrstev (panel vrstev / oko v Přehledu prvků) — nová data
+  // začínají se všemi vrstvami viditelnými.
+  resetLayerVisibility();
   // Filtr prvků (úrovně + projekty) — filtr z předchozích dat nemá
   // ovlivňovat nová data.
   resetFeatureFilter();
@@ -282,13 +302,7 @@ function rebuildAll(opts: { fitView?: boolean } = {}): void {
       zoomToProjectExtent(projectId);
     },
   });
-  renderLayerPanel(allLayers, {
-    onVisibilityChange: (layer, visible) => {
-      // Klíč vrstvy pro 3D — při více projektech kvalifikovaný projektem,
-      // aby skrytí vrstvy jednoho projektu neskrylo stejný typ v ostatních.
-      setThreeLayerVisible(resolveLayerKey(layer.objektovyTyp), visible);
-    },
-  });
+  renderLayerPanel(allLayers);
 
   // Changeset sekce: sjednocení typů zápisu (i/u/d) přes všechny projekty.
   updateChangesetToggleVisibility(projects.map((p) => p.dtm));

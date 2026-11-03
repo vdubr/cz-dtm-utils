@@ -10,6 +10,8 @@ import { getIs3dActive, notifyMapAreaResized } from './toggle3d.js';
 import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import { scrollIntoViewFast } from '../util/scroll.js';
 import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
+import { isLayerVisible, subscribeLayerVisibility, toggleLayerVisible } from '../state/layerVisibility.js';
+import { buildLegendSwatchFor } from './symbolSwatch.js';
 import {
   LEVEL_NONE,
   getContentPartFilter,
@@ -29,6 +31,7 @@ import {
   getProject,
   getProjects,
   isMultiProject,
+  resolveLayerKey,
   resolveProjectKey,
 } from '../state/projects.js';
 
@@ -428,7 +431,17 @@ function buildKVTable(
   return tbl;
 }
 
+/**
+ * Překreslí seznam a zachová pozici scrollu — přepnutí oka u kategorie,
+ * filtru nebo rozbalení skupiny nemá seznam vracet na začátek.
+ */
 function renderRows(): void {
+  const scrollTop = list.scrollTop;
+  renderRowsContent();
+  list.scrollTop = scrollTop;
+}
+
+function renderRowsContent(): void {
   list.innerHTML = '';
   // Ponecháme activeRow null jen pokud cíl už není v listu
   activeRow = null;
@@ -465,10 +478,16 @@ function renderRows(): void {
       ? getProject(resolveProjectKey(ot) ?? '')
       : undefined;
 
-    // Group header
+    // Hlavička kategorie (objektového typu) — stejná podoba jako položka
+    // legendy DTM: náhled symbolu, název, pod ním skupina · část · element.
+    // Oko vpravo skrývá kategorii (společná viditelnost vrstev s panelem
+    // vrstev, 2D mapou a 3D scénou).
+    const layerKey = resolveLayerKey(ot);
+    const layerVisible = isLayerVisible(layerKey);
     const header = document.createElement('div');
-    header.className = `feature-group-header part-${ot.obsahovaCast}`;
+    header.className = `feature-group-header legend-item part-${ot.obsahovaCast}${layerVisible ? '' : ' layer-hidden'}`;
     header.dataset['element'] = ot.elementName;
+    header.dataset['layerKey'] = layerKey;
     header.title = project
       ? `${ot.nazev} — ${ot.obsahovaCast} · projekt ${project.nazev} (klikni pro rozbalení)`
       : `${ot.nazev} — ${ot.obsahovaCast} (klikni pro rozbalení)`;
@@ -477,23 +496,40 @@ function renderRows(): void {
     chevron.className = `group-chevron${expanded ? ' expanded' : ''}`;
     chevron.textContent = expanded ? '▾' : '▸';
 
-    const partBadge = document.createElement('span');
-    partBadge.className = `part-badge part-${ot.obsahovaCast}`;
-    partBadge.textContent = String(ot.obsahovaCast);
-
+    const info = document.createElement('div');
+    info.className = 'legend-item-info';
     const nameSpan = document.createElement('span');
-    nameSpan.className = 'feature-group-name';
-    nameSpan.textContent = ot.nazev;
-
-    const elSpan = document.createElement('span');
-    elSpan.className = 'feature-group-element';
-    elSpan.textContent = ot.elementName;
+    nameSpan.className = 'legend-name feature-group-name';
+    nameSpan.textContent = ot.nazev || ot.elementName;
+    const metaSpan = document.createElement('span');
+    metaSpan.className = 'legend-meta feature-group-element';
+    metaSpan.textContent = [ot.skupinaObjektu || ot.kategorieObjektu, String(ot.obsahovaCast), ot.elementName]
+      .filter(Boolean)
+      .join(' · ');
+    info.append(nameSpan, metaSpan);
 
     const countBadge = document.createElement('span');
     countBadge.className = 'group-count-badge group-count-features';
     countBadge.textContent = String(zaznamy.length);
 
-    header.append(chevron, partBadge);
+    const eyeBtn = document.createElement('button');
+    eyeBtn.type = 'button';
+    eyeBtn.className = 'group-visibility-btn';
+    eyeBtn.setAttribute('aria-pressed', String(layerVisible));
+    eyeBtn.title = layerVisible
+      ? 'Skrýt kategorii v mapě (i v panelu vrstev)'
+      : 'Zobrazit kategorii v mapě (i v panelu vrstev)';
+    eyeBtn.setAttribute('aria-label', eyeBtn.title);
+    const eyeIcon = document.createElement('span');
+    eyeIcon.className = 'material-symbols-outlined';
+    eyeIcon.textContent = layerVisible ? 'visibility' : 'visibility_off';
+    eyeBtn.appendChild(eyeIcon);
+    eyeBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation(); // nerozbalovat skupinu
+      toggleLayerVisible(layerKey);
+    });
+
+    header.append(chevron, buildLegendSwatchFor(ot));
     // Barevná tečka projektu — jen při více projektech (odlišení stejných
     // objektových typů z různých souborů).
     if (project) {
@@ -503,7 +539,7 @@ function renderRows(): void {
       projectDot.title = `Projekt: ${project.nazev}`;
       header.appendChild(projectDot);
     }
-    header.append(nameSpan, elSpan, countBadge);
+    header.append(info, countBadge, eyeBtn);
     header.addEventListener('click', () => toggleGroup(gKey));
     list.appendChild(header);
 
@@ -523,7 +559,7 @@ function renderRows(): void {
         && activeTarget.objectId === objectId;
 
       const row = document.createElement('div');
-      row.className = `feature-row${hasTarget ? ' has-target' : ' no-target'}${isActive ? ' active' : ''}`;
+      row.className = `feature-row${hasTarget ? ' has-target' : ' no-target'}${isActive ? ' active' : ''}${layerVisible ? '' : ' layer-hidden'}`;
       row.dataset['element'] = ot.elementName;
       row.dataset['id'] = objectId;
 
@@ -771,6 +807,11 @@ export function initFeaturesPanel(
   //   3. 2D mapy (`layer.changed()` → style fn se přepočítá, vzor
   //      changesetToggle),
   //   4. 3D scény (přepočet visibility per objekt).
+  // Viditelnost vrstev (panel vrstev / oko u kategorie) → hlavičky a řádky.
+  subscribeLayerVisibility(() => {
+    if (isFeaturesPanelVisible()) renderRows();
+  });
+
   subscribeFeatureFilter(() => {
     renderContentFilterChips();
     renderSummary();

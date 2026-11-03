@@ -15,6 +15,7 @@ function drawnBy(page: Page, prop: string): Promise<Record<string, number>> {
     const res = d.olMap.getView().getResolution() ?? 1;
     const out: Record<string, number> = {};
     for (const { olLayer } of d.getJvfLayers()) {
+      if (!olLayer.getVisible()) continue; // skrytá vrstva se nekreslí vůbec
       const fn = olLayer.getStyleFunction()!;
       for (const f of olLayer.getSource()!.getFeatures()) {
         const style = fn(f, res);
@@ -569,6 +570,50 @@ test.describe('Modály a ovládání', () => {
 
     await chips.filter({ hasText: '-1' }).click();
     expect(await drawnBy(page, 'jvfLevel')).toEqual(all);
+  });
+
+  test('oko u kategorie a panel vrstev sdílejí viditelnost (tabulka ↔ panel ↔ mapa)', async ({ page }) => {
+    await loadSample(page, 'ukazka_DI.xml');
+    await page.locator('#btn-features').click();
+    const header = page.locator('.feature-group-header').first();
+    await expect(header).toBeVisible();
+    // Hlavička kategorie ve stylu položky legendy (náhled symbolu + název + meta).
+    await expect(header.locator('.legend-swatch')).toHaveCount(1);
+    await expect(header.locator('.legend-name')).not.toBeEmpty();
+    const key = (await header.getAttribute('data-layer-key'))!;
+    const element = (await header.getAttribute('data-element'))!;
+    const panelItem = page.locator(`.layer-item[data-layer-key="${key}"]`);
+    const drawn = async () => (await drawnBy(page, 'jvfElementName'))[element] ?? 0;
+    expect(await drawn()).toBeGreaterThan(0);
+
+    // Oko v tabulce → skryje kategorii v tabulce, v panelu vrstev i v mapě.
+    await header.locator('.group-visibility-btn').click();
+    await expect(page.locator(`.feature-group-header[data-layer-key="${key}"]`)).toHaveClass(/layer-hidden/);
+    await expect(page.locator(`.feature-group-header[data-layer-key="${key}"] .group-visibility-btn`)).toHaveText('visibility_off');
+    await expect(panelItem).toHaveClass(/inactive/);
+    expect(await drawn()).toBe(0);
+
+    // Panel vrstev → zpět viditelná i v tabulce.
+    await panelItem.click();
+    await expect(panelItem).toHaveClass(/active/);
+    await expect(page.locator(`.feature-group-header[data-layer-key="${key}"]`)).not.toHaveClass(/layer-hidden/);
+    expect(await drawn()).toBeGreaterThan(0);
+
+    // Panel vrstev → skrytí se promítne do tabulky.
+    await panelItem.click();
+    await expect(page.locator(`.feature-group-header[data-layer-key="${key}"] .group-visibility-btn`)).toHaveText('visibility_off');
+  });
+
+  test('filtr obsahové části v tabulce ztlumí odfiltrované části v panelu vrstev', async ({ page }) => {
+    await page.goto('./?mode=udm');
+    await page.setInputFiles('#file-input', fixturePath('UDM_ukazka-1.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled({ timeout: 30_000 });
+    await page.locator('#btn-features').click();
+    await page.locator('.features-filter-btn[data-filter="TI"]').click();
+    await expect(page.locator('.layer-group[data-part="ZPS"]')).toHaveClass(/filtered-out/);
+    await expect(page.locator('.layer-group[data-part="TI"]')).not.toHaveClass(/filtered-out/);
+    await page.locator('.features-filter-btn[data-filter="all"]').click();
+    await expect(page.locator('.layer-group.filtered-out')).toHaveCount(0);
   });
 
   test('filtr obsahové části filtruje i mapu', async ({ page }) => {

@@ -7,6 +7,7 @@ import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
 import { compareContentParts } from '../state/contentParts.js';
+import { buildStyleSwatch, type SwatchKind } from './symbolSwatch.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -14,8 +15,6 @@ import { compareContentParts } from '../state/contentParts.js';
  * aby legenda přijala i PSPI/nové typy.
  */
 type EntityMeta = ReturnType<typeof getEntityCatalog>[string];
-
-const SVG_BASE = './symboly/';
 
 /**
  * Adapter EntityMeta → ObjektovyTyp pro `resolveRepresentativeStyle()`.
@@ -39,8 +38,6 @@ function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
 }
 
 /** Mapuj `EntityMeta.geomType` na konceptuální typ pro swatch. */
-type SwatchKind = 'point' | 'line' | 'polygon';
-
 function swatchKindFor(meta: EntityMeta): SwatchKind {
   switch (meta.geomType) {
     case 'point':
@@ -55,67 +52,9 @@ function swatchKindFor(meta: EntityMeta): SwatchKind {
   }
 }
 
-/** Vytvoř malý HTML element se symbolem (16×16, podobné layerPanel.buildSymbolEl). */
+/** Náhled symbolu entity (sdílený se záhlavími kategorií v Přehledu prvků). */
 function buildLegendSwatch(meta: EntityMeta): HTMLElement {
-  const ot = entityMetaToObjektovyTyp(meta);
-  const s = resolveRepresentativeStyle(ot);
-  const kind = swatchKindFor(meta);
-
-  if (kind === 'point') {
-    if (s.pointSvg) {
-      const img = document.createElement('img');
-      img.src = SVG_BASE + s.pointSvg;
-      img.width = 16;
-      img.height = 16;
-      img.className = 'layer-symbol-img';
-      img.loading = 'lazy';
-      return img;
-    }
-    const span = document.createElement('span');
-    span.className = 'layer-symbol-dot';
-    span.style.background = s.strokeColor;
-    return span;
-  }
-
-  if (kind === 'polygon') {
-    const span = document.createElement('span');
-    span.className = 'layer-symbol-polygon';
-    const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-    const fill = s.fillColor.length > 7 ? s.fillColor.slice(0, 7) : s.fillColor;
-    span.style.background = fill;
-    span.style.borderColor = stroke;
-    return span;
-  }
-
-  // Line — preferuj SVG s dash patternem, jinak prostý pruh.
-  const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-  if (s.lineDashMm && s.lineDashMm.length >= 2) {
-    // Vykresli SVG čáru s dash pattern — hodnoty v mm jsou ze symbology, ale
-    // pro 24px swatch je škálujeme dolů, aby pattern byl vidět.
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '24');
-    svg.setAttribute('height', '16');
-    svg.setAttribute('viewBox', '0 0 24 16');
-    svg.classList.add('layer-symbol-line-svg');
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', '0');
-    line.setAttribute('y1', '8');
-    line.setAttribute('x2', '24');
-    line.setAttribute('y2', '8');
-    line.setAttribute('stroke', stroke);
-    line.setAttribute('stroke-width', '2');
-    // Škála: nejdelší segment v patternu mapuj cca na 6 px
-    const maxMm = Math.max(...s.lineDashMm);
-    const scale = maxMm > 0 ? 6 / maxMm : 1;
-    const dasharray = s.lineDashMm.map((v) => (v * scale).toFixed(1)).join(' ');
-    line.setAttribute('stroke-dasharray', dasharray);
-    svg.appendChild(line);
-    return svg as unknown as HTMLElement;
-  }
-  const span = document.createElement('span');
-  span.className = 'layer-symbol-line';
-  span.style.background = stroke;
-  return span;
+  return buildStyleSwatch(resolveRepresentativeStyle(entityMetaToObjektovyTyp(meta)), swatchKindFor(meta));
 }
 
 /** Render kompletní legendy do `#legend-modal-body`. */

@@ -1,6 +1,13 @@
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
-import { getProject, isMultiProject } from '../state/projects.js';
+import { getProject, isMultiProject, resolveLayerKey } from '../state/projects.js';
+import {
+  isLayerVisible,
+  subscribeLayerVisibility,
+  toggleLayerVisible,
+} from '../state/layerVisibility.js';
+import { isContentPartVisible, subscribeFeatureFilter } from '../state/featureFilter.js';
+import { contentPartTitle } from '../state/contentParts.js';
 
 const SVG_BASE = './symboly/';
 
@@ -54,16 +61,38 @@ function buildSymbolEl(layer: JvfVectorLayer): HTMLElement {
   return span;
 }
 
-export interface LayerPanelCallbacks {
-  /**
-   * Volá se po přepnutí viditelnosti vrstvy. Předává celou vrstvu —
-   * volající si z ní odvodí klíč pro 3D scénu (`resolveLayerKey`,
-   * při více projektech kvalifikovaný projektem).
-   */
-  onVisibilityChange?: (layer: JvfVectorLayer, visible: boolean) => void;
+/**
+ * Promítne společný stav do panelu: viditelnost vrstev (`state/layerVisibility`
+ * — mění ji i ikona oka v Přehledu prvků) a filtr obsahové části z Přehledu
+ * prvků (skupiny odfiltrovaných částí se ztlumí).
+ */
+function syncLayerPanel(): void {
+  const container = document.getElementById('jvf-layers-list');
+  if (!container) return;
+  container.querySelectorAll<HTMLElement>('.layer-item[data-layer-key]').forEach((item) => {
+    const visible = isLayerVisible(item.dataset['layerKey'] ?? '');
+    item.classList.toggle('active', visible);
+    item.classList.toggle('inactive', !visible);
+    item.setAttribute('aria-pressed', String(visible));
+  });
+  container.querySelectorAll<HTMLElement>('.layer-group[data-part]').forEach((group) => {
+    const part = group.dataset['part'] ?? '';
+    const shown = isContentPartVisible(part);
+    group.classList.toggle('filtered-out', !shown);
+    group.title = shown
+      ? ''
+      : `${contentPartTitle(part)} je skrytá filtrem obsahové části v Přehledu prvků`;
+  });
 }
 
-export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanelCallbacks = {}): void {
+let subscribed = false;
+
+export function renderLayerPanel(layers: JvfVectorLayer[]): void {
+  if (!subscribed) {
+    subscribed = true;
+    subscribeLayerVisibility(syncLayerPanel);
+    subscribeFeatureFilter(syncLayerPanel);
+  }
   const container = document.getElementById('jvf-layers-list')!;
   container.innerHTML = '';
 
@@ -83,6 +112,7 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
   for (const [obsahovaCast, groupLayers] of groups) {
     const groupEl = document.createElement('div');
     groupEl.className = 'layer-group';
+    groupEl.dataset['part'] = obsahovaCast;
 
     const groupHeader = document.createElement('div');
     groupHeader.className = 'layer-group-header';
@@ -99,7 +129,9 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
 
     for (const layer of groupLayers) {
       const item = document.createElement('div');
+      const layerKey = resolveLayerKey(layer.objektovyTyp);
       item.className = 'layer-item active';
+      item.dataset['layerKey'] = layerKey;
       item.title = `Kliknutím zapnout/vypnout vrstvu „${layer.objektovyTyp.nazev || layer.objektovyTyp.elementName}“`;
 
       const symbolEl = buildSymbolEl(layer);
@@ -140,18 +172,14 @@ export function renderLayerPanel(layers: JvfVectorLayer[], callbacks: LayerPanel
       item.appendChild(leftEl);
       item.appendChild(countEl);
 
-      item.addEventListener('click', () => {
-        const visible = layer.olLayer.getVisible();
-        const newVisible = !visible;
-        layer.olLayer.setVisible(newVisible);
-        item.classList.toggle('active', newVisible);
-        item.classList.toggle('inactive', !newVisible);
-        callbacks.onVisibilityChange?.(layer, newVisible);
-      });
+      // Viditelnost je společný stav — 2D, 3D, panel i Přehled prvků se
+      // srovnají přes posluchače (main.ts, syncLayerPanel, featuresPanel).
+      item.addEventListener('click', () => toggleLayerVisible(layerKey));
 
       groupEl.appendChild(item);
     }
 
     container.appendChild(groupEl);
   }
+  syncLayerPanel();
 }

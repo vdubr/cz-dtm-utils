@@ -181,8 +181,12 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
       seznamem všech načtených objektů seskupených podle typu. Hlavička
-      kategorie zůstává při scrollování přišpendlená nahoře, takže je
-      v dlouhém seznamu stále vidět, ve které kategorii se nacházíte. Lze
+      kategorie vypadá jako položka legendy (symbol, název, skupina ·
+      obsahová část · element) a zůstává při scrollování přišpendlená
+      nahoře. <strong>Oko</strong> u kategorie ji skryje — stejně jako
+      klik na vrstvu v panelu vrstev; viditelnost je společná pro panel
+      vrstev, tabulku, 2D mapu i 3D scénu (skrytá kategorie je ztlumená).
+      Části skryté filtrem obsahové části se ztlumí i v panelu vrstev. Lze
       filtrovat podle obsahové části — nabízí se ty, které v datech jsou
       (JVF: ZPS / TI / DI / GAD / OPL, UDM navíc ZPSUDM / DIUDM / OST,
       ŽXML ZDT / ZDD / H3D / ODSZ / SKLEP), souhrn pak ukazuje počty ve

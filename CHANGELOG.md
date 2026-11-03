@@ -72,6 +72,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Panel vrstev a Přehled prvků sdílejí viditelnost** — kategorie (objektový
+  typ) v tabulce má ikonu oka, která ji skryje v mapě (2D i 3D) i v panelu
+  vrstev; skrytí vrstvy v panelu se naopak promítne do tabulky (ztlumená
+  kategorie s přeškrtnutým okem). Filtr obsahové části z tabulky ztlumí
+  odfiltrované části v panelu vrstev.
+- **Kategorie v Přehledu prvků ve stylu legendy** — hlavička kategorie má
+  náhled symbolu, název a řádek skupina · obsahová část · element jako
+  položka legendy DTM (sdílené kreslení symbolu). Seznam při přepnutí oka,
+  filtru nebo rozbalení skupiny zůstává na místě.
 - **Podklad „Prázdná"** — třetí volba podkladových map vedle Základní mapy
   a Ortofota: bez podkladu, pozadí je ve světlém motivu bílé a v tmavém
   černé (dřív světle / tmavě šedé). Nahrazuje skryté vypnutí podkladu

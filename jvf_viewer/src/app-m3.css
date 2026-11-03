@@ -699,3 +699,45 @@ html, body {
 @media (min-width: 841px) {
   .drawer-mode-switch { display: none; }
 }
+
+/* Přehled prvků — hlavička kategorie ve stylu položky legendy DTM
+   (náhled symbolu, název, skupina · část · element), oko skrývá kategorii. */
+.feature-group-header.legend-item {
+  margin: 0 8px 4px;
+  min-height: 52px;
+  padding: 6px 4px 6px 8px;
+  gap: 10px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-low);
+  font-weight: 400;
+}
+.feature-group-header.legend-item:first-child { margin-top: 4px; }
+.feature-group-header.legend-item:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, var(--md-sys-color-surface-container-low));
+}
+.feature-group-header .legend-item-info { flex: 1; min-width: 0; }
+.feature-group-header .group-chevron { width: 12px; color: var(--md-sys-color-on-surface-variant); }
+.group-visibility-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.group-visibility-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.group-visibility-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+.group-visibility-btn .material-symbols-outlined { font-size: 20px; }
+/* Skrytá kategorie: ztlumená, oko zůstává plně viditelné. */
+.feature-group-header.layer-hidden > :not(.group-visibility-btn) { opacity: 0.45; }
+.feature-group-header.layer-hidden .group-visibility-btn { color: var(--md-sys-color-primary); }
+.feature-row.layer-hidden { opacity: 0.45; }
+
+/* Panel vrstev — část skrytá filtrem obsahové části v Přehledu prvků. */
+.layer-group.filtered-out { opacity: 0.45; }
