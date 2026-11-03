@@ -482,6 +482,143 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('.feature-row.active')).toBeVisible();
   });
 
+  test('filtr obsahových částí nabízí části z dat (UDM: ZPSUDM, DIUDM, OST) a filtruje', async ({ page }) => {
+    await page.goto('./?mode=udm');
+    await page.setInputFiles('#file-input', fixturePath('UDM_ukazka-1.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled({ timeout: 30_000 });
+    await page.locator('#btn-features').click();
+
+    const chips = page.locator('.features-filter-btn');
+    await expect(chips).toHaveText(['Vše', 'ZPS', 'TI', 'ZPSUDM', 'DIUDM', 'OST']);
+    await expect(page.locator('#features-summary')).toHaveText('30 typů, 821 záznamů');
+
+    await page.locator('.features-filter-btn[data-filter="DIUDM"]').click();
+    await expect(page.locator('.features-filter-btn.active')).toHaveText('DIUDM');
+    await expect(page.locator('#features-summary')).toContainText('13 z 821 záznamů');
+    // Zůstanou jen skupiny části DIUDM.
+    const groups = page.locator('.feature-group-header');
+    await expect(groups.first()).toBeVisible();
+    expect(await groups.count()).toBe(await page.locator('.feature-group-header.part-DIUDM').count());
+
+    await page.locator('.features-filter-btn[data-filter="ZPS"]').click();
+    await expect(page.locator('#features-summary')).toContainText('642 z 821 záznamů');
+    await expect(page.locator('.feature-group-header.part-ZPSUDM')).toHaveCount(0);
+
+    await page.locator('.features-filter-btn[data-filter="all"]').click();
+    await expect(page.locator('#features-summary')).toHaveText('30 typů, 821 záznamů');
+  });
+
+  test('filtr obsahových částí se skryje, když mají data jen jednu část', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.locator('#btn-features').click();
+    await expect(page.locator('#features-panel')).toBeVisible();
+    await expect(page.locator('.features-filters')).toBeHidden();
+  });
+
+  test('klik v mapě vybere správný řádek i u prvků bez ID a s duplicitním ID', async ({ page }) => {
+    // 4 budovy vedle sebe: <ID/>, <ID></ID>, 2× stejné ID „DUP-0001".
+    await page.setInputFiles('#file-input', fixturePath('test_klik_bez_id.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.locator('#btn-features').click();
+    const rows = page.locator('.feature-row');
+    await expect(rows).toHaveCount(4);
+
+    // Každý řádek má neprázdný a jedinečný klíč; interní UUID se nezobrazuje.
+    const ids = await rows.evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset['id'] ?? ''));
+    expect(ids.every((id) => id.length > 0)).toBe(true);
+    expect(new Set(ids).size).toBe(4);
+    await expect(rows.nth(0)).toContainText('bez ID');
+    await expect(rows.nth(0)).not.toContainText('uuid');
+    await expect(rows.nth(2)).toContainText('DUP-0001');
+
+    const box = (await page.locator('#map-container').boundingBox())!;
+    for (let n = 0; n < 4; n++) {
+      // Vystředit mapu na n-tou budovu a kliknout doprostřed.
+      await page.evaluate((n) => {
+        const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+        d.olMap.getView().setCenter([-520790 + n * 40, -1164190]);
+        d.olMap.renderSync();
+      }, n);
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(page.locator(`.feature-row.active[data-id="${ids[n]}"]`)).toHaveCount(1);
+      await page.waitForTimeout(350); // oddělit kliky (OL by je spojil v dvojklik)
+    }
+  });
+
+  test('klik v mapě nascrolluje řádek v Přehledu prvků do 0,3 s', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.locator('#btn-features').click();
+    await expect(page.locator('#features-panel')).toBeVisible();
+    // Poslední prvek souboru → jeho řádek je daleko dole v seznamu.
+    const target = await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: {
+        olMap: import('ol/Map').default;
+        getJvfLayers: () => Array<{ olLayer: import('ol/layer/Vector').default }>;
+      } }).__jvfDebug;
+      const feats = d.getJvfLayers().flatMap((l) => l.olLayer.getSource()!.getFeatures());
+      // Linie (ne bod — SVG symbol nemusí být ještě načtený pro hit detection).
+      const lines = feats.filter((x) => x.getGeometry()?.getType() === 'LineString');
+      const f = lines[lines.length - 1]!;
+      const g = f.getGeometry() as import('ol/geom/LineString').default;
+      d.olMap.getView().setCenter(g.getCoordinateAt(0.5));
+      d.olMap.getView().setZoom(22);
+      d.olMap.renderSync();
+      // Co OL vybere uprostřed mapy (stejná logika jako handler kliku).
+      const size = d.olMap.getSize()!;
+      let picked = { el: '', id: '' };
+      d.olMap.forEachFeatureAtPixel([size[0]! / 2, size[1]! / 2], (x) => {
+        const el = x.get('jvfElementName');
+        const id = x.get('jvfObjectId');
+        if (typeof el === 'string' && typeof id === 'string' && id) {
+          picked = { el, id };
+          return true;
+        }
+        return false;
+      }, { hitTolerance: 4 });
+      return picked;
+    });
+    expect(target.id).not.toBe('');
+    // Měření ve stránce po snímcích: od označení řádku do konce scrollu.
+    const measured = page.evaluate(({ el, id }) => new Promise<{ ms: number; visible: boolean }>((done) => {
+      const list = document.getElementById('features-list')!;
+      const sel = `.feature-row.active[data-element="${CSS.escape(el)}"][data-id="${CSS.escape(id)}"]`;
+      let t0 = 0;
+      let tLastMove = 0;
+      let last = -1;
+      let still = 0;
+      const tick = (now: number): void => {
+        const row = list.querySelector<HTMLElement>(sel);
+        if (row && t0 === 0) {
+          t0 = now;
+          tLastMove = now;
+          last = list.scrollTop;
+        } else if (t0 > 0) {
+          if (list.scrollTop !== last) {
+            tLastMove = now;
+            still = 0;
+          } else {
+            still += 1;
+          }
+          last = list.scrollTop;
+          if (still >= 5) {
+            const r = row!.getBoundingClientRect();
+            const c = list.getBoundingClientRect();
+            done({ ms: tLastMove - t0, visible: r.top >= c.top && r.bottom <= c.bottom });
+            return;
+          }
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }), target);
+    const box = (await page.locator('#map-container').boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    const { ms, visible } = await measured;
+    expect(visible).toBe(true);
+    // Animace je omezená na 300 ms; rezerva na nepřesnost snímků v headless.
+    expect(ms).toBeLessThan(360);
+  });
+
   test('panel prvku překládá číselníkové atributy (kód — text)', async ({ page }) => {
     // Minimální fixture s osou PK (KategoriePozemniKomunikace=2). Detail prvku
     // v sekci „Atributy objektu" doplní za kód český popisek z číselníku.

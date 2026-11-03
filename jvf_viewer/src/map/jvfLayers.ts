@@ -32,7 +32,7 @@ import {
   isChangesetZapis,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
-import { resolveZaznamId } from '../state/zaznamId.js';
+import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import {
   isLevelVisible,
   isProjectVisible,
@@ -410,11 +410,14 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     // filtru prvků (state/featureFilter.ts) při více načtených projektech.
     const projectId = resolveProjectKey(ot);
 
-    for (const [zaznamIndex, zaznam] of ot.zaznamy.entries()) {
+    for (const zaznam of ot.zaznamy) {
       const sFeature = resolveStyleForZaznam(ot, zaznam);
-      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
-      // (nové prvky `ZapisObjektu='i'`, které se teprve budou do DTM vkládat).
-      const objectId = resolveZaznamId(ot.elementName, zaznam, zaznamIndex);
+      // Identifikace záznamu: DTM ID, nebo interní UUID pro záznamy bez ID
+      // (nové prvky `ZapisObjektu='i'`) a s duplicitním ID — viz state/zaznamId.ts.
+      const objectId = resolveZaznamId(zaznam, ot.zaznamy);
+      // Holé DTM ID (bez prefixu projektu a rozlišení duplicit) — podle něj
+      // hledá prvek panel chyb (`TopologyError.objectId`).
+      const dtmId = dtmIdOf(zaznam);
       // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
       const levelKey = resolveLevelKey(zaznam);
       for (const geom of zaznam.geometrie) {
@@ -458,6 +461,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfGeomType', 'LineString');
                 mcFeature.set('jvfElementName', ot.elementName);
                 mcFeature.set('jvfObjectId', objectId);
+                mcFeature.set('jvfDtmId', dtmId);
                 mcFeature.set('jvfZapisObjektu', zaznam.zapisObjektu);
                 mcFeature.set('jvfLevel', levelKey);
                 mcFeature.set('jvfProjectId', projectId);
@@ -473,6 +477,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfGeomType', geom.type);
           feature.set('jvfElementName', ot.elementName);
           feature.set('jvfObjectId', objectId);
+          feature.set('jvfDtmId', dtmId);
           feature.set('jvfZapisObjektu', zaznam.zapisObjektu);
           feature.set('jvfLevel', levelKey);
           feature.set('jvfProjectId', projectId);
@@ -567,15 +572,17 @@ export function findFeature(
   elementName: string,
   objectId: string,
 ): Feature | null {
-  for (const { olLayer } of layers) {
-    const source = olLayer.getSource();
-    if (!source) continue;
-    const found = source.getFeatures().find(
-      (f) =>
-        f.get('jvfElementName') === elementName &&
-        f.get('jvfObjectId') === objectId,
-    );
-    if (found) return found;
+  // 1. přesná shoda klíče vieweru; 2. holé DTM ID (panel chyb zná jen to —
+  // bez prefixu projektu a bez rozlišení duplicitních ID).
+  for (const key of ['jvfObjectId', 'jvfDtmId'] as const) {
+    for (const { olLayer } of layers) {
+      const source = olLayer.getSource();
+      if (!source) continue;
+      const found = source.getFeatures().find(
+        (f) => f.get('jvfElementName') === elementName && f.get(key) === objectId,
+      );
+      if (found) return found;
+    }
   }
   return null;
 }

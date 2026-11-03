@@ -7,7 +7,7 @@ import type { JvfDtm, ObjektovyTyp, ZaznamObjektu } from 'jvf-parser';
  * Každý projekt = jeden načtený JVF soubor: `{ id, nazev, dtm, color }`.
  * Modul zároveň drží **provenienci** — mapování `ObjektovyTyp` / `ZaznamObjektu`
  * → id projektu přes `WeakMap`. Díky tomu ostatní části vieweru (2D style fn,
- * 3D visibility, filtr prvků, syntetické klíče záznamů) zjistí projekt
+ * 3D visibility, filtr prvků, klíče záznamů) zjistí projekt
  * záznamu bez změny doménových typů z `jvf-dtm-types`.
  *
  * **Kvalifikace klíčů**: při ≥2 projektech se identifikátory záznamů

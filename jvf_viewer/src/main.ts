@@ -97,6 +97,15 @@ if (buildInfoEl) {
 
 // Initialize map
 const olMap = createOlMap('map-container');
+// Jen vývojový server: přístup k mapě a vrstvám pro e2e testy (klik na
+// konkrétní prvek). Do produkčního buildu se nedostane.
+if (import.meta.env.DEV) {
+  (window as unknown as Record<string, unknown>)['__jvfDebug'] = {
+    olMap,
+    getJvfLayers: () => currentJvfLayers,
+    pick3d: (x: number, y: number) => pickFeatureFromClient(x, y),
+  };
+}
 initHighlightLayer(olMap);
 initErrorPanel(olMap, () => currentJvfLayers, {
   onHide: () => btnValidate.classList.remove('active'),

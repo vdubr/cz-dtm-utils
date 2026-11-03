@@ -7,7 +7,9 @@ import { findFeature } from '../map/jvfLayers.js';
 import { highlightFeature, clearHighlight, zoomToFeature } from '../map/highlight.js';
 import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature, applyFeatureFilter } from '../viewer3d/threeScene.js';
 import { getIs3dActive, notifyMapAreaResized } from './toggle3d.js';
-import { resolveZaznamId } from '../state/zaznamId.js';
+import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
+import { scrollIntoViewFast } from '../util/scroll.js';
+import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
 import {
   LEVEL_NONE,
   isLevelVisible,
@@ -27,7 +29,8 @@ import {
   resolveProjectKey,
 } from '../state/projects.js';
 
-type ContentFilter = 'all' | 'ZPS' | 'TI' | 'DI' | 'GAD' | 'OPL';
+/** Filtr obsahové části: `'all'` nebo kód části (ZPS, ZPSUDM, ZDT, …). */
+type ContentFilter = 'all' | string;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const panel        = document.getElementById('features-panel')         as HTMLElement;
@@ -37,7 +40,7 @@ const summaryEl    = document.getElementById('features-summary')       as HTMLDi
 const searchInput  = document.getElementById('features-search')        as HTMLInputElement;
 const levelFilterEl = document.getElementById('features-level-filter') as HTMLDivElement;
 const projectFilterEl = document.getElementById('features-project-filter') as HTMLDivElement;
-const filterBtns   = panel.querySelectorAll<HTMLButtonElement>('.features-filter-btn');
+const filtersEl    = panel.querySelector('.features-filters')          as HTMLDivElement;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentObjekty: ObjektovyTyp[] = [];
@@ -199,7 +202,18 @@ function renderSummary(): void {
     summaryEl.className = 'features-summary summary-empty';
     return;
   }
-  summaryEl.textContent = `${totalTypes} ${totalTypes === 1 ? 'typ' : totalTypes < 5 ? 'typy' : 'typů'}, ${totalRecords} ${totalRecords === 1 ? 'záznam' : totalRecords < 5 ? 'záznamy' : 'záznamů'}`;
+  const typy = (n: number): string => (n === 1 ? 'typ' : n > 1 && n < 5 ? 'typy' : 'typů');
+  const zaznamu = (n: number): string => (n === 1 ? 'záznam' : n > 1 && n < 5 ? 'záznamy' : 'záznamů');
+  if (currentFilter === 'all') {
+    summaryEl.textContent = `${totalTypes} ${typy(totalTypes)}, ${totalRecords} ${zaznamu(totalRecords)}`;
+  } else {
+    // Aktivní filtr obsahové části → počty ve filtru „z celkem".
+    const shown = currentObjekty.filter(matchesFilter);
+    const shownRecords = shown.reduce((sum, ot) => sum + ot.zaznamy.length, 0);
+    summaryEl.textContent =
+      `${currentFilter}: ${shown.length} z ${totalTypes} ${typy(totalTypes)}, ` +
+      `${shownRecords} z ${totalRecords} ${zaznamu(totalRecords)}`;
+  }
   summaryEl.className = 'features-summary summary-ok';
 }
 
@@ -415,8 +429,8 @@ function renderRows(): void {
   // Ponecháme activeRow null jen pokud cíl už není v listu
   activeRow = null;
 
-  // Index záznamu držíme z původního pole `ot.zaznamy` (před search filtrem),
-  // aby syntetické klíče (`resolveZaznamId`) seděly s 2D vrstvami a 3D scénou.
+  // Index záznamu držíme z původního pole `ot.zaznamy` (před search filtrem)
+  // kvůli popisku „bez ID (#N)“ — pořadí záznamu v souboru.
   const filtered = currentObjekty
     .filter(matchesFilter)
     .map((ot) => ({
@@ -493,11 +507,11 @@ function renderRows(): void {
 
     // Detail rows
     for (const { z, idx } of zaznamy) {
-      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez
+      // Identifikace záznamu: DTM ID, nebo interní UUID pro záznamy bez
       // ID (nové prvky `ZapisObjektu='i'`) — i ty jsou plnohodnotně
       // klikatelné (zoom, highlight, detail atributů).
-      const objectId = resolveZaznamId(ot.elementName, z, idx);
-      const hasDtmId = !!z.commonAttributes?.id;
+      const objectId = resolveZaznamId(z, ot.zaznamy);
+      const hasDtmId = dtmIdOf(z) !== null;
       const hasTarget = (z.geometrie?.length ?? 0) > 0;
       const key = recordKey(ot.elementName, objectId);
       const isActive = activeTarget !== null
@@ -551,10 +565,46 @@ function renderRows(): void {
 // ── Filter / search ───────────────────────────────────────────────────────────
 function setFilter(filter: ContentFilter): void {
   currentFilter = filter;
-  filterBtns.forEach((btn) => {
+  filtersEl.querySelectorAll<HTMLButtonElement>('.features-filter-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset['filter'] === filter);
   });
+  renderSummary();
   renderRows();
+}
+
+/**
+ * Vykreslí tlačítka filtru obsahových částí podle načtených dat — jen části,
+ * které v datech jsou (JVF: ZPS/TI/DI/…, UDM navíc ZPSUDM/DIUDM/OST, ŽXML
+ * ZDT/ZDD/H3D/ODSZ/SKLEP), v pořadí `CONTENT_PART_ORDER`. Při jediné části
+ * filtr nedává smysl a skryje se. Zmizí-li aktivní část z dat, filtr se
+ * vrátí na „Vše".
+ */
+function renderContentFilterChips(): void {
+  const counts = new Map<string, number>();
+  for (const ot of currentObjekty) {
+    const part = String(ot.obsahovaCast);
+    counts.set(part, (counts.get(part) ?? 0) + ot.zaznamy.length);
+  }
+  const parts = [...counts.keys()].sort(compareContentParts);
+  if (currentFilter !== 'all' && !counts.has(currentFilter)) currentFilter = 'all';
+
+  filtersEl.innerHTML = '';
+  filtersEl.style.display = parts.length < 2 ? 'none' : '';
+  const addChip = (filter: ContentFilter, label: string, title: string): void => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `features-filter-btn${currentFilter === filter ? ' active' : ''}`;
+    btn.dataset['filter'] = filter;
+    btn.textContent = label;
+    btn.title = title;
+    btn.addEventListener('click', () => setFilter(filter));
+    filtersEl.appendChild(btn);
+  };
+  addChip('all', 'Vše', 'Zobrazit všechny obsahové části');
+  for (const part of parts) {
+    const n = counts.get(part) ?? 0;
+    addChip(part, part, `${contentPartTitle(part)} — ${n} ${n === 1 ? 'záznam' : n < 5 ? 'záznamy' : 'záznamů'}`);
+  }
 }
 
 // ── Panel open/close ──────────────────────────────────────────────────────────
@@ -564,6 +614,7 @@ export function showFeatures(objekty: ObjektovyTyp[]): void {
     // Auto-expand u malých souborů
     for (const ot of objekty) expandedGroups.add(groupKey(ot));
   }
+  renderContentFilterChips();
   renderSummary();
   renderLevelChips();
   renderProjectChips();
@@ -608,7 +659,7 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
   for (const ot of currentObjekty) {
     if (ot.elementName !== elementName) continue;
     const z = ot.zaznamy.find(
-      (zz, idx) => resolveZaznamId(elementName, zz, idx) === objectId,
+      (zz) => resolveZaznamId(zz, ot.zaznamy) === objectId,
     );
     if (z) {
       found = { ot, z };
@@ -616,20 +667,31 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
     }
   }
 
+  // Seznam se překresluje jen tehdy, když se musí změnit jeho obsah (sbalená
+  // skupina, filtr, hledání). Jinak stačí přesunout označení — překreslení
+  // velkého seznamu (stovky řádků s detaily) zdrží odezvu kliku o ~0,1 s.
+  let needsRender = false;
+
   // Zajistit, že daná grupa je rozbalená
-  expandedGroups.add(found ? groupKey(found.ot) : elementName);
+  const gKey = found ? groupKey(found.ot) : elementName;
+  if (!expandedGroups.has(gKey)) {
+    expandedGroups.add(gKey);
+    needsRender = true;
+  }
 
   // Pokud filtr / search skryje typ, zruš filtr (uživatel klikl, chce vidět)
   if (found) {
     const { ot, z } = found;
     if (currentFilter !== 'all' && ot.obsahovaCast !== currentFilter) {
       setFilter('all');
+      needsRender = true;
     }
     if (currentSearch) {
       // Zkontroluj, jestli se objekt projde aktuálním filtrem; pokud ne, vyčisti
       if (!matchesSearch(ot, z)) {
         currentSearch = '';
         searchInput.value = '';
+        needsRender = true;
       }
     }
     // Pokud je záznam skrytý filtrem prvků (úroveň / projekt), zviditelni
@@ -641,17 +703,24 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
       if (projectKey && !isProjectVisible(projectKey)) {
         setProjectVisible(projectKey, true);
       }
+      needsRender = true;
     }
   }
 
   // Aktualizovat target před renderem, aby renderRows nastavil active class
   activeTarget = { elementName, objectId };
-  renderRows();
 
-  // Najít row v DOM a scrollnout
-  const row = list.querySelector<HTMLElement>(
-    `.feature-row[data-element="${CSS.escape(elementName)}"][data-id="${CSS.escape(objectId)}"]`,
-  );
+  const rowSelector =
+    `.feature-row[data-element="${CSS.escape(elementName)}"][data-id="${CSS.escape(objectId)}"]`;
+  let row = needsRender ? null : list.querySelector<HTMLElement>(rowSelector);
+  if (row) {
+    // Rychlá cesta: řádek už v seznamu je — jen přesunout označení.
+    if (activeRow && activeRow !== row) activeRow.classList.remove('active');
+  } else {
+    renderRows();
+    row = list.querySelector<HTMLElement>(rowSelector);
+  }
+
   if (row) {
     activeRow = row;
     row.classList.add('active');
@@ -660,7 +729,8 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
     if (detailEl?.classList.contains('feature-detail')) {
       (detailEl as HTMLElement).style.display = '';
     }
-    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Vlastní animace max 300 ms (smooth scrollIntoView trval přes sekundu).
+    scrollIntoViewFast(list, row);
   }
 }
 
@@ -677,13 +747,6 @@ export function initFeaturesPanel(
   // Escape — zavřít
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isFeaturesPanelVisible()) hideFeatures();
-  });
-
-  // Filter buttons
-  filterBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      setFilter((btn.dataset['filter'] as ContentFilter) ?? 'all');
-    });
   });
 
   // Search

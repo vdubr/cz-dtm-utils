@@ -7,7 +7,7 @@ import {
   isChangesetZapis,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
-import { resolveZaznamId } from '../state/zaznamId.js';
+import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import {
   isLevelVisible,
   isProjectVisible,
@@ -518,10 +518,12 @@ function buildSceneObjects(
     const layerVisKey = resolveLayerKey(ot);
     const projectKey = resolveProjectKey(ot);
 
-    for (const [zaznamIndex, zaz] of ot.zaznamy.entries()) {
-      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
+    for (const zaz of ot.zaznamy) {
+      // Identifikace záznamu: DTM ID, nebo interní UUID pro záznamy bez ID
       // (nové prvky `ZapisObjektu='i'` — bez něj by nešly pickovat/zvýraznit).
-      const objectId = resolveZaznamId(ot.elementName, zaz, zaznamIndex);
+      const objectId = resolveZaznamId(zaz, ot.zaznamy);
+      // Holé DTM ID — podle něj hledá prvek panel chyb (viz findSceneObjects).
+      const dtmId = dtmIdOf(zaz);
       const zapisObjektu = zaz.zapisObjektu;
       // Changeset záznamy (i/u/d) mění barvu materiálu za běhu (viz komentář
       // u `getOrCreateMaterial`) — pro ně vždy vytváříme vlastní instanci
@@ -657,6 +659,7 @@ function buildSceneObjects(
                 lineObj.userData[DATA_TAG] = key;
                 lineObj.userData[LAYER_KEY_TAG] = layerVisKey;
                 lineObj.userData['jvfObjectId'] = objectId;
+                lineObj.userData['jvfDtmId'] = dtmId;
                 lineObj.userData['jvfZapisObjektu'] = zapisObjektu;
                 lineObj.userData['jvfLevel'] = levelKey;
                 lineObj.userData['jvfProjectId'] = projectKey;
@@ -676,6 +679,7 @@ function buildSceneObjects(
           obj.userData[DATA_TAG] = key;
           obj.userData[LAYER_KEY_TAG] = layerVisKey;
           obj.userData['jvfObjectId'] = objectId;
+          obj.userData['jvfDtmId'] = dtmId;
           obj.userData['jvfZapisObjektu'] = zapisObjektu;
           obj.userData['jvfLevel'] = levelKey;
           obj.userData['jvfProjectId'] = projectKey;
@@ -1377,20 +1381,28 @@ export function resizeThreeScene(canvas: HTMLCanvasElement): void {
 
 // ── Highlight & zoom ─────────────────────────────────────────────────────────
 
-/** Najde všechny scene objekty odpovídající dvojici elementName + objectId. */
+/**
+ * Najde všechny scene objekty odpovídající dvojici elementName + objectId.
+ * Nejdřív přesná shoda klíče vieweru, jinak holé DTM ID (panel chyb zná jen
+ * to — bez prefixu projektu a bez rozlišení duplicitních ID).
+ */
 function findSceneObjects(elementName: string, objectId: string): THREE.Object3D[] {
   if (!state) return [];
-  const found: THREE.Object3D[] = [];
-  state.scene.traverse((obj) => {
-    if (
-      obj.userData[DATA_TAG] === elementName &&
-      obj.userData['jvfObjectId'] === objectId &&
-      obj.userData[HIGHLIGHT_TAG] !== true
-    ) {
-      found.push(obj);
-    }
-  });
-  return found;
+  const scene = state.scene;
+  for (const key of ['jvfObjectId', 'jvfDtmId'] as const) {
+    const found: THREE.Object3D[] = [];
+    scene.traverse((obj) => {
+      if (
+        obj.userData[DATA_TAG] === elementName &&
+        obj.userData[key] === objectId &&
+        obj.userData[HIGHLIGHT_TAG] !== true
+      ) {
+        found.push(obj);
+      }
+    });
+    if (found.length > 0) return found;
+  }
+  return [];
 }
 
 /** Spočte svět. bounding box pro zadané objekty. */

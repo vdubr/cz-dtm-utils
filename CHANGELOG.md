@@ -98,6 +98,22 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- **Filtr obsahových částí v Přehledu prvků** nabízel pevně jen ZPS / TI /
+  DI / GAD / OPL — části UDM (ZPSUDM, DIUDM, OST) a ŽXML (ZDT, ZDD, H3D,
+  ODSZ, SKLEP) nešlo vyfiltrovat a souhrn ukazoval vždy celkové počty.
+  Tlačítka se nyní tvoří podle částí přítomných v datech (při jediné části
+  se skryjí) a souhrn ukazuje počty ve filtru.
+- **Klik do mapy neoznačil nový prvek v Přehledu prvků** — prvky s prázdným
+  `<ID/>` (nové záznamy changesetu, ID přiděluje IS DMVS) měly prázdný
+  identifikátor a klik je ignoroval. Prvky bez ID a s duplicitním ID nyní
+  dostanou interní UUID (jen v aplikaci), takže se klik v 2D i 3D vždy
+  spáruje se správným řádkem.
+- Parser čte identifikátory (`ID`, `IDZmeny`, `IDObjektu`, …) doslova jako
+  text — dřív převod na číslo ztrácel úvodní nuly (`00123` → `123`)
+  a `1e5` měnil na `100000`; prázdné `<ID/>` je chybějící ID, ne prázdný text.
+- Posun Přehledu prvků na vybraný řádek trvá nejvýš 0,3 s (dřív plynulý
+  posun prohlížeče přes sekundu) a klik na prvek, jehož řádek už je
+  v seznamu, seznam zbytečně nepřekresluje.
 - Uzavřené obvody ploch (`Obvod3D`) se už nehlásí jako křížení linie
   (`LINE_SELF_INTERSECTION`) — dotyk první a poslední úsečky v uzavíracím
   vrcholu je povolený (falešné chyby i v ukázkách JVF 1.4.3 a 1.5.0.1).

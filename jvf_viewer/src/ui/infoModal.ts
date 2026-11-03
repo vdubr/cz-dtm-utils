@@ -183,8 +183,10 @@ const INFO_CONTENT_HTML = `
       seznamem všech načtených objektů seskupených podle typu. Hlavička
       kategorie zůstává při scrollování přišpendlená nahoře, takže je
       v dlouhém seznamu stále vidět, ve které kategorii se nacházíte. Lze
-      filtrovat podle obsahové části (ZPS / TI / DI / GAD / OPL) a hledat
-      v názvu, <code>elementName</code> nebo ID. Pokud data obsahují víc
+      filtrovat podle obsahové části — nabízí se ty, které v datech jsou
+      (JVF: ZPS / TI / DI / GAD / OPL, UDM navíc ZPSUDM / DIUDM / OST,
+      ŽXML ZDT / ZDD / H3D / ODSZ / SKLEP), souhrn pak ukazuje počty ve
+      filtru — a hledat v názvu, <code>elementName</code> nebo ID. Pokud data obsahují víc
       <em>úrovní umístění</em> (LEVEL −3 až +3 z atributů
       <code>UrovenUmisteniObjektu*</code>), zobrazí se navíc řádek
       <em>Úroveň</em> s přepínatelnými chipy — odškrtnuté úrovně se skryjí
@@ -207,9 +209,12 @@ const INFO_CONTENT_HTML = `
       v changeset souborech rozlišuje barevným badge
       (<strong>I</strong> zelená / <strong>U</strong> žlutá /
       <strong>D</strong> červená). Prvky bez přiděleného DTM ID (nové
-      záznamy, které se teprve budou vkládat) jsou identifikovány
-      syntetickým klíčem — klikání, zoom i detail atributů pro ně fungují
-      stejně jako pro prvky s ID.
+      záznamy s prázdným <code>&lt;ID/&gt;</code>, které se teprve budou
+      vkládat) a prvky s ID, které se v souboru opakuje, dostanou
+      <strong>interní UUID</strong> jen pro potřeby aplikace (do dat ani
+      exportu se nezapisuje; v seznamu se ukazuje „bez ID") — klikání, zoom
+      i detail atributů pro ně fungují stejně jako pro prvky s ID. Posun
+      seznamu na vybraný řádek trvá nejvýš 0,3&nbsp;s.
     </li>
     <li>
       <strong>Protokol chyb</strong> (JVF 1.5.0.1) — nahrání souboru

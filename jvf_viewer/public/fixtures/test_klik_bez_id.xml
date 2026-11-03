@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture pro test „klik v mapě vybere řádek i u prvků bez jedinečného ID":
+     čtyři budovy vedle sebe (západ → východ): dvě nové bez ID (<ID/> a
+     <ID></ID>, jak je posílají reálné changesety) a dvě se stejným
+     (duplicitním) ID. Každá musí jít vybrat klikem samostatně. -->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.4.3</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2026-01-01T12:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">změnové věty</TypZapisu>
+    <Data>
+      <BudovaPlocha>
+        <ObjektovyTypNazev code_base="0100000001" code_suffix="03" xmlns="budpol">budova</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="budpol">Budovy</KategorieObjektu>
+        <SkupinaObjektu xmlns="budpol">Objekt budovy</SkupinaObjektu>
+        <ObsahovaCast xmlns="budpol">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="budpol">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID/>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuZPS xmlns="atr">
+                <UrovenUmisteniObjektuZPS>0</UrovenUmisteniObjektuZPS>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniZPS>1</ZpusobPorizeniZPS>
+              </SpolecneAtributyObjektuZPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="IDB_01" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>-520800.00 -1164200.00 -520780.00 -1164200.00 -520780.00 -1164180.00 -520800.00 -1164180.00 -520800.00 -1164200.00</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">i</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID></ID>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuZPS xmlns="atr">
+                <UrovenUmisteniObjektuZPS>0</UrovenUmisteniObjektuZPS>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniZPS>1</ZpusobPorizeniZPS>
+              </SpolecneAtributyObjektuZPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="IDB_02" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>-520760.00 -1164200.00 -520740.00 -1164200.00 -520740.00 -1164180.00 -520760.00 -1164180.00 -520760.00 -1164200.00</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">u</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>DUP-0001</ID>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuZPS xmlns="atr">
+                <UrovenUmisteniObjektuZPS>0</UrovenUmisteniObjektuZPS>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniZPS>1</ZpusobPorizeniZPS>
+              </SpolecneAtributyObjektuZPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="IDB_03" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>-520720.00 -1164200.00 -520700.00 -1164200.00 -520700.00 -1164180.00 -520720.00 -1164180.00 -520720.00 -1164200.00</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">u</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr">
+                <ID>DUP-0001</ID>
+              </SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuZPS xmlns="atr">
+                <UrovenUmisteniObjektuZPS>0</UrovenUmisteniObjektuZPS>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniZPS>1</ZpusobPorizeniZPS>
+              </SpolecneAtributyObjektuZPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="IDB_04" srsDimension="2" srsName="EPSG:5514">
+                  <exterior>
+                    <LinearRing>
+                      <posList>-520680.00 -1164200.00 -520660.00 -1164200.00 -520660.00 -1164180.00 -520680.00 -1164180.00 -520680.00 -1164200.00</posList>
+                    </LinearRing>
+                  </exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </BudovaPlocha>
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>

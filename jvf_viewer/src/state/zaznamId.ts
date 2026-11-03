@@ -3,40 +3,89 @@ import { getProjectPrefix } from './projects.js';
 
 /**
  * Identifikace záznamu napříč viewerem (2D vrstvy, 3D scéna, Přehled prvků).
+ * Přes tento klíč se páruje klik do mapy s řádkem v Přehledu prvků, proto
+ * musí být **vždy neprázdný a v rámci objektového typu jedinečný**.
  *
- * Záznamy už vložené v DTM mají přidělené DTM ID (`commonAttributes.id`).
- * Nově vytvořené JVF soubory (changesety DI/TI s `ZapisObjektu='i'`) ale ID
- * ještě nemají — teprve se budou do DTM vkládat. Aby byly i takové prvky
- * plnohodnotně identifikovatelné (zoom, highlight, výběr klikem do mapy),
- * generujeme pro ně **syntetický klíč** z `elementName` a pořadí záznamu
- * v `ObjektovyTyp.zaznamy`.
+ * - Záznam s jedinečným DTM ID (`commonAttributes.id`) → klíč = DTM ID
+ *   (čitelné, shodné s `TopologyError.objectId` pro panel chyb).
+ * - Záznam **bez ID** (nový prvek `ZapisObjektu='i'`, element chybí nebo je
+ *   prázdný `<ID/>`) nebo s DTM ID, které se v typu opakuje (chybný soubor)
+ *   → **interní UUID** přidělené viewerem. Žije jen v paměti aplikace
+ *   (WeakMap nad objektem záznamu), nezapisuje se do dat, exportu ani
+ *   validace a uživateli se nezobrazuje (řádek ukazuje „bez ID“).
  *
- * Klíč je stabilní v rámci jednoho nahraného souboru — všechny části vieweru
- * iterují stejné pole `zaznamy`, takže index je konzistentní. Formát
- * `{elementName}#{N}` nekoliduje s reálnými DTM ID (ta znak `#` neobsahují).
+ * Klíč je stabilní po dobu života načteného souboru — všechny části vieweru
+ * pracují se stejnými objekty `ZaznamObjektu`, takže UUID je všude stejné
+ * bez ohledu na pořadí iterace nebo filtry.
  *
  * **Více projektů**: při ≥2 načtených souborech se klíč kvalifikuje
- * prefixem `{projectId}:` (viz `state/projects.ts`) — stejné DTM ID nebo
- * stejný syntetický klíč ve dvou projektech tak nekolidují. Při jednom
- * projektu je prefix prázdný a formát klíčů se nemění (zpětná
- * kompatibilita single-souborového režimu).
+ * prefixem `{projectId}:` (viz `state/projects.ts`) — stejné DTM ID ve dvou
+ * projektech tak nekoliduje. Při jednom projektu je prefix prázdný.
  */
 
+/** DTM ID záznamu, nebo `null`, když chybí (i prázdné `<ID/>`). */
+export function dtmIdOf(zaznam: ZaznamObjektu): string | null {
+  const id = zaznam.commonAttributes?.id?.trim();
+  return id ? id : null;
+}
+
+/** Interní UUID záznamů bez použitelného DTM ID. */
+const internalIds = new WeakMap<ZaznamObjektu, string>();
+let fallbackCounter = 0;
+
+function newUuid(): string {
+  // `crypto.randomUUID` vyžaduje secure context (https / localhost).
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  fallbackCounter += 1;
+  return `local-${Date.now().toString(36)}-${fallbackCounter.toString(36)}`;
+}
+
+/** Interní UUID záznamu (přidělí se při prvním dotazu). */
+export function internalIdOf(zaznam: ZaznamObjektu): string {
+  let id = internalIds.get(zaznam);
+  if (!id) {
+    id = `uuid:${newUuid()}`;
+    internalIds.set(zaznam, id);
+  }
+  return id;
+}
+
+/** DTM ID, která se v poli záznamů vyskytují víckrát (cache per pole). */
+const duplicateIdsCache = new WeakMap<readonly ZaznamObjektu[], ReadonlySet<string>>();
+
+function duplicateIdsOf(zaznamy: readonly ZaznamObjektu[]): ReadonlySet<string> {
+  let dup = duplicateIdsCache.get(zaznamy);
+  if (!dup) {
+    const seen = new Set<string>();
+    const found = new Set<string>();
+    for (const z of zaznamy) {
+      const id = dtmIdOf(z);
+      if (id === null) continue;
+      if (seen.has(id)) found.add(id);
+      else seen.add(id);
+    }
+    dup = found;
+    duplicateIdsCache.set(zaznamy, dup);
+  }
+  return dup;
+}
+
 /**
- * Vrátí identifikátor záznamu: DTM ID pokud existuje, jinak syntetický
- * klíč `{elementName}#{index+1}`. Při více projektech s prefixem
- * `{projectId}:`.
+ * Vrátí klíč záznamu: DTM ID, pokud existuje a je v typu jedinečné; jinak
+ * interní UUID. Při více projektech s prefixem `{projectId}:`.
+ *
+ * @param zaznamy pole `ObjektovyTyp.zaznamy`, ze kterého záznam pochází
+ *   (pro odhalení duplicitních DTM ID).
  */
-export function resolveZaznamId(
-  elementName: string,
-  zaznam: ZaznamObjektu,
-  index: number,
-): string {
-  const base = zaznam.commonAttributes?.id ?? `${elementName}#${index + 1}`;
+export function resolveZaznamId(zaznam: ZaznamObjektu, zaznamy: readonly ZaznamObjektu[]): string {
+  const id = dtmIdOf(zaznam);
+  const base = id !== null && !duplicateIdsOf(zaznamy).has(id) ? id : internalIdOf(zaznam);
   return getProjectPrefix(zaznam) + base;
 }
 
-/** Je identifikátor syntetický (záznam bez přiděleného DTM ID)? */
-export function isSyntheticZaznamId(id: string): boolean {
-  return id.includes('#');
+/** Je klíč interní (záznam bez jedinečného DTM ID)? */
+export function isInternalZaznamId(id: string): boolean {
+  return id.includes('uuid:');
 }

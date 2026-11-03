@@ -6,6 +6,7 @@ import type { ObjektovyTyp } from 'jvf-dtm-types';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
+import { compareContentParts } from '../state/contentParts.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -153,21 +154,8 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     catMap.get(kat)!.push(meta);
   }
 
-  // Stabilní pořadí: ZPS, TI, DI, GAD, OPL, PSPI, UDM (ZPSUDM, TIUDM, DIUDM,
-  // OST), ŽXML (ZDT, ZDD, H3D, ODSZ, SKLEP), ostatní (alfa).
-  const CAST_ORDER = [
-    'ZPS', 'TI', 'DI', 'GAD', 'OPL', 'PSPI',
-    'ZPSUDM', 'TIUDM', 'DIUDM', 'OST',
-    'ZDT', 'ZDD', 'H3D', 'ODSZ', 'SKLEP',
-  ];
-  const sortedCasts = [...groups.keys()].sort((a, b) => {
-    const ai = CAST_ORDER.indexOf(a);
-    const bi = CAST_ORDER.indexOf(b);
-    if (ai !== -1 && bi !== -1) return ai - bi;
-    if (ai !== -1) return -1;
-    if (bi !== -1) return 1;
-    return a.localeCompare(b, 'cs');
-  });
+  // Stabilní pořadí: JVF, UDM, ŽXML, ostatní (alfa) — viz state/contentParts.ts.
+  const sortedCasts = [...groups.keys()].sort(compareContentParts);
 
   for (const cast of sortedCasts) {
     const catMap = groups.get(cast)!;
