@@ -18,6 +18,7 @@ commitne. Po dokončení celého zadání pushne do `develop`.
 | 6 | **ux-redesign-panelu** — poznámky k UX: redesign tabulky a rozbalování kategorií, levý panel rozdělený na Vrstvy / Data, výraznější rozlišení režimů JVF / UDM / JŽM, minimalizace přepínačů a posuvníků (před implementací upřesnit) | ⬜ TODO | [README](./ux-redesign-panelu/README.md) · [úkoly](./ux-redesign-panelu/TASKS.md) |
 | 7 | **logovani-uzivatelskeho-pruchodu** — měření použití funkcí a délky práce s aplikací (cookieless, bez dat ze souborů; nástroj a rozsah před implementací upřesnit) | ⬜ TODO | [README](./logovani-uzivatelskeho-pruchodu/README.md) · [úkoly](./logovani-uzivatelskeho-pruchodu/TASKS.md) |
 | 8 | **skolici-rezim** — průvodce aplikací (školicí režim) nad ukázkovými daty; až po #6, podobu před implementací upřesnit | ⬜ TODO | [README](./skolici-rezim/README.md) · [úkoly](./skolici-rezim/TASKS.md) |
+| 9 | **formular-zpetne-vazby** — formulář pro zpětnou vazbu v aplikaci (cíl odesílání před implementací upřesnit) | ⬜ TODO | [README](./formular-zpetne-vazby/README.md) · [úkoly](./formular-zpetne-vazby/TASKS.md) |
 
 ## Ruční úkoly
 
