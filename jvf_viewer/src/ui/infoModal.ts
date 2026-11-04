@@ -67,6 +67,18 @@ const INFO_CONTENT_HTML = `
       i 3D scénu. Tlačítko motivu v hlavičce přepíná
       <em>světlý (výchozí) / tmavý motiv</em> celé aplikace — panely,
       dialogy, pozadí pod vrstvami ve 2D i 3D.
+      <strong>DTM ČR (překryv)</strong> — přepínač pod podkladovými mapami
+      zobrazí nad podkladem Digitální technickou mapu ČR ze služeb ČÚZK
+      (IS DMVS, data krajských DTM; rastr — vektorová služba DTM celostátně
+      neexistuje). Zaškrtnout jde všechny vrstvy (<em>Vybrat vše</em>), celé
+      skupiny (ZPS – plochy, Dopravní infrastruktura, Technická
+      infrastruktura, Přípojky, ZPS – linie a body) nebo jednotlivé
+      podvrstvy po rozbalení skupiny; vlastní posuvník řídí sytost. Celá
+      skupina se načítá z rychlých cachovaných dlaždic (WMTS), výběr
+      podvrstev přes WMS. Služby kreslí jen při přiblížení (ZPS od
+      ~1 : 37 000, sítě od ~1 : 150 000, přípojky a drobné prvky od
+      1 : 800). Data JVF zůstávají nad překryvem. Ve 3D se vybrané vrstvy
+      DTM přehodí přes terén (terén se zapne sám).
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).

@@ -18,6 +18,7 @@
  */
 import * as THREE from 'three';
 import { CUZK_TILE_ORIGIN, CUZK_RESOLUTIONS } from '../map/cuzk.js';
+import { DTM_WMS_BASE } from '../map/dtmCatalog.js';
 import type { BBox } from './terrain.js';
 
 /** Dostupné podkladové vrstvy — shodné s 2D (`map/cuzk.ts`). */
@@ -173,4 +174,102 @@ export function clearBasemapTextureCache(): void {
   for (const tex of textureCache.values()) tex.dispose();
   textureCache.clear();
   inflight.clear();
+  dtmImageCache.clear();
+}
+
+// ── Překryv DTM ČR na terénu ──────────────────────────────────────────────────
+
+/** Vybrané podvrstvy jedné služby DTM (viz map/dtmCatalog.ts). */
+export interface DtmTextureLayer {
+  serviceId: string;
+  layers: string[];
+}
+
+export interface TerrainTextureRequest {
+  basemap: BasemapKind | 'none';
+  dtm: DtmTextureLayer[];
+  dtmOpacity: number;
+  /** Pozadí bez podkladu (bílá / černá podle motivu). */
+  background: string;
+}
+
+/**
+ * Obrázky WMS DTM na bbox (cache: stejný výřez a výběr se nestahuje znovu,
+ * změna sytosti jen přeskládá canvas).
+ */
+const dtmImageCache = new Map<string, Promise<HTMLImageElement | null>>();
+
+function loadDtmImage(bbox: BBox, width: number, height: number, layer: DtmTextureLayer): Promise<HTMLImageElement | null> {
+  const r = (n: number): string => n.toFixed(2);
+  const key = `${layer.serviceId}|${layer.layers.join(',')}|${r(bbox.minX)},${r(bbox.minY)},${r(bbox.maxX)},${r(bbox.maxY)}|${width}x${height}`;
+  let p = dtmImageCache.get(key);
+  if (!p) {
+    const params = new URLSearchParams({
+      SERVICE: 'WMS',
+      VERSION: '1.3.0',
+      REQUEST: 'GetMap',
+      LAYERS: layer.layers.join(','),
+      STYLES: '',
+      CRS: 'EPSG:5514',
+      BBOX: `${bbox.minX},${bbox.minY},${bbox.maxX},${bbox.maxY}`,
+      WIDTH: String(width),
+      HEIGHT: String(height),
+      FORMAT: 'image/png',
+      TRANSPARENT: 'true',
+    });
+    p = loadTileImage(`${DTM_WMS_BASE}${layer.serviceId}?${params.toString()}`);
+    dtmImageCache.set(key, p);
+  }
+  return p;
+}
+
+/** Rozměr textury bez podkladu: delší strana MAX_TEXTURE_PX. */
+function sizeForBbox(bbox: BBox): { width: number; height: number } {
+  const spanX = Math.max(1, bbox.maxX - bbox.minX);
+  const spanY = Math.max(1, bbox.maxY - bbox.minY);
+  const k = MAX_TEXTURE_PX / Math.max(spanX, spanY);
+  return { width: Math.max(1, Math.round(spanX * k)), height: Math.max(1, Math.round(spanY * k)) };
+}
+
+/**
+ * Textura terénu: podklad (nebo pozadí podle motivu) a přes něj vybrané
+ * služby DTM (jedno WMS GetMap na službu, v pořadí katalogu, se sytostí DTM).
+ * Bez DTM vrací přímo cachovanou texturu podkladu. Složená textura patří
+ * volajícímu — `userData.ownedComposite` = při výměně ji uvolnit
+ * (viz terrain.ts `applyBasemapToTerrain`).
+ */
+export async function loadTerrainTexture(bbox: BBox, req: TerrainTextureRequest): Promise<THREE.CanvasTexture> {
+  if (req.dtm.length === 0) {
+    if (req.basemap === 'none') throw new Error('Není co nanést na terén');
+    return loadBasemapTexture(bbox, req.basemap);
+  }
+  const base = req.basemap !== 'none' ? await loadBasemapTexture(bbox, req.basemap) : null;
+  const baseImage = base?.image as HTMLCanvasElement | undefined;
+  const { width, height } = baseImage
+    ? { width: baseImage.width, height: baseImage.height }
+    : sizeForBbox(bbox);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D kontext není k dispozici');
+  if (baseImage) {
+    ctx.drawImage(baseImage, 0, 0);
+  } else {
+    ctx.fillStyle = req.background;
+    ctx.fillRect(0, 0, width, height);
+  }
+  const images = await Promise.all(req.dtm.map((l) => loadDtmImage(bbox, width, height, l)));
+  ctx.globalAlpha = req.dtmOpacity;
+  for (const img of images) if (img) ctx.drawImage(img, 0, 0, width, height);
+  ctx.globalAlpha = 1;
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.userData['ownedComposite'] = true;
+  tex.needsUpdate = true;
+  return tex;
 }

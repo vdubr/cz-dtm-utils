@@ -660,6 +660,18 @@ export function getTerrainRealBbox(group: THREE.Group): BBox | null {
  * dispose materiálu ji nesmí uvolnit, proto `material.map` před dispose
  * odpojujeme.
  */
+/**
+ * Uvolní materiál podkladu. Textura z cache (`basemapTexture.ts`) se
+ * nevlastní — odpojí se; složená textura s DTM (`userData.ownedComposite`)
+ * patří materiálu a uvolní se s ním.
+ */
+function releaseBasemapMaterial(material: THREE.MeshBasicMaterial): void {
+  const map = material.map;
+  if (map?.userData['ownedComposite'] === true) map.dispose();
+  material.map = null;
+  material.dispose();
+}
+
 export function applyBasemapToTerrain(
   group: THREE.Group,
   texture: THREE.Texture,
@@ -674,8 +686,7 @@ export function applyBasemapToTerrain(
     surface.userData['hypsoMaterial'] = current;
   } else if (current !== surface.userData['hypsoMaterial']) {
     // Přepnutí mezi dvěma podklady — starý basemap materiál uvolníme
-    (current as THREE.MeshBasicMaterial).map = null;
-    current.dispose();
+    releaseBasemapMaterial(current as THREE.MeshBasicMaterial);
   }
 
   surface.material = new THREE.MeshBasicMaterial({
@@ -694,10 +705,7 @@ export function removeBasemapFromTerrain(group: THREE.Group): void {
   const hypso = surface.userData['hypsoMaterial'] as THREE.Material | undefined;
   if (!hypso) return; // podklad nebyl aplikován
   const current = surface.material as THREE.MeshBasicMaterial;
-  if (current !== hypso) {
-    current.map = null; // texturu vlastní cache, neuvolňovat
-    current.dispose();
-  }
+  if (current !== hypso) releaseBasemapMaterial(current);
   surface.material = hypso;
   delete surface.userData['hypsoMaterial'];
 }

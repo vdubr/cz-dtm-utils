@@ -127,6 +127,27 @@
             <span id="basemap-spinner" class="terrain-spinner" hidden></span>
           </div>
         </div>
+        <!-- Překryvná vrstva DTM ČR (služby ČÚZK) — obsah kreslí ui/dtmPanel.ts -->
+        <div class="panel-section dtm-section" id="dtm-section">
+          <label class="toggle-row dtm-toggle" title="Zobrazit Digitální technickou mapu ČR jako překryv nad podkladem (2D i 3D)">
+            <span class="panel-section-title dtm-title">DTM ČR (překryv)</span>
+            <input type="checkbox" class="m3-switch" id="toggle-dtm" />
+          </label>
+          <div id="dtm-body" class="dtm-body" hidden>
+            <div class="basemap-opacity-row">
+              <span class="material-symbols-outlined basemap-opacity-icon" title="Sytost překryvu DTM">opacity</span>
+              <input type="range" class="m3-slider" id="dtm-opacity" min="10" max="100" value="100" title="Sytost překryvu DTM (2D i 3D)" />
+              <span id="dtm-spinner" class="terrain-spinner" hidden></span>
+            </div>
+            <div class="dtm-actions">
+              <button type="button" class="dtm-action-btn" data-dtm-all="1">Vybrat vše</button>
+              <button type="button" class="dtm-action-btn" data-dtm-all="0">Zrušit vše</button>
+            </div>
+            <div id="dtm-layers" class="dtm-layers"></div>
+            <p class="dtm-note">Kreslí se až při přiblížení (ZPS od ~1 : 37 000, sítě od ~1 : 150 000,
+              přípojky a drobné prvky od 1 : 800).<br />© ČÚZK – IS DMVS, data krajských DTM</p>
+          </div>
+        </div>
         <div class="panel-section" id="projects-section" style="display:none">
           <button type="button" class="panel-section-title projects-header" id="projects-header" aria-expanded="true" title="Sbalit / rozbalit seznam projektů">
             <span class="material-symbols-outlined projects-chevron">expand_more</span>

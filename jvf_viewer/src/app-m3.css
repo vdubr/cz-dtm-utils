@@ -894,3 +894,68 @@ html, body {
   color: var(--md-sys-color-on-surface-variant);
 }
 .measure-values .measure-snap-target[hidden] { display: none; }
+
+/* ===== Překryv DTM ČR (ui/dtmPanel.ts) ===== */
+.dtm-toggle { min-height: 40px; padding: 0 4px; cursor: pointer; }
+.dtm-toggle .dtm-title { flex: 1; padding: 0; }
+.dtm-body[hidden] { display: none; }
+.dtm-body .basemap-opacity-row { padding-top: 4px; }
+.dtm-actions { display: flex; gap: 4px; margin: 4px 0 2px; }
+.dtm-action-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  cursor: pointer;
+}
+.dtm-action-btn:hover { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); }
+.dtm-action-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+.dtm-group-header { display: flex; align-items: center; min-height: 40px; }
+.dtm-expand {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.dtm-expand:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.dtm-expand .material-symbols-outlined { font-size: 20px; transition: transform 150ms var(--md-sys-motion-standard); }
+.dtm-expand.expanded .material-symbols-outlined { transform: rotate(90deg); }
+.dtm-check-row {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-on-surface);
+}
+.dtm-check-row input.m3-checkbox { margin: 7px 10px 7px 4px; }
+.dtm-check-row span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.dtm-count {
+  flex-shrink: 0;
+  padding: 0 8px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.dtm-sublayers { padding: 0 0 4px 32px; }
+.dtm-sublayers[hidden] { display: none; }
+.dtm-sub { min-height: 32px; font-size: 13px; }
+.dtm-note {
+  margin: 6px 4px 0;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}

@@ -564,8 +564,12 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
   return { layers, extent: totalExtent };
 }
 
+/** Pořadí vrstev JVF v mapě: nad podkladem (0) a překryvem DTM (1–5). */
+export const JVF_LAYER_Z_INDEX = 10;
+
 export function addJvfLayersToMap(map: Map, layers: JvfVectorLayer[]): void {
   for (const { olLayer } of layers) {
+    olLayer.setZIndex(JVF_LAYER_Z_INDEX);
     map.addLayer(olLayer);
   }
 }

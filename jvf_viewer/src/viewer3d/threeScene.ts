@@ -28,10 +28,13 @@ import {
   type BBox,
 } from './terrain.js';
 import {
-  loadBasemapTexture,
+  loadTerrainTexture,
   clearBasemapTextureCache,
   type BasemapKind,
+  type DtmTextureLayer,
 } from './basemapTexture.js';
+import { DTM_SERVICES } from '../map/dtmCatalog.js';
+import { getDtmOpacity, getDtmSelection, isDtmEnabled } from '../state/dtmOverlay.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
@@ -304,6 +307,10 @@ export function setThreeBackground(color: string): void {
     (state.grid.material as THREE.Material).dispose();
     state.grid = createGrid(color);
     state.scene.add(state.grid);
+    // DTM bez podkladu se kreslí přes pozadí motivu → přeskládat texturu.
+    if (currentBasemap === 'none' && dtmTextureLayers().length > 0) {
+      void applyCurrentBasemap().catch((err) => console.error('[dtm] přehoz na terén selhal', err));
+    }
   }
 }
 
@@ -1156,7 +1163,7 @@ async function ensureTerrainLoaded(): Promise<void> {
   }
   // Byl-li zvolen podklad, aplikuj ho na nové meshe. Fire-and-forget:
   // selhání podkladu nesmí rozbít terén ani scénu.
-  if (currentBasemap !== 'none') {
+  if (currentBasemap !== 'none' || dtmTextureLayers().length > 0) {
     void applyCurrentBasemap().catch((err) => {
       console.error('[basemap] načtení podkladu selhalo', err);
     });
@@ -1193,21 +1200,48 @@ export async function setBasemap(kind: BasemapKind | 'none'): Promise<void> {
 async function applyCurrentBasemap(): Promise<void> {
   const reqId = ++basemapRequestId;
   if (!state || state.terrainMeshes.length === 0) return;
-  if (currentBasemap === 'none') {
+  const dtm = dtmTextureLayers();
+  if (currentBasemap === 'none' && dtm.length === 0) {
     for (const mesh of state.terrainMeshes) removeBasemapFromTerrain(mesh);
     return;
   }
-  const kind = currentBasemap;
+  const request = {
+    basemap: currentBasemap,
+    dtm,
+    dtmOpacity: getDtmOpacity(),
+    background: currentBackground,
+  };
+  // Bez podkladu (jen DTM přes pozadí) plná sytost textury.
+  const opacity = currentBasemap === 'none' ? 1 : basemapOpacity;
   await Promise.all(
     state.terrainMeshes.map(async (mesh) => {
       const bbox = getTerrainRealBbox(mesh);
       if (!bbox) return;
-      const texture = await loadBasemapTexture(bbox, kind);
+      const texture = await loadTerrainTexture(bbox, request);
       // Mezitím mohl uživatel přepnout podklad nebo scéna zanikla — zahodit.
-      if (reqId !== basemapRequestId || !state) return;
-      applyBasemapToTerrain(mesh, texture, basemapOpacity);
+      if (reqId !== basemapRequestId || !state) {
+        if (texture.userData['ownedComposite'] === true) texture.dispose();
+        return;
+      }
+      applyBasemapToTerrain(mesh, texture, opacity);
     })
   );
+}
+
+/** Vybrané služby DTM pro přehoz na terén (prázdné = překryv vypnutý). */
+function dtmTextureLayers(): DtmTextureLayer[] {
+  if (!isDtmEnabled()) return [];
+  return DTM_SERVICES
+    .map((s) => ({ serviceId: s.id, layers: getDtmSelection(s.id) }))
+    .filter((l) => l.layers.length > 0);
+}
+
+/**
+ * Přeskládá texturu terénu po změně překryvu DTM (zapnutí, výběr, sytost).
+ * Bez načteného terénu nic nedělá — DTM se nanese po jeho načtení.
+ */
+export async function refreshTerrainTexture(): Promise<void> {
+  await applyCurrentBasemap();
 }
 
 /** Nastaví průhlednost podkladové textury (0–1). */

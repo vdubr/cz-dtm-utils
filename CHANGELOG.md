@@ -9,6 +9,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Překryvná vrstva DTM ČR** — v panelu vrstev pod podkladovými mapami:
+  Digitální technická mapa ČR ze služeb ČÚZK (IS DMVS, veřejné, bez
+  přihlášení) jako volitelný rastrový překryv nad podkladem a pod daty JVF.
+  Výběr všech vrstev, celých skupin (ZPS – plochy, DI, TI, přípojky, ZPS –
+  linie a body) i jednotlivých podvrstev; vlastní sytost. Celé skupiny přes
+  cachované dlaždice WMTS, výběr podvrstev přes WMS. Ve 3D se vybrané
+  vrstvy přehodí přes terén. Vektorová služba DTM celostátně neexistuje.
 - **Měření vzdálenosti a plochy ve 2D i 3D** — tlačítko s pravítkem vlevo
   dole (inspirace mapy.cz): klikáním se přidávají body, vzdálenost se
   počítá průběžně a od 3 bodů zároveň plocha mnohoúhelníku; klik na první

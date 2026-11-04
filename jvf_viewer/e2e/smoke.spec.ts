@@ -390,7 +390,9 @@ test.describe('Sekce Projekty', () => {
     // Projekty se drží u obsahu (1 řádek + hlavička) — ne polovina panelu;
     // veškerý volný prostor si bere sekce JVF vrstev.
     expect(projectsBox!.height).toBeLessThan(120);
-    expect(jvfBox!.height).toBeGreaterThan(projectsBox!.height * 2);
+    // Nad Projekty je i sekce DTM ČR (sbalená = řádek s přepínačem), takže
+    // v okně 720 px zbývá vrstvám JVF o něco méně — stále ale většina místa.
+    expect(jvfBox!.height).toBeGreaterThan(projectsBox!.height * 1.5);
 
     // Vrstvy začínají těsně pod sekcí Projekty (žádná velká mezera).
     const gap = jvfBox!.y - (projectsBox!.y + projectsBox!.height);
@@ -1086,6 +1088,84 @@ test.describe('Modály a ovládání', () => {
     await page.waitForTimeout(600);
     await expect(page.locator('#features-panel')).toBeHidden();
     await expect(page.locator('#measure-card [data-measure="points"]')).toHaveText('1');
+  });
+
+  test('DTM ČR: překryv se zapíná, výběr přepíná WMTS ↔ WMS a vrstvy jsou pod daty JVF', async ({ page }) => {
+    // Služby ČÚZK stubované průhledným PNG — test nezávisí na síti.
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    const reqs: string[] = [];
+    await page.route('**/dmvs.cuzk.gov.cz/**', (route) => {
+      reqs.push(decodeURIComponent(route.request().url()));
+      void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } });
+    });
+    await loadSample(page, 'ukazka_ZPS.xml');
+    type Dbg = { olMap: import('ol/Map').default; getJvfLayers: () => Array<{ olLayer: import('ol/layer/Vector').default }> };
+    const visibleDtm = () => page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug;
+      return d.olMap.getLayers().getArray()
+        .filter((l) => String(l.get('name')).startsWith('dtm:') && l.getVisible())
+        .map((l) => `${String(l.get('name')).slice(4)}|${l.get('dtmMode')}`);
+    });
+
+    await expect(page.locator('#dtm-body')).toBeHidden();
+    expect(await visibleDtm()).toEqual([]);
+
+    // Zapnout → všech 5 služeb; celé služby přes WMTS, přípojky (bez WMTS) přes WMS.
+    await page.locator('#toggle-dtm').check();
+    await expect(page.locator('#dtm-body')).toBeVisible();
+    expect((await visibleDtm()).sort()).toEqual([
+      'dtm_di_ver|wmts', 'dtm_pripojky|wms', 'dtm_ti_ver|wmts', 'dtm_zps_linie_body|wmts', 'dtm_zps_plochy_bar|wmts',
+    ]);
+    await expect.poll(() => reqs.some((u) => u.includes('/api/wmts/dtm_zps_linie_body/rest/dtm_zps_linie_body/default/grid_5514/'))).toBe(true);
+
+    // Data JVF jsou nad DTM.
+    const z = await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug;
+      const dtm = d.olMap.getLayers().getArray().filter((l) => String(l.get('name')).startsWith('dtm:')).map((l) => l.getZIndex() ?? 0);
+      return { jvf: d.getJvfLayers()[0]!.olLayer.getZIndex() ?? 0, dtmMax: Math.max(...dtm) };
+    });
+    expect(z.jvf).toBeGreaterThan(z.dtmMax);
+
+    // Odškrtnutí podvrstvy → služba přes WMS s LAYERS bez ní, skupina „částečně".
+    const group = page.locator('[data-dtm-service="dtm_zps_linie_body"]');
+    await group.locator('.dtm-expand').click();
+    await page.locator('[data-dtm-sub="dtm_zps_linie_body:teren_hrana"]').uncheck();
+    await expect(page.locator('[data-dtm-count="dtm_zps_linie_body"]')).toHaveText('11/12');
+    expect(await page.locator('[data-dtm-service-check="dtm_zps_linie_body"]').evaluate((el) => (el as HTMLInputElement).indeterminate)).toBe(true);
+    expect(await visibleDtm()).toContain('dtm_zps_linie_body|wms');
+    await expect.poll(() => reqs.some((u) => u.includes('/api/wms/dtm_zps_linie_body')
+      && u.includes('LAYERS=bud,prisl_st') && !u.includes('teren_hrana') && u.includes('CRS=EPSG:5514'))).toBe(true);
+
+    // Zrušit vše → nic; Vybrat vše → zpět; vypnutí → nic.
+    await page.locator('[data-dtm-all="0"]').click();
+    expect(await visibleDtm()).toEqual([]);
+    await page.locator('[data-dtm-all="1"]').click();
+    expect(await visibleDtm()).toHaveLength(5);
+    await page.locator('#toggle-dtm').uncheck();
+    expect(await visibleDtm()).toEqual([]);
+    await expect(page.locator('#dtm-body')).toBeHidden();
+  });
+
+  test('DTM ČR ve 3D: přehoz přes terén (WMS GetMap na bbox terénu)', async ({ page }) => {
+    // DTM stubované; terén (DMR5G) se stahuje skutečně přes dev proxy.
+    test.setTimeout(90_000);
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    const wms: string[] = [];
+    await page.route('**/dmvs.cuzk.gov.cz/**', (route) => {
+      const u = decodeURIComponent(route.request().url());
+      if (u.includes('/api/wms/')) wms.push(u);
+      void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } });
+    });
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.locator('#toggle-dtm').check();
+    await page.locator('#btn-3d').click();
+    // DTM ve 3D potřebuje terén → zapne se sám.
+    await expect(page.locator('#toggle-terrain')).toBeChecked({ timeout: 60_000 });
+    await expect.poll(() => wms.filter((u) => u.includes('REQUEST=GetMap') && u.includes('BBOX=') && u.includes('CRS=EPSG:5514')).length,
+      { timeout: 60_000 }).toBeGreaterThanOrEqual(5);
+    // Jedno GetMap na službu, všechny na stejný bbox terénu.
+    const bboxes = new Set(wms.map((u) => /BBOX=([^&]+)/.exec(u)?.[1]));
+    expect(bboxes.size).toBeGreaterThanOrEqual(1);
   });
 
   test('přepínání podkladových map přepíná aktivní tlačítko', async ({ page }) => {

@@ -9,6 +9,8 @@ import { setActiveVersion } from './state/activeVersion.js';
 import { setupAppModeSwitch } from './ui/appModeSwitch.js';
 import { createOlMap } from './map/olMap.js';
 import { createZmLayer, createOrtofotoLayer, setupBaseLayerSwitcher } from './map/cuzk.js';
+import { setupDtmOverlay } from './map/dtmOverlay.js';
+import { setupDtmPanel, setDtmLoading } from './ui/dtmPanel.js';
 import {
   buildJvfLayers,
   addJvfLayersToMap,
@@ -160,6 +162,9 @@ subscribeChangesetToggle(refreshMeasureSnap);
 const zmLayer = createZmLayer();
 const ortofotoLayer = createOrtofotoLayer();
 setupBaseLayerSwitcher(olMap, zmLayer, ortofotoLayer);
+// Překryvná vrstva DTM ČR (služby ČÚZK) — nad podkladem, pod daty JVF.
+setupDtmOverlay(olMap, setDtmLoading);
+setupDtmPanel();
 
 // Setup 3D toggle — getObjekty returns current loaded data (union všech projektů)
 setup3dToggle(olMap, () => currentObjekty);
