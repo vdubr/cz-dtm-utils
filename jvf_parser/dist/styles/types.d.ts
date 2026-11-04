@@ -2,6 +2,8 @@
  * Obecný model vzhledu objektů dialektu (UDM, ŽXML) — sdílí ho viewer
  * (2D/3D/legenda) i export do CAD. Data generují skripty
  * `scripts/udm/build-udm-styles.py` a `scripts/zxml/build-zxml-styles.py`.
+ * Čisté JVF DTM (Katalog DTM ČR) převádí do stejného modelu
+ * `katalog/appearance.ts`.
  */
 /** Vzhled objektu nebo položky číselníku. */
 export interface Appearance {
@@ -14,6 +16,8 @@ export interface Appearance {
     symbol?: string;
     /** Atribut s natočením symbolu ve stupních (např. `Natoceni`). */
     rotationAttr?: string;
+    /** Výplň plochy (`#rrggbb`) — jen Katalog DTM ČR; UDM a ŽXML plochy nevyplňují. */
+    fill?: string;
 }
 /** Vzhled podle hodnoty atributu (číselníku): `values[kód] → vzhled`. */
 export interface AttrRule {

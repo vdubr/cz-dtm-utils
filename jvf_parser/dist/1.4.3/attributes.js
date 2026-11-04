@@ -7,8 +7,9 @@ function parseCommonAttributes(savoEl) {
     if (savoEl == null || typeof savoEl !== 'object')
         return common;
     const obj = savoEl;
-    const id = extractText(obj['ID']);
-    if (id != null)
+    // Prázdné `<ID/>` (nový prvek bez přiděleného ID) = ID chybí.
+    const id = extractText(obj['ID'])?.trim();
+    if (id)
         common.id = id;
     const idZmeny = extractText(obj['IDZmeny']);
     if (idZmeny != null)

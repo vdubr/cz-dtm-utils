@@ -26,9 +26,10 @@ function parseCommonAttributes(savoEl) {
     if (savoEl == null || typeof savoEl !== 'object')
         return common;
     const obj = savoEl;
+    // Prázdný element (`<ID/>` u nového prvku) = hodnota chybí.
     const set = (key, raw) => {
-        const v = extractText(raw);
-        if (v != null)
+        const v = extractText(raw)?.trim();
+        if (v)
             common[key] = v;
     };
     set('id', obj['ID']);

@@ -14,7 +14,7 @@ import { parseGeometrieObjektu1501 } from './geometry.js';
 import { parseAtributyObjektu1501 } from './attributes.js';
 import { isRecordElementName, resolveRecordKind } from './records.js';
 import { parseDoprovodneInformace1501 } from './doprovodne-informace.js';
-import { extractText } from '../1.4.3/xml-helpers.js';
+import { extractText, keepIdentifierText } from '../1.4.3/xml-helpers.js';
 const VALID_TYP_ZAPISU = ['kompletní zápis', 'změnové věty'];
 function createParser() {
     return new XMLParser({
@@ -24,6 +24,8 @@ function createParser() {
         // Záznamové věty (klíč = druh záznamu) i vícenásobné členy vždy jako pole.
         isArray: (name) => isRecordElementName(name) || ['curveMember', 'ZaznamZmeny'].includes(name),
         parseTagValue: true,
+        // ID zůstávají doslova jako text (úvodní nuly, „1e5" apod.).
+        tagValueProcessor: keepIdentifierText,
         parseAttributeValue: true,
         trimValues: true,
     });

@@ -3,7 +3,7 @@ import { isSupportedVersion } from 'jvf-dtm-types';
 import { parseGeometrieObjektu, parseOblastObjektuKI } from './geometry.js';
 import { parseAtributyObjektu } from './attributes.js';
 import { parseDoprovodneInformace } from './doprovodne-informace.js';
-import { extractText } from './xml-helpers.js';
+import { extractText, keepIdentifierText } from './xml-helpers.js';
 /** Platné hodnoty `TypZapisu` (viz `jvf-dtm-types`), pro runtime validaci. */
 const VALID_TYP_ZAPISU = ['kompletní zápis', 'změnové věty'];
 function createParser() {
@@ -14,6 +14,8 @@ function createParser() {
         isArray: (name) => ['ZaznamObjektu', 'ZaznamZPS', 'curveMember'].includes(name),
         // Preserve text content of elements that may be pure numbers
         parseTagValue: true,
+        // ID zůstávají doslova jako text (úvodní nuly, „1e5" apod.).
+        tagValueProcessor: keepIdentifierText,
         parseAttributeValue: true,
         trimValues: true,
     });

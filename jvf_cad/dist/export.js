@@ -1,22 +1,23 @@
 /**
- * Export JVF DTM a dialektů do DXF ve vzhledu dialektu: ŽXML → symbologie SŽ
- * (fotokatalog MOZeK), UDM i čisté JVF DTM → vzhled UDM (Univerzální datový
- * model ČKZ, pokrývá všechny objekty DTM).
+ * Export JVF DTM a dialektů do DXF ve vzhledu datového modelu: čisté JVF DTM
+ * → Katalog kartografických symbolů DTM ČR (ČÚZK, stejně jako viewer),
+ * UDM → vzhled UDM (knihovna ČKZ), ŽXML → symbologie SŽ (fotokatalog MOZeK).
  *
  * - hladina = obsahová část + objektový typ (`ZPS_HraniceBudovy`, mazané
- *   záznamy `…_DEL`), barva / tloušťka / typ čáry hladiny = vzhled UDM;
+ *   záznamy `…_DEL`), barva / tloušťka / typ čáry hladiny = vzhled objektu;
  *   vzhled podle hodnot číselníků se zapisuje jako přepis na entitě,
  * - linie → LWPOLYLINE (konstantní výška) / 3D POLYLINE, plochy → uzavřené
- *   obvody (UDM plochy nevyplňuje), body → blok symbolu UDM / POINT,
+ *   obvody, u Katalogu DTM ČR navíc plná výplň (HATCH pod obrysy; UDM a ŽXML
+ *   plochy nevyplňují), body → blok symbolu / POINT,
  *   popisy a názvy → TEXT s `PopisObjektu`,
  * - XDATA aplikace „UDM": objektový typ, kód, ID, druh záznamu a atributy
  *   (`Název=kód (popisek)`).
  *
  * Souřadnice beze změny (EPSG:5514, metry), měřítko symbolů a textů 1:500.
  */
-import { UDM_STYLES, getStyleTable, labelForAttribute, resolveAppearance, resolveRepresentativeAppearance, } from 'jvf-parser';
+import { getStyleTable, labelForAttribute, resolveAppearance, resolveKatalogAppearance, resolveKatalogRepresentativeAppearance, resolveRepresentativeAppearance, } from 'jvf-parser';
 import { DxfDocument } from './dxf/document.js';
-import { CAD_SYMBOLS, blockNameFor } from './symbols.js';
+import { CAD_SYMBOLS, blockNameFor, symbolColorFor } from './symbols.js';
 import { textHeightFor, isTextObject } from './text.js';
 const BLACK = '#000000';
 /** Tloušťky DXF (setiny mm) — povolené hodnoty AutoCADu. */
@@ -25,13 +26,16 @@ const LINEWEIGHTS = [0, 5, 9, 13, 15, 18, 20, 25, 30, 35, 40, 50, 53, 60, 70, 80
 const MM_TO_M = 0.5;
 /** Kurzíva symbolů jako sklon písma. */
 const ITALIC_OBLIQUE = 15;
+function isWhite(hex) {
+    return /^#?f{6}$/i.test(hex) || /^#?f{3}$/i.test(hex);
+}
 function lineweight(widthMm) {
     const target = Math.round((widthMm ?? 0.25) * 100);
     return LINEWEIGHTS.reduce((best, v) => (Math.abs(v - target) < Math.abs(best - target) ? v : best), 25);
 }
-/** Název typu čáry z čárkování (mm papíru), např. `UDM_3-0p5-0p2-0p5`. */
-function linetypeName(dashMm) {
-    return 'UDM_' + dashMm.map((d) => String(d).replace('.', 'p')).join('-');
+/** Název typu čáry z čárkování (mm papíru), např. `UDM_3-0p5-0p2-0p5` (Katalog DTM ČR `DTM_…`). */
+function linetypeName(dashMm, prefix) {
+    return prefix + dashMm.map((d) => String(d).replace('.', 'p')).join('-');
 }
 /** Bezpečný název hladiny / bloku (ASCII, bez znaků zakázaných v AutoCADu). */
 function safeName(s) {
@@ -81,15 +85,19 @@ export function exportDxf(dtm, options = {}) {
     const version = options.version ?? 'R2013';
     const flatten = options.flatten2D ?? false;
     const doc = new DxfDocument(version);
-    const styles = options.styles ?? getStyleTable(dtm.verze) ?? UDM_STYLES;
+    const fillAreas = options.fillAreas ?? true;
+    // Dialekt (nebo zadaná tabulka) → jeho styly, čisté JVF DTM → Katalog DTM ČR.
+    const styles = options.styles ?? getStyleTable(dtm.verze);
+    const representative = (ot) => styles ? resolveRepresentativeAppearance(styles, ot) : resolveKatalogRepresentativeAppearance(ot);
+    const appearance = (ot, zaznam) => styles ? resolveAppearance(styles, ot, zaznam) : resolveKatalogAppearance(ot, zaznam);
     let entities = 0;
     let skipped = 0;
     const ensureLinetype = (dashMm) => {
         if (!dashMm?.length)
             return undefined;
-        const name = linetypeName(dashMm);
+        const name = linetypeName(dashMm, styles ? 'UDM_' : 'DTM_');
         if (!doc.hasLinetype(name)) {
-            doc.addLinetype(name, `UDM ${dashMm.join(' ')} mm (1:500)`, dashMm.map((d) => d * MM_TO_M));
+            doc.addLinetype(name, `${dashMm.join(' ')} mm (1:500)`, dashMm.map((d) => d * MM_TO_M));
         }
         return name;
     };
@@ -103,7 +111,7 @@ export function exportDxf(dtm, options = {}) {
         return name;
     };
     for (const ot of dtm.objekty) {
-        const rep = resolveRepresentativeAppearance(styles, ot) ?? {};
+        const rep = representative(ot) ?? {};
         const layerColor = rep.color ?? BLACK;
         const layerLw = lineweight(rep.widthMm);
         const layerLt = ensureLinetype(rep.dashMm) ?? 'Continuous';
@@ -114,7 +122,7 @@ export function exportDxf(dtm, options = {}) {
             const layer = layerName(ot, zaznam);
             doc.addLayer(layer, layerColor, layerLw, layerLt);
             // Vzhled záznamu (pravidla podle číselníků) jako přepis hladiny.
-            const app = resolveAppearance(styles, ot, zaznam) ?? {};
+            const app = appearance(ot, zaznam) ?? {};
             const style = { layer, xdata: xdataFor(ot, zaznam, dtm.verze) };
             const color = app.color ?? layerColor;
             if (color !== layerColor)
@@ -127,14 +135,20 @@ export function exportDxf(dtm, options = {}) {
                 style.linetype = lt;
             // Natočení symbolu/textu: atribut ze stylu (ŽXML), jinak `Natoceni` (UDM).
             const rotation = Number(zaznam.attributes[app.rotationAttr ?? 'Natoceni'] ?? 0) || 0;
+            const block = !textObject && app.symbol ? ensureBlock(app.symbol) : undefined;
             for (const geom of zaznam.geometrie) {
+                // Bílá výplň = barva papíru; v CAD (tmavé pozadí) by jen zakrývala výkres.
+                if (fillAreas && app.fill && !isWhite(app.fill) && geom.type === 'Polygon') {
+                    writeFill(doc, geom.data, app.fill, style);
+                }
                 const n = writeGeometry(doc, geom, style, {
                     flatten,
                     rotation,
-                    color,
+                    // Značky Katalogu mají vlastní barvu (jako ve vieweru).
+                    color: (block && app.symbol && symbolColorFor(app.symbol)) || color,
                     text: textObject ? zaznam.commonAttributes.popisObjektu : undefined,
                     textHeight: textObject ? textHeightFor(ot.elementName, zaznam) : 0,
-                    block: !textObject && app.symbol ? ensureBlock(app.symbol) : undefined,
+                    block,
                 });
                 if (n === 0)
                     skipped++;
@@ -161,7 +175,7 @@ function writeGeometry(doc, geom, style, ctx) {
             }
             else if (ctx.block) {
                 // Barva symbolu = barva objektu (geometrie bloku je ByBlock).
-                doc.insert(ctx.block, x, y, zz, ctx.rotation, { ...style, color: style.color ?? ctx.color });
+                doc.insert(ctx.block, x, y, zz, ctx.rotation, { ...style, color: ctx.color });
             }
             else {
                 doc.point(x, y, zz, style);
@@ -182,6 +196,24 @@ function writeGeometry(doc, geom, style, ctx) {
         default:
             return 0;
     }
+}
+/**
+ * Výplň plochy (HATCH SOLID pod obrysy) — vnější obrys + otvory, ve 2D
+ * (polygon plochy je v JVF půdorys). Barva výplně je přepis na entitě.
+ */
+function writeFill(doc, poly, fill, style) {
+    const ring = (flat) => {
+        const pts = toPoints(flat, poly.srsDimension, true).map(([x, y]) => [x, y]);
+        const [a, b] = [pts[0], pts[pts.length - 1]];
+        if (a && b && pts.length > 3 && a[0] === b[0] && a[1] === b[1])
+            pts.pop();
+        return pts;
+    };
+    const outer = ring(poly.exterior);
+    if (outer.length < 3)
+        return;
+    const holes = poly.interiors.map(ring).filter((r) => r.length >= 3);
+    doc.areaHatch([outer, ...holes], 0, { layer: style.layer, color: fill });
 }
 /** Linie / obvod: konstantní výška → LWPOLYLINE, jinak 3D POLYLINE. */
 function writeLine(doc, pts, closed, style) {

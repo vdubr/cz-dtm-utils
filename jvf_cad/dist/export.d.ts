@@ -1,13 +1,14 @@
 /**
- * Export JVF DTM a dialektů do DXF ve vzhledu dialektu: ŽXML → symbologie SŽ
- * (fotokatalog MOZeK), UDM i čisté JVF DTM → vzhled UDM (Univerzální datový
- * model ČKZ, pokrývá všechny objekty DTM).
+ * Export JVF DTM a dialektů do DXF ve vzhledu datového modelu: čisté JVF DTM
+ * → Katalog kartografických symbolů DTM ČR (ČÚZK, stejně jako viewer),
+ * UDM → vzhled UDM (knihovna ČKZ), ŽXML → symbologie SŽ (fotokatalog MOZeK).
  *
  * - hladina = obsahová část + objektový typ (`ZPS_HraniceBudovy`, mazané
- *   záznamy `…_DEL`), barva / tloušťka / typ čáry hladiny = vzhled UDM;
+ *   záznamy `…_DEL`), barva / tloušťka / typ čáry hladiny = vzhled objektu;
  *   vzhled podle hodnot číselníků se zapisuje jako přepis na entitě,
  * - linie → LWPOLYLINE (konstantní výška) / 3D POLYLINE, plochy → uzavřené
- *   obvody (UDM plochy nevyplňuje), body → blok symbolu UDM / POINT,
+ *   obvody, u Katalogu DTM ČR navíc plná výplň (HATCH pod obrysy; UDM a ŽXML
+ *   plochy nevyplňují), body → blok symbolu / POINT,
  *   popisy a názvy → TEXT s `PopisObjektu`,
  * - XDATA aplikace „UDM": objektový typ, kód, ID, druh záznamu a atributy
  *   (`Název=kód (popisek)`).
@@ -26,9 +27,11 @@ export interface ExportDxfOptions {
     flatten2D?: boolean;
     /**
      * Tabulka vzhledu (výchozí podle `dtm.verze`: dialekt → jeho styly,
-     * čisté JVF DTM → styly UDM).
+     * čisté JVF DTM → Katalog DTM ČR).
      */
     styles?: StyleTable;
+    /** Vyplnit plochy, které mají ve vzhledu výplň (Katalog DTM ČR; výchozí `true`). */
+    fillAreas?: boolean;
 }
 /** Statistika exportu (pro UI / testy). */
 export interface ExportDxfResult {

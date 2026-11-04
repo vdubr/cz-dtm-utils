@@ -9,7 +9,7 @@
  * XSD: `docs/1.5.0.1/xsd/common/servis.xsd`.
  */
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
-import { extractText, extractAttributeValue } from '../1.4.3/xml-helpers.js';
+import { extractText, extractAttributeValue, keepIdentifierText } from '../1.4.3/xml-helpers.js';
 function createParser() {
     return new XMLParser({
         ignoreAttributes: false,
@@ -17,6 +17,8 @@ function createParser() {
         removeNSPrefix: true,
         isArray: (name) => ['Kontrola', 'Chyba'].includes(name),
         parseTagValue: true,
+        // ID zůstávají doslova jako text (úvodní nuly, „1e5" apod.).
+        tagValueProcessor: keepIdentifierText,
         parseAttributeValue: true,
         trimValues: true,
     });

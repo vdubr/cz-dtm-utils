@@ -24,6 +24,8 @@ export declare class DxfDocument {
     private readonly blockRecordChunks;
     private readonly blockChunks;
     private readonly entityChunks;
+    /** Výplně ploch — v ENTITIES před ostatními entitami (kreslí se pod nimi). */
+    private readonly fillChunks;
     private readonly layerNames;
     private readonly ltypeNames;
     private readonly blockNames;
@@ -80,6 +82,13 @@ export declare class DxfDocument {
     insert(block: string, x: number, y: number, z: number, rotDeg: number, style: EntityStyle): string;
     /** Plná výplň (HATCH SOLID) uzavřené hranice s bulge — jen uvnitř bloků. */
     solidHatch(boundary: readonly Vertex2[], style: EntityStyle, owner: string): string;
+    /**
+     * Plná výplň plochy v modelovém prostoru: první obrys vnější, další otvory
+     * (styl normal = sudá/lichá parita). Zapisuje se před ostatní entity, aby
+     * výplň ležela pod obrysy a symboly.
+     */
+    areaHatch(loops: readonly (readonly Vertex2[])[], elevation: number, style: EntityStyle): string;
+    private hatchPairs;
     /** Celý výkres jako text DXF. */
     toString(): string;
 }
