@@ -30,6 +30,7 @@ import { getIs3dActive, onViewModeChange } from '../ui/toggle3d.js';
 import { isQuickClick } from '../viewer3d/quickClick.js';
 import { raycastForMeasure, rayPlaneFromClient, sceneToSjtsk } from '../viewer3d/threeScene.js';
 import { clearParcel3d, showParcel3d } from '../viewer3d/parcel3d.js';
+import { track } from '../analytics.js';
 
 export interface ParcelInfo {
   ku: string;
@@ -247,6 +248,8 @@ export async function queryParcelAt(x: number, y: number): Promise<void> {
       return;
     }
     renderInfo(info, x, y);
+    // Jen že se dotaz použil — bez parcely a souřadnic.
+    track('kn_query', { view: getIs3dActive() ? '3d' : '2d' });
     if (info.parcelId) void showParcelGeometry(info.parcelId, id);
   } catch (err) {
     if (id !== requestId) return;

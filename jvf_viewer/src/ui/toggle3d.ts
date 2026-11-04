@@ -1,4 +1,5 @@
 import type Map from 'ol/Map.js';
+import { track } from '../analytics.js';
 import { isQuickClick } from '../viewer3d/quickClick.js';
 import type { ObjektovyTyp } from 'jvf-parser';
 import {
@@ -66,6 +67,7 @@ async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<voi
     // položit. Zapneme ho tedy automaticky (vč. synchronizace checkboxu).
     if (kind !== 'none' && !isTerrainVisible()) {
       await setTerrainVisible(true);
+      track('terrain_load', { via: 'basemap' });
       const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
       if (terrainCheckbox) terrainCheckbox.checked = true;
     }
@@ -96,6 +98,7 @@ async function apply3dOverlays(): Promise<void> {
   try {
     if (wantsOverlay && !isTerrainVisible()) {
       await setTerrainVisible(true); // načte terén a nanese i překryvy
+      track('terrain_load', { via: 'overlay' });
       const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
       if (terrainCheckbox) terrainCheckbox.checked = true;
     }
@@ -259,7 +262,9 @@ export function setup3dToggle(
   }
 
   themeBtn?.addEventListener('click', () => {
-    applyTheme(themeBtn.dataset['theme'] === 'light' ? 'dark' : 'light');
+    const next = themeBtn.dataset['theme'] === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    track('theme_change', { theme: next });
   });
 
   // Aplikovat výchozí (světlý) režim hned při startu — i ve 2D.
@@ -271,6 +276,7 @@ export function setup3dToggle(
     svgCheckbox.checked = getUseSvgSymbols();
     svgCheckbox.addEventListener('change', () => {
       setUseSvgSymbols(svgCheckbox.checked);
+      if (svgCheckbox.checked) track('svg_symbols', {});
     });
   }
 
@@ -285,6 +291,7 @@ export function setup3dToggle(
         terrainCheckbox.disabled = true;
         try {
           await setTerrainVisible(true);
+          track('terrain_load', { via: 'toggle' });
           // Po zapnutí terénu nanést podklad zvolený v levém panelu.
           await apply3dBasemapFromChoice(false);
         } catch (err) {

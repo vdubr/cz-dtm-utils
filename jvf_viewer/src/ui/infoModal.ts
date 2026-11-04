@@ -21,7 +21,7 @@ const INFO_CONTENT_HTML = `
     názvu projektu v panelu „Projekty").
     Umožňuje načíst JVF XML soubor a prohlédnout si jeho obsah ve 2D mapě i ve
     3D pohledu. Načtený soubor se zpracovává <strong>lokálně v prohlížeči</strong>
-    — nic se neodesílá na server.
+    — obsah souborů se nikam neodesílá.
   </p>
 
   <h3>Hlavní funkce</h3>
@@ -427,6 +427,23 @@ const INFO_CONTENT_HTML = `
     nabídne přepnutí — bez něj se soubor nenačte. Režim je v adrese stránky
     (<code>?mode=udm</code>, <code>?mode=jzm</code>), takže odkaz lze sdílet;
     bez parametru se aplikace otevře v režimu JVF.
+  </p>
+
+  <h3>Měření používání</h3>
+  <p>
+    Abychom věděli, které funkce se používají, aplikace na produkční adrese
+    anonymně měří <strong>použití funkcí a čas v aplikaci</strong> (služba
+    PostHog, data v EU — Frankfurt): načtení souboru nebo ukázky (režim, verze
+    JVF, velikost jen v hrubém pásmu), přepnutí režimu JVF / UDM / JŽM,
+    kontrolu, Přehled prvků, klik na prvek v mapě (jen typ objektu, např.
+    „budova"), měření, podkladové mapy, překryvy DTM / katastru,
+    dotaz na parcelu, dobu ve 3D, zapnutí SVG symbolů a terénu ve 3D, motiv
+    a export do CAD.
+    <strong>Nikdy</strong> se neodesílají názvy vašich souborů, souřadnice,
+    ID prvků, atributy ani údaje o parcelách. Měření nepoužívá cookies ani
+    úložiště prohlížeče (každé otevření stránky je nový anonymní návštěvník),
+    nenahrává obrazovku ani kliknutí. Návštěvnost stránky měří i Vercel Web
+    Analytics (bez cookies).
   </p>
 
   <h3>Omezení</h3>

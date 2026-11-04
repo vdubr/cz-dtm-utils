@@ -7,6 +7,7 @@
  */
 import type { OverlayService } from '../map/overlayCatalog.js';
 import type { OverlayState } from '../state/overlays.js';
+import { track } from '../analytics.js';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -127,7 +128,10 @@ export function setupOverlayPanel(state: OverlayState): void {
   renderLayers(state, section.querySelector<HTMLElement>('.overlay-layers')!);
 
   const toggle = section.querySelector<HTMLInputElement>(`#toggle-${def.id}`)!;
-  toggle.addEventListener('change', () => state.setEnabled(toggle.checked));
+  toggle.addEventListener('change', () => {
+    state.setEnabled(toggle.checked);
+    if (toggle.checked) track('overlay_toggle', { overlay: def.id });
+  });
   const opacity = section.querySelector<HTMLInputElement>(`#${def.id}-opacity`)!;
   opacity.addEventListener('input', () => state.setOpacity(Number(opacity.value) / 100));
   section.querySelectorAll<HTMLButtonElement>('[data-overlay-all]').forEach((btn) => {

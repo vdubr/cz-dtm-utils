@@ -9,6 +9,8 @@
  */
 import type { JvfProject } from '../state/projects.js';
 import { showConfirm } from './confirmModal.js';
+import { getAppMode } from '../state/appMode.js';
+import { track } from '../analytics.js';
 
 const EXPORT_LABEL = 'Exportovat';
 
@@ -101,6 +103,7 @@ export async function openExportCadDialog(projects: readonly JvfProject[]): Prom
     const { dxf } = exportDxf(project.dtm, { version, includeDeleted, flatten2D, fillAreas });
     const base = project.nazev.replace(/\.(jvf\.)?(xml|jvf)$/i, '');
     download(dxf, `${base}${version === 'R2000' ? '_R2000' : ''}.dxf`);
+    track('export_dxf', { mode: getAppMode(), format: version, fill: fillAreas });
   } catch (err) {
     console.error('Export do CAD selhal:', err);
     await showConfirm({

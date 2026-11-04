@@ -30,17 +30,20 @@ otázky (hlavně nástroj a soukromí).
 
 | Událost | Kdy | Vlastnosti (jen agregované) |
 |---|---|---|
-| `session_end` | `pagehide` / skrytí stránky | `active_min` (pásmo 0–1, 1–5, 5–15, 15–60, 60+) |
+| `active_time` | skrytí / zavření stránky | `seconds` — aktivní čas od posledního odeslání (součet = čas v aplikaci) |
 | `file_load` | načtení vlastního souboru | `mode`, `version` (např. 1.4.3, udm-2.1.1), `size` (pásmo) |
 | `sample_load` | načtení ukázky z nabídky | `sample` (název ukázky — veřejný), `mode` |
 | `mode_change` | přepnutí JVF / UDM / JŽM (i `?mode=`) | `mode` |
 | `topology_check` | Zkontrolovat | `mode`, `result` (ok / warnings / errors) |
 | `features_panel` | otevření Přehledu prvků | `via` (button / map_click) |
+| `map_feature_click` | klik na prvek v mapě (2D / 3D) | `view`, `type` (typ objektu z katalogu, např. `BudovaPlocha`) |
 | `measure` | zapnutí měření | `view` (2d / 3d) |
 | `basemap_change` | přepnutí podkladu | `basemap` (zakladni / ortofoto / prazdna) |
 | `overlay_toggle` | zapnutí překryvu | `overlay` (dtm / kn) |
 | `kn_query` | dotaz na parcelu (úspěšný) | `view` (2d / 3d) |
-| `view_3d` | odchod ze 3D | `duration_s` (pásmo) |
+| `view_3d` | odchod ze 3D (i skrytí stránky ve 3D) | `seconds` |
+| `svg_symbols` | zapnutí SVG symbolů pro body (3D) | — |
+| `terrain_load` | načtení terénu ČÚZK DMR5G (3D) | `via` (toggle / basemap / overlay) |
 | `theme_change` | přepnutí motivu | `theme` (light / dark) |
 | `export_dxf` | stažení DXF | `mode`, `format` (R2013 / R2000), `fill` |
 

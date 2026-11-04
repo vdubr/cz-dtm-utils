@@ -9,6 +9,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Anonymní měření používání** (PostHog Cloud EU) — jen na produkční
+  adrese: použití funkcí (soubor / ukázka, režim, kontrola, Přehled
+  prvků, klik na prvek v mapě — jen typ objektu, měření, podklady,
+  překryvy, dotaz na parcelu, motiv, export do CAD, SVG symboly a terén
+  ve 3D), aktivní čas v aplikaci a doba ve 3D. Bez cookies a úložiště
+  prohlížeče, bez záznamu obrazovky; nikdy názvy souborů, souřadnice,
+  ID prvků, atributy ani údaje o parcelách. Popis v info modalu.
 - **Export do CAD i v režimu JVF** — tlačítko Export do CAD (AutoCAD DXF)
   je nově i v režimu JVF. Výkres má stejný vzhled jako mapa — podle
   Katalogu kartografických symbolů DTM ČR (ČÚZK): hladiny podle objektových

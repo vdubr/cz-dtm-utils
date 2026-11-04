@@ -276,6 +276,9 @@ test.describe('Načtení JVF souboru', () => {
   test('mapa a legenda: stejný styl i u změnových vět (změna jen lemem pod prvkem)', async ({ page }) => {
     // ukazka_DI = změnové věty, všechny záznamy nové (i) → zvýraznění zapnuté.
     await page.setInputFiles('#file-input', fixturePath('ukazka_DI.xml'));
+    // Data načtená (vrstvy existují) — teprve pak číst styly.
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await expect(page.locator('.layer-item', { hasText: 'osa pozemní komunikace' })).toBeVisible();
     await expect(page.locator('#toggle-highlight-zapis')).toBeChecked();
     const look = await page.evaluate(() => {
       type St = { getStroke(): { getColor(): string } | null } | null;

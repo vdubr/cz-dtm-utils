@@ -1,6 +1,7 @@
 import 'ol/ol.css';
 import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
+import { initAnalytics, track, trackViewMode } from './analytics.js';
 import { type JvfDtm, type ObjektovyTyp } from 'jvf-parser';
 import { runAllChecks } from 'jvf-topology';
 import { markDialectObjekty } from './map/dialectStyle.js';
@@ -25,7 +26,7 @@ import { openExportCadDialog } from './ui/exportCad.js';
 import { setupDragAndDrop } from './ui/dragDrop.js';
 import { renderLayerPanel } from './ui/layerPanel.js';
 import { renderProjectsPanel } from './ui/projectsPanel.js';
-import { setup3dToggle, getIs3dActive, reloadThreeSceneData } from './ui/toggle3d.js';
+import { setup3dToggle, getIs3dActive, reloadThreeSceneData, onViewModeChange } from './ui/toggle3d.js';
 import { initErrorPanel, showErrors, hideErrors, isPanelVisible } from './ui/errorPanel.js';
 import {
   initFeaturesPanel,
@@ -35,7 +36,13 @@ import {
   selectFeatureInPanel,
 } from './ui/featuresPanel.js';
 import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
-import { setupMeasure, isMeasureActive, refreshMeasureSnap, getMeasurePoints } from './map/measure.js';
+import {
+  setupMeasure,
+  isMeasureActive,
+  refreshMeasureSnap,
+  getMeasurePoints,
+  onMeasureActiveChange,
+} from './map/measure.js';
 import { installQuickClick, isQuickClick } from './viewer3d/quickClick.js';
 import { setupParcelQuery, isParcelQueryActive } from './map/parcelQuery.js';
 import { getParcel3dRingCount } from './viewer3d/parcel3d.js';
@@ -193,6 +200,7 @@ setupChangesetToggle(() => currentJvfLayers);
 setActiveVersion(appModeDef(getAppMode()).defaultVersion);
 setupAppModeSwitch();
 onAppModeChange((mode) => {
+  track('mode_change', { mode });
   clearProjects();
   setActiveVersion(appModeDef(mode).defaultVersion);
   rebuildAll();
@@ -202,6 +210,13 @@ onAppModeChange((mode) => {
 // Cookieless, GDPR-compliant; aktivní jen na produkčním Vercel hostu (auto-detect).
 injectAnalytics();
 injectSpeedInsights();
+// Měření používání funkcí a času v aplikaci (PostHog EU, bez cookies) —
+// jen produkce s klíčem VITE_POSTHOG_KEY, viz analytics.ts.
+initAnalytics();
+onViewModeChange(trackViewMode);
+onMeasureActiveChange((on) => {
+  if (on) track('measure', { view: getIs3dActive() ? '3d' : '2d' });
+});
 
 // Setup validate button — toggle panel. Validace běží **per projekt**
 // (každý JVF soubor je samostatná dávka pro IS DMVS; meziprojektové
@@ -226,6 +241,10 @@ btnValidate.addEventListener('click', () => {
     );
     showErrors(errors);
     btnValidate.classList.add('active');
+    track('topology_check', {
+      mode: getAppMode(),
+      result: errors.some((e) => e.severity === 'error') ? 'errors' : errors.length > 0 ? 'warnings' : 'ok',
+    });
   }
 });
 
@@ -240,6 +259,7 @@ btnFeatures.addEventListener('click', () => {
     if (isPanelVisible()) hideErrors();
     showFeatures(currentObjekty);
     btnFeatures.classList.add('active');
+    track('features_panel', { via: 'button' });
   }
 });
 
@@ -410,6 +430,7 @@ function ensureFeaturesPanelOpen(): void {
   if (isPanelVisible()) hideErrors(); // mutual exclusion s error panelem
   showFeatures(currentObjekty);
   btnFeatures.classList.add('active');
+  track('features_panel', { via: 'map_click' });
 }
 
 // 2D: OL singleclick → forEachFeatureAtPixel hledá první feature s jvfElementName.
@@ -434,6 +455,8 @@ olMap.on('singleclick', (evt) => {
   );
   if (!picked) return;
   const { elementName, objectId } = picked;
+  // Jen typ objektu z katalogu — ne ID ani atributy prvku.
+  track('map_feature_click', { view: '2d', type: elementName });
   ensureFeaturesPanelOpen(); // otevřít panel, pokud byl zavřený (R2/R3)
   // Highlight v mapě (bez zoomu — uživatel už klikl, neztrácet kontext)
   const feature = (() => {
@@ -463,6 +486,7 @@ threeCanvas?.addEventListener('click', (e) => {
   if (isMeasureActive() || isParcelQueryActive()) return;
   const picked = pickFeatureFromClient(e.clientX, e.clientY);
   if (!picked) return;
+  track('map_feature_click', { view: '3d', type: picked.elementName });
   ensureFeaturesPanelOpen(); // otevřít panel, pokud byl zavřený (R2/R3)
   highlightThreeFeature(picked.elementName, picked.objectId);
   selectFeatureInPanel(picked.elementName, picked.objectId);

@@ -2,6 +2,7 @@ import TileLayer from 'ol/layer/Tile.js';
 import XYZ from 'ol/source/XYZ.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
 import Map from 'ol/Map.js';
+import { track } from '../analytics.js';
 import {
   getBasemapChoice,
   setBasemapChoice,
@@ -113,6 +114,7 @@ export function setupBaseLayerSwitcher(
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
       setBasemapChoice((btn.dataset['layer'] ?? 'none') as BasemapChoice);
+      track('basemap_change', { basemap: btn.dataset['layer'] ?? 'none' });
     });
   });
 

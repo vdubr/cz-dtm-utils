@@ -10,6 +10,8 @@ import type { JvfDtm, ErrorProtocol } from 'jvf-parser';
 import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
 import { ensureAppModeForFile } from './appModeSwitch.js';
+import { getAppMode } from '../state/appMode.js';
+import { sizeBucket, track } from '../analytics.js';
 
 /**
  * Validace verze souboru (1.5.0.1+ chování):
@@ -106,6 +108,8 @@ export function loadJvfFile(
         const ok = await validateFileVersion(data, file.name);
         if (!ok) return;
         onLoad(data, file.name);
+        // Bez názvu souboru — jen režim, verze a hrubá velikost.
+        track('file_load', { mode: getAppMode(), version: data.verze, size: sizeBucket(file.size) });
       } catch (err) {
         console.error('Failed to parse JVF file:', err);
         alert(`Soubor „${file.name}“ se nepodařilo načíst. Zkontrolujte, že jde o platný JVF DTM soubor.`);
@@ -223,6 +227,7 @@ async function loadSample(
     const ok = await validateFileVersion(data, name);
     if (!ok) return;
     onLoad(data, name);
+    track('sample_load', { sample: name, mode: getAppMode() });
   } catch (err) {
     console.error('Failed to load sample:', err);
     alert(`Ukázkový soubor „${name}“ se nepodařilo načíst.`);
