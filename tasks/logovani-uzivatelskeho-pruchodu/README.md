@@ -19,6 +19,34 @@ otázky (hlavně nástroj a soukromí).
 - Soubory uživatele se zpracovávají **lokálně v prohlížeči** a nic se
   neodesílá — to je slib v info modalu (`ui/infoModal.ts`, „Co to je").
 
+## Požadavky uživatele (2026-11-04) — co logovat
+
+- čas v aplikaci (aktivní čas, viditelná stránka),
+- používané nástroje: měření, Zkontrolovat (JVF), přepínání podkladových
+  map, dotaz na katastr (vlastník parcely), doba ve 3D, tmavý motiv, režim
+  JVF / UDM / JŽM, ukázková (mockovaná) data, export do DXF, Přehled prvků.
+
+### Katalog událostí (návrh)
+
+| Událost | Kdy | Vlastnosti (jen agregované) |
+|---|---|---|
+| `session_end` | `pagehide` / skrytí stránky | `active_min` (pásmo 0–1, 1–5, 5–15, 15–60, 60+) |
+| `file_load` | načtení vlastního souboru | `mode`, `version` (např. 1.4.3, udm-2.1.1), `size` (pásmo) |
+| `sample_load` | načtení ukázky z nabídky | `sample` (název ukázky — veřejný), `mode` |
+| `mode_change` | přepnutí JVF / UDM / JŽM (i `?mode=`) | `mode` |
+| `topology_check` | Zkontrolovat | `mode`, `result` (ok / warnings / errors) |
+| `features_panel` | otevření Přehledu prvků | `via` (button / map_click) |
+| `measure` | zapnutí měření | `view` (2d / 3d) |
+| `basemap_change` | přepnutí podkladu | `basemap` (zakladni / ortofoto / prazdna) |
+| `overlay_toggle` | zapnutí překryvu | `overlay` (dtm / kn) |
+| `kn_query` | dotaz na parcelu (úspěšný) | `view` (2d / 3d) |
+| `view_3d` | odchod ze 3D | `duration_s` (pásmo) |
+| `theme_change` | přepnutí motivu | `theme` (light / dark) |
+| `export_dxf` | stažení DXF | `mode`, `format` (R2013 / R2000), `fill` |
+
+Nikdy: názvy vlastních souborů, souřadnice, ID prvků, atributy, údaje
+o parcelách (KÚ, číslo, vlastník).
+
 ## Návrh směru (k potvrzení)
 
 - **Události funkcí** přes `track(name, props)` z `@vercel/analytics`
