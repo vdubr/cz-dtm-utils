@@ -1330,6 +1330,77 @@ test.describe('Modály a ovládání', () => {
     await expect(btn).toBeHidden();
   });
 
+  test('3D: při přiblížení se stáhne podrobný výřez jen kolem pohledu', async ({ page }) => {
+    test.setTimeout(90_000);
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    const getMaps: Array<{ span: number; width: number }> = [];
+    await page.route('**/services.cuzk.gov.cz/wms/**', (route) => {
+      const u = decodeURIComponent(route.request().url());
+      if (u.includes('REQUEST=GetMap') && u.includes('BBOX=')) {
+        const b = /BBOX=([^&]+)/.exec(u)![1]!.split(',').map(Number);
+        getMaps.push({ span: Math.max(b[2]! - b[0]!, b[3]! - b[1]!), width: Number(/WIDTH=(\d+)/.exec(u)![1]) });
+      }
+      void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } });
+    });
+    await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.locator('#toggle-kn').check();
+    await page.locator('#btn-3d').click();
+    // Celková textura terénu (celý výřez dat + okolí).
+    await expect.poll(() => getMaps.length, { timeout: 60_000 }).toBeGreaterThan(0);
+    const overall = Math.max(...getMaps.map((g) => g.span));
+    await page.waitForTimeout(1500);
+    const before = getMaps.length;
+    expect(getMaps.every((g) => g.span >= overall * 0.9)).toBe(true); // zatím bez výřezu
+
+    for (let i = 0; i < 8; i++) await page.locator('[data-nav="zoom-in"]').click();
+    // Po zastavení kamery: menší výřez (okolí pohledu) ve vysokém rozlišení.
+    await expect.poll(() => getMaps.slice(before).some((g) => g.span <= overall / 2 && g.width === 2048),
+      { timeout: 15_000 }).toBe(true);
+  });
+
+  test('katastr ve 3D: klik na parcelu ukáže údaje a obrys parcely na terénu', async ({ page }) => {
+    test.setTimeout(90_000);
+    const gfi = `<html><body><table><tr><td><table>
+      <tr><td>Katastrální území</td><td><a href="https://vdp.cuzk.cz/vdp/ruian/katastralniuzemi/635561">Zlín [635561]</a></td></tr>
+      <tr><td>Parcelní číslo</td><td>2801/59</td></tr>
+      <tr><td>Výměra [m<sup>2</sup>]</td><td>3923</td></tr>
+      <tr><td>Odkaz do VDP</td><td><a href="https://vdp.cuzk.cz/vdp/ruian/parcely/1234567">Informace o parcele</a></td></tr>
+      </table></td></tr></table></body></html>`;
+    // Budova z fixture (200 × 200 m) s jedním otvorem.
+    const gml = `<FeatureCollection xmlns="http://www.opengis.net/wfs/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:cp="http://inspire.ec.europa.eu/schemas/cp/4.0">
+      <member><cp:CadastralParcel><cp:geometry><gml:Polygon>
+        <gml:exterior><gml:LinearRing><gml:posList>-520800 -1164200 -520600 -1164200 -520600 -1164000 -520800 -1164000 -520800 -1164200</gml:posList></gml:LinearRing></gml:exterior>
+        <gml:interior><gml:LinearRing><gml:posList>-520750 -1164150 -520700 -1164150 -520700 -1164100 -520750 -1164150</gml:posList></gml:LinearRing></gml:interior>
+      </gml:Polygon></cp:geometry></cp:CadastralParcel></member></FeatureCollection>`;
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    await page.route('**/services.cuzk.gov.cz/**', (route) => {
+      const u = decodeURIComponent(route.request().url());
+      const headers = { 'access-control-allow-origin': '*' };
+      if (u.includes('GetFeatureInfo')) void route.fulfill({ status: 200, contentType: 'text/html', body: gfi, headers });
+      else if (u.includes('/wfs/')) void route.fulfill({ status: 200, contentType: 'application/gml+xml', body: gml, headers });
+      else void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers });
+    });
+    await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.locator('#btn-3d').click();
+    await page.waitForTimeout(1500);
+    await page.locator('#toggle-kn').check();
+    await page.locator('#btn-parcel').click();
+    const c = (await page.locator('#three-canvas').boundingBox())!;
+    await page.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
+    const card = page.locator('#parcel-card');
+    await expect(card.locator('[data-parcel="number"]')).toHaveText('2801/59', { timeout: 20_000 });
+    // Obrys parcely ve 3D: vnější hranice + otvor = 2 obrysy.
+    await expect.poll(() => page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { parcel3dRings: () => number } }).__jvfDebug.parcel3dRings()),
+    { timeout: 20_000 }).toBe(2);
+    // Zavření dotazu obrys odebere.
+    await page.keyboard.press('Escape');
+    expect(await page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { parcel3dRings: () => number } }).__jvfDebug.parcel3dRings())).toBe(0);
+  });
+
   test('DTM ČR ve 3D: přehoz přes terén (WMS GetMap na bbox terénu)', async ({ page }) => {
     // DTM stubované; terén (DMR5G) se stahuje skutečně přes dev proxy.
     test.setTimeout(90_000);

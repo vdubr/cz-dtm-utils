@@ -80,7 +80,9 @@ const INFO_CONTENT_HTML = `
       podvrstev přes WMS. Služby kreslí jen při přiblížení (ZPS od
       ~1 : 37 000, sítě od ~1 : 150 000, přípojky a drobné prvky od
       1 : 800). Data JVF zůstávají nad překryvem. Ve 3D se vybrané vrstvy
-      DTM přehodí přes terén (terén se zapne sám).
+      DTM přehodí přes terén (terén se zapne sám). Při přiblížení se kolem
+      středu pohledu dočte podrobnější výřez podkladu i překryvů (jen okolí
+      pohledu, po zastavení kamery), takže čáry zůstávají ostré.
       <strong>Katastr nemovitostí</strong> — stejný překryv z WMS ČÚZK
       (hranice parcel, parcelní čísla, obrazy parcel, další prvky mapy,
       KM-D, analogové mapy, orientační mapa parcel; všechny nebo jen
@@ -89,9 +91,10 @@ const INFO_CONTENT_HTML = `
       a ve 3D se také přehodí přes terén. Se zapnutým katastrem přibude
       vedle tlačítka měření tlačítko <strong>Zjistit vlastníka parcely</strong>:
       klik do mapy (2D i 3D) ukáže katastrální území, parcelní číslo
-      a výměru parcely (dotaz na katastr ČÚZK), v 2D mapě zvýrazní její
-      hranici (WFS katastrálních parcel ČÚZK, i s otvory; tlačítko
-      <em>Přiblížit na parcelu</em>) a nabídne odkaz <em>Vlastník
+      a výměru parcely (dotaz na katastr ČÚZK), zvýrazní její hranici
+      (WFS katastrálních parcel ČÚZK, i s otvory; v 2D tlačítko
+      <em>Přiblížit na parcelu</em>, ve 3D obrys položený na terén)
+      a nabídne odkaz <em>Vlastník
       v Nahlížení do KN</em>, který otevře parcelu ve veřejném Nahlížení do
       katastru nemovitostí s vlastníky (v nové záložce; aplikace vlastníky
       sama nestahuje — ČÚZK je strojově veřejně neposkytuje).

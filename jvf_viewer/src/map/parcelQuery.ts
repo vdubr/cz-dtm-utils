@@ -29,6 +29,7 @@ import { isMeasureActive, onMeasureActiveChange, setMeasureActive } from './meas
 import { getIs3dActive, onViewModeChange } from '../ui/toggle3d.js';
 import { isQuickClick } from '../viewer3d/quickClick.js';
 import { raycastForMeasure, rayPlaneFromClient, sceneToSjtsk } from '../viewer3d/threeScene.js';
+import { clearParcel3d, showParcel3d } from '../viewer3d/parcel3d.js';
 
 export interface ParcelInfo {
   ku: string;
@@ -173,6 +174,8 @@ const markerLayer = new VectorLayer({
 });
 /** Hranice zobrazené parcely (pro přiblížení). */
 let parcelGeom: Polygon | MultiPolygon | null = null;
+/** Skutečná výška kliknutého místa ve 3D (pro obrys mimo terén). */
+let lastClickZ = 0;
 
 export function isParcelQueryActive(): boolean {
   return active;
@@ -217,6 +220,8 @@ async function showParcelGeometry(parcelId: string, id: number): Promise<void> {
     if (id !== requestId || polygons.length === 0) return;
     parcelGeom = polygons.length === 1 ? new Polygon(polygons[0]!) : new MultiPolygon(polygons);
     markerSource.addFeature(new Feature(parcelGeom));
+    // Ve 3D obrys položený na terén.
+    if (getIs3dActive()) showParcel3d(polygons, lastClickZ);
     const zoom = body.querySelector<HTMLButtonElement>('[data-parcel-action="zoom"]');
     if (zoom) zoom.hidden = getIs3dActive();
   } catch {
@@ -228,6 +233,7 @@ async function showParcelGeometry(parcelId: string, id: number): Promise<void> {
 export async function queryParcelAt(x: number, y: number): Promise<void> {
   const id = ++requestId;
   markerSource.clear();
+  clearParcel3d();
   parcelGeom = null;
   markerSource.addFeature(new Feature(new Point([x, y])));
   body.innerHTML = '<p class="measure-hint">Zjišťuji parcelu…</p>';
@@ -259,6 +265,7 @@ export function setParcelQueryActive(on: boolean): void {
   const canvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
   if (canvas) canvas.style.cursor = on ? 'crosshair' : 'grab';
   markerSource.clear();
+  clearParcel3d();
   parcelGeom = null;
   requestId++;
   if (on) renderHint();
@@ -327,7 +334,9 @@ export function setupParcelQuery(olMap: OlMap): void {
     if (!active || !getIs3dActive() || !isQuickClick(e)) return;
     const hit = raycastForMeasure(e.clientX, e.clientY)[0]?.point ?? rayPlaneFromClient(e.clientX, e.clientY, 0);
     const c = hit ? sceneToSjtsk(hit) : null;
-    if (c) void queryParcelAt(c[0], c[1]);
+    if (!c) return;
+    lastClickZ = c[2];
+    void queryParcelAt(c[0], c[1]);
   });
 
   window.addEventListener('keydown', (ev) => {

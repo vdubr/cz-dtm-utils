@@ -11,9 +11,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 - **Vlastník parcely** — se zapnutým překryvem katastru tlačítko vedle
   měření: klik do mapy (2D i 3D) zjistí parcelu (WMS GetFeatureInfo ČÚZK —
-  katastrální území, parcelní číslo, výměra, odkaz do VDP), v 2D mapě
-  zvýrazní hranici parcely (WFS katastrálních parcel INSPIRE ČÚZK, i s
-  otvory; Přiblížit na parcelu) a nabídne odkaz „Vlastník v Nahlížení do
+  katastrální území, parcelní číslo, výměra, odkaz do VDP), zvýrazní
+  hranici parcely (WFS katastrálních parcel INSPIRE ČÚZK, i s otvory; v 2D
+  s Přiblížit na parcelu, ve 3D obrys položený na terén) a nabídne odkaz „Vlastník v Nahlížení do
   KN", který otevře parcelu ve veřejném Nahlížení do katastru nemovitostí
   podle souřadnic S-JTSK. Ikona polygonu se špendlíkem; s měřením se
   vylučuje.
@@ -149,6 +149,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- **Rozpixelovaný katastr / DTM / podklad ve 3D** — při přiblížení se
+  kolem středu pohledu stáhne podrobný výřez (podklad i překryvy, až
+  ~0,1 m/px) a nanese se přes celkovou texturu terénu; stahuje se jen okolí
+  pohledu (velikost podle vzdálenosti kamery, po zastavení kamery, drobné
+  posuny nic nestahují), při oddálení výřez zmizí. Textury mají anizotropní
+  filtrování, takže čáry a popisy zůstávají ostré i při šikmém pohledu.
 - **Klik ve 3D při otáčení / posunu scény** — za klik (výběr prvku, bod
   měření, nový střed otáčení) se ve 3D bere jen krátké stisknutí do 200 ms
   bez tažení; dřív se klik zaregistroval i po posunu scény tam a zpět

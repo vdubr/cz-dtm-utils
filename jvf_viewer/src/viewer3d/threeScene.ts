@@ -24,12 +24,15 @@ import {
   getTerrainRealBbox,
   applyBasemapToTerrain,
   removeBasemapFromTerrain,
+  setTerrainDetail,
   setBasemapOpacityOnTerrain,
   type BBox,
 } from './terrain.js';
 import {
   loadTerrainTexture,
   clearBasemapTextureCache,
+  configureTerrainTextures,
+  getMaxTexturePx,
   type BasemapKind,
   type OverlayTextureLayer,
 } from './basemapTexture.js';
@@ -358,6 +361,8 @@ function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void 
     state.pivotMarker.scale.setScalar(s);
     // Skrýt SVG sprity při velkém oddálení (čitelnost scény).
     updateSpriteVisibility(state.spriteObjects, spherical.radius);
+    // Při přiblížení podrobnější textura okolí pohledu (po zastavení kamery).
+    scheduleTerrainDetail();
   }
 }
 
@@ -830,6 +835,11 @@ export function initThreeScene(
   // sousedy. Synchronizujeme jen framebuffer (atributy width/height).
   renderer.setSize(width, height, false);
   renderer.setPixelRatio(window.devicePixelRatio);
+  // Textury terénu (podklad + překryvy) v co nejlepší kvalitě, kterou GPU zvládne.
+  configureTerrainTextures({
+    maxTextureSize: renderer.capabilities.maxTextureSize,
+    maxAnisotropy: renderer.capabilities.getMaxAnisotropy(),
+  });
 
   // Ambient + directional light
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
@@ -1203,7 +1213,10 @@ async function applyCurrentBasemap(): Promise<void> {
   if (!state || state.terrainMeshes.length === 0) return;
   const overlays = overlayTextureLayers();
   if (currentBasemap === 'none' && overlays.length === 0) {
-    for (const mesh of state.terrainMeshes) removeBasemapFromTerrain(mesh);
+    for (const mesh of state.terrainMeshes) {
+      removeBasemapFromTerrain(mesh); // odebere i podrobný výřez
+      detailKeys.delete(mesh);
+    }
     return;
   }
   const request = {
@@ -1226,6 +1239,8 @@ async function applyCurrentBasemap(): Promise<void> {
       applyBasemapToTerrain(mesh, texture, opacity);
     })
   );
+  // Podrobný výřez kolem pohledu podle nového podkladu / překryvů.
+  scheduleTerrainDetail();
 }
 
 /**
@@ -1243,6 +1258,92 @@ function overlayTextureLayers(): OverlayTextureLayer[] {
     }
   }
   return out;
+}
+
+// ── Podrobný výřez textury terénu kolem pohledu ───────────────────────────────
+// Celková textura terénu (až 4096 px na celý výřez dat) je hrubé pozadí.
+// Při přiblížení se kolem středu pohledu (orbit.center) stáhne podrobnější
+// výřez — podklad i překryvy v rozlišení podle vzdálenosti kamery — a nanese
+// se přes terén. Stahuje se jen „rozumné okolí pohledu": velikost podle
+// radiusu orbitu, zaokrouhlená na mocninu 2 a střed na mřížku (drobné posuny
+// nic nestahují), jen když je výrazně jemnější než celková textura,
+// a až po zastavení kamery.
+
+/** Delší strana textury podrobného výřezu (px). */
+const DETAIL_PX = 2048;
+/** Polovina strany výřezu = radius orbitu × tento koeficient (pokryje pohled). */
+const DETAIL_HALF_PER_RADIUS = 1.2;
+const DETAIL_MIN_HALF_M = 32;
+let detailTimer: ReturnType<typeof setTimeout> | null = null;
+let detailRequestId = 0;
+/** Klíč aktuálního výřezu per terénní mesh (bez změny se nic nestahuje). */
+const detailKeys = new WeakMap<THREE.Group, string>();
+
+function scheduleTerrainDetail(): void {
+  if (detailTimer) clearTimeout(detailTimer);
+  detailTimer = setTimeout(() => {
+    detailTimer = null;
+    void updateTerrainDetail().catch((err) => console.error('[terén] podrobný výřez selhal', err));
+  }, 400);
+}
+
+function clearTerrainDetail(mesh: THREE.Group): void {
+  if (detailKeys.has(mesh)) {
+    setTerrainDetail(mesh, null, null, 1);
+    detailKeys.delete(mesh);
+  }
+}
+
+async function updateTerrainDetail(): Promise<void> {
+  if (!state || state.terrainMeshes.length === 0) return;
+  const reqId = ++detailRequestId;
+  const overlays = overlayTextureLayers();
+  if (currentBasemap === 'none' && overlays.length === 0) {
+    for (const mesh of state.terrainMeshes) clearTerrainDetail(mesh);
+    return;
+  }
+  const center = sceneToSjtsk(state.orbit.center);
+  if (!center) return;
+  const half = 2 ** Math.ceil(Math.log2(Math.max(DETAIL_MIN_HALF_M, state.orbit.spherical.radius * DETAIL_HALF_PER_RADIUS)));
+  const grid = half / 2;
+  const cx = Math.round(center[0] / grid) * grid;
+  const cy = Math.round(center[1] / grid) * grid;
+  const opacity = currentBasemap === 'none' ? 1 : basemapOpacity;
+  const signature = JSON.stringify([currentBasemap, overlays, currentBackground]);
+
+  await Promise.all(state.terrainMeshes.map(async (mesh) => {
+    const real = getTerrainRealBbox(mesh);
+    if (!real) return;
+    const span = Math.max(real.maxX - real.minX, real.maxY - real.minY);
+    const baseRes = span / getMaxTexturePx();
+    const patch = {
+      minX: Math.max(real.minX, cx - half),
+      minY: Math.max(real.minY, cy - half),
+      maxX: Math.min(real.maxX, cx + half),
+      maxY: Math.min(real.maxY, cy + half),
+    };
+    const patchRes = Math.max(patch.maxX - patch.minX, patch.maxY - patch.minY) / DETAIL_PX;
+    // Mimo terén, nebo výřez není výrazně jemnější než celková textura → bez výřezu.
+    if (patch.maxX <= patch.minX || patch.maxY <= patch.minY || patchRes > baseRes * 0.6) {
+      clearTerrainDetail(mesh);
+      return;
+    }
+    const key = `${signature}|${patch.minX},${patch.minY},${patch.maxX},${patch.maxY}`;
+    if (detailKeys.get(mesh) === key) return;
+    const texture = await loadTerrainTexture(patch, {
+      basemap: currentBasemap,
+      overlays,
+      background: currentBackground,
+      maxPx: DETAIL_PX,
+      transparentBorder: true,
+    });
+    if (reqId !== detailRequestId || !state || !state.terrainMeshes.includes(mesh)) {
+      texture.dispose();
+      return;
+    }
+    setTerrainDetail(mesh, texture, patch, opacity);
+    detailKeys.set(mesh, key);
+  }));
 }
 
 /**
@@ -1766,6 +1867,39 @@ export function addSceneOverlay(obj: THREE.Object3D): void {
 }
 export function removeSceneOverlay(obj: THREE.Object3D): void {
   obj.parent?.remove(obj);
+}
+
+/**
+ * Položí body (S-JTSK [x, y]) na povrch viditelného terénu: výška ze
+ * svislého paprsku na povrch DMR; bez terénu (nebo mimo něj) skutečná výška
+ * `fallbackZ`. Vrací body scény (s aktuálním převýšením).
+ */
+export function drapeOnTerrain(points: ReadonlyArray<readonly number[]>, fallbackZ: number): THREE.Vector3[] {
+  if (!state) return [];
+  const surfaces: THREE.Object3D[] = [];
+  for (const g of state.terrainMeshes) {
+    if (!g.visible) continue;
+    g.traverse((o) => { if (o.userData['isTerrainMesh'] === true && o.visible) surfaces.push(o); });
+  }
+  const raycaster = new THREE.Raycaster();
+  const down = new THREE.Vector3(0, -1, 0);
+  const out: THREE.Vector3[] = [];
+  for (const p of points) {
+    const v = sjtskToScene(p[0] ?? 0, p[1] ?? 0, fallbackZ);
+    if (!v) continue;
+    if (surfaces.length > 0) {
+      raycaster.set(new THREE.Vector3(v.x, 1e6, v.z), down);
+      const hit = raycaster.intersectObjects(surfaces, false)[0];
+      if (hit) v.y = hit.point.y;
+    }
+    out.push(v);
+  }
+  return out;
+}
+
+/** Počet viditelných načtených dílů terénu (změna = přepočítat výšky přehozů). */
+export function getVisibleTerrainCount(): number {
+  return state ? state.terrainMeshes.filter((g) => g.visible).length : 0;
 }
 
 /** Velikost vykreslovací plochy v px (pro tloušťku čar LineMaterial). */

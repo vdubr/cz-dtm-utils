@@ -628,6 +628,10 @@ export function disposeTerrainMesh(group: THREE.Group): void {
     // Odložený hypsometrický materiál (pokud je zrovna aktivní podklad)
     const stashed = obj.userData['hypsoMaterial'] as THREE.Material | undefined;
     stashed?.dispose();
+    // Podrobný výřez vlastní svou texturu.
+    if (obj.userData['isTerrainDetail'] === true) {
+      ((obj as THREE.Mesh).material as THREE.MeshBasicMaterial).map?.dispose();
+    }
   });
 }
 
@@ -700,6 +704,7 @@ export function applyBasemapToTerrain(
 
 /** Odebere podklad z terénu a vrátí hypsometrický materiál. */
 export function removeBasemapFromTerrain(group: THREE.Group): void {
+  setTerrainDetail(group, null, null, 1);
   const surface = findSurfaceMesh(group);
   if (!surface) return;
   const hypso = surface.userData['hypsoMaterial'] as THREE.Material | undefined;
@@ -715,6 +720,76 @@ export function setBasemapOpacityOnTerrain(group: THREE.Group, opacity: number):
   const surface = findSurfaceMesh(group);
   if (!surface || surface.userData['hypsoMaterial'] === undefined) return;
   (surface.material as THREE.Material).opacity = opacity;
+  const detail = findDetailMesh(group);
+  if (detail) (detail.material as THREE.Material).opacity = opacity;
+}
+
+// ── Podrobný výřez textury při přiblížení ────────────────────────────────────
+
+function findDetailMesh(group: THREE.Group): THREE.Mesh | null {
+  let found: THREE.Mesh | null = null;
+  group.traverse((obj) => {
+    if (!found && obj.userData['isTerrainDetail'] === true) found = obj as THREE.Mesh;
+  });
+  return found;
+}
+
+/**
+ * Nanese (nebo odebere — `texture = null`) podrobný výřez textury přes
+ * povrch terénu. Výřez sdílí geometrii povrchu (převýšení se tak promítne
+ * samo); textura pokrývá jen `patch` (EPSG:5514) — UV povrchu se na něj
+ * přepočítají přes repeat/offset, mimo něj je textura průhledná
+ * (ClampToEdge + průhledný okraj), takže prosvítá hrubá textura terénu.
+ * Textura patří výřezu (při výměně se uvolní).
+ */
+export function setTerrainDetail(
+  group: THREE.Group,
+  texture: THREE.Texture | null,
+  patch: BBox | null,
+  opacity: number,
+): void {
+  const surface = findSurfaceMesh(group);
+  const existing = findDetailMesh(group);
+  if (existing) {
+    const mat = existing.material as THREE.MeshBasicMaterial;
+    if (!texture || mat.map !== texture) {
+      mat.map?.dispose();
+      mat.map = null;
+      mat.dispose();
+      existing.parent?.remove(existing);
+    } else {
+      mat.opacity = opacity;
+      return;
+    }
+  }
+  if (!texture || !patch || !surface) return;
+  const real = surface.userData['realBbox'] as BBox | undefined;
+  if (!real) return;
+  const pw = patch.maxX - patch.minX;
+  const ph = patch.maxY - patch.minY;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set((real.maxX - real.minX) / pw, (real.maxY - real.minY) / ph);
+  texture.offset.set((real.minX - patch.minX) / pw, (real.minY - patch.minY) / ph);
+  texture.needsUpdate = true;
+  const detail = new THREE.Mesh(surface.geometry, new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -4,
+  }));
+  detail.userData['isTerrainDetail'] = true;
+  detail.userData['terrainLayer'] = 'surface'; // skrývá se s povrchem terénu
+  detail.visible = surface.visible;
+  detail.renderOrder = surface.renderOrder + 1;
+  detail.position.copy(surface.position);
+  detail.quaternion.copy(surface.quaternion);
+  detail.scale.copy(surface.scale);
+  surface.parent?.add(detail);
 }
 
 /** Zapne/vypne konkrétní vrstvu terénu (surface / minor / major vrstevnice). */

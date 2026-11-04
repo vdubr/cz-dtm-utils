@@ -37,6 +37,7 @@ import { initHighlightLayer, highlightFeature, clearHighlight } from './map/high
 import { setupMeasure, isMeasureActive, refreshMeasureSnap, getMeasurePoints } from './map/measure.js';
 import { installQuickClick, isQuickClick } from './viewer3d/quickClick.js';
 import { setupParcelQuery, isParcelQueryActive } from './map/parcelQuery.js';
+import { getParcel3dRingCount } from './viewer3d/parcel3d.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
@@ -120,6 +121,7 @@ if (import.meta.env.DEV) {
     getJvfLayers: () => currentJvfLayers,
     pick3d: (x: number, y: number) => pickFeatureFromClient(x, y),
     measurePoints: () => getMeasurePoints(),
+    parcel3dRings: () => getParcel3dRingCount(),
     project3d: (x: number, y: number, z: number) => {
       const v = sjtskToScene(x, y, z);
       return v ? projectSceneToClient(v) : null;
