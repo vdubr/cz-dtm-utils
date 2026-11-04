@@ -150,6 +150,7 @@ setupMeasure(olMap, () =>
     .filter((l) => l.olLayer.getVisible())
     .flatMap((l) => l.olLayer.getSource()?.getFeatures() ?? [])
     .filter(isJvfFeatureDisplayed),
+  (elementName) => currentObjekty.find((ot) => ot.elementName === elementName)?.nazev || undefined,
 );
 subscribeFeatureFilter(refreshMeasureSnap);
 subscribeChangesetToggle(refreshMeasureSnap);

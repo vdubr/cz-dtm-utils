@@ -216,6 +216,9 @@ let areaEl: HTMLElement;
 let areaLabelEl: HTMLElement;
 let pointsEl: HTMLElement;
 let snapEl: HTMLElement;
+let snapTargetEl: HTMLElement;
+/** Český název objektového typu podle elementName (pro řádek přichycení). */
+let resolveObjectName: (elementName: string) => string | undefined = () => undefined;
 let undoBtn: HTMLButtonElement;
 let restartBtn: HTMLButtonElement;
 
@@ -276,11 +279,14 @@ function updateCard(): void {
   // Zpět / Nové měření jen tehdy, když je co vrátit / zahodit.
   undoBtn.disabled = s.fixed.length === 0;
   restartBtn.disabled = s.fixed.length === 0;
-  snapEl.textContent = !s.snap
-    ? '—'
-    : s.snap.kind === 'terrain'
-      ? SNAP_KIND_LABEL.terrain
-      : `${SNAP_KIND_LABEL[s.snap.kind]} · ${s.snap.elementName}`;
+  // Přichycení: druh v řádku, objekt pod ním na celou šířku (český název,
+  // dlouhý se zkrátí — celý název + elementName v tooltipu).
+  snapEl.textContent = s.snap ? SNAP_KIND_LABEL[s.snap.kind] : '—';
+  const el = s.snap && s.snap.kind !== 'terrain' ? s.snap.elementName : '';
+  const name = el ? (resolveObjectName(el) ?? el) : '';
+  snapTargetEl.hidden = !name;
+  snapTargetEl.textContent = name;
+  snapTargetEl.title = name && name !== el ? `${name} (${el})` : name;
 }
 
 /** Je souřadnice vrcholem geometrie prvku? (jinak jde o průsečík) */
@@ -504,10 +510,16 @@ function onKeyDown(ev: KeyboardEvent): void {
 /**
  * Přidá nad mapu (2D i 3D) tlačítko měření a kartu s výsledky.
  * @param getFeatures právě kreslené prvky JVF pro přichytávání bodů ve 2D.
+ * @param getObjectName český název objektového typu podle elementName.
  */
-export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
+export function setupMeasure(
+  olMap: OlMap,
+  getFeatures: () => Feature[],
+  getObjectName: (elementName: string) => string | undefined = () => undefined,
+): void {
   map = olMap;
   getSnapFeatures = getFeatures;
+  resolveObjectName = getObjectName;
   map.addLayer(layer);
   const mapArea = document.getElementById('map-area')!;
 
@@ -546,6 +558,7 @@ export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
       <dt data-measure-label="area">Plocha</dt><dd data-measure="area">od 3 bodů</dd>
       <dt>Body</dt><dd data-measure="points">0</dd>
       <dt>Přichycení</dt><dd data-measure="snap">—</dd>
+      <dd class="measure-snap-target" data-measure="snap-target" hidden></dd>
     </dl>
     <p class="measure-hint">Klikáním přidávejte body (přichytí se k vrcholům, hranám a průsečíkům prvků).
       Klik na první bod uzavře polygon, dvojklik nebo klik na poslední bod měření ukončí,
@@ -566,6 +579,7 @@ export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
   areaLabelEl = card.querySelector('[data-measure-label="area"]')!;
   pointsEl = card.querySelector('[data-measure="points"]')!;
   snapEl = card.querySelector('[data-measure="snap"]')!;
+  snapTargetEl = card.querySelector('[data-measure="snap-target"]')!;
   undoBtn = card.querySelector('[data-measure-action="undo"]')!;
   restartBtn = card.querySelector('[data-measure-action="restart"]')!;
   card.addEventListener('click', (ev) => {

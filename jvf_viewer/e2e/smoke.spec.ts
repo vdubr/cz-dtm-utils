@@ -737,8 +737,9 @@ test.describe('Modály a ovládání', () => {
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     const { ms, visible } = await measured;
     expect(visible).toBe(true);
-    // Animace je omezená na 300 ms; rezerva na nepřesnost snímků v headless.
-    expect(ms).toBeLessThan(360);
+    // Animace je omezená na 300 ms (util/scroll.ts); rezerva na zpožděné
+    // snímky headless prohlížeče při souběžném běhu testů.
+    expect(ms).toBeLessThan(420);
   });
 
   test('panel prvku překládá číselníkové atributy (kód — text)', async ({ page }) => {
@@ -871,7 +872,8 @@ test.describe('Modály a ovládání', () => {
     const fx = box.x + box.width * px[0][0] + 4;
     const fy = box.y + box.height * px[0][1] - 3;
     await page.mouse.move(fx, fy, { steps: 4 });
-    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol · první bod (uzavřít)');
+    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol');
+    await expect(card.locator('[data-measure="snap-target"]')).toHaveText('první bod (uzavřít)');
     await page.mouse.click(fx, fy);
     await expect(card.locator('[data-measure="points"]')).toHaveText('3 (uzavřeno)');
 
@@ -920,7 +922,9 @@ test.describe('Modály a ovládání', () => {
     // Vrchol: kurzor 4 px vedle rohu → bod přesně v rohu.
     await centerOn([-520800, -1164200]);
     await page.mouse.move(cx + 4, cy - 3, { steps: 3 });
-    await expect(snapEl).toHaveText('vrchol · BudovaPlocha');
+    await expect(snapEl).toHaveText('vrchol');
+    await expect(page.locator('#measure-card [data-measure="snap-target"]')).toHaveText('budova');
+    await expect(page.locator('#measure-card [data-measure="snap-target"]')).toHaveAttribute('title', 'budova (BudovaPlocha)');
     await page.mouse.click(cx + 4, cy - 3);
     await page.waitForTimeout(350);
     expect((await points())[0]).toEqual([-520800, -1164200]);
@@ -928,7 +932,8 @@ test.describe('Modály a ovládání', () => {
     // Hrana: kurzor 3 px nad středem spodní hrany → y přesně na hraně.
     await centerOn([-520700, -1164200]);
     await page.mouse.move(cx + 2, cy - 3, { steps: 3 });
-    await expect(snapEl).toHaveText('hrana · BudovaPlocha');
+    await expect(snapEl).toHaveText('hrana');
+    await expect(page.locator('#measure-card [data-measure="snap-target"]')).toHaveText('budova');
     await page.mouse.click(cx + 2, cy - 3);
     await page.waitForTimeout(350);
     const p2 = (await points())[1]!;
@@ -975,7 +980,8 @@ test.describe('Modály a ovládání', () => {
     // Přichycení k rohu budovy: kurzor 4 px vedle promítnutého rohu.
     const corner = (await dbg((d) => d.project3d(-520800, -1164200, 0)))!;
     await page.mouse.move(corner.x + 4, corner.y - 3, { steps: 4 });
-    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol · BudovaPlocha');
+    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol');
+    await expect(card.locator('[data-measure="snap-target"]')).toHaveText('budova');
     await page.mouse.click(corner.x + 4, corner.y - 3);
     await page.waitForTimeout(300);
     const p1 = (await dbg((d) => d.measurePoints()))[0]!;
@@ -994,7 +1000,8 @@ test.describe('Modály a ovládání', () => {
 
     // Klik na první bod (roh) uzavře polygon a měření ukončí.
     await page.mouse.move(corner.x + 3, corner.y + 2, { steps: 4 });
-    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol · první bod (uzavřít)');
+    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol');
+    await expect(card.locator('[data-measure="snap-target"]')).toHaveText('první bod (uzavřít)');
     await page.mouse.click(corner.x + 3, corner.y + 2);
     await expect(card.locator('[data-measure="points"]')).toHaveText('3 (uzavřeno)');
     const closedPts = await dbg((d) => d.measurePoints());

@@ -838,6 +838,8 @@ html, body {
 .measure-values dt { color: var(--md-sys-color-on-surface-variant); }
 .measure-values dd {
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
   text-align: right;
   font: 500 14px/20px var(--md-sys-typescale-font);
   font-variant-numeric: tabular-nums;
@@ -877,3 +879,18 @@ html, body {
   font-weight: 700;
 }
 .measure-label[hidden] { display: none; }
+
+/* Objekt přichycení — řádek na celou šířku karty, dlouhý název se zkrátí. */
+.measure-values .measure-snap-target {
+  grid-column: 1 / -1;
+  margin-top: -2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  text-align: right;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.measure-values .measure-snap-target[hidden] { display: none; }
