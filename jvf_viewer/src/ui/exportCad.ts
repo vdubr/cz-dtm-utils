@@ -1,6 +1,7 @@
 /**
- * Export načteného projektu do AutoCADu (DXF) ve vzhledu datového modelu
- * (JVF DTM a UDM symbologií knihovny ČKZ, ŽXML znaky SŽ).
+ * Export načteného projektu do AutoCADu (DXF) ve vzhledu datového modelu —
+ * stejném jako ve vieweru: JVF DTM podle Katalogu DTM ČR (ČÚZK), UDM podle
+ * knihovny ČKZ, ŽXML se znaky SŽ.
  *
  * Dialog (přes `showConfirm`): výběr projektu, verze DXF a voleb; po potvrzení
  * se líně načte balíček `jvf-cad` (export není potřeba při běžném prohlížení)
@@ -16,6 +17,8 @@ function escapeHtml(s: string): string {
 }
 
 function bodyHtml(projects: readonly JvfProject[]): string {
+  // Výplně ploch má jen Katalog DTM ČR (čisté JVF DTM bez dialektu).
+  const anyJvf = projects.some((p) => !p.dtm.dialect);
   const projectSelect =
     projects.length > 1
       ? `<label class="cad-row">Projekt
@@ -42,12 +45,19 @@ function bodyHtml(projects: readonly JvfProject[]): string {
         Zahrnout mazané záznamy (na hladiny <code>…_DEL</code>)</label>
       <label class="cad-row"><input type="checkbox" id="cad-flat">
         Výkres ve 2D (výšky Z = 0)</label>
+      ${
+        anyJvf
+          ? `<label class="cad-row"><input type="checkbox" id="cad-fill" checked>
+        Vyplnit plochy barvou dle Katalogu DTM ČR (JVF)</label>`
+          : ''
+      }
       <p class="cad-note">
-        Hladiny podle objektových typů, symboly jako bloky (JVF a UDM
-        z knihovny ČKZ, ŽXML znaky SŽ), popisy jako texty, atributy objektů
-        v XDATA „UDM" (AutoCAD: <code>XDLIST</code>).
-        Souřadnice EPSG:5514, měřítko symbolů a textů 1:500.
-        Typy čar mají čárkování dle vzorníku ČKZ; značky vložené do čar
+        Vzhled jako v mapě: JVF DTM podle Katalogu kartografických symbolů
+        DTM ČR (ČÚZK), UDM podle knihovny ČKZ, ŽXML se znaky SŽ. Hladiny
+        podle objektových typů, značky jako bloky, popisy jako texty,
+        atributy objektů v XDATA „UDM" (AutoCAD: <code>XDLIST</code>).
+        Souřadnice EPSG:5514, měřítko značek a textů 1:500.
+        Typy čar mají čárkování dle vzoru; značky vložené do čar
         (ploty, sítě TI) se nekreslí.
       </p>
     </div>`;
@@ -84,10 +94,11 @@ export async function openExportCadDialog(projects: readonly JvfProject[]): Prom
   const version = format === 'R2000' ? 'R2000' : 'R2013';
   const includeDeleted = (document.getElementById('cad-deleted') as HTMLInputElement | null)?.checked ?? false;
   const flatten2D = (document.getElementById('cad-flat') as HTMLInputElement | null)?.checked ?? false;
+  const fillAreas = (document.getElementById('cad-fill') as HTMLInputElement | null)?.checked ?? true;
 
   try {
     const { exportDxf } = await import('jvf-cad');
-    const { dxf } = exportDxf(project.dtm, { version, includeDeleted, flatten2D });
+    const { dxf } = exportDxf(project.dtm, { version, includeDeleted, flatten2D, fillAreas });
     const base = project.nazev.replace(/\.(jvf\.)?(xml|jvf)$/i, '');
     download(dxf, `${base}${version === 'R2000' ? '_R2000' : ''}.dxf`);
   } catch (err) {

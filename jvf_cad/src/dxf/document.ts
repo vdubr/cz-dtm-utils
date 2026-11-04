@@ -124,6 +124,8 @@ export class DxfDocument {
   private readonly blockRecordChunks: string[] = [];
   private readonly blockChunks: string[] = [];
   private readonly entityChunks: string[] = [];
+  /** Výplně ploch — v ENTITIES před ostatními entitami (kreslí se pod nimi). */
+  private readonly fillChunks: string[] = [];
   private readonly layerNames = new Set<string>();
   private readonly ltypeNames = new Set<string>();
   private readonly blockNames = new Set<string>();
@@ -420,19 +422,39 @@ export class DxfDocument {
 
   /** Plná výplň (HATCH SOLID) uzavřené hranice s bulge — jen uvnitř bloků. */
   solidHatch(boundary: readonly Vertex2[], style: EntityStyle, owner: string): string {
+    return this.emit(owner, this.hatchPairs([boundary], 0, style, owner));
+  }
+
+  /**
+   * Plná výplň plochy v modelovém prostoru: první obrys vnější, další otvory
+   * (styl normal = sudá/lichá parita). Zapisuje se před ostatní entity, aby
+   * výplň ležela pod obrysy a symboly.
+   */
+  areaHatch(loops: readonly (readonly Vertex2[])[], elevation: number, style: EntityStyle): string {
+    for (const loop of loops) for (const [x, y] of loop) this.extend(x, y, elevation);
+    const s = pairsToString([...this.hatchPairs(loops, elevation, style, this.modelSpace), ...this.xdata(style)]);
+    this.fillChunks.push(s);
+    return s;
+  }
+
+  private hatchPairs(loops: readonly (readonly Vertex2[])[], elevation: number, style: EntityStyle, owner: string): Pair[] {
     const pairs: Pair[] = [
       ...this.common('HATCH', owner, style),
-      [100, 'AcDbHatch'], [10, 0], [20, 0], [30, 0], [210, 0], [220, 0], [230, 1],
-      [2, 'SOLID'], [70, 1], [71, 0], [91, 1],
-      [92, 3], [72, boundary.some((v) => v[2]) ? 1 : 0], [73, 1], [93, boundary.length],
+      [100, 'AcDbHatch'], [10, 0], [20, 0], [30, num(elevation)], [210, 0], [220, 0], [230, 1],
+      [2, 'SOLID'], [70, 1], [71, 0], [91, loops.length],
     ];
-    const hasBulge = boundary.some((v) => v[2]);
-    for (const [x, y, bulge] of boundary) {
-      pairs.push([10, num(x)], [20, num(y)]);
-      if (hasBulge) pairs.push([42, num(bulge ?? 0)]);
-    }
-    pairs.push([97, 0], [75, 0], [76, 1], [98, 0]);
-    return this.emit(owner, pairs);
+    loops.forEach((boundary, i) => {
+      const hasBulge = boundary.some((v) => v[2]);
+      // 2 = polylinie, +1 = vnější obrys
+      pairs.push([92, i === 0 ? 3 : 2], [72, hasBulge ? 1 : 0], [73, 1], [93, boundary.length]);
+      for (const [x, y, bulge] of boundary) {
+        pairs.push([10, num(x)], [20, num(y)]);
+        if (hasBulge) pairs.push([42, num(bulge ?? 0)]);
+      }
+      pairs.push([97, 0]);
+    });
+    pairs.push([75, 0], [76, 1], [98, 0]);
+    return pairs;
   }
 
   // --- výstup -------------------------------------------------------------
@@ -479,7 +501,7 @@ export class DxfDocument {
       throw new Error(`DXF šablona: sekce ${section} bez ENDSEC`);
     };
     // Odzadu (ENTITIES → BLOCKS → TABLES), ať vložení neposune dřívější indexy.
-    insertBefore(sectionEnd('ENTITIES'), this.entityChunks);
+    insertBefore(sectionEnd('ENTITIES'), [...this.fillChunks, ...this.entityChunks]);
     insertBefore(sectionEnd('BLOCKS'), this.blockChunks);
     for (const [table, chunks] of [
       ['BLOCK_RECORD', this.blockRecordChunks],

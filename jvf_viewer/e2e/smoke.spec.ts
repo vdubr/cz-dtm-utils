@@ -201,7 +201,7 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#toggle-show-inserted')).toBeChecked();
   });
 
-  test('Export do CAD v režimu JVF stáhne DXF se symbologií ČKZ', async ({ page }) => {
+  test('Export do CAD v režimu JVF stáhne DXF ve vzhledu Katalogu DTM ČR', async ({ page }) => {
     // Tlačítko je i v režimu JVF (bez dat zakázané).
     await expect(page.locator('#btn-export-cad')).toBeVisible();
     await expect(page.locator('#btn-export-cad')).toBeDisabled();
@@ -210,6 +210,7 @@ test.describe('Načtení JVF souboru', () => {
 
     await page.locator('#btn-export-cad').click();
     await expect(page.locator('#confirm-modal-title')).toHaveText(/Export do CAD/);
+    await expect(page.locator('#cad-fill')).toBeChecked();
     const downloadPromise = page.waitForEvent('download');
     await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();
     const download = await downloadPromise;
@@ -218,7 +219,58 @@ test.describe('Načtení JVF souboru', () => {
     const dxf = await readFile((await download.path())!, 'utf-8');
     expect(dxf).toContain('AC1027');
     expect(dxf).toContain('ZPS_HraniceBudovy');
-    expect(dxf).toContain('ZPS_PodrobnyBodZPS');
+    // Podrobný bod ZPS = blok značky Katalogu (ne UDM).
+    expect(dxf).toContain('DTM_ZPS_b_218_podr_bod_zps');
+    expect(dxf).not.toMatch(/\n {2}2\nUDM_/);
+  });
+
+  test('Katalog DTM ČR v mapě: varianty podle atributu, plošná značka, OP jen obrysem', async ({ page }) => {
+    await page.setInputFiles('#file-input', fixturePath('test_katalog_vzhled.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    const styles = await page.evaluate(() => {
+      type L = { objektovyTyp: { elementName: string }; olLayer: { getSource(): { getFeatures(): unknown[] }; getStyleFunction(): (f: unknown, r: number) => unknown } };
+      const out: Record<string, { icon?: string; fill?: string; stroke?: string }> = {};
+      for (const l of (window as unknown as { __jvfDebug: { getJvfLayers(): L[] } }).__jvfDebug.getJvfLayers()) {
+        const f = l.olLayer.getSource().getFeatures()[0];
+        const st = l.olLayer.getStyleFunction()(f, 0.05);
+        const s = (Array.isArray(st) ? st[0] : st) as {
+          getImage(): { getSrc?(): string } | null;
+          getFill(): { getColor(): string } | null;
+          getStroke(): { getColor(): string } | null;
+        };
+        out[l.objektovyTyp.elementName] = {
+          icon: s.getImage()?.getSrc?.()?.split('/').pop(),
+          fill: s.getFill()?.getColor(),
+          stroke: s.getStroke()?.getColor(),
+        };
+      }
+      return out;
+    });
+    expect(styles['ObjektStokoveSiteBod']!.icon).toBe('TI_b_337_stok_sit_obj_sach.svg');
+    expect(styles['ZarizeniTeplovodniSite']!.icon).toBe('TI_b_131_teplo_zar_tepl_sach.svg');
+    expect(styles['DrobnaKulturniStavbaBod']!.icon).toBe('ZPS_b_159_st_kult_socha.svg');
+    expect(styles['LesDefinicniBod']!.icon).toBe('ZPS_p_211_zps_pl_les_lab.svg');
+    expect(styles['LesPlocha']!.fill).toBe('#d3e0bc');
+    // Ochranné pásmo: obrys barvou Katalogu, výplň jen průsvitný nádech.
+    expect(styles['OPPlynovodniSite']!.stroke).toBe('#4ce600');
+    expect(styles['OPPlynovodniSite']!.fill).toBe('#4ce6001a');
+
+    // Export: výplň lesa (HATCH), volbu lze vypnout.
+    const exportDxf = async (fill: boolean): Promise<string> => {
+      await page.locator('#btn-export-cad').click();
+      if (!fill) await page.locator('#cad-fill').uncheck();
+      const downloadPromise = page.waitForEvent('download');
+      await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();
+      const { readFile } = await import('node:fs/promises');
+      return readFile((await (await downloadPromise).path())!, 'utf-8');
+    };
+    // Entita HATCH (od `0 HATCH` po další `0`) na hladině plochy lesa.
+    const lesHatch = /\n {2}0\nHATCH\n(?:(?!\n {2}0\n)[\s\S])*?\n {2}8\nZPS_LesPlocha\n/;
+    const withFill = await exportDxf(true);
+    expect(withFill).toContain('DTM_ZPS_p_211_zps_pl_les_lab');
+    expect(withFill).toMatch(lesHatch);
+    const noFill = await exportDxf(false);
+    expect(noFill).not.toMatch(lesHatch);
   });
 
   test('Export do CAD v režimu UDM stáhne DXF ve vzhledu UDM', async ({ page }) => {

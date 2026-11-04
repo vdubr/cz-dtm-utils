@@ -99,8 +99,11 @@ const INFO_CONTENT_HTML = `
       katastru nemovitostí s vlastníky (v nové záložce; aplikace vlastníky
       sama nestahuje — ČÚZK je strojově veřejně neposkytuje).
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
-      barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
-      a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).
+      barvy, čárkování linií a varianty podle atributů i podle typu
+      geometrie (bod nese značku varianty, plocha obrys a výplň, definiční
+      bod plošnou značku — les, zahrada, hřbitov…; ochranná pásma a záměry
+      jen obrysem), s přepočtem tloušťky a dashů pro zvolenou úroveň
+      přiblížení (referenční měřítko 1:500).
       Bodové <strong>SVG symboly mají geodeticky korektní velikost</strong> —
       1 SVG-pixel odpovídá 0,5 cm v terénu (referenční měřítko 1:500), takže
       se s mapou přibližují a oddalují stejně jako linie a polygony.
@@ -218,16 +221,17 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>Export do CAD</strong> (ve všech režimech — JVF, UDM i JŽM)
       — tlačítko v hlavičce vyexportuje načtený projekt do
-      <strong>AutoCAD DXF</strong> ve vzhledu datového modelu: hladiny podle
-      objektových typů (barva, tloušťka, typ čáry), symboly jako bloky (JVF
-      a UDM z knihovny ČKZ, ŽXML
-      znaky SŽ natočené podle atributu <code>Natoceni</code>), popisy
-      a názvy jako texty (výšky dle UDM pro 1:500) a atributy objektů
-      v XDATA „UDM" (v AutoCADu příkaz
-      <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy
+      <strong>AutoCAD DXF</strong> ve vzhledu datového modelu — stejném
+      jako v mapě: hladiny podle objektových typů (barva, tloušťka, typ
+      čáry), značky jako bloky (JVF podle Katalogu DTM ČR — značky
+      kartografického balíčku ČÚZK v jejich barvě, UDM z knihovny ČKZ, ŽXML
+      znaky SŽ natočené podle atributu <code>Natoceni</code>), u JVF plochy
+      vyplněné barvou Katalogu (lze vypnout), popisy a názvy jako texty
+      (výšky dle UDM pro 1:500) a atributy objektů v XDATA „UDM" (v AutoCADu
+      příkaz <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy
       přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
       a 2D výkres. Souřadnice zůstávají v EPSG:5514. Typy čar mají
-      čárkování dle vzorníku ČKZ (bez vložených značek).
+      čárkování dle vzoru (bez vložených značek).
       <strong>DWG</strong> získáte tak, že DXF otevřete
       v AutoCADu a uložíte jako DWG. Export běží lokálně v prohlížeči.
     </li>

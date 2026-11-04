@@ -10,9 +10,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ### Přidáno
 
 - **Export do CAD i v režimu JVF** — tlačítko Export do CAD (AutoCAD DXF)
-  je nově i v režimu JVF; objekty JVF DTM se kreslí symbologií knihovny
-  ČKZ (stejně jako UDM): hladiny podle objektových typů, symboly jako
-  bloky, atributy v XDATA.
+  je nově i v režimu JVF. Výkres má stejný vzhled jako mapa — podle
+  Katalogu kartografických symbolů DTM ČR (ČÚZK): hladiny podle objektových
+  typů v barvách a čárkování Katalogu, značky Katalogu jako bloky `DTM_…`
+  (převedené z SVG kartografického balíčku, v barvě značky), plochy
+  vyplněné barvou Katalogu (HATCH pod obrysy, lze vypnout; ochranná pásma
+  a záměry jen obrysem), atributy v XDATA.
 - **Vlastník parcely** — se zapnutým překryvem katastru tlačítko vedle
   měření: klik do mapy (2D i 3D) zjistí parcelu (WMS GetFeatureInfo ČÚZK —
   katastrální území, parcelní číslo, výměra, odkaz do VDP), zvýrazní
@@ -153,6 +156,23 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- **Vzhled JVF podle Katalogu DTM ČR** — vzhled se nově řídí i typem
+  geometrie (bod / linie / plocha / definiční bod), ne jen kódem objektu:
+  - bodové objekty s variantou podle atributu (šachty, stožáry, zařízení
+    sítí TI, drobné stavby…) mají svou značku z Katalogu — dřív se
+    zobrazovala jen obecná značka objektu (ze 225 SVG se používalo 28),
+  - definiční body ploch nesou plošnou značku (les, zahrada, hřbitov,
+    jezero, zemědělské plochy, drobné stavby…),
+  - ochranná a bezpečnostní pásma a záměry se kreslí obrysem barvou
+    Katalogu s průsvitným nádechem — dřív plnou neprůhlednou plochou
+    (Katalog u nich uvádí barvu obrysu v poli výplně),
+  - trasy vodovodu, stokové a teplovodní sítě, protikorozní ochrana, jiné
+    zařízení staveb TI a podzemní objekt ZPS se kreslily náhradní barvou
+    (v Katalogu měly kód bez úvodní nuly),
+  - opravené odkazy na neexistující SVG (komora a výusť stokové sítě,
+    šachta teplovodu, přístavy).
+- Swatch plochy v legendě a panelu vrstev zachovává průhlednost výplně
+  (plocha jen obrysem už není plný čtverec).
 - **Rozpixelovaný katastr / DTM / podklad ve 3D** — při přiblížení se
   kolem středu pohledu stáhne podrobný výřez (podklad i překryvy, až
   ~0,1 m/px) a nanese se přes celkovou texturu terénu; stahuje se jen okolí

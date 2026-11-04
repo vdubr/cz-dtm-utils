@@ -129,3 +129,58 @@ describe('exportDxf — vzhled UDM', () => {
     expect(z.every((v) => v === 0)).toBe(true);
   });
 });
+
+describe('exportDxf — čisté JVF DTM ve vzhledu Katalogu DTM ČR', () => {
+  const loadJvf = (path: string) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      return parseJvfDtm(readFileSync(resolve(import.meta.dirname, '../..', path), 'utf-8'));
+    } finally {
+      warn.mockRestore();
+    }
+  };
+  const KATALOG = 'jvf_viewer/public/fixtures/test_katalog_vzhled.xml';
+
+  it.each(['ukazka_ZPS.xml', 'ukazka_DI.xml', 'ukazka_GAD.xml', 'ukazka_KI.xml', 'ukazka_NS.xml', 'ukazka_OPL.xml'])(
+    '%s: validní struktura, bez přeskočených geometrií, bloky Katalogu',
+    (name) => {
+      for (const version of ['R2013', 'R2000'] as const) {
+        const r = exportDxf(loadJvf(`jvf_parser/samples/1.4.3/${name}`), { version });
+        checkStructure(r.dxf);
+        expect(r.skipped).toBe(0);
+        expect(r.dxf).not.toMatch(/\n {2}2\nUDM_/);
+      }
+    },
+  );
+
+  it('podrobný bod ZPS: blok značky Katalogu v barvě SVG', () => {
+    const p = pairs(exportDxf(loadJvf('jvf_parser/samples/1.4.3/ukazka_ZPS.xml')).dxf);
+    const bod = records(p, 'ENTITIES').find((e) => value(e, '8') === 'ZPS_PodrobnyBodZPS')!;
+    expect(bod[0]![1]).toBe('INSERT');
+    expect(value(bod, '2')).toBe('DTM_ZPS_b_218_podr_bod_zps');
+    expect(value(bod, '420')).toBe(String(0x646464));
+  });
+
+  it('varianty podle atributu a geometrie: značky bodů, plošná značka v definičním bodě', () => {
+    const ents = records(pairs(exportDxf(loadJvf(KATALOG)).dxf), 'ENTITIES');
+    const block = (layer: string) => value(ents.find((e) => value(e, '8') === layer && e[0]![1] === 'INSERT')!, '2');
+    expect(block('ZPS_LesDefinicniBod')).toBe('DTM_ZPS_p_211_zps_pl_les_lab');
+    expect(block('ZPS_DrobnaKulturniStavbaBod')).toBe('DTM_ZPS_b_159_st_kult_socha');
+    expect(block('TI_ObjektStokoveSiteBod')).toBe('DTM_TI_b_337_stok_sit_obj_sach');
+    expect(block('TI_ZarizeniTeplovodniSite')).toBe('DTM_TI_b_131_teplo_zar_tepl_sach');
+  });
+
+  it('plochy: les vyplněný (HATCH pod obrysy), ochranné pásmo jen obrysem', () => {
+    const { p, ents } = checkStructure(exportDxf(loadJvf(KATALOG)).dxf);
+    const hatches = ents.filter((e) => e[0]![1] === 'HATCH');
+    expect(hatches.map((h) => value(h, '8'))).toEqual(['ZPS_LesPlocha']);
+    expect(value(hatches[0]!, '420')).toBe(String(0xd3e0bc));
+    // Výplň je první entita (pod obrysy).
+    expect(ents[0]![0]![1]).toBe('HATCH');
+    const op = records(p, 'TABLES').find((r) => r[0]![1] === 'LAYER' && value(r, '2') === 'TI_OPPlynovodniSite')!;
+    expect(value(op, '420')).toBe(String(0x4ce600));
+    // Bez výplní.
+    const bez = exportDxf(loadJvf(KATALOG), { fillAreas: false }).dxf;
+    expect(records(pairs(bez), 'ENTITIES').some((e) => e[0]![1] === 'HATCH')).toBe(false);
+  });
+});

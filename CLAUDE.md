@@ -96,6 +96,10 @@ cz-dtm-utils/              # npm workspaces monorepo
 │   ├── src/catalog.ts   # obecný EntityMeta (origin, objektovyKod, dialectAttrGroup)
 │   ├── src/dialects/    # PARSER_DIALECTS: udm.ts, zxml.ts (detekce + parse nad jádrem JVF)
 │   ├── src/styles/      # obecný model vzhledu dialektu (Appearance, resolveAppearance, getStyleTable)
+│   ├── src/katalog/     # Katalog kartografických symbolů DTM ČR (vzhled čistého JVF):
+│   │                    #   symbology.ts + variantAttrMap.ts (data), resolve.ts (vzhled podle
+│   │                    #   geometrie a atributu), appearance.ts (→ Appearance pro CAD);
+│   │                    #   SVG značek v jvf_viewer/public/symboly/
 │   ├── src/1.5.0.1/     # jádro parseru JVF 1.5.x (records, geometry, attributes, doprovodné info)
 │   ├── src/1.5.0.2/     # jen generated/ (parser sdílený s 1.5.0.1)
 │   ├── src/udm-2.1.1/   # UDM ČKZ: parser atributů, styly, generated/
@@ -133,7 +137,7 @@ cz-dtm-utils/              # npm workspaces monorepo
 │   │   ├── duplicates.ts      # 3.6 + 3.8 + 3.9: duplicity a blízkost
 │   │   └── relations.ts       # Vrstva 3: DefBod/Plocha, Osa/Obvod, volné konce
 │   └── tests/1.4.3/topology/  # 160 testů (Vitest)
-├── jvf_cad/             # Export JVF/UDM → AutoCAD DXF (jvf-cad)
+├── jvf_cad/             # Export JVF/UDM/ŽXML → AutoCAD DXF (jvf-cad)
 │   └── src/
 │       ├── export.ts            # exportDxf: hladiny, bloky symbolů, texty, XDATA
 │       ├── dxf/document.ts      # zápis DXF nad šablonou (handly, tabulky, bloky)
@@ -145,7 +149,8 @@ cz-dtm-utils/              # npm workspaces monorepo
 UDM (Univerzální datový model ČKZ) 2.1.1: XSD, specifikace a knihovna
 symbolů v `jvf_parser/docs/udm-2.1.1/`; generátory v `scripts/udm/`
 (styly + symboly) a `scripts/cad/` (šablony DXF, vyžaduje ezdxf;
-`build-cad-symbols.py --profile udm|zxml` = bloky symbolů).
+`build-cad-symbols.py --profile udm|zxml|jvf` = bloky symbolů; `jvf` =
+značky Katalogu DTM ČR z `jvf_viewer/public/symboly`).
 
 ŽXML (data DTMŽ Správy železnic) 1.4.2.1 a 1.5.1.6: XSD v
 `jvf_parser/docs/zxml-*/`, znaky SŽ vektorizované z fotokatalogu MOZeK v
