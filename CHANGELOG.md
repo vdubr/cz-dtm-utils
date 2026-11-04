@@ -90,6 +90,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Projekt v panelu: oko a zeměkoule** — oko u projektu skryje / zobrazí
+  všechny jeho prvky ve 2D, 3D i v Přehledu prvků (skrytý projekt je
+  ztlumený); zeměkoule nahradila ikonu „i" a přiblíží pohled na rozsah
+  projektu. Verze JVF DTM / dialektu je v tooltipu názvu projektu.
 - **Panel vrstev a Přehled prvků sdílejí viditelnost** — kategorie (objektový
   typ) v tabulce má ikonu oka, která ji skryje v mapě (2D i 3D) i v panelu
   vrstev; skrytí vrstvy v panelu se naopak promítne do tabulky (ztlumená

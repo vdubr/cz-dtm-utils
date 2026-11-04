@@ -17,8 +17,8 @@ const INFO_CONTENT_HTML = `
     <strong>${UDM_DISPLAY}</strong> (Univerzální datový model ČKZ) a
     <strong>${ZXML_DISPLAY}</strong> (železniční data DTMŽ Správy železnic)
     (verze se detekuje automaticky
-    z načteného souboru; konkrétní verzi každého souboru ukáže info ikona
-    <code>i</code> za názvem projektu v panelu „Projekty").
+    z načteného souboru; konkrétní verzi každého souboru ukáže tooltip
+    názvu projektu v panelu „Projekty").
     Umožňuje načíst JVF XML soubor a prohlédnout si jeho obsah ve 2D mapě i ve
     3D pohledu. Načtený soubor se zpracovává <strong>lokálně v prohlížeči</strong>
     — nic se neodesílá na server.
@@ -43,8 +43,10 @@ const INFO_CONTENT_HTML = `
       společně v jedné mapě. Levý panel zobrazuje sekci
       <em>Projekty</em> se seznamem souborů (barevná tečka, počet záznamů)
       a tlačítkem × pro odebrání; odebráním posledního projektu se viewer
-      vrátí do prázdného stavu. <strong>Klikem na projekt</strong> v seznamu
-      přiblížíte pohled na jeho rozsah (ve 2D mapě i ve 3D scéně). Hlavičku
+      vrátí do prázdného stavu. <strong>Zeměkoule</strong> u projektu (nebo
+      klik na řádek) přiblíží pohled na jeho rozsah (ve 2D mapě i ve 3D
+      scéně); <strong>oko</strong> skryje / zobrazí všechny prvky projektu
+      ve 2D, 3D i v Přehledu prvků (skrytý projekt je ztlumený). Hlavičku
       sekce lze <strong>sbalit</strong> (klik na „Projekty") — počet projektů
       zůstává v hlavičce vidět i po sbalení. Při ≥2 projektech přibude
       v Přehledu prvků řádek <em>Projekt</em> s přepínatelnými chipy —
@@ -313,7 +315,7 @@ const INFO_CONTENT_HTML = `
     Verze se <strong>detekuje automaticky</strong> podle obsahu souboru
     (element <code>VerzeJVFDTM</code>, případně strukturně) — není potřeba
     ji ručně nastavovat. Konkrétní verzi každého načteného souboru ukáže
-    info ikona <code>i</code> za názvem projektu v panelu „Projekty", takže
+    tooltip názvu projektu v panelu „Projekty", takže
     při více projektech může mít každý jinou verzi. Nepodporovaná verze se
     nenačte a zobrazí se upozornění.
   </p>
@@ -344,7 +346,7 @@ const INFO_CONTENT_HTML = `
     <strong>ZPSUDM</strong>, <strong>DIUDM</strong>, <strong>TIUDM</strong>
     a <strong>OST</strong>; v legendě i v panelu prvků mají české
     názvy a popisky číselníků <code>ckz_*</code> (např. stav stromu,
-    materiál). Info ikona projektu ukáže verzi UDM i podkladového JVF.
+    materiál). Tooltip názvu projektu ukáže verzi UDM i podkladového JVF.
     <strong>Všechny objekty souboru UDM</strong> (i objekty DTM) se kreslí
     <strong>symbologií UDM</strong> místo katalogu ČÚZK — barva, tloušťka
     čáry a SVG symboly bodů z knihovny ČKZ, včetně vzhledu podle hodnot

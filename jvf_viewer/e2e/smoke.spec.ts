@@ -90,7 +90,7 @@ test.describe('Režimy aplikace (JVF / UDM)', () => {
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do UDM' }).click();
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).toHaveClass(/active/);
-    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute('title', /UDM 2\.1\.1/);
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute('title', /UDM 2\.1\.1/);
   });
 
   test('soubor JVF v režimu UDM nabídne přepnutí do JVF', async ({ page }) => {
@@ -100,7 +100,7 @@ test.describe('Režimy aplikace (JVF / UDM)', () => {
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do JVF' }).click();
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
-    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute('title', 'Verze JVF 1.4.3');
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute('title', 'Verze JVF 1.4.3');
   });
 
   test('přepnutí s načtenými daty se ptá a zavře projekty', async ({ page }) => {
@@ -131,7 +131,7 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#btn-features')).toBeEnabled();
     await expect(page.locator('#jvf-layers-list .layer-group').first()).toBeVisible();
     // Verze souboru (1.4.3) se ukáže u projektu jako info ikona (hover title).
-    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute(
       'title',
       'Verze JVF 1.4.3',
     );
@@ -161,7 +161,7 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#btn-validate')).toBeDisabled();
   });
 
-  test('soubor verze 1.5.0.1 se načte a info ikona projektu ukáže verzi 1.5.0.1', async ({ page }) => {
+  test('soubor verze 1.5.0.1 se načte a tooltip názvu projektu ukáže verzi 1.5.0.1', async ({ page }) => {
     // Auto-detekce bez modalu; verze souboru se ukáže u projektu (hover title).
     await page.setInputFiles('#file-input', fixturePath('test_verze_1.5.0.1.xml'));
 
@@ -169,7 +169,7 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#btn-validate')).toBeEnabled();
     await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
-    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute(
       'title',
       'Verze JVF 1.5.0.1',
     );
@@ -187,7 +187,7 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#confirm-modal')).toBeHidden();
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#btn-validate')).toBeEnabled();
-    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute(
       'title',
       'Verze UDM 2.1.1 (JVF 1.5.0.2)',
     );
@@ -258,7 +258,7 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do JŽM' }).click();
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#app-mode-switch [data-mode-btn="jzm"]')).toHaveClass(/active/);
-    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute(
       'title',
       'Verze ŽXML 1.4.2.1 (JVF 1.4.3)',
     );
@@ -271,7 +271,7 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await page.locator('.upload-menu-item[data-sample="zxml_nadrazi.xml"]').click();
     await szSymbol;
     await expect(page.locator('#loading-overlay')).toBeHidden();
-    await expect(page.locator('.project-item .project-version-info')).toHaveAttribute(
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute(
       'title',
       'Verze ŽXML 1.5.1.6 (JVF 1.5.0.2)',
     );
@@ -377,6 +377,43 @@ test.describe('Sekce Projekty', () => {
     await expect(section).not.toHaveClass(/collapsed/);
     await expect(list).toBeVisible();
     await expect(header).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('projekt: oko skryje všechny prvky projektu, zeměkoule přiblíží na projekt', async ({ page }) => {
+    await loadSample(page, 'ukazka_DI.xml');
+    const row = page.locator('.project-item').first();
+    await expect(row.locator('.project-version-info')).toHaveCount(0);
+    await expect(row.locator('.project-zoom-btn')).toHaveText('public');
+    const eye = row.locator('.project-visibility-btn');
+    await expect(eye).toHaveText('visibility');
+
+    const drawnTotal = async () => Object.values(await drawnBy(page, 'jvfElementName')).reduce((a, b) => a + b, 0);
+    expect(await drawnTotal()).toBeGreaterThan(0);
+
+    // Oko → nic se nekreslí, řádek ztlumený; znovu → zpět.
+    await eye.click();
+    await expect(eye).toHaveText('visibility_off');
+    await expect(row).toHaveClass(/project-hidden/);
+    expect(await drawnTotal()).toBe(0);
+    await eye.click();
+    await expect(eye).toHaveText('visibility');
+    expect(await drawnTotal()).toBeGreaterThan(0);
+
+    // Zeměkoule: po posunu mapy jinam vrátí pohled na rozsah projektu.
+    type Dbg = { olMap: import('ol/Map').default; getJvfLayers: () => Array<{ olLayer: import('ol/layer/Vector').default }> };
+    const centerInProject = () => page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug;
+      const ext = d.getJvfLayers()[0]!.olLayer.getSource()!.getExtent();
+      const c = d.olMap.getView().getCenter()!;
+      const pad = 200;
+      return c[0]! >= ext[0]! - pad && c[0]! <= ext[2]! + pad && c[1]! >= ext[1]! - pad && c[1]! <= ext[3]! + pad;
+    });
+    await page.evaluate(() => {
+      (window as unknown as { __jvfDebug: Dbg }).__jvfDebug.olMap.getView().setCenter([-600000, -1100000]);
+    });
+    expect(await centerInProject()).toBe(false);
+    await row.locator('.project-zoom-btn').click();
+    await expect.poll(centerInProject, { timeout: 3000 }).toBe(true);
   });
 
   test('sekce Projekty neroztlačuje panel — vrstvy jdou hned pod ni', async ({ page }) => {

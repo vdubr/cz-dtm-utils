@@ -2356,30 +2356,6 @@ html, body {
   white-space: nowrap;
 }
 
-/* Info ikona za názvem projektu — hover ukáže verzi JVF DTM (title). */
-.project-version-info {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  border: 1px solid var(--md-sys-color-outline);
-  color: var(--md-sys-color-on-surface-variant);
-  font-size: 9px;
-  font-weight: 700;
-  font-style: italic;
-  font-family: Georgia, 'Times New Roman', serif;
-  line-height: 1;
-  cursor: help;
-  user-select: none;
-}
-.project-version-info:hover {
-  color: var(--md-sys-color-primary);
-  border-color: var(--md-sys-color-primary);
-}
-
 .project-count {
   flex: 0 0 auto;
   font-size: 10px;

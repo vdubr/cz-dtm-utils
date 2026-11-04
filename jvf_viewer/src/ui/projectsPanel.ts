@@ -4,12 +4,20 @@ import {
   getProjects,
   MAX_PROJECTS,
 } from '../state/projects.js';
+import {
+  isProjectVisible,
+  setProjectVisible,
+  subscribeFeatureFilter,
+} from '../state/featureFilter.js';
 
 /**
  * Sekce „Projekty" v levém panelu — seznam načtených JVF souborů.
  *
- * Každý řádek: barevná tečka projektu, název souboru, počet záznamů
- * a tlačítko × pro odebrání. Sekce se zobrazuje jen pokud je načten
+ * Každý řádek: barevná tečka projektu, název souboru (tooltip s verzí
+ * JVF DTM / dialektu), počet záznamů, zeměkoule (přiblížit na rozsah
+ * projektu), oko (skrýt / zobrazit všechny prvky projektu ve 2D, 3D
+ * i v Přehledu prvků — dimenze projekt filtru prvků) a × pro odebrání.
+ * Sekce se zobrazuje jen pokud je načten
  * aspoň jeden projekt — bez dat se UI nemění (prázdný stav vieweru).
  *
  * Hlavička sekce je sbalitelná (klik na „Projekty") — s více načtenými
@@ -27,6 +35,22 @@ export interface ProjectsPanelCallbacks {
   /** Volá se po kliknutí na řádek projektu — zoom na extent projektu (2D i 3D). */
   onZoom: (projectId: string) => void;
 }
+
+/** Promítne viditelnost projektů (filtr prvků) do ikon oka v řádcích. */
+function syncProjectVisibility(): void {
+  document.querySelectorAll<HTMLElement>('.project-item[data-project-id]').forEach((row) => {
+    const visible = isProjectVisible(row.dataset['projectId']);
+    row.classList.toggle('project-hidden', !visible);
+    const btn = row.querySelector<HTMLButtonElement>('.project-visibility-btn');
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', String(visible));
+    btn.title = visible ? 'Skrýt všechny prvky projektu' : 'Zobrazit všechny prvky projektu';
+    btn.setAttribute('aria-label', btn.title);
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (icon) icon.textContent = visible ? 'visibility' : 'visibility_off';
+  });
+}
+let visibilityWired = false;
 
 /** Sbalený stav sekce — in-memory, default rozbaleno. */
 let collapsed = false;
@@ -62,11 +86,22 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
     headerWired = true;
   }
   applyCollapsedState(section);
+  if (!visibilityWired) {
+    visibilityWired = true;
+    subscribeFeatureFilter(syncProjectVisibility);
+  }
 
   for (const project of projects) {
+    // Verze JVF DTM / dialektu — „Verze UDM 2.1.1 (JVF 1.5.0.2)".
+    const { verze, verzeJvfDtm } = project.dtm;
+    const versionTitle = dialectOf(verze)
+      ? `Verze ${formatVersionLabel(verze)}${verzeJvfDtm ? ` (JVF ${verzeJvfDtm})` : ''}`
+      : `Verze ${formatVersionLabel(verze)}`;
+
     const row = document.createElement('div');
     row.className = 'project-item';
-    row.title = `${project.nazev} — klik přiblíží pohled na rozsah projektu`;
+    row.dataset['projectId'] = project.id;
+    row.title = `${project.nazev} — ${versionTitle}; klik přiblíží pohled na rozsah projektu`;
     row.addEventListener('click', () => {
       callbacks.onZoom(project.id);
     });
@@ -75,30 +110,40 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
     dot.className = 'project-dot';
     dot.style.background = project.color;
 
+    // Název — tooltip s verzí JVF DTM daného projektu (verze je per-soubor,
+    // při více projektech může mít každý řádek jinou).
     const nameEl = document.createElement('span');
     nameEl.className = 'project-name';
     nameEl.textContent = project.nazev;
-
-    // Info ikona za názvem — po najetí ukáže verzi JVF DTM daného projektu.
-    // Verze je per-soubor (`dtm.verze`), takže při více projektech může každý
-    // řádek ukazovat jinou verzi. Klik neděláme vlastní — probublá na řádek
-    // (zoom), ikona slouží čistě jako hover nápověda.
-    const versionInfo = document.createElement('span');
-    versionInfo.className = 'project-version-info';
-    versionInfo.textContent = 'i';
-    versionInfo.setAttribute('role', 'img');
-    // Dialekt: „Verze UDM 2.1.1 (JVF 1.5.0.2)" — model + verze podkladového JVF.
-    const { verze, verzeJvfDtm } = project.dtm;
-    const versionTitle = dialectOf(verze)
-      ? `Verze ${formatVersionLabel(verze)}${verzeJvfDtm ? ` (JVF ${verzeJvfDtm})` : ''}`
-      : `Verze ${formatVersionLabel(verze)}`;
-    versionInfo.title = versionTitle;
-    versionInfo.setAttribute('aria-label', versionTitle);
+    nameEl.title = versionTitle;
+    nameEl.dataset['version'] = versionTitle;
 
     const countEl = document.createElement('span');
     countEl.className = 'project-count';
     countEl.textContent = String(countZaznamy(project.dtm));
     countEl.title = 'Počet záznamů v projektu';
+
+    // Zeměkoule — přiblížit pohled na rozsah projektu (2D i 3D).
+    const zoomBtn = document.createElement('button');
+    zoomBtn.type = 'button';
+    zoomBtn.className = 'project-icon-btn project-zoom-btn';
+    zoomBtn.title = 'Přiblížit na rozsah projektu';
+    zoomBtn.setAttribute('aria-label', `Přiblížit na projekt „${project.nazev}"`);
+    zoomBtn.innerHTML = '<span class="material-symbols-outlined">public</span>';
+    zoomBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      callbacks.onZoom(project.id);
+    });
+
+    // Oko — skrýt / zobrazit všechny prvky projektu (filtr prvků, projekt).
+    const eyeBtn = document.createElement('button');
+    eyeBtn.type = 'button';
+    eyeBtn.className = 'project-icon-btn project-visibility-btn';
+    eyeBtn.innerHTML = '<span class="material-symbols-outlined">visibility</span>';
+    eyeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setProjectVisible(project.id, !isProjectVisible(project.id));
+    });
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'project-remove-btn';
@@ -109,9 +154,10 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
       callbacks.onRemove(project.id);
     });
 
-    row.append(dot, nameEl, versionInfo, countEl, removeBtn);
+    row.append(dot, nameEl, countEl, zoomBtn, eyeBtn, removeBtn);
     list.appendChild(row);
   }
+  syncProjectVisibility();
 
   // Hint na limit — zobrazit jen když je kapacita vyčerpaná.
   if (projects.length >= MAX_PROJECTS) {
