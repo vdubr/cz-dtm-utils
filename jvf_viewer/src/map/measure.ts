@@ -234,6 +234,14 @@ export function isMeasureActive(): boolean {
   return active;
 }
 
+/** Posluchači zapnutí / vypnutí měření (např. dotaz na parcelu se vypne). */
+const activeListeners = new Set<(on: boolean) => void>();
+
+export function onMeasureActiveChange(listener: (on: boolean) => void): () => void {
+  activeListeners.add(listener);
+  return () => activeListeners.delete(listener);
+}
+
 /** Body měření (pro testy přes dev háček): pevné body bez pozice kurzoru. */
 export function getMeasurePoints(): Coord[] {
   return snapshot().fixed;
@@ -471,6 +479,8 @@ function stop2d(): void {
 
 export function setMeasureActive(on: boolean): void {
   if (!map || on === active) return;
+  // Nejdřív ostatní nástroje (vypnou se a vrátí kurzor), pak měření.
+  for (const l of activeListeners) l(on);
   if (on) {
     mode = getIs3dActive() ? '3d' : '2d';
     active = true;

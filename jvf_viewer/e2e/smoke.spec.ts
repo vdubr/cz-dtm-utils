@@ -1234,6 +1234,69 @@ test.describe('Modály a ovládání', () => {
     expect(await knVisible()).toEqual([]);
   });
 
+  test('katastr: tlačítko vlastníka parcely — dotaz GetFeatureInfo a odkaz do Nahlížení do KN', async ({ page }) => {
+    // Odpověď GetFeatureInfo ČÚZK (zkrácená skutečná odpověď).
+    const gfi = `<html><body><table class="infoTablegrid1"><tr><td><table class="infoTablegrid1">
+      <tr><td colspan=2 class="tdnadpis">Result of query</td></tr>
+      <tr><td>Katastrální území</td><td><a href="https://vdp.cuzk.cz/vdp/ruian/katastralniuzemi/727024">Staré Město [727024]</a></td></tr>
+      <tr><td>Parcelní číslo</td><td>1152/7</td></tr>
+      <tr><td>Výměra [m<sup>2</sup>]</td><td>114485</td></tr>
+      <tr><td>Odkaz do VDP</td><td><a href="https://vdp.cuzk.cz/vdp/ruian/parcely/3498082101">Informace o parcele</a></td></tr>
+      </table></td></tr></table></body></html>`;
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    const gfiReqs: string[] = [];
+    await page.route('**/services.cuzk.gov.cz/wms/**', (route) => {
+      const u = decodeURIComponent(route.request().url());
+      if (u.includes('REQUEST=GetFeatureInfo')) {
+        gfiReqs.push(u);
+        void route.fulfill({ status: 200, contentType: 'text/html', body: gfi, headers: { 'access-control-allow-origin': '*' } });
+      } else {
+        void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } });
+      }
+    });
+    await loadSample(page, 'ukazka_ZPS.xml');
+    const btn = page.locator('#btn-parcel');
+    await expect(btn).toBeHidden(); // bez katastru není
+    await page.locator('#toggle-kn').check();
+    await expect(btn).toBeVisible();
+
+    await btn.click();
+    const card = page.locator('#parcel-card');
+    await expect(card).toBeVisible();
+    await expect(card).toContainText('Klikněte do mapy na parcelu');
+
+    const box = (await page.locator('#map-container').boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(card.locator('[data-parcel="ku"]')).toHaveText('Staré Město [727024]');
+    await expect(card.locator('[data-parcel="number"]')).toHaveText('1152/7');
+    await expect(card.locator('[data-parcel="area"]')).toHaveText('114 485 m²');
+
+    // Dotaz v kliknutém bodě; odkaz do Nahlížení se stejnými souřadnicemi (m).
+    const center = await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      const size = d.olMap.getSize()!;
+      return d.olMap.getCoordinateFromPixel([size[0]! / 2, size[1]! / 2])!;
+    });
+    const q = gfiReqs[gfiReqs.length - 1]!;
+    expect(q).toContain('QUERY_LAYERS=polygony_parcel');
+    expect(q).toContain('CRS=EPSG:5514');
+    const bbox = /BBOX=([^&]+)/.exec(q)![1]!.split(',').map(Number);
+    expect(Math.abs((bbox[0]! + bbox[2]!) / 2 - center[0]!)).toBeLessThan(1);
+    expect(Math.abs((bbox[1]! + bbox[3]!) / 2 - center[1]!)).toBeLessThan(1);
+    const owner = card.locator('[data-parcel="owner"]');
+    await expect(owner).toHaveAttribute('target', '_blank');
+    await expect(owner).toHaveAttribute('href',
+      `https://nahlizenidokn.cuzk.gov.cz/MapaIdentifikace.aspx?l=KN&x=${Math.round(center[0]!)}&y=${Math.round(center[1]!)}`);
+
+    // Měření dotaz vypne; vypnutí katastru tlačítko skryje.
+    await page.locator('#btn-measure').click();
+    await expect(card).toBeHidden();
+    await expect(btn).toHaveAttribute('aria-pressed', 'false');
+    await page.locator('#btn-measure').click();
+    await page.locator('#toggle-kn').uncheck();
+    await expect(btn).toBeHidden();
+  });
+
   test('DTM ČR ve 3D: přehoz přes terén (WMS GetMap na bbox terénu)', async ({ page }) => {
     // DTM stubované; terén (DMR5G) se stahuje skutečně přes dev proxy.
     test.setTimeout(90_000);

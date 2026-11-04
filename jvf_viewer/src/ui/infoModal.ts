@@ -86,7 +86,13 @@ const INFO_CONTENT_HTML = `
       KM-D, analogové mapy, orientační mapa parcel; všechny nebo jen
       vybrané). Ve světlém motivu je katastr černý, v tmavém bílý (inverzní
       vrstvy ČÚZK); kreslí se od 1 : 5 000, je nad DTM a pod daty JVF
-      a ve 3D se také přehodí přes terén.
+      a ve 3D se také přehodí přes terén. Se zapnutým katastrem přibude
+      vedle tlačítka měření tlačítko <strong>Zjistit vlastníka parcely</strong>:
+      klik do mapy (2D i 3D) ukáže katastrální území, parcelní číslo
+      a výměru parcely (dotaz na katastr ČÚZK) a odkaz <em>Vlastník
+      v Nahlížení do KN</em>, který otevře parcelu ve veřejném Nahlížení do
+      katastru nemovitostí s vlastníky (v nové záložce; aplikace vlastníky
+      sama nestahuje — ČÚZK je strojově veřejně neposkytuje).
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).

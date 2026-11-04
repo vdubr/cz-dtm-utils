@@ -36,6 +36,7 @@ import {
 import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
 import { setupMeasure, isMeasureActive, refreshMeasureSnap, getMeasurePoints } from './map/measure.js';
 import { installQuickClick, isQuickClick } from './viewer3d/quickClick.js';
+import { setupParcelQuery, isParcelQueryActive } from './map/parcelQuery.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
@@ -156,6 +157,8 @@ setupMeasure(olMap, () =>
     .filter(isJvfFeatureDisplayed),
   (elementName) => currentObjekty.find((ot) => ot.elementName === elementName)?.nazev || undefined,
 );
+// Dotaz na vlastníka parcely (tlačítko jen se zapnutým katastrem).
+setupParcelQuery(olMap);
 subscribeFeatureFilter(refreshMeasureSnap);
 subscribeChangesetToggle(refreshMeasureSnap);
 
@@ -408,8 +411,8 @@ function ensureFeaturesPanelOpen(): void {
 
 // 2D: OL singleclick → forEachFeatureAtPixel hledá první feature s jvfElementName.
 olMap.on('singleclick', (evt) => {
-  // Během měření klik přidává body — prvky nevybírat.
-  if (isMeasureActive()) return;
+  // Během měření / dotazu na parcelu klik patří nástroji — prvky nevybírat.
+  if (isMeasureActive() || isParcelQueryActive()) return;
   let picked: { elementName: string; objectId: string } | null = null;
   olMap.forEachFeatureAtPixel(
     evt.pixel,
@@ -451,8 +454,8 @@ if (threeCanvas) installQuickClick(threeCanvas);
 threeCanvas?.addEventListener('click', (e) => {
   if (!getIs3dActive()) return;
   if (!isQuickClick(e)) return;
-  // Během měření klik přidává body — prvky nevybírat.
-  if (isMeasureActive()) return;
+  // Během měření / dotazu na parcelu klik patří nástroji — prvky nevybírat.
+  if (isMeasureActive() || isParcelQueryActive()) return;
   const picked = pickFeatureFromClient(e.clientX, e.clientY);
   if (!picked) return;
   ensureFeaturesPanelOpen(); // otevřít panel, pokud byl zavřený (R2/R3)
