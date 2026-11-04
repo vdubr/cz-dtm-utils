@@ -1006,3 +1006,6 @@ html, body {
 .parcel-owner-link .material-symbols-outlined { font-size: 18px; }
 .parcel-links .measure-text-btn { text-decoration: none; }
 .map-tools .measure-btn[hidden] { display: none; }
+.parcel-card .measure-card-head .parcel-icon { color: #d81b60; width: 20px; height: 20px; }
+.map-tools .measure-btn .parcel-icon { display: block; }
+.parcel-links .measure-text-btn[hidden] { display: none; }

@@ -11,9 +11,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 - **Vlastník parcely** — se zapnutým překryvem katastru tlačítko vedle
   měření: klik do mapy (2D i 3D) zjistí parcelu (WMS GetFeatureInfo ČÚZK —
-  katastrální území, parcelní číslo, výměra, odkaz do VDP) a nabídne odkaz
-  „Vlastník v Nahlížení do KN", který otevře parcelu ve veřejném Nahlížení
-  do katastru nemovitostí podle souřadnic S-JTSK. S měřením se vylučuje.
+  katastrální území, parcelní číslo, výměra, odkaz do VDP), v 2D mapě
+  zvýrazní hranici parcely (WFS katastrálních parcel INSPIRE ČÚZK, i s
+  otvory; Přiblížit na parcelu) a nabídne odkaz „Vlastník v Nahlížení do
+  KN", který otevře parcelu ve veřejném Nahlížení do katastru nemovitostí
+  podle souřadnic S-JTSK. Ikona polygonu se špendlíkem; s měřením se
+  vylučuje.
 - **Překryvná vrstva katastru nemovitostí** — stejně jako DTM ČR: WMS ČÚZK
   s výběrem všech nebo jednotlivých vrstev (hranice parcel, parcelní čísla,
   obrazy parcel, další prvky mapy, KM-D, analogové mapy, orientační mapa

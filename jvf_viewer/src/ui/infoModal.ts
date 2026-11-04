@@ -89,7 +89,9 @@ const INFO_CONTENT_HTML = `
       a ve 3D se také přehodí přes terén. Se zapnutým katastrem přibude
       vedle tlačítka měření tlačítko <strong>Zjistit vlastníka parcely</strong>:
       klik do mapy (2D i 3D) ukáže katastrální území, parcelní číslo
-      a výměru parcely (dotaz na katastr ČÚZK) a odkaz <em>Vlastník
+      a výměru parcely (dotaz na katastr ČÚZK), v 2D mapě zvýrazní její
+      hranici (WFS katastrálních parcel ČÚZK, i s otvory; tlačítko
+      <em>Přiblížit na parcelu</em>) a nabídne odkaz <em>Vlastník
       v Nahlížení do KN</em>, který otevře parcelu ve veřejném Nahlížení do
       katastru nemovitostí s vlastníky (v nové záložce; aplikace vlastníky
       sama nestahuje — ČÚZK je strojově veřejně neposkytuje).

@@ -1254,6 +1254,21 @@ test.describe('Modály a ovládání', () => {
         void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } });
       }
     });
+    // WFS INSPIRE: hranice parcely (polygon s jedním otvorem).
+    const wfsReqs: string[] = [];
+    const gml = `<?xml version="1.0" encoding="utf-8"?>
+      <FeatureCollection xmlns="http://www.opengis.net/wfs/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:cp="http://inspire.ec.europa.eu/schemas/cp/4.0">
+        <member><cp:CadastralParcel><cp:geometry>
+          <gml:Polygon srsName="urn:ogc:def:crs:EPSG::5514" srsDimension="2">
+            <gml:exterior><gml:LinearRing><gml:posList>-743427.15 -1043166.05 -743770.62 -1043200 -743700 -1043880.26 -743385.19 -1043800 -743427.15 -1043166.05</gml:posList></gml:LinearRing></gml:exterior>
+            <gml:interior><gml:LinearRing><gml:posList>-743550 -1043500 -743560 -1043500 -743560 -1043510 -743550 -1043500</gml:posList></gml:LinearRing></gml:interior>
+          </gml:Polygon>
+        </cp:geometry></cp:CadastralParcel></member>
+      </FeatureCollection>`;
+    await page.route('**/services.cuzk.gov.cz/wfs/**', (route) => {
+      wfsReqs.push(decodeURIComponent(route.request().url()));
+      void route.fulfill({ status: 200, contentType: 'application/gml+xml', body: gml, headers: { 'access-control-allow-origin': '*' } });
+    });
     await loadSample(page, 'ukazka_ZPS.xml');
     const btn = page.locator('#btn-parcel');
     await expect(btn).toBeHidden(); // bez katastru není
@@ -1287,6 +1302,24 @@ test.describe('Modály a ovládání', () => {
     await expect(owner).toHaveAttribute('target', '_blank');
     await expect(owner).toHaveAttribute('href',
       `https://nahlizenidokn.cuzk.gov.cz/MapaIdentifikace.aspx?l=KN&x=${Math.round(center[0]!)}&y=${Math.round(center[1]!)}`);
+
+    // Hranice parcely z WFS (featureID CZ.{id} z odkazu do VDP) je v mapě.
+    expect(wfsReqs.some((u) => u.includes('featureID=CZ.3498082101') && u.includes('EPSG::5514'))).toBe(true);
+    const parcel = await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      const layer = d.olMap.getLayers().getArray().find((l) => l.get('name') === 'parcel') as import('ol/layer/Vector').default;
+      const poly = layer.getSource()!.getFeatures().map((f) => f.getGeometry()!).find((g) => g.getType() === 'Polygon') as import('ol/geom/Polygon').default | undefined;
+      return poly ? { rings: poly.getLinearRingCount(), first: poly.getCoordinates()[0]![0] } : null;
+    });
+    expect(parcel).toEqual({ rings: 2, first: [-743427.15, -1043166.05] });
+    const zoomBtn = card.locator('[data-parcel-action="zoom"]');
+    await expect(zoomBtn).toBeVisible();
+    await zoomBtn.click();
+    await expect.poll(() => page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      const c = d.olMap.getView().getCenter()!;
+      return c[0]! > -743800 && c[0]! < -743300 && c[1]! > -1043900 && c[1]! < -1043100;
+    })).toBe(true);
 
     // Měření dotaz vypne; vypnutí katastru tlačítko skryje.
     await page.locator('#btn-measure').click();
