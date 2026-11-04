@@ -32,6 +32,7 @@ import {
 } from './ui/featuresPanel.js';
 import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
 import { setupMeasure, isMeasureActive, refreshMeasureSnap, getMeasurePoints } from './map/measure.js';
+import { installQuickClick, isQuickClick } from './viewer3d/quickClick.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
@@ -436,8 +437,12 @@ olMap.on('singleclick', (evt) => {
 
 // 3D: canvas click → raycaster → najde elementName + objectId přes pickFeatureFromClient.
 const threeCanvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
+// Ve 3D je klik jen krátké stisknutí (do 200 ms) bez tažení — otáčení
+// a posun scény nesmí vybírat prvky (viewer3d/quickClick.ts).
+if (threeCanvas) installQuickClick(threeCanvas);
 threeCanvas?.addEventListener('click', (e) => {
   if (!getIs3dActive()) return;
+  if (!isQuickClick(e)) return;
   // Během měření klik přidává body — prvky nevybírat.
   if (isMeasureActive()) return;
   const picked = pickFeatureFromClient(e.clientX, e.clientY);

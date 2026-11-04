@@ -107,7 +107,10 @@ const INFO_CONTENT_HTML = `
       Ve 2D jsou délky a plochy rovinné v S-JTSK (metry).
       <strong>Ve 3D</strong> se měří stejně: bod se vezme z místa pod
       kurzorem (vrchol nebo hrana objektu, povrch plochy či terénu, jinak
-      vodorovná rovina), tažení myší dál otáčí scénou. Karta ukáže
+      vodorovná rovina), tažení myší dál otáčí scénou. Ve 3D se za klik
+      (bod měření, výběr prvku, nový střed otáčení) považuje jen krátké
+      stisknutí do 200&nbsp;ms bez tažení — otáčení ani posun scény body
+      nepřidávají. Karta ukáže
       <em>vzdálenost 3D</em> (šikmou), vodorovnou vzdálenost, převýšení
       a plochu jako vodorovný průmět; výšky jsou skutečné (bez převýšení
       scény). Přepnutí 2D ↔ 3D měření ukončí.

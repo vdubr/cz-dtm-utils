@@ -1,4 +1,5 @@
 import type Map from 'ol/Map.js';
+import { isQuickClick } from '../viewer3d/quickClick.js';
 import type { ObjektovyTyp } from 'jvf-parser';
 import {
   initThreeScene,
@@ -334,6 +335,7 @@ export function setup3dToggle(
 
   threeCanvasEl?.addEventListener('click', (e) => {
     if (!is3dActive || !pivotMode) return;
+    if (!isQuickClick(e)) return; // tažení / posun scény není klik
     const pt = pickPointFromClient(e.clientX, e.clientY);
     if (pt) setPivot(pt.x, pt.y, pt.z);
     togglePivotMode(); // vypni režim

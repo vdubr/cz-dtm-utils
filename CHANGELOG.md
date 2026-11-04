@@ -123,6 +123,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 
+- **Klik ve 3D při otáčení / posunu scény** — za klik (výběr prvku, bod
+  měření, nový střed otáčení) se ve 3D bere jen krátké stisknutí do 200 ms
+  bez tažení; dřív se klik zaregistroval i po posunu scény tam a zpět
+  nebo po dlouhém stisknutí.
 - **Filtr obsahových částí v Přehledu prvků** nabízel pevně jen ZPS / TI /
   DI / GAD / OPL — části UDM (ZPSUDM, DIUDM, OST) a ŽXML (ZDT, ZDD, H3D,
   ODSZ, SKLEP) nešlo vyfiltrovat a souhrn ukazoval vždy celkové počty.

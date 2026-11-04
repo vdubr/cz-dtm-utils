@@ -1034,6 +1034,48 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#btn-measure')).toHaveAttribute('aria-pressed', 'false');
   });
 
+  test('3D: klik je jen krátké stisknutí — tažení, posun ani dlouhé stisknutí nepřidají bod', async ({ page }) => {
+    await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.locator('#btn-3d').click();
+    await page.waitForTimeout(1500);
+    await page.locator('#btn-measure').click();
+    const points = page.locator('#measure-card [data-measure="points"]');
+    const c = (await page.locator('#three-canvas').boundingBox())!;
+    const x = c.x + c.width * 0.5;
+    const y = c.y + c.height * 0.5;
+
+    // Dlouhé stisknutí (300 ms) na místě → není klik.
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.waitForTimeout(300);
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+    await expect(points).toHaveText('0');
+
+    // Otáčení (tažení levým) → není klik.
+    await page.mouse.down();
+    await page.mouse.move(x + 60, y + 20, { steps: 5 });
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+    await expect(points).toHaveText('0');
+
+    // Posun (Shift + tažení) tam a zpět na původní místo → není klik.
+    await page.mouse.move(x, y);
+    await page.keyboard.down('Shift');
+    await page.mouse.down();
+    await page.mouse.move(x + 50, y, { steps: 4 });
+    await page.mouse.move(x, y, { steps: 4 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+    await page.waitForTimeout(200);
+    await expect(points).toHaveText('0');
+
+    // Krátký klik → bod.
+    await page.mouse.click(x, y);
+    await expect(points).toHaveText('1');
+  });
+
   test('měření: klik do mapy nevybírá prvek', async ({ page }) => {
     await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
     await expect(page.locator('#btn-features')).toBeEnabled();

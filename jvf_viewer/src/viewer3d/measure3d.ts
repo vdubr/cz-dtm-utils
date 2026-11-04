@@ -2,7 +2,7 @@
  * Měření ve 3D scéně — stejné chování jako v 2D (map/measure.ts řídí
  * tlačítko, kartu a klávesy; tady je jen 3D „backend").
  *
- * - Klik (bez tažení — tažení otáčí scénou) přidá bod, dvojklik nebo klik
+ * - Klik (krátký do 200 ms bez tažení — viz quickClick.ts) přidá bod, dvojklik nebo klik
  *   na poslední bod měření ukončí, klik na první bod uzavře polygon;
  *   další klik začne nové měření.
  * - Bod pod kurzorem: přichycení k bodům měření (první bod = uzavřít),
@@ -29,6 +29,7 @@ import {
   sceneToSjtsk,
   sjtskToScene,
 } from './threeScene.js';
+import { isQuickClick } from './quickClick.js';
 import {
   dedupeConsecutive,
   isClosedRing,
@@ -55,7 +56,6 @@ export interface MeasureSnapshot {
 const COLOR = 0xd81b60;
 const SNAP_PX = 10;
 const FINISH_PX = 8;
-const CLICK_MOVE_PX = 5;
 const SEGMENT_LABEL_MIN_PX = 70;
 
 let points: Coord[] = [];
@@ -73,7 +73,6 @@ let abort: AbortController | null = null;
 let raf: number | null = null;
 let dirty = true;
 let lastExag = 1;
-let downAt: { x: number; y: number } | null = null;
 let pendingMove: { x: number; y: number } | null = null;
 
 // ── Textury bodů ──────────────────────────────────────────────────────────────
@@ -382,7 +381,7 @@ function finish(): void {
 }
 
 function onClick(e: MouseEvent): void {
-  if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > CLICK_MOVE_PX) return; // tažení
+  if (!isQuickClick(e)) return; // tažení / posun scény, dlouhé stisknutí
   if (finished) {
     points = [];
     finished = false;
@@ -442,7 +441,6 @@ export function start3d(changed: () => void): void {
   const opts = { signal: abort.signal };
   if (canvas) {
     canvas.style.cursor = 'crosshair';
-    canvas.addEventListener('pointerdown', (e) => { downAt = { x: e.clientX, y: e.clientY }; }, opts);
     canvas.addEventListener('pointermove', (e) => {
       if (e.buttons !== 0 || finished) return; // otáčení / posun scény
       pendingMove = { x: e.clientX, y: e.clientY };
@@ -454,7 +452,10 @@ export function start3d(changed: () => void): void {
       onChange();
     }, opts);
     canvas.addEventListener('click', onClick, opts);
-    canvas.addEventListener('dblclick', (e) => { e.preventDefault(); finish(); }, opts);
+    canvas.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      if (isQuickClick(e)) finish();
+    }, opts);
   }
   raf = requestAnimationFrame(frame);
 }
