@@ -853,6 +853,57 @@ test.describe('Modály a ovládání', () => {
     await expect(btn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  test('měření: body se přichytí k vrcholu i hraně prvku JVF, ne ke skryté vrstvě', async ({ page }) => {
+    // Budova 200×200 m, roh [-520800, -1164200], spodní hrana y = -1164200.
+    await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.waitForTimeout(700);
+    type Dbg = { olMap: import('ol/Map').default; measurePoints: () => number[][] };
+    const centerOn = (c: [number, number]) => page.evaluate((c) => {
+      const d = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug;
+      d.olMap.getView().setCenter(c);
+      d.olMap.getView().setResolution(0.5); // 0,5 m/px
+      d.olMap.renderSync();
+    }, c);
+    const points = () => page.evaluate(() =>
+      (window as unknown as { __jvfDebug: Dbg }).__jvfDebug.measurePoints());
+    const box = (await page.locator('#map-container').boundingBox())!;
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    const snapEl = page.locator('#measure-card [data-measure="snap"]');
+
+    await page.locator('#btn-measure').click();
+
+    // Vrchol: kurzor 4 px vedle rohu → bod přesně v rohu.
+    await centerOn([-520800, -1164200]);
+    await page.mouse.move(cx + 4, cy - 3, { steps: 3 });
+    await expect(snapEl).toHaveText('vrchol · BudovaPlocha');
+    await page.mouse.click(cx + 4, cy - 3);
+    await page.waitForTimeout(350);
+    expect((await points())[0]).toEqual([-520800, -1164200]);
+
+    // Hrana: kurzor 3 px nad středem spodní hrany → y přesně na hraně.
+    await centerOn([-520700, -1164200]);
+    await page.mouse.move(cx + 2, cy - 3, { steps: 3 });
+    await expect(snapEl).toHaveText('hrana · BudovaPlocha');
+    await page.mouse.click(cx + 2, cy - 3);
+    await page.waitForTimeout(350);
+    const p2 = (await points())[1]!;
+    expect(p2[1]).toBeCloseTo(-1164200, 6);
+    expect(Math.abs(p2[0]! - -520699)).toBeLessThan(0.5);
+
+    // Skrytá vrstva (panel vrstev) → žádné přichycení.
+    await page.keyboard.press('Escape');
+    await page.locator('.layer-item').first().click();
+    await page.locator('#btn-measure').click();
+    await centerOn([-520800, -1164200]);
+    await page.mouse.move(cx + 4, cy - 3, { steps: 3 });
+    await page.mouse.click(cx + 4, cy - 3);
+    await page.waitForTimeout(350);
+    await expect(snapEl).toHaveText('—');
+    expect((await points())[0]).not.toEqual([-520800, -1164200]);
+  });
+
   test('měření: klik do mapy nevybírá prvek', async ({ page }) => {
     await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
     await expect(page.locator('#btn-features')).toBeEnabled();

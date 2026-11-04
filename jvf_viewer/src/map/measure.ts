@@ -6,7 +6,11 @@
  *
  * - Dvojklik / klik na poslední bod měření ukončí; další klik začne nové.
  * - Backspace vrátí poslední bod, Esc nástroj zavře.
- * - Body se přichytávají k vrcholům viditelných JVF vrstev (Snap).
+ * - Body se přichytávají k prvkům JVF: k vrcholům (přednost), hranám linií
+ *   a obvodů ploch a k průsečíkům linií — jen k prvkům, které se právě
+ *   kreslí (viditelná vrstva, filtr prvků, changeset přepínače). Kurzor
+ *   přichycení vyznačí a karta ukáže, k čemu (vrchol / hrana / průsečík
+ *   a typ objektu).
  * - Během měření klik do mapy nevybírá prvky a dvojklik nepřibližuje.
  *
  * Délka a plocha jsou rovinné v S-JTSK (metry) — viz measureMath.ts.
@@ -15,6 +19,10 @@
 import Control from 'ol/control/Control.js';
 import Draw, { type DrawEvent } from 'ol/interaction/Draw.js';
 import Snap from 'ol/interaction/Snap.js';
+import Collection from 'ol/Collection.js';
+import type Feature from 'ol/Feature.js';
+import type { SnapEvent } from 'ol/events/SnapEvent.js';
+import RegularShape from 'ol/style/RegularShape.js';
 import DoubleClickZoom from 'ol/interaction/DoubleClickZoom.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
@@ -64,6 +72,25 @@ const pointerStyle = new Style({
     stroke: new Stroke({ color: COLOR, width: 1.5 }),
   }),
 });
+/** Kurzor přichycený k vrcholu / průsečíku: plný čtverec. */
+const snapVertexStyle = new Style({
+  image: new RegularShape({
+    points: 4,
+    radius: 8,
+    angle: Math.PI / 4,
+    fill: new Fill({ color: COLOR }),
+    stroke: new Stroke({ color: '#ffffff', width: 2 }),
+  }),
+});
+/** Kurzor přichycený k hraně: kosočtverec s výplní. */
+const snapEdgeStyle = new Style({
+  image: new RegularShape({
+    points: 4,
+    radius: 8,
+    fill: new Fill({ color: 'rgba(216,27,96,0.55)' }),
+    stroke: new Stroke({ color: '#ffffff', width: 2 }),
+  }),
+});
 
 function label(text: string, opts: { bold?: boolean; offsetY?: number; accent?: boolean } = {}): Text {
   return new Text({
@@ -81,7 +108,11 @@ function label(text: string, opts: { bold?: boolean; offsetY?: number; accent?: 
 function measureStyle(feature: FeatureLike, resolution: number): Style[] {
   const geom = feature.getGeometry();
   if (!geom) return [];
-  if (geom.getType() === 'Point') return [pointerStyle]; // kurzor kreslení
+  if (geom.getType() === 'Point') {
+    // Kurzor kreslení — při přichycení k prvku jiný symbol.
+    if (snapInfo) return [snapInfo.kind === 'edge' ? snapEdgeStyle : snapVertexStyle];
+    return [pointerStyle];
+  }
   if (geom.getType() !== 'LineString') return [];
 
   const coords = dedupeConsecutive((geom as LineString).getCoordinates());
@@ -130,11 +161,14 @@ function measureStyle(feature: FeatureLike, resolution: number): Style[] {
 
 // ── Stav ──────────────────────────────────────────────────────────────────────
 let map: OlMap | null = null;
-let getSnapSources: () => VectorSource[] = () => [];
+let getSnapFeatures: () => Feature[] = () => [];
 const source = new VectorSource();
 const layer = new VectorLayer({ source, style: measureStyle, zIndex: 1000 });
 let draw: Draw | null = null;
-let snaps: Snap[] = [];
+let snap: Snap | null = null;
+const snapFeatures = new Collection<Feature>();
+/** Aktuální přichycení kurzoru (null = volně). */
+let snapInfo: { kind: 'vertex' | 'edge' | 'intersection'; elementName: string } | null = null;
 let sketchKey: EventsKey | null = null;
 let sketchCoords: Coord[] | null = null; // během kreslení (vč. pozice myši)
 let active = false;
@@ -144,12 +178,21 @@ let card: HTMLElement;
 let lengthEl: HTMLElement;
 let areaEl: HTMLElement;
 let pointsEl: HTMLElement;
+let snapEl: HTMLElement;
+
+const SNAP_KIND_LABEL = { vertex: 'vrchol', edge: 'hrana', intersection: 'průsečík' } as const;
 
 export function isMeasureActive(): boolean {
   return active;
 }
 
 /** Aktuální měřené body: rozkreslená čára, jinak dokončené měření. */
+/** Body měření (pro testy přes dev háček): pevné body bez pozice kurzoru. */
+export function getMeasurePoints(): Coord[] {
+  const { coords, drawing } = currentCoords();
+  return drawing ? coords.slice(0, -1) : coords;
+}
+
 function currentCoords(): { coords: Coord[]; drawing: boolean } {
   if (sketchCoords) return { coords: sketchCoords, drawing: true };
   const f = source.getFeatures()[0];
@@ -165,18 +208,66 @@ function updateCard(): void {
   lengthEl.textContent = pts.length >= 2 ? formatLength(polylineLength(pts)) : '—';
   areaEl.textContent = pts.length >= 3 ? formatArea(polygonArea(pts)) : 'od 3 bodů';
   pointsEl.textContent = String(fixed);
+  snapEl.textContent = snapInfo
+    ? `${SNAP_KIND_LABEL[snapInfo.kind]} · ${snapInfo.elementName}`
+    : '—';
 }
 
+/** Je souřadnice vrcholem geometrie prvku? (jinak jde o průsečík) */
+function isFeatureVertex(feature: Feature, c: Coord): boolean {
+  const flat = (feature.getGeometry() as { getFlatCoordinates?: () => number[]; getStride?: () => number } | undefined);
+  const coords = flat?.getFlatCoordinates?.();
+  const stride = flat?.getStride?.() ?? 2;
+  if (!coords) return true;
+  for (let i = 0; i + 1 < coords.length; i += stride) {
+    if (Math.abs(coords[i]! - (c[0] ?? 0)) < 1e-6 && Math.abs(coords[i + 1]! - (c[1] ?? 0)) < 1e-6) return true;
+  }
+  return false;
+}
+
+function onSnap(e: SnapEvent): void {
+  const kind = e.segment && e.segment.length > 1
+    ? 'edge'
+    : isFeatureVertex(e.feature, e.vertex) ? 'vertex' : 'intersection';
+  const elementName = (e.feature.get('jvfElementName') as string | undefined) ?? 'prvek';
+  if (snapInfo?.kind !== kind || snapInfo.elementName !== elementName) {
+    snapInfo = { kind, elementName };
+    updateCard();
+  }
+}
+
+function onUnsnap(): void {
+  if (!snapInfo) return;
+  snapInfo = null;
+  updateCard();
+}
+
+/**
+ * Naplní přichytávání aktuálně kreslenými prvky JVF. Volá se při zapnutí
+ * a po každé změně dat, viditelnosti vrstev, filtru prvků či changeset
+ * přepínačů (main.ts → refreshMeasureSnap).
+ */
 function refreshSnaps(): void {
   if (!map) return;
-  for (const s of snaps) map.removeInteraction(s);
-  snaps = [];
-  if (!active) return;
-  // Snap musí být přidán až po Draw (zpracuje události dřív).
-  for (const src of getSnapSources()) {
-    const snap = new Snap({ source: src, vertex: true, edge: false, pixelTolerance: 10 });
+  snapFeatures.clear();
+  if (!active) {
+    if (snap) map.removeInteraction(snap);
+    snap = null;
+    return;
+  }
+  snapFeatures.extend(getSnapFeatures());
+  if (!snap) {
+    // Snap musí být přidán až po Draw (zpracuje události dřív).
+    snap = new Snap({
+      features: snapFeatures,
+      vertex: true,
+      edge: true,
+      intersection: true,
+      pixelTolerance: 10,
+    });
+    snap.on('snap', onSnap);
+    snap.on('unsnap', onUnsnap);
     map.addInteraction(snap);
-    snaps.push(snap);
   }
 }
 
@@ -269,7 +360,8 @@ export function setMeasureActive(on: boolean): void {
     }
     draw = null;
     endSketch();
-    refreshSnaps(); // odebere snapy
+    refreshSnaps(); // odebere přichytávání
+    snapInfo = null;
     source.clear();
     setDoubleClickZoom(true);
   }
@@ -297,11 +389,11 @@ function onKeyDown(ev: KeyboardEvent): void {
 
 /**
  * Přidá do mapy tlačítko měření a kartu s výsledky.
- * @param getSources zdroje viditelných JVF vrstev pro přichytávání bodů.
+ * @param getFeatures právě kreslené prvky JVF pro přichytávání bodů.
  */
-export function setupMeasure(olMap: OlMap, getSources: () => VectorSource[]): void {
+export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
   map = olMap;
-  getSnapSources = getSources;
+  getSnapFeatures = getFeatures;
   map.addLayer(layer);
 
   const btnWrap = document.createElement('div');
@@ -336,8 +428,9 @@ export function setupMeasure(olMap: OlMap, getSources: () => VectorSource[]): vo
       <dt>Vzdálenost</dt><dd data-measure="length">—</dd>
       <dt>Plocha</dt><dd data-measure="area">od 3 bodů</dd>
       <dt>Body</dt><dd data-measure="points">0</dd>
+      <dt>Přichycení</dt><dd data-measure="snap">—</dd>
     </dl>
-    <p class="measure-hint">Klikáním přidávejte body (přichytí se k bodům dat).
+    <p class="measure-hint">Klikáním přidávejte body (přichytí se k vrcholům, hranám a průsečíkům prvků).
       Dvojklik nebo klik na poslední bod měření ukončí, Backspace vrátí bod, Esc zavře.</p>
     <div class="measure-actions">
       <button type="button" class="measure-text-btn" data-measure-action="undo">
@@ -350,6 +443,7 @@ export function setupMeasure(olMap: OlMap, getSources: () => VectorSource[]): vo
   lengthEl = card.querySelector('[data-measure="length"]')!;
   areaEl = card.querySelector('[data-measure="area"]')!;
   pointsEl = card.querySelector('[data-measure="points"]')!;
+  snapEl = card.querySelector('[data-measure="snap"]')!;
   card.addEventListener('click', (ev) => {
     const action = (ev.target as HTMLElement).closest<HTMLElement>('[data-measure-action]')?.dataset['measureAction'];
     if (action === 'close') setMeasureActive(false);

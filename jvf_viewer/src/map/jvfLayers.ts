@@ -1,6 +1,6 @@
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
-import Feature from 'ol/Feature.js';
+import Feature, { type FeatureLike } from 'ol/Feature.js';
 import OlPoint from 'ol/geom/Point.js';
 import OlLineString from 'ol/geom/LineString.js';
 import OlPolygon from 'ol/geom/Polygon.js';
@@ -398,6 +398,21 @@ export interface JvfVectorLayer {
   projectId: string | null;
 }
 
+/**
+ * Kreslí se prvek JVF vrstvy? Filtr prvků (úroveň umístění, projekt,
+ * obsahová část) a changeset přepínač „Zobrazit nové / editované / mazané".
+ * Jediné místo rozhodnutí — používá ho style funkce vrstev i přichytávání
+ * při měření (map/measure.ts), aby se neměřilo ke skrytým prvkům.
+ * Viditelnost celé vrstvy (panel vrstev) sem nepatří — tu nese vrstva.
+ */
+export function isJvfFeatureDisplayed(feature: FeatureLike): boolean {
+  if (!isLevelVisible(feature.get('jvfLevel') as LevelKey | undefined)) return false;
+  if (!isProjectVisible(feature.get('jvfProjectId') as string | null | undefined)) return false;
+  if (!isContentPartVisible(feature.get('jvfPart') as string | undefined)) return false;
+  const zo = feature.get('jvfZapisObjektu') as string | undefined;
+  return !isChangesetZapis(zo) || isShowZapis(zo);
+}
+
 export function buildJvfLayers(objekty: ObjektovyTyp[]): {
   layers: JvfVectorLayer[];
   extent: Extent;
@@ -515,20 +530,12 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
         const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
         if (!s || !geomType) return undefined;
-        // Filtr prvků (úroveň umístění + projekt) — odfiltrované záznamy se
-        // nekreslí. Při neaktivním filtru obě funkce vrací vždy true →
-        // chování beze změny.
-        const levelKey = feature.get('jvfLevel') as LevelKey | undefined;
-        if (!isLevelVisible(levelKey)) return undefined;
-        const projectKey = feature.get('jvfProjectId') as string | null | undefined;
-        if (!isProjectVisible(projectKey)) return undefined;
-        if (!isContentPartVisible(feature.get('jvfPart') as string | undefined)) return undefined;
-        // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — buď skryjeme úplně,
-        // nebo přebarvíme podle typu změny (zelená/oranžová/červená).
-        // Globální flagy řídí checkboxy v UI.
+        // Filtr prvků a changeset přepínače — odfiltrované záznamy se nekreslí.
+        if (!isJvfFeatureDisplayed(feature)) return undefined;
+        // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — přebarvíme podle
+        // typu změny (zelená/oranžová/červená), je-li zvýraznění zapnuté.
         const zo = feature.get('jvfZapisObjektu') as string | undefined;
         if (isChangesetZapis(zo)) {
-          if (!isShowZapis(zo)) return undefined;
           // Zvýraznění vypnuté → viditelný záznam s vlastní symbologií.
           if (!isHighlightZapis()) return createStyleForGeom(geomType, s, resolution);
           const hl = ZAPIS_HIGHLIGHT_COLORS[zo];

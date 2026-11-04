@@ -13,7 +13,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   horním rohu 2D mapy (inspirace mapy.cz): klikáním se přidávají body,
   vzdálenost se počítá průběžně a od 3 bodů zároveň plocha mnohoúhelníku.
   Popisky délek úseků, celkové délky a plochy v mapě, souhrn v kartě
-  (Zpět, Nové měření). Body se přichytávají k vrcholům dat; dvojklik
+  (Zpět, Nové měření). Body se přichytávají k prvkům JVF — k vrcholům,
+  hranám linií a obvodů ploch a k průsečíkům, jen k právě viditelným
+  prvkům; kurzor a karta ukazují, k čemu je bod přichycený. Dvojklik
   měření ukončí, Backspace vrátí bod, Esc zavře. Rovinně v S-JTSK.
 - **Režimy aplikace JVF / UDM / JŽM** — přepínač v hlavičce; výchozí je JVF,
   do UDM a JŽM se přepíná ručně. Přepnutí zavře načtené soubory

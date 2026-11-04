@@ -92,7 +92,12 @@ const INFO_CONTENT_HTML = `
       vzdálenost se počítá průběžně i k pozici kurzoru a od tří bodů se
       zároveň ukazuje <strong>plocha</strong> mnohoúhelníku z bodů. V mapě
       jsou popsané délky úseků, celková délka a plocha, v kartě vlevo dole
-      souhrn. Body se přichytávají k vrcholům viditelných vrstev dat.
+      souhrn. Body se <strong>přichytávají k prvkům JVF</strong> — k vrcholům
+      (mají přednost), hranám linií a obvodů ploch a k průsečíkům linií;
+      jen k prvkům, které jsou právě vidět (skrytá vrstva ani prvky
+      skryté filtrem se nepřichytávají). Kurzor přichycení vyznačí
+      (čtverec = vrchol / průsečík, kosočtverec = hrana) a karta ukáže,
+      k čemu je bod přichycený.
       Dvojklik nebo klik na poslední bod měření ukončí (další klik začne
       nové), <em>Backspace</em> vrátí poslední bod, <em>Esc</em> nástroj
       zavře. Během měření klik nevybírá prvky a dvojklik nepřibližuje.

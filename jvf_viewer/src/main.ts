@@ -13,6 +13,7 @@ import {
   buildJvfLayers,
   addJvfLayersToMap,
   removeJvfLayersFromMap,
+  isJvfFeatureDisplayed,
   type JvfVectorLayer,
 } from './map/jvfLayers.js';
 import { setupFileUpload } from './ui/fileUpload.js';
@@ -30,7 +31,7 @@ import {
   selectFeatureInPanel,
 } from './ui/featuresPanel.js';
 import { initHighlightLayer, highlightFeature, clearHighlight } from './map/highlight.js';
-import { setupMeasure, isMeasureActive, refreshMeasureSnap } from './map/measure.js';
+import { setupMeasure, isMeasureActive, refreshMeasureSnap, getMeasurePoints } from './map/measure.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
@@ -39,7 +40,8 @@ import {
   setupChangesetToggle,
   updateChangesetToggleVisibility,
 } from './ui/changesetToggle.js';
-import { resetFeatureFilter } from './state/featureFilter.js';
+import { resetFeatureFilter, subscribeFeatureFilter } from './state/featureFilter.js';
+import { subscribeChangesetToggle } from './state/changesetToggle.js';
 import {
   isLayerVisible,
   resetLayerVisibility,
@@ -110,6 +112,7 @@ if (import.meta.env.DEV) {
     olMap,
     getJvfLayers: () => currentJvfLayers,
     pick3d: (x: number, y: number) => pickFeatureFromClient(x, y),
+    measurePoints: () => getMeasurePoints(),
   };
 }
 initHighlightLayer(olMap);
@@ -134,13 +137,16 @@ subscribeLayerVisibility(() => {
 });
 
 // Měření vzdálenosti a plochy (tlačítko s pravítkem v mapě). Body se
-// přichytávají k vrcholům viditelných JVF vrstev.
+// přichytávají k právě kresleným prvkům JVF (viditelná vrstva + filtr prvků
+// + changeset přepínače) — po každé změně těchto stavů se obnoví.
 setupMeasure(olMap, () =>
   currentJvfLayers
     .filter((l) => l.olLayer.getVisible())
-    .map((l) => l.olLayer.getSource())
-    .filter((s): s is NonNullable<typeof s> => s !== null),
+    .flatMap((l) => l.olLayer.getSource()?.getFeatures() ?? [])
+    .filter(isJvfFeatureDisplayed),
 );
+subscribeFeatureFilter(refreshMeasureSnap);
+subscribeChangesetToggle(refreshMeasureSnap);
 
 // Add CUZK base layers
 const zmLayer = createZmLayer();
