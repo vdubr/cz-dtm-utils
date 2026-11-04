@@ -14,13 +14,13 @@ import type { Extent } from 'ol/extent.js';
 import type Map from 'ol/Map.js';
 import type { ObjektovyTyp, ZaznamObjektu, Geometry, GmlPolygon } from 'jvf-parser';
 import {
-  getSymbology,
-  FALLBACK_COLORS,
-  DEFAULT_COLOR,
-  type ObjectSymbology,
-  type SymbolVariant,
-} from './symbology.js';
-import { VARIANT_ATTR } from './variantAttrMap.js';
+  KATALOG_DEFAULT_COLOR as DEFAULT_COLOR,
+  KATALOG_FALLBACK_COLORS as FALLBACK_COLORS,
+  parseKatalogLineStyle,
+  resolveKatalogLook,
+  resolveKatalogRepresentativeLook,
+  type KatalogLook,
+} from 'jvf-parser';
 import {
   resolveDialectLook,
   resolveDialectRepresentativeLook,
@@ -42,8 +42,8 @@ import {
 } from '../state/featureFilter.js';
 import { resolveProjectKey } from '../state/projects.js';
 
-// Re-export for consumers that previously imported LAYER_COLORS from here
-export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
+// Barvy obsahových částí (náhradní barva objektů mimo Katalog)
+export { KATALOG_FALLBACK_COLORS as LAYER_COLORS } from 'jvf-parser';
 
 /**
  * Barvy pro vizualizaci changeset záznamů podle `ZapisObjektu`:
@@ -133,38 +133,8 @@ function mmToPx(mm: number): number {
   return Math.max(1, mm * 3.78);
 }
 
-/**
- * Parse lineStyle string from catalog into dash pattern in mm.
- *
- * Examples:
- *   'plná'                            → undefined
- *   'čárkovaná 60,0 6,0 [68]'          → [60, 6]
- *   'čárkovaná 2,0 1,5 /\n3,5 7,0'     → [2, 1.5, 3.5, 7]
- *
- * CZ decimal comma is normalized to dot. The `[NN]` suffix (pattern number
- * from the catalog) is ignored. Forward slashes / newlines separate segments
- * but are flattened into a single dash array.
- */
-export function parseLineStyle(lineStyle: string | undefined): number[] | undefined {
-  if (!lineStyle) return undefined;
-  const trimmed = lineStyle.trim();
-  if (trimmed === 'plná' || trimmed === '') return undefined;
-  // Strip leading keyword ("čárkovaná") and trailing [NN]
-  const body = trimmed
-    .replace(/^čárkovaná\s+/i, '')
-    .replace(/\s*\[\d+\]\s*$/, '');
-  // Split on whitespace / slashes / newlines, keep numeric tokens
-  const tokens = body.split(/[\s/\n]+/).filter(Boolean);
-  const nums: number[] = [];
-  for (const t of tokens) {
-    const n = parseFloat(t.replace(',', '.'));
-    if (Number.isFinite(n) && n > 0) nums.push(n);
-  }
-  if (nums.length === 0) return undefined;
-  // OL requires even-length dash array (dash, gap, dash, gap, …)
-  if (nums.length % 2 === 1) nums.push(nums[nums.length - 1]!);
-  return nums;
-}
+/** Čárkování z popisu typu čáry Katalogu (mm papíru) — viz `parseKatalogLineStyle`. */
+export const parseLineStyle = parseKatalogLineStyle;
 
 /**
  * Convert dash pattern from mm (on paper at REFERENCE_SCALE) to px on screen
@@ -192,52 +162,20 @@ export interface ResolvedStyle {
 }
 
 /**
- * Merge base symbology + matching variant (if any) into a flat style source.
- * Variant fields override base fields only when defined.
+ * ResolvedStyle ze vzhledu Katalogu DTM ČR (`resolveKatalogLook` — podle typu
+ * geometrie a hodnot atributů). Plocha bez výplně (ochranná pásma, záměry)
+ * dostane jen průsvitný nádech barvy obrysu; linie a obrys bez barvy přebírá
+ * barvu výplně; objekt bez barvy náhradní barvu obsahové části.
  */
-function mergeSymbologyWithVariant(
-  base: ObjectSymbology,
-  variant: SymbolVariant | undefined,
-): {
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  lineStyle?: string;
-  pointSvg?: string;
-} {
-  return {
-    fillColor: variant?.fillColor ?? base.fillColor,
-    strokeColor: variant?.strokeColor ?? base.strokeColor,
-    strokeWidth: variant?.strokeWidth ?? base.strokeWidth,
-    lineStyle: variant?.lineStyle ?? base.lineStyle,
-    pointSvg: base.pointSvg,
-  };
-}
-
-/**
- * Build ResolvedStyle from merged symbology fields. Falls back to content-part
- * default color when catalog is silent. For lines & polygons: if strokeColor
- * is not set, fillColor is used as stroke (catalog convention — most line
- * entries carry their color in `fillColor`).
- */
-function buildResolvedStyle(
-  merged: ReturnType<typeof mergeSymbologyWithVariant>,
-  obsahovaCast: string,
-): ResolvedStyle {
+function buildKatalogResolvedStyle(look: KatalogLook, obsahovaCast: string): ResolvedStyle {
   const fallback = FALLBACK_COLORS[obsahovaCast] ?? DEFAULT_COLOR;
-  const primary = merged.fillColor ?? fallback;
-  const fill = merged.fillColor ?? fallback + '55';
-  // Pro linie / obrysy: když chybí strokeColor, použij fillColor (katalog
-  // u linií ukládá barvu do fillColor).
-  const stroke = merged.strokeColor ?? primary;
-  const width = merged.strokeWidth != null ? mmToPx(merged.strokeWidth) : 1.5;
-  const lineDashMm = parseLineStyle(merged.lineStyle);
+  const stroke = look.color ?? look.fill ?? fallback;
   return {
-    fillColor: fill,
+    fillColor: look.fill ?? stroke + '1a',
     strokeColor: stroke,
-    strokeWidthPx: width,
-    lineDashMm,
-    pointSvg: merged.pointSvg,
+    strokeWidthPx: look.widthMm != null ? mmToPx(look.widthMm) : 1.5,
+    ...(look.dashMm ? { lineDashMm: look.dashMm } : {}),
+    ...(look.svg ? { pointSvg: look.svg } : {}),
   };
 }
 
@@ -260,45 +198,34 @@ function buildDialectResolvedStyle(look: DialectLook): ResolvedStyle {
 }
 
 /**
- * Resolve style for an ObjektovyTyp from its codeBase (base style, no variant).
- * Exported so threeScene.ts can use the same logic.
+ * Resolve style for an ObjektovyTyp (vzhled objektu a geometrie, bez
+ * záznamu). Exported so threeScene.ts can use the same logic.
  */
 export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
   const dialect = resolveDialectLook(ot);
   if (dialect) return buildDialectResolvedStyle(dialect);
-  const sym = getSymbology(ot.codeBase);
-  if (sym) {
-    return buildResolvedStyle(mergeSymbologyWithVariant(sym, undefined), ot.obsahovaCast);
-  }
+  const look = resolveKatalogLook(ot);
+  if (look) return buildKatalogResolvedStyle(look, ot.obsahovaCast);
   const fallback = FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR;
   return { fillColor: fallback + '33', strokeColor: fallback, strokeWidthPx: 1.5 };
 }
 
 /**
  * Reprezentativní styl objektového typu pro base-only kontexty (legenda,
- * vrstvový panel). Když base symbologie nemá `fillColor` ani `strokeColor`,
- * ale barvu nese některá **varianta** (typicky trasy sítí), vezme se barva
- * z první varianty s barvou — aby swatch v legendě/panelu odpovídal tomu, jak
- * se prvek reálně vykreslí v mapě, místo jednotné fallback barvy obsahové
- * části. Objekty s barvou v base i objekty bez symbologie se chovají shodně
- * s {@link resolveStyle}.
+ * vrstvový panel). Když objekt nemá barvu v základu ani ve variantě
+ * geometrie, ale nese ji některá varianta atributu (typicky trasy sítí),
+ * vezme se z ní — aby swatch odpovídal tomu, jak se prvek reálně vykreslí.
  */
 export function resolveRepresentativeStyle(ot: ObjektovyTyp): ResolvedStyle {
   const dialect = resolveDialectRepresentativeLook(ot);
   if (dialect) return buildDialectResolvedStyle(dialect);
-  const sym = getSymbology(ot.codeBase);
-  if (!sym) return resolveStyle(ot);
-
-  let repVariant: SymbolVariant | undefined;
-  if (sym.fillColor == null && sym.strokeColor == null && sym.variants?.length) {
-    repVariant = sym.variants.find((v) => v.fillColor != null || v.strokeColor != null);
-  }
-  return buildResolvedStyle(mergeSymbologyWithVariant(sym, repVariant), ot.obsahovaCast);
+  const look = resolveKatalogRepresentativeLook(ot);
+  return look ? buildKatalogResolvedStyle(look, ot.obsahovaCast) : resolveStyle(ot);
 }
 
 /**
- * Resolve style for a single záznam, applying variant lookup based on
- * VARIANT_ATTR map. Falls back to base style when no variant matches.
+ * Styl záznamu: vzhled Katalogu podle typu geometrie objektu a hodnoty
+ * atributu (varianta pro bod nese značku, pro plochu obrys a výplň).
  */
 export function resolveStyleForZaznam(
   ot: ObjektovyTyp,
@@ -306,23 +233,8 @@ export function resolveStyleForZaznam(
 ): ResolvedStyle {
   const dialect = resolveDialectLook(ot, zaznam);
   if (dialect) return buildDialectResolvedStyle(dialect);
-  const sym = getSymbology(ot.codeBase);
-  if (!sym) return resolveStyle(ot);
-
-  const variantMap = VARIANT_ATTR[ot.codeBase];
-  let variant: SymbolVariant | undefined;
-  if (variantMap && sym.variants && sym.variants.length > 0) {
-    const raw = zaznam.attributes?.[variantMap.attrName];
-    if (raw !== undefined && raw !== null) {
-      const key = String(raw);
-      const idx = variantMap.valueToVariantIndex[key];
-      if (idx !== undefined && sym.variants[idx]) {
-        variant = sym.variants[idx];
-      }
-    }
-  }
-
-  return buildResolvedStyle(mergeSymbologyWithVariant(sym, variant), ot.obsahovaCast);
+  const look = resolveKatalogLook(ot, zaznam);
+  return look ? buildKatalogResolvedStyle(look, ot.obsahovaCast) : resolveStyle(ot);
 }
 
 /**

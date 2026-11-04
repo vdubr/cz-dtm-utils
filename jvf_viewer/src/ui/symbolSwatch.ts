@@ -46,7 +46,8 @@ export function buildStyleSwatch(s: ResolvedStyle, kind: SwatchKind): HTMLElemen
   if (kind === 'polygon') {
     const span = document.createElement('span');
     span.className = 'layer-symbol-polygon';
-    span.style.background = opaque(s.fillColor);
+    // Výplň i s průhledností — plocha jen obrysem (OP, záměry) má jen nádech.
+    span.style.background = s.fillColor;
     span.style.borderColor = opaque(s.strokeColor);
     return span;
   }

@@ -38,6 +38,29 @@ export {
   resolveRotationDeg,
 } from './styles/resolve.js';
 export type { Appearance, AttrRule, ObjectStyle, StyleTable } from './styles/types.js';
+
+// Katalog kartografických symbolů DTM ČR (ČÚZK) — vzhled čistého JVF DTM
+// podle typu geometrie a hodnot atributů (viewer i export do CAD).
+export {
+  SYMBOLOGY as KATALOG_SYMBOLOGY,
+  FALLBACK_COLORS as KATALOG_FALLBACK_COLORS,
+  DEFAULT_COLOR as KATALOG_DEFAULT_COLOR,
+} from './katalog/symbology.js';
+export type { ObjectSymbology, SymbolVariant } from './katalog/symbology.js';
+export { VARIANT_ATTR as KATALOG_VARIANT_ATTR } from './katalog/variantAttrMap.js';
+export {
+  getKatalogSymbology,
+  katalogGeomOf,
+  parseKatalogLineStyle,
+  resolveKatalogLook,
+  resolveKatalogRepresentativeLook,
+} from './katalog/resolve.js';
+export type { KatalogGeom, KatalogLook } from './katalog/resolve.js';
+export {
+  katalogSymbolId,
+  resolveKatalogAppearance,
+  resolveKatalogRepresentativeAppearance,
+} from './katalog/appearance.js';
 export { ZXML_STYLES } from './zxml-1.5.1.6/generated/styles.js';
 export {
   UDM_STYLES,

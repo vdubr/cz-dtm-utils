@@ -40,8 +40,8 @@ function buildSymbolEl(layer: JvfVectorLayer): HTMLElement {
       span.className = 'layer-symbol-polygon';
       // Strip alpha suffix for border color
       const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-      const fill = s.fillColor.length > 7 ? s.fillColor.slice(0, 7) : s.fillColor;
-      span.style.background = fill;
+      // Výplň i s průhledností — plocha jen obrysem (OP, záměry) má jen nádech.
+      span.style.background = s.fillColor;
       span.style.borderColor = stroke;
       return span;
     }

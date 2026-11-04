@@ -1,6 +1,17 @@
-// Auto-generated from Katalog kartografických symbolů DTM ČR v1.4.3
-// Source: ČÚZK - Značkový klíč objektů DTM ČR
-// Do not edit manually — regenerate from jvf_parser/scripts/extract_symbology.py
+// Původně vygenerováno z Katalogu kartografických symbolů DTM ČR v1.4.3
+// (ČÚZK – Značkový klíč objektů DTM ČR) skriptem extract_symbology.py, který
+// už v repozitáři není — data se udržují ručně. SVG značek jsou ve
+// jvf_viewer/public/symboly/ (kartografický balíček ČÚZK).
+//
+// Ruční opravy (2026-11-04):
+// - kódy 01000001{13,21,30,37,38,39,97} měly ztracenou úvodní nulu,
+// - opravené názvy SVG (TI_b_337 komora jiná / výusť, TI_b_131 šachta,
+//   TI_l_092 lávka/žlab), u přístavů jen značka pro 1:500, zrušen odkaz na
+//   neexistující TI_l_092 „podpovrchový kanál",
+// - drobná sakrální stavba (bod) má značku ZPS_b_154_st_sakr.svg,
+// - doplněné plošné značky `areaSvg` (ZPS_p_*_lab.svg) podle kódu v názvu.
+//
+// Vzhled podle geometrie a hodnot atributů řeší ./resolve.ts.
 
 export interface SymbolVariant {
   /** Attribute key (e.g. 'kategorie pozemní komunikace') */
@@ -35,6 +46,11 @@ export interface ObjectSymbology {
   pointSvg?: string;
   /** SVG filename for line symbol */
   lineSvg?: string;
+  /**
+   * Plošná značka (`*_p_*_lab.svg`) — kreslí se v definičním bodě plochy
+   * (les, zahrada, hřbitov, …). Doplněno ručně podle kódu v názvu souboru.
+   */
+  areaSvg?: string;
   /** Per-attribute-value style variants (e.g. road category) */
   variants?: SymbolVariant[];
 }
@@ -428,7 +444,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
         attrValue: 'bod',
         fillColor: '#0000ff',
         strokeWidth: 4.0,
-        lineSvg: 'DI_b_045_vod_cast_pristavu_500.svg, DI_b_045_vod_cast_pristavu_5000.svg',
+        lineSvg: 'DI_b_045_vod_cast_pristavu_500.svg',
       },
     ],
   },
@@ -582,6 +598,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'mostní váha',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_070_zps_pl_most_vaha_lab.svg',
     fillColor: "#f5f5f5",
     pointSvg: 'ZPS_db.svg',
   },
@@ -590,6 +607,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'nádrž, zdrž se vzdouvacím objektem',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_072_vod_nadrz_se_vzdouv_obj_lab.svg',
     fillColor: "#e6f6ff",
     pointSvg: 'ZPS_db.svg',
   },
@@ -666,6 +684,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'suchá nádrž',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_087_zps_pl_such_nadrz_lab.svg',
     fillColor: '#e6e6e6',
     pointSvg: 'ZPS_db.svg',
   },
@@ -712,14 +731,13 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
         attrValue: 'technický podpovrchový kanál',
         strokeWidth: 0.13,
         lineStyle: 'čárkovaná 36,0 8,0 [46]',
-        lineSvg: 'TI_l_092_sdil_st_ti_tech_kanal_podpovrch_kanal.svg',
       },
       {
         attrKey: 'typ technického kanálu',
         attrValue: 'kabelová lávka / žlab',
         strokeWidth: 0.13,
         lineStyle: 'čárkovaná 36,0 8,0 [46]',
-        lineSvg: 'TI_l_092_sdil_st_ti_tech_kanal_lavka_zlab.svg',
+        lineSvg: 'TI_l_092_sdil_st_ti_tech_kanal_zlab.svg',
       },
       {
         attrKey: 'typ technického kanálu',
@@ -1519,7 +1537,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
         attrValue: 'šachta',
         fillColor: '#ff7d00',
         strokeWidth: 2.0,
-        lineSvg: 'TI_b_131_teplo_zar_tepl_sacht.svg',
+        lineSvg: 'TI_b_131_teplo_zar_tepl_sach.svg',
       },
       {
         attrKey: 'typ zařízení teplovodní sítě',
@@ -1672,6 +1690,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'důl, lom',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_140_zps_pl_dul_lom_lab.svg',
     fillColor: "#ded6cc",
     pointSvg: 'ZPS_db.svg',
   },
@@ -1784,16 +1803,18 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'drobná sakrální stavba',
     containsPart: 'ZPS',
     geometryType: 'bod',
+    areaSvg: 'ZPS_p_154_zps_pl_dr_sakr_st_lab.svg',
     fillColor: '#000000',
     strokeColor: '#d2d2d2',
     strokeWidth: 3.0,
-    pointSvg: 'ZPS_db.svg',
+    pointSvg: 'ZPS_b_154_st_sakr.svg',
   },
   '0100000157': {
     code: '0100000157',
     objectType: 'hřbitov',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_157_zps_pl_hrbitov_lab.svg',
     fillColor: "#d2d4bc",
     pointSvg: 'ZPS_db.svg',
   },
@@ -1986,6 +2007,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'komín',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_177_zps_pl_kom_lab.svg',
     fillColor: '#d2d2d2',
     strokeColor: '#000000',
     strokeWidth: 0.5,
@@ -2186,6 +2208,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'jezero',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_205_zps_pl_jezero_lab.svg',
     fillColor: '#d9f2ff',
     pointSvg: 'ZPS_db.svg',
   },
@@ -2233,6 +2256,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'zahrada',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_209_zps_pl_zahr_lab.svg',
     fillColor: "#f9fcf5",
     pointSvg: 'ZPS_db.svg',
   },
@@ -2241,6 +2265,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'les',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_211_zps_pl_les_lab.svg',
     fillColor: "#d3e0bc",
     pointSvg: 'ZPS_db.svg',
   },
@@ -2249,6 +2274,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'hospodářsky nevyužívaná plocha',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_213_zps_pl_hosp_nevyuz_pl_lab.svg',
     fillColor: "#ffffff",
     pointSvg: 'ZPS_db.svg',
   },
@@ -2754,7 +2780,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
         attrValue: 'bod',
         fillColor: '#000000',
         strokeWidth: 4.0,
-        lineSvg: 'DI_b_325_pozem_cast_pristavu_500.svg, DI_b_325_pozem_cast_pristavu_5000.svg',
+        lineSvg: 'DI_b_325_pozem_cast_pristavu_500.svg',
       },
     ],
   },
@@ -2798,6 +2824,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     objectType: 'nádrž, zdrž bez vzdouvacího objektu',
     containsPart: 'ZPS',
     geometryType: 'plocha',
+    areaSvg: 'ZPS_p_330_vod_nadrz_bez_vzdouv_obj_lab.svg',
     fillColor: "#e6f6ff",
     pointSvg: 'ZPS_db.svg',
   },
@@ -2999,7 +3026,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
         strokeColor: '#915904',
         strokeWidth: 0.13,
         lineStyle: 'plná',
-        lineSvg: 'TI_b_337_kan_tech_obj_kom_jina.svg',
+        lineSvg: 'TI_b_337_stok_sit_obj_kom_jina.svg',
       },
       {
         attrKey: 'typ objektu stokové sítě',
@@ -3008,7 +3035,7 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
         strokeColor: '#915904',
         strokeWidth: 0.13,
         lineStyle: 'plná',
-        lineSvg: 'TI_b_337_kan_tech_obj_vyust.svg',
+        lineSvg: 'TI_b_337_stok_sit_obj_vyust.svg',
       },
       {
         attrKey: 'typ objektu stokové sítě',
@@ -3799,8 +3826,8 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
     lineStyle: 'plná',
     strokeWidth: 0.18,
   },
-  '100000113': {
-    code: '100000113',
+  '0100000113': {
+    code: '0100000113',
     objectType: 'trasa vodovodní sítě',
     containsPart: 'TI',
     geometryType: 'linie',
@@ -3837,8 +3864,8 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
       },
     ],
   },
-  '100000121': {
-    code: '100000121',
+  '0100000121': {
+    code: '0100000121',
     objectType: 'trasa stokové sítě',
     containsPart: 'TI',
     geometryType: 'linie',
@@ -4019,8 +4046,8 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
       },
     ],
   },
-  '100000130': {
-    code: '100000130',
+  '0100000130': {
+    code: '0100000130',
     objectType: 'trasa teplovodní sítě',
     containsPart: 'TI',
     geometryType: 'linie',
@@ -4119,8 +4146,8 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
       },
     ],
   },
-  '100000137': {
-    code: '100000137',
+  '0100000137': {
+    code: '0100000137',
     objectType: 'trasa protikorozní ochrany',
     containsPart: 'TI',
     geometryType: 'linie',
@@ -4182,8 +4209,8 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
       },
     ],
   },
-  '100000138': {
-    code: '100000138',
+  '0100000138': {
+    code: '0100000138',
     objectType: 'zařízení protikorozní ochrany',
     containsPart: 'TI',
     geometryType: 'bod',
@@ -4245,8 +4272,8 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
       },
     ],
   },
-  '100000139': {
-    code: '100000139',
+  '0100000139': {
+    code: '0100000139',
     objectType: 'jiné zařízení staveb TI',
     containsPart: 'TI',
     geometryType: 'bod',
@@ -4281,8 +4308,8 @@ export const SYMBOLOGY: Record<string, ObjectSymbology> = {
       },
     ],
   },
-  '100000197': {
-    code: '100000197',
+  '0100000197': {
+    code: '0100000197',
     objectType: 'podzemní objekt ZPS',
     containsPart: 'ZPS',
     geometryType: 'plocha',
