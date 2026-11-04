@@ -216,17 +216,18 @@ const INFO_CONTENT_HTML = `
       výchozím stavu vypnuté.
     </li>
     <li>
-      <strong>Export do CAD</strong> (v režimech UDM a JŽM) — tlačítko
-      v hlavičce vyexportuje načtený projekt do <strong>AutoCAD DXF</strong>
-      ve vzhledu datového modelu: hladiny podle objektových typů (barva,
-      tloušťka, typ čáry), symboly jako bloky (UDM z knihovny ČKZ, ŽXML
+      <strong>Export do CAD</strong> (ve všech režimech — JVF, UDM i JŽM)
+      — tlačítko v hlavičce vyexportuje načtený projekt do
+      <strong>AutoCAD DXF</strong> ve vzhledu datového modelu: hladiny podle
+      objektových typů (barva, tloušťka, typ čáry), symboly jako bloky (JVF
+      a UDM z knihovny ČKZ, ŽXML
       znaky SŽ natočené podle atributu <code>Natoceni</code>), popisy
       a názvy jako texty (výšky dle UDM pro 1:500) a atributy objektů
       v XDATA „UDM" (v AutoCADu příkaz
-      <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy UDM
+      <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy
       přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
       a 2D výkres. Souřadnice zůstávají v EPSG:5514. Typy čar mají
-      čárkování dle vzorníku UDM (bez vložených značek).
+      čárkování dle vzorníku ČKZ (bez vložených značek).
       <strong>DWG</strong> získáte tak, že DXF otevřete
       v AutoCADu a uložíte jako DWG. Export běží lokálně v prohlížeči.
     </li>
@@ -412,7 +413,8 @@ const INFO_CONTENT_HTML = `
     symbologie dle Katalogu ČÚZK). Režim <strong>UDM</strong> přidává
     symbologii UDM, režim <strong>JŽM</strong> (Jednotná železniční mapa)
     data ŽXML Správy železnic se znaky SŽ; oba mají vlastní ukázkové
-    soubory, <em>Export do CAD</em> a <em>Legendu znaků</em>. Přepnutí zavře
+    soubory a <em>Legendu znaků</em> (<em>Export do CAD</em> je ve všech
+    režimech). Přepnutí zavře
     načtené soubory (při načtených datech se aplikace nejdřív zeptá).
     Načtete-li soubor jiného modelu (např. ŽXML v režimu JVF), aplikace
     nabídne přepnutí — bez něj se soubor nenačte. Režim je v adrese stránky

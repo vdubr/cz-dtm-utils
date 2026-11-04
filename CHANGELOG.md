@@ -9,6 +9,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Export do CAD i v režimu JVF** — tlačítko Export do CAD (AutoCAD DXF)
+  je nově i v režimu JVF; objekty JVF DTM se kreslí symbologií knihovny
+  ČKZ (stejně jako UDM): hladiny podle objektových typů, symboly jako
+  bloky, atributy v XDATA.
 - **Vlastník parcely** — se zapnutým překryvem katastru tlačítko vedle
   měření: klik do mapy (2D i 3D) zjistí parcelu (WMS GetFeatureInfo ČÚZK —
   katastrální území, parcelní číslo, výměra, odkaz do VDP), zvýrazní

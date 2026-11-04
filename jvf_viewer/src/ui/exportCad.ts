@@ -1,5 +1,6 @@
 /**
- * Export načteného projektu do AutoCADu (DXF) ve vzhledu UDM.
+ * Export načteného projektu do AutoCADu (DXF) ve vzhledu datového modelu
+ * (JVF DTM a UDM symbologií knihovny ČKZ, ŽXML znaky SŽ).
  *
  * Dialog (přes `showConfirm`): výběr projektu, verze DXF a voleb; po potvrzení
  * se líně načte balíček `jvf-cad` (export není potřeba při běžném prohlížení)
@@ -29,7 +30,7 @@ function bodyHtml(projects: readonly JvfProject[]): string {
       <fieldset class="cad-row">
         <legend>Formát</legend>
         <label><input type="radio" name="cad-format" value="R2013" checked>
-          DXF (AutoCAD 2013+) — barvy UDM přesně (true color)</label>
+          DXF (AutoCAD 2013+) — barvy přesně (true color)</label>
         <label><input type="radio" name="cad-format" value="R2000">
           DXF R2000 — pro starší CAD, barvy zaokrouhlené na paletu AutoCADu</label>
       </fieldset>
@@ -42,10 +43,11 @@ function bodyHtml(projects: readonly JvfProject[]): string {
       <label class="cad-row"><input type="checkbox" id="cad-flat">
         Výkres ve 2D (výšky Z = 0)</label>
       <p class="cad-note">
-        Hladiny podle objektových typů, symboly UDM jako bloky, popisy jako texty,
-        atributy objektů v XDATA „UDM" (AutoCAD: <code>XDLIST</code>).
+        Hladiny podle objektových typů, symboly jako bloky (JVF a UDM
+        z knihovny ČKZ, ŽXML znaky SŽ), popisy jako texty, atributy objektů
+        v XDATA „UDM" (AutoCAD: <code>XDLIST</code>).
         Souřadnice EPSG:5514, měřítko symbolů a textů 1:500.
-        Typy čar mají čárkování dle vzorníku UDM; značky vložené do čar
+        Typy čar mají čárkování dle vzorníku ČKZ; značky vložené do čar
         (ploty, sítě TI) se nekreslí.
       </p>
     </div>`;

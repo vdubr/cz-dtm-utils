@@ -201,9 +201,27 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('#toggle-show-inserted')).toBeChecked();
   });
 
-  test('Export do CAD (jen režim UDM) stáhne DXF ve vzhledu UDM', async ({ page }) => {
-    // V režimu JVF tlačítko není, v UDM je (bez dat zakázané).
-    await expect(page.locator('#btn-export-cad')).toBeHidden();
+  test('Export do CAD v režimu JVF stáhne DXF se symbologií ČKZ', async ({ page }) => {
+    // Tlačítko je i v režimu JVF (bez dat zakázané).
+    await expect(page.locator('#btn-export-cad')).toBeVisible();
+    await expect(page.locator('#btn-export-cad')).toBeDisabled();
+    await page.setInputFiles('#file-input', fixturePath('ukazka_ZPS.xml'));
+    await expect(page.locator('#btn-export-cad')).toBeEnabled();
+
+    await page.locator('#btn-export-cad').click();
+    await expect(page.locator('#confirm-modal-title')).toHaveText(/Export do CAD/);
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('ukazka_ZPS.dxf');
+    const { readFile } = await import('node:fs/promises');
+    const dxf = await readFile((await download.path())!, 'utf-8');
+    expect(dxf).toContain('AC1027');
+    expect(dxf).toContain('ZPS_HraniceBudovy');
+    expect(dxf).toContain('ZPS_PodrobnyBodZPS');
+  });
+
+  test('Export do CAD v režimu UDM stáhne DXF ve vzhledu UDM', async ({ page }) => {
     await switchMode(page, 'udm');
     await expect(page.locator('#btn-export-cad')).toBeVisible();
     await expect(page.locator('#btn-export-cad')).toBeDisabled();
