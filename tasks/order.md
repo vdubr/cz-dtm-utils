@@ -15,6 +15,7 @@ commitne. Po dokončení celého zadání pushne do `develop`.
 | 3 | **pripnuta-hlavicka-kategorie** — přišpendlená (sticky) hlavička kategorie v panelu „Přehled prvků" při scrollování | ✅ DONE | [`pripnuta-hlavicka-kategorie/README.md`](./pripnuta-hlavicka-kategorie/README.md) · [úkoly](./pripnuta-hlavicka-kategorie/TASKS.md) |
 | 4 | **klik-v-mape-otevre-panel** — klik na prvek v mapě (2D i 3D) automaticky otevře „Přehled prvků" a prvek vybere (dnes funguje jen při už otevřeném panelu) | ✅ DONE | [`klik-v-mape-otevre-panel/README.md`](./klik-v-mape-otevre-panel/README.md) · [úkoly](./klik-v-mape-otevre-panel/TASKS.md) |
 | 5 | **barvy-siti-legenda** — soulad barev sítí v legendě/panelu s mapou (reprezentativní barva z variant), oprava 27 poškozených výplní (RGB→fillColor), audit vs. Katalog DTM (kanalizace vs. teplovod) | ✅ DONE | [README](./barvy-siti-legenda/README.md) · [úkoly](./barvy-siti-legenda/TASKS.md) |
+| 6 | **ux-redesign-panelu** — poznámky k UX: redesign tabulky a rozbalování kategorií, levý panel rozdělený na Vrstvy / Data, výraznější rozlišení režimů JVF / UDM / JŽM, minimalizace přepínačů a posuvníků (před implementací upřesnit) | ⬜ TODO | [README](./ux-redesign-panelu/README.md) · [úkoly](./ux-redesign-panelu/TASKS.md) |
 
 ## Legenda stavů
 - ⬜ **TODO** — nezačato
