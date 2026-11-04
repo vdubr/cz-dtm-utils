@@ -417,6 +417,8 @@ test.describe('Sekce Projekty', () => {
   });
 
   test('sekce Projekty neroztlačuje panel — vrstvy jdou hned pod ni', async ({ page }) => {
+    // Okno 900 px: nad Projekty jsou i sbalené sekce překryvů (DTM, katastr).
+    await page.setViewportSize({ width: 1280, height: 900 });
     await loadSample(page, 'ukazka_DI.xml');
 
     const projectsBox = await page.locator('#projects-section').boundingBox();
@@ -427,9 +429,7 @@ test.describe('Sekce Projekty', () => {
     // Projekty se drží u obsahu (1 řádek + hlavička) — ne polovina panelu;
     // veškerý volný prostor si bere sekce JVF vrstev.
     expect(projectsBox!.height).toBeLessThan(120);
-    // Nad Projekty je i sekce DTM ČR (sbalená = řádek s přepínačem), takže
-    // v okně 720 px zbývá vrstvám JVF o něco méně — stále ale většina místa.
-    expect(jvfBox!.height).toBeGreaterThan(projectsBox!.height * 1.5);
+    expect(jvfBox!.height).toBeGreaterThan(projectsBox!.height * 2);
 
     // Vrstvy začínají těsně pod sekcí Projekty (žádná velká mezera).
     const gap = jvfBox!.y - (projectsBox!.y + projectsBox!.height);
@@ -1141,7 +1141,7 @@ test.describe('Modály a ovládání', () => {
       const d = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug;
       return d.olMap.getLayers().getArray()
         .filter((l) => String(l.get('name')).startsWith('dtm:') && l.getVisible())
-        .map((l) => `${String(l.get('name')).slice(4)}|${l.get('dtmMode')}`);
+        .map((l) => `${String(l.get('name')).slice(4)}|${l.get('overlayMode')}`);
     });
 
     await expect(page.locator('#dtm-body')).toBeHidden();
@@ -1164,23 +1164,74 @@ test.describe('Modály a ovládání', () => {
     expect(z.jvf).toBeGreaterThan(z.dtmMax);
 
     // Odškrtnutí podvrstvy → služba přes WMS s LAYERS bez ní, skupina „částečně".
-    const group = page.locator('[data-dtm-service="dtm_zps_linie_body"]');
-    await group.locator('.dtm-expand').click();
-    await page.locator('[data-dtm-sub="dtm_zps_linie_body:teren_hrana"]').uncheck();
-    await expect(page.locator('[data-dtm-count="dtm_zps_linie_body"]')).toHaveText('11/12');
-    expect(await page.locator('[data-dtm-service-check="dtm_zps_linie_body"]').evaluate((el) => (el as HTMLInputElement).indeterminate)).toBe(true);
+    const group = page.locator('[data-overlay-service="dtm_zps_linie_body"]');
+    await group.locator('.overlay-expand').click();
+    await page.locator('[data-overlay-sub="dtm_zps_linie_body:teren_hrana"]').uncheck();
+    await expect(page.locator('[data-overlay-count="dtm_zps_linie_body"]')).toHaveText('11/12');
+    expect(await page.locator('[data-overlay-service-check="dtm_zps_linie_body"]').evaluate((el) => (el as HTMLInputElement).indeterminate)).toBe(true);
     expect(await visibleDtm()).toContain('dtm_zps_linie_body|wms');
     await expect.poll(() => reqs.some((u) => u.includes('/api/wms/dtm_zps_linie_body')
       && u.includes('LAYERS=bud,prisl_st') && !u.includes('teren_hrana') && u.includes('CRS=EPSG:5514'))).toBe(true);
 
     // Zrušit vše → nic; Vybrat vše → zpět; vypnutí → nic.
-    await page.locator('[data-dtm-all="0"]').click();
+    await page.locator('#overlay-dtm [data-overlay-all="0"]').click();
     expect(await visibleDtm()).toEqual([]);
-    await page.locator('[data-dtm-all="1"]').click();
+    await page.locator('#overlay-dtm [data-overlay-all="1"]').click();
     expect(await visibleDtm()).toHaveLength(5);
     await page.locator('#toggle-dtm').uncheck();
     expect(await visibleDtm()).toEqual([]);
     await expect(page.locator('#dtm-body')).toBeHidden();
+  });
+
+  test('katastr: překryv přes WMS, ve světlém motivu černé vrstvy, v tmavém bílé (inverzní)', async ({ page }) => {
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    const reqs: string[] = [];
+    await page.route('**/services.cuzk.gov.cz/wms/**', (route) => {
+      reqs.push(decodeURIComponent(route.request().url()));
+      void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } });
+    });
+    // Katastr se kreslí do 1 : 5 000 → přiblížit (ukázka ZPS je v Praze).
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      d.olMap.getView().setResolution(0.5);
+    });
+    const knVisible = () => page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      return d.olMap.getLayers().getArray()
+        .filter((l) => l.get('name') === 'kn:kn' && l.getVisible())
+        .map((l) => String(l.get('overlayMode')));
+    });
+    const lastLayers = () => {
+      const u = [...reqs].reverse().find((x) => x.includes('REQUEST=GetMap'));
+      return /LAYERS=([^&]*)/.exec(u ?? '')?.[1] ?? '';
+    };
+
+    await page.locator('#toggle-kn').check();
+    await expect(page.locator('#kn-body')).toBeVisible();
+    expect(await knVisible()).toEqual(['wms']);
+    await expect.poll(lastLayers).toBe('hranice_parcel,parcelni_cisla,obrazy_parcel,dalsi_p_mapy,RST_KMD,RST_KN,omp');
+
+    // Tmavý motiv → inverzní (bílé) varianty.
+    await page.locator('#btn-theme').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect.poll(lastLayers).toBe('hranice_parcel_i,parcelni_cisla_i,obrazy_parcel_i,dalsi_p_mapy_i,RST_KMD_I,RST_KN_I,omp_i');
+
+    // Odškrtnout parcelní čísla → vrstva zmizí z LAYERS.
+    await page.locator('[data-overlay-sub="kn:parcelni_cisla"]').uncheck();
+    await expect.poll(lastLayers).toBe('hranice_parcel_i,obrazy_parcel_i,dalsi_p_mapy_i,RST_KMD_I,RST_KN_I,omp_i');
+
+    // Katastr je nad DTM a pod daty JVF.
+    const z = await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      const by = (n: string) => d.olMap.getLayers().getArray().find((l) => String(l.get('name')).startsWith(n))!.getZIndex() ?? 0;
+      return { kn: by('kn:'), dtm: by('dtm:') };
+    });
+    expect(z.kn).toBeGreaterThan(z.dtm);
+    expect(z.kn).toBeLessThan(10);
+
+    await page.locator('#toggle-kn').uncheck();
+    expect(await knVisible()).toEqual([]);
   });
 
   test('DTM ČR ve 3D: přehoz přes terén (WMS GetMap na bbox terénu)', async ({ page }) => {
@@ -1203,6 +1254,17 @@ test.describe('Modály a ovládání', () => {
     // Jedno GetMap na službu, všechny na stejný bbox terénu.
     const bboxes = new Set(wms.map((u) => /BBOX=([^&]+)/.exec(u)?.[1]));
     expect(bboxes.size).toBeGreaterThanOrEqual(1);
+  });
+
+  test('posuvník sytosti podkladu jde až na 0 (podklad úplně průhledný)', async ({ page }) => {
+    const slider = page.locator('#basemap-opacity');
+    await expect(slider).toHaveAttribute('min', '0');
+    await slider.fill('0');
+    const opacity = await page.evaluate(() => {
+      const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
+      return d.olMap.getLayers().getArray().find((l) => l.get('name') === 'zm')!.getOpacity();
+    });
+    expect(opacity).toBe(0);
   });
 
   test('přepínání podkladových map přepíná aktivní tlačítko', async ({ page }) => {

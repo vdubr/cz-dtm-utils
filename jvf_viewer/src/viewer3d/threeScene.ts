@@ -31,10 +31,10 @@ import {
   loadTerrainTexture,
   clearBasemapTextureCache,
   type BasemapKind,
-  type DtmTextureLayer,
+  type OverlayTextureLayer,
 } from './basemapTexture.js';
-import { DTM_SERVICES } from '../map/dtmCatalog.js';
-import { getDtmOpacity, getDtmSelection, isDtmEnabled } from '../state/dtmOverlay.js';
+import { themedLayerNames } from '../map/overlayCatalog.js';
+import { getOverlayStates } from '../state/overlays.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
@@ -307,9 +307,10 @@ export function setThreeBackground(color: string): void {
     (state.grid.material as THREE.Material).dispose();
     state.grid = createGrid(color);
     state.scene.add(state.grid);
-    // DTM bez podkladu se kreslí přes pozadí motivu → přeskládat texturu.
-    if (currentBasemap === 'none' && dtmTextureLayers().length > 0) {
-      void applyCurrentBasemap().catch((err) => console.error('[dtm] přehoz na terén selhal', err));
+    // Překryvy: pozadí motivu pod nimi (bez podkladu) a varianty vrstev
+    // pro tmavý motiv (bílý katastr) → přeskládat texturu.
+    if (overlayTextureLayers().length > 0) {
+      void applyCurrentBasemap().catch((err) => console.error('[překryv] přehoz na terén selhal', err));
     }
   }
 }
@@ -1163,7 +1164,7 @@ async function ensureTerrainLoaded(): Promise<void> {
   }
   // Byl-li zvolen podklad, aplikuj ho na nové meshe. Fire-and-forget:
   // selhání podkladu nesmí rozbít terén ani scénu.
-  if (currentBasemap !== 'none' || dtmTextureLayers().length > 0) {
+  if (currentBasemap !== 'none' || overlayTextureLayers().length > 0) {
     void applyCurrentBasemap().catch((err) => {
       console.error('[basemap] načtení podkladu selhalo', err);
     });
@@ -1200,18 +1201,17 @@ export async function setBasemap(kind: BasemapKind | 'none'): Promise<void> {
 async function applyCurrentBasemap(): Promise<void> {
   const reqId = ++basemapRequestId;
   if (!state || state.terrainMeshes.length === 0) return;
-  const dtm = dtmTextureLayers();
-  if (currentBasemap === 'none' && dtm.length === 0) {
+  const overlays = overlayTextureLayers();
+  if (currentBasemap === 'none' && overlays.length === 0) {
     for (const mesh of state.terrainMeshes) removeBasemapFromTerrain(mesh);
     return;
   }
   const request = {
     basemap: currentBasemap,
-    dtm,
-    dtmOpacity: getDtmOpacity(),
+    overlays,
     background: currentBackground,
   };
-  // Bez podkladu (jen DTM přes pozadí) plná sytost textury.
+  // Bez podkladu (jen překryvy přes pozadí) plná sytost textury.
   const opacity = currentBasemap === 'none' ? 1 : basemapOpacity;
   await Promise.all(
     state.terrainMeshes.map(async (mesh) => {
@@ -1228,17 +1228,26 @@ async function applyCurrentBasemap(): Promise<void> {
   );
 }
 
-/** Vybrané služby DTM pro přehoz na terén (prázdné = překryv vypnutý). */
-function dtmTextureLayers(): DtmTextureLayer[] {
-  if (!isDtmEnabled()) return [];
-  return DTM_SERVICES
-    .map((s) => ({ serviceId: s.id, layers: getDtmSelection(s.id) }))
-    .filter((l) => l.layers.length > 0);
+/**
+ * Vybrané služby zapnutých překryvů (DTM ČR, katastr) pro přehoz na terén,
+ * v pořadí vykreslování; vrstvy už podle motivu (bílý katastr v tmavém).
+ */
+function overlayTextureLayers(): OverlayTextureLayer[] {
+  const out: OverlayTextureLayer[] = [];
+  for (const state of getOverlayStates()) {
+    if (!state.isEnabled()) continue;
+    for (const svc of state.def.services) {
+      const names = state.getSelection(svc.id);
+      if (names.length === 0) continue;
+      out.push({ url: svc.wmsUrl, layers: themedLayerNames(svc, names), opacity: state.getOpacity() });
+    }
+  }
+  return out;
 }
 
 /**
- * Přeskládá texturu terénu po změně překryvu DTM (zapnutí, výběr, sytost).
- * Bez načteného terénu nic nedělá — DTM se nanese po jeho načtení.
+ * Přeskládá texturu terénu po změně překryvu (zapnutí, výběr, sytost).
+ * Bez načteného terénu nic nedělá — překryvy se nanesou po jeho načtení.
  */
 export async function refreshTerrainTexture(): Promise<void> {
   await applyCurrentBasemap();

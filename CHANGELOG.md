@@ -9,6 +9,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
+- **Překryvná vrstva katastru nemovitostí** — stejně jako DTM ČR: WMS ČÚZK
+  s výběrem všech nebo jednotlivých vrstev (hranice parcel, parcelní čísla,
+  obrazy parcel, další prvky mapy, KM-D, analogové mapy, orientační mapa
+  parcel) a vlastní sytostí; ve světlém motivu černý, v tmavém bílý
+  (inverzní vrstvy ČÚZK), nad DTM a pod daty JVF, ve 3D přehoz přes terén.
 - **Překryvná vrstva DTM ČR** — v panelu vrstev pod podkladovými mapami:
   Digitální technická mapa ČR ze služeb ČÚZK (IS DMVS, veřejné, bez
   přihlášení) jako volitelný rastrový překryv nad podkladem a pod daty JVF.
@@ -90,6 +95,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Sytost podkladu a překryvů od 0** — posuvníky jdou až na nulu, podklad
+  lze udělat úplně průhledný (dřív minimum 10 %).
 - **Projekt v panelu: oko a zeměkoule** — oko u projektu skryje / zobrazí
   všechny jeho prvky ve 2D, 3D i v Přehledu prvků (skrytý projekt je
   ztlumený); zeměkoule nahradila ikonu „i" a přiblíží pohled na rozsah

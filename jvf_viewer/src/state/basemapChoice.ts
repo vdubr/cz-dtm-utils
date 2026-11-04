@@ -11,7 +11,7 @@ export type BasemapChoice = 'none' | 'zm' | 'ortofoto';
 
 /** Default odpovídá výchozímu aktivnímu tlačítku v index.html. */
 let choice: BasemapChoice = 'zm';
-/** Průhlednost podkladu 0,1–1; default 1 = beze změny vzhledu 2D mapy. */
+/** Průhlednost podkladu 0–1 (0 = podklad úplně průhledný); default 1. */
 let opacity = 1;
 
 type Listener = () => void;
@@ -36,7 +36,7 @@ export function getBasemapChoiceOpacity(): number {
 }
 
 export function setBasemapChoiceOpacity(value: number): void {
-  const clamped = Math.min(1, Math.max(0.1, value));
+  const clamped = Math.min(1, Math.max(0, value));
   if (opacity === clamped) return;
   opacity = clamped;
   notify();

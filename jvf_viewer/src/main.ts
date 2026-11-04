@@ -9,8 +9,9 @@ import { setActiveVersion } from './state/activeVersion.js';
 import { setupAppModeSwitch } from './ui/appModeSwitch.js';
 import { createOlMap } from './map/olMap.js';
 import { createZmLayer, createOrtofotoLayer, setupBaseLayerSwitcher } from './map/cuzk.js';
-import { setupDtmOverlay } from './map/dtmOverlay.js';
-import { setupDtmPanel, setDtmLoading } from './ui/dtmPanel.js';
+import { setupOverlayLayers } from './map/overlayLayers.js';
+import { setupOverlayPanel, setOverlayLoading } from './ui/overlayPanel.js';
+import { getOverlayStates } from './state/overlays.js';
 import {
   buildJvfLayers,
   addJvfLayersToMap,
@@ -162,9 +163,11 @@ subscribeChangesetToggle(refreshMeasureSnap);
 const zmLayer = createZmLayer();
 const ortofotoLayer = createOrtofotoLayer();
 setupBaseLayerSwitcher(olMap, zmLayer, ortofotoLayer);
-// Překryvná vrstva DTM ČR (služby ČÚZK) — nad podkladem, pod daty JVF.
-setupDtmOverlay(olMap, setDtmLoading);
-setupDtmPanel();
+// Překryvné vrstvy ČÚZK (DTM ČR, katastr) — nad podkladem, pod daty JVF.
+for (const overlay of getOverlayStates()) {
+  setupOverlayLayers(olMap, overlay, (loading) => setOverlayLoading(overlay.def.id, loading));
+  setupOverlayPanel(overlay);
+}
 
 // Setup 3D toggle — getObjekty returns current loaded data (union všech projektů)
 setup3dToggle(olMap, () => currentObjekty);

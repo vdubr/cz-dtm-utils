@@ -18,7 +18,6 @@
  */
 import * as THREE from 'three';
 import { CUZK_TILE_ORIGIN, CUZK_RESOLUTIONS } from '../map/cuzk.js';
-import { DTM_WMS_BASE } from '../map/dtmCatalog.js';
 import type { BBox } from './terrain.js';
 
 /** Dostupné podkladové vrstvy — shodné s 2D (`map/cuzk.ts`). */
@@ -174,35 +173,39 @@ export function clearBasemapTextureCache(): void {
   for (const tex of textureCache.values()) tex.dispose();
   textureCache.clear();
   inflight.clear();
-  dtmImageCache.clear();
+  overlayImageCache.clear();
 }
 
-// ── Překryv DTM ČR na terénu ──────────────────────────────────────────────────
+// ── Překryvy (DTM ČR, katastr) na terénu ──────────────────────────────────────
 
-/** Vybrané podvrstvy jedné služby DTM (viz map/dtmCatalog.ts). */
-export interface DtmTextureLayer {
-  serviceId: string;
+/** Jedna služba překryvu pro texturu terénu (viz map/overlayCatalog.ts). */
+export interface OverlayTextureLayer {
+  /** WMS 1.3.0 endpoint služby. */
+  url: string;
+  /** Hodnota LAYERS (už podle motivu). */
   layers: string[];
+  /** Sytost překryvu 0–1. */
+  opacity: number;
 }
 
 export interface TerrainTextureRequest {
   basemap: BasemapKind | 'none';
-  dtm: DtmTextureLayer[];
-  dtmOpacity: number;
+  /** Služby překryvů v pořadí vykreslování. */
+  overlays: OverlayTextureLayer[];
   /** Pozadí bez podkladu (bílá / černá podle motivu). */
   background: string;
 }
 
 /**
- * Obrázky WMS DTM na bbox (cache: stejný výřez a výběr se nestahuje znovu,
- * změna sytosti jen přeskládá canvas).
+ * Obrázky WMS překryvů na bbox (cache: stejný výřez a výběr se nestahuje
+ * znovu, změna sytosti jen přeskládá canvas).
  */
-const dtmImageCache = new Map<string, Promise<HTMLImageElement | null>>();
+const overlayImageCache = new Map<string, Promise<HTMLImageElement | null>>();
 
-function loadDtmImage(bbox: BBox, width: number, height: number, layer: DtmTextureLayer): Promise<HTMLImageElement | null> {
+function loadOverlayImage(bbox: BBox, width: number, height: number, layer: OverlayTextureLayer): Promise<HTMLImageElement | null> {
   const r = (n: number): string => n.toFixed(2);
-  const key = `${layer.serviceId}|${layer.layers.join(',')}|${r(bbox.minX)},${r(bbox.minY)},${r(bbox.maxX)},${r(bbox.maxY)}|${width}x${height}`;
-  let p = dtmImageCache.get(key);
+  const key = `${layer.url}|${layer.layers.join(',')}|${r(bbox.minX)},${r(bbox.minY)},${r(bbox.maxX)},${r(bbox.maxY)}|${width}x${height}`;
+  let p = overlayImageCache.get(key);
   if (!p) {
     const params = new URLSearchParams({
       SERVICE: 'WMS',
@@ -217,8 +220,8 @@ function loadDtmImage(bbox: BBox, width: number, height: number, layer: DtmTextu
       FORMAT: 'image/png',
       TRANSPARENT: 'true',
     });
-    p = loadTileImage(`${DTM_WMS_BASE}${layer.serviceId}?${params.toString()}`);
-    dtmImageCache.set(key, p);
+    p = loadTileImage(`${layer.url}?${params.toString()}`);
+    overlayImageCache.set(key, p);
   }
   return p;
 }
@@ -233,13 +236,13 @@ function sizeForBbox(bbox: BBox): { width: number; height: number } {
 
 /**
  * Textura terénu: podklad (nebo pozadí podle motivu) a přes něj vybrané
- * služby DTM (jedno WMS GetMap na službu, v pořadí katalogu, se sytostí DTM).
- * Bez DTM vrací přímo cachovanou texturu podkladu. Složená textura patří
- * volajícímu — `userData.ownedComposite` = při výměně ji uvolnit
- * (viz terrain.ts `applyBasemapToTerrain`).
+ * služby překryvů (jedno WMS GetMap na službu, v pořadí katalogu, každá
+ * se sytostí svého překryvu). Bez překryvů vrací přímo cachovanou texturu
+ * podkladu. Složená textura patří volajícímu — `userData.ownedComposite`
+ * = při výměně ji uvolnit (viz terrain.ts `applyBasemapToTerrain`).
  */
 export async function loadTerrainTexture(bbox: BBox, req: TerrainTextureRequest): Promise<THREE.CanvasTexture> {
-  if (req.dtm.length === 0) {
+  if (req.overlays.length === 0) {
     if (req.basemap === 'none') throw new Error('Není co nanést na terén');
     return loadBasemapTexture(bbox, req.basemap);
   }
@@ -260,9 +263,12 @@ export async function loadTerrainTexture(bbox: BBox, req: TerrainTextureRequest)
     ctx.fillStyle = req.background;
     ctx.fillRect(0, 0, width, height);
   }
-  const images = await Promise.all(req.dtm.map((l) => loadDtmImage(bbox, width, height, l)));
-  ctx.globalAlpha = req.dtmOpacity;
-  for (const img of images) if (img) ctx.drawImage(img, 0, 0, width, height);
+  const images = await Promise.all(req.overlays.map((l) => loadOverlayImage(bbox, width, height, l)));
+  images.forEach((img, i) => {
+    if (!img) return;
+    ctx.globalAlpha = req.overlays[i]!.opacity;
+    ctx.drawImage(img, 0, 0, width, height);
+  });
   ctx.globalAlpha = 1;
 
   const tex = new THREE.CanvasTexture(canvas);

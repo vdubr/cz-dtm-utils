@@ -23,8 +23,7 @@ import {
   setBasemapOpacity,
   refreshTerrainTexture,
 } from '../viewer3d/threeScene.js';
-import { DTM_SERVICES } from '../map/dtmCatalog.js';
-import { getDtmSelection, isDtmEnabled, subscribeDtmOverlay } from '../state/dtmOverlay.js';
+import { getOverlayStates, subscribeOverlays } from '../state/overlays.js';
 import { clearHighlight } from '../map/highlight.js';
 import { reapplyActiveHighlight } from './errorPanel.js';
 import { reapplyActiveFeatureHighlight } from './featuresPanel.js';
@@ -85,31 +84,32 @@ async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<voi
   }
 }
 /**
- * Promítne překryv DTM do 3D. DTM se kreslí na povrch terénu — je-li DTM
- * zapnuté s výběrem a terén vypnutý, terén se zapne (stejně jako u podkladu).
+ * Promítne překryvy (DTM ČR, katastr) do 3D. Kreslí se na povrch terénu —
+ * je-li některý zapnutý s výběrem a terén vypnutý, terén se zapne (stejně
+ * jako u podkladu).
  */
-async function apply3dDtm(): Promise<void> {
+async function apply3dOverlays(): Promise<void> {
   if (!is3dActive) return;
-  const wantsDtm = isDtmEnabled() && DTM_SERVICES.some((s) => getDtmSelection(s.id).length > 0);
-  const spinner = document.getElementById('dtm-spinner');
+  const wantsOverlay = getOverlayStates().some((s) => s.isActive());
+  const spinner = document.getElementById('basemap-spinner');
   spinner?.removeAttribute('hidden');
   try {
-    if (wantsDtm && !isTerrainVisible()) {
-      await setTerrainVisible(true); // načte terén a nanese i DTM
+    if (wantsOverlay && !isTerrainVisible()) {
+      await setTerrainVisible(true); // načte terén a nanese i překryvy
       const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
       if (terrainCheckbox) terrainCheckbox.checked = true;
     }
-    // Pod DTM patří podklad zvolený v panelu — při vstupu do 3D s vypnutým
-    // terénem se nepřenesl, terén zapnulo až DTM.
+    // Pod překryvy patří podklad zvolený v panelu — při vstupu do 3D
+    // s vypnutým terénem se nepřenesl, terén zapnul až překryv.
     const kind = getBasemapChoice();
-    if (wantsDtm && kind !== getBasemap()) {
+    if (wantsOverlay && kind !== getBasemap()) {
       setBasemapOpacity(getBasemapChoiceOpacity());
-      await setBasemap(kind); // nanese podklad i s DTM
+      await setBasemap(kind); // nanese podklad i s překryvy
     } else {
       await refreshTerrainTexture();
     }
   } catch (err) {
-    console.error('[dtm] přehoz DTM na 3D terén selhal', err);
+    console.error('[překryv] přehoz na 3D terén selhal', err);
   } finally {
     spinner?.setAttribute('hidden', '');
   }
@@ -314,16 +314,16 @@ export function setup3dToggle(
     void apply3dBasemapFromChoice(true);
   });
 
-  // Překryv DTM ve 3D = přehoz přes terén. Změny (výběr, sytost) se
+  // Překryvy ve 3D = přehoz přes terén. Změny (výběr, sytost) se
   // slučují s krátkým zpožděním, ať posuvník nepřeskládává texturu
   // při každém pohybu.
-  let dtmTimer: ReturnType<typeof setTimeout> | null = null;
-  subscribeDtmOverlay(() => {
+  let overlayTimer: ReturnType<typeof setTimeout> | null = null;
+  subscribeOverlays(() => {
     if (!is3dActive) return;
-    if (dtmTimer) clearTimeout(dtmTimer);
-    dtmTimer = setTimeout(() => {
-      dtmTimer = null;
-      void apply3dDtm();
+    if (overlayTimer) clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(() => {
+      overlayTimer = null;
+      void apply3dOverlays();
     }, 250);
   });
 
@@ -500,10 +500,10 @@ function switchTo3d(
   // Promítnout volbu podkladu z levého panelu do 3D (textura na terénu) —
   // jen pokud je terén zapnutý; vstup do 3D ho sám nezapíná.
   void apply3dBasemapFromChoice(false);
-  // Zapnutý překryv DTM si uživatel vybral sám → přehodit přes terén hned
+  // Zapnutý překryv si uživatel vybral sám → přehodit přes terén hned
   // (terén se případně zapne).
-  if (isDtmEnabled() && DTM_SERVICES.some((s) => getDtmSelection(s.id).length > 0)) {
-    void apply3dDtm();
+  if (getOverlayStates().some((s) => s.isActive())) {
+    void apply3dOverlays();
   }
 }
 

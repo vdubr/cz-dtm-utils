@@ -65,8 +65,8 @@ const INFO_CONTENT_HTML = `
       Volba <em>Prázdná</em> podklad vypne — JVF vrstvy zůstanou nad
       prázdným pozadím, které je ve světlém motivu bílé a v tmavém černé
       (užitečné pro kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
-      tlačítky řídí průhlednost podkladu — platí společně pro 2D mapu
-      i 3D scénu. Tlačítko motivu v hlavičce přepíná
+      tlačítky řídí průhlednost podkladu od 0 (podklad úplně průhledný) do
+      100 % — platí společně pro 2D mapu i 3D scénu. Tlačítko motivu v hlavičce přepíná
       <em>světlý (výchozí) / tmavý motiv</em> celé aplikace — panely,
       dialogy, pozadí pod vrstvami ve 2D i 3D.
       <strong>DTM ČR (překryv)</strong> — přepínač pod podkladovými mapami
@@ -81,6 +81,12 @@ const INFO_CONTENT_HTML = `
       ~1 : 37 000, sítě od ~1 : 150 000, přípojky a drobné prvky od
       1 : 800). Data JVF zůstávají nad překryvem. Ve 3D se vybrané vrstvy
       DTM přehodí přes terén (terén se zapne sám).
+      <strong>Katastr nemovitostí</strong> — stejný překryv z WMS ČÚZK
+      (hranice parcel, parcelní čísla, obrazy parcel, další prvky mapy,
+      KM-D, analogové mapy, orientační mapa parcel; všechny nebo jen
+      vybrané). Ve světlém motivu je katastr černý, v tmavém bílý (inverzní
+      vrstvy ČÚZK); kreslí se od 1 : 5 000, je nad DTM a pod daty JVF
+      a ve 3D se také přehodí přes terén.
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů, s přepočtem tloušťky
       a dashů pro zvolenou úroveň přiblížení (referenční měřítko 1:500).
