@@ -801,6 +801,9 @@ test.describe('Modály a ovládání', () => {
     await expect(btn).toHaveAttribute('aria-pressed', 'true');
     await expect(card).toBeVisible();
     await expect(card.locator('[data-measure="area"]')).toHaveText('od 3 bodů');
+    // Bez bodů nejsou Zpět ani Nové měření aktivní.
+    await expect(card.locator('[data-measure-action="undo"]')).toBeDisabled();
+    await expect(card.locator('[data-measure-action="restart"]')).toBeDisabled();
 
     const box = (await page.locator('#map-container').boundingBox())!;
     const px = [
@@ -825,6 +828,8 @@ test.describe('Modály a ovládání', () => {
     };
 
     await click(0);
+    await expect(card.locator('[data-measure-action="undo"]')).toBeEnabled();
+    await expect(card.locator('[data-measure-action="restart"]')).toBeEnabled();
     await click(1);
     let e = await expected(2);
     await expect(card.locator('[data-measure="length"]')).toHaveText(e.length);
@@ -851,6 +856,44 @@ test.describe('Modály a ovládání', () => {
     await page.keyboard.press('Escape');
     await expect(card).toBeHidden();
     await expect(btn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('měření: klik na první bod uzavře polygon (přichycení k bodům měření)', async ({ page }) => {
+    await page.locator('#btn-measure').click();
+    const card = page.locator('#measure-card');
+    const box = (await page.locator('#map-container').boundingBox())!;
+    const px = [[0.4, 0.4], [0.6, 0.4], [0.55, 0.65]] as const;
+    for (const [x, y] of px) {
+      await page.mouse.click(box.x + box.width * x, box.y + box.height * y);
+      await page.waitForTimeout(350);
+    }
+    // Kurzor 4 px vedle prvního bodu → přichycení k bodu měření.
+    const fx = box.x + box.width * px[0][0] + 4;
+    const fy = box.y + box.height * px[0][1] - 3;
+    await page.mouse.move(fx, fy, { steps: 4 });
+    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol · první bod (uzavřít)');
+    await page.mouse.click(fx, fy);
+    await expect(card.locator('[data-measure="points"]')).toHaveText('3 (uzavřeno)');
+
+    const r = await page.evaluate(async () => {
+      const m = await import('/jvf_viewer/src/map/measureMath.ts');
+      const pts = (window as unknown as { __jvfDebug: { measurePoints: () => number[][] } }).__jvfDebug.measurePoints();
+      return {
+        n: pts.length,
+        closed: m.isClosedRing(pts),
+        length: m.formatLength(m.polylineLength(pts)),
+        area: m.formatArea(m.polygonArea(m.openRing(pts))),
+      };
+    });
+    expect(r.n).toBe(4);
+    expect(r.closed).toBe(true);
+    // Délka je obvod včetně uzavírací hrany, plocha z uzavřeného polygonu.
+    await expect(card.locator('[data-measure="length"]')).toHaveText(r.length);
+    await expect(card.locator('[data-measure="area"]')).toHaveText(r.area);
+
+    await card.locator('[data-measure-action="restart"]').click();
+    await expect(card.locator('[data-measure="points"]')).toHaveText('0');
+    await expect(card.locator('[data-measure-action="undo"]')).toBeDisabled();
   });
 
   test('měření: body se přichytí k vrcholu i hraně prvku JVF, ne ke skryté vrstvě', async ({ page }) => {
@@ -902,6 +945,86 @@ test.describe('Modály a ovládání', () => {
     await page.waitForTimeout(350);
     await expect(snapEl).toHaveText('—');
     expect((await points())[0]).not.toEqual([-520800, -1164200]);
+  });
+
+  test('měření ve 3D: body z paprsku, přichycení k vrcholu, šikmá a vodorovná vzdálenost, převýšení, plocha', async ({ page }) => {
+    // Budova 200×200 m (2D souřadnice → ve 3D ve výšce 0).
+    await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
+    await expect(page.locator('#btn-features')).toBeEnabled();
+    await page.locator('#btn-3d').click();
+    await expect(page.locator('#three-canvas')).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    type Dbg = {
+      measurePoints: () => number[][];
+      project3d: (x: number, y: number, z: number) => { x: number; y: number } | null;
+    };
+    const dbg = <T,>(fn: (d: Dbg, arg: number[]) => T, arg: number[] = []) =>
+      page.evaluate(([src, a]) => {
+        const d = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug;
+        return (new Function('d', 'a', `return (${src})(d, a);`))(d, a) as T;
+      }, [fn.toString(), arg] as const);
+    const card = page.locator('#measure-card');
+
+    await page.locator('#btn-measure').click();
+    await expect(card).toBeVisible();
+    await expect(card).toHaveClass(/measure-card--3d/);
+    await expect(card.locator('[data-measure-label="length"]')).toHaveText('Vzdálenost 3D');
+    await expect(card.locator('[data-measure="dz"]')).toBeVisible();
+
+    // Přichycení k rohu budovy: kurzor 4 px vedle promítnutého rohu.
+    const corner = (await dbg((d) => d.project3d(-520800, -1164200, 0)))!;
+    await page.mouse.move(corner.x + 4, corner.y - 3, { steps: 4 });
+    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol · BudovaPlocha');
+    await page.mouse.click(corner.x + 4, corner.y - 3);
+    await page.waitForTimeout(300);
+    const p1 = (await dbg((d) => d.measurePoints()))[0]!;
+    expect(p1[0]).toBeCloseTo(-520800, 2);
+    expect(p1[1]).toBeCloseTo(-1164200, 2);
+    expect(p1[2]).toBeCloseTo(0, 2);
+
+    // Další dva body uvnitř budovy (povrch plochy).
+    const mid = (await dbg((d) => d.project3d(-520700, -1164100, 0)))!;
+    await page.mouse.click(mid.x, mid.y);
+    await page.waitForTimeout(300);
+    const q = (await dbg((d) => d.project3d(-520650, -1164150, 0)))!;
+    await page.mouse.click(q.x, q.y);
+    await page.waitForTimeout(300);
+    await expect(card.locator('[data-measure="points"]')).toHaveText('3');
+
+    // Klik na první bod (roh) uzavře polygon a měření ukončí.
+    await page.mouse.move(corner.x + 3, corner.y + 2, { steps: 4 });
+    await expect(card.locator('[data-measure="snap"]')).toHaveText('vrchol · první bod (uzavřít)');
+    await page.mouse.click(corner.x + 3, corner.y + 2);
+    await expect(card.locator('[data-measure="points"]')).toHaveText('3 (uzavřeno)');
+    const closedPts = await dbg((d) => d.measurePoints());
+    expect(closedPts).toHaveLength(4);
+    expect(closedPts[3]).toEqual(closedPts[0]);
+
+    // Hodnoty v kartě odpovídají bodům (stejné funkce z dev serveru).
+    const exp = await page.evaluate(async () => {
+      const m = await import('/jvf_viewer/src/map/measureMath.ts');
+      const pts = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug.measurePoints();
+      return {
+        len3d: m.formatLength(m.polylineLength3d(pts)),
+        horiz: m.formatLength(m.polylineLength(pts)),
+        dz: m.formatHeightDelta(m.heightDelta(pts)),
+        area: m.formatArea(m.polygonArea(pts)),
+      };
+    });
+    await page.locator('#btn-measure').hover(); // kurzor mimo scénu → bez živého bodu
+    await expect(card.locator('[data-measure="length"]')).toHaveText(exp.len3d);
+    await expect(card.locator('[data-measure="horizontal"]')).toHaveText(exp.horiz);
+    await expect(card.locator('[data-measure="dz"]')).toHaveText(exp.dz);
+    await expect(card.locator('[data-measure="area"]')).toHaveText(exp.area);
+    await expect(page.locator('.measure-labels .measure-label--total')).toHaveText(exp.len3d);
+
+    // Backspace polygon znovu otevře; přepnutí do 2D měření ukončí.
+    await page.keyboard.press('Backspace');
+    await expect(card.locator('[data-measure="points"]')).toHaveText('3');
+    await page.locator('#btn-3d').click();
+    await expect(card).toBeHidden();
+    await expect(page.locator('#btn-measure')).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('měření: klik do mapy nevybírá prvek', async ({ page }) => {

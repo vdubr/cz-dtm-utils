@@ -13,14 +13,17 @@
  *   a typ objektu).
  * - Během měření klik do mapy nevybírá prvky a dvojklik nepřibližuje.
  *
- * Délka a plocha jsou rovinné v S-JTSK (metry) — viz measureMath.ts.
- * Ovládací prvky jsou OL Controls uvnitř mapy, takže ve 3D zmizí s ní.
+ * Stejně se měří i ve 3D scéně (viewer3d/measure3d.ts): tlačítko a karta
+ * jsou nad mapou i scénou, ve 3D navíc šikmá vzdálenost, vodorovná
+ * vzdálenost a převýšení; plocha je vodorovný průmět. Přepnutí 2D ↔ 3D
+ * měření ukončí.
+ *
+ * Délka a plocha ve 2D jsou rovinné v S-JTSK (metry) — viz measureMath.ts.
  */
-import Control from 'ol/control/Control.js';
 import Draw, { type DrawEvent } from 'ol/interaction/Draw.js';
 import Snap from 'ol/interaction/Snap.js';
 import Collection from 'ol/Collection.js';
-import type Feature from 'ol/Feature.js';
+import Feature from 'ol/Feature.js';
 import type { SnapEvent } from 'ol/events/SnapEvent.js';
 import RegularShape from 'ol/style/RegularShape.js';
 import DoubleClickZoom from 'ol/interaction/DoubleClickZoom.js';
@@ -42,13 +45,30 @@ import type { EventsKey } from 'ol/events.js';
 import { unByKey } from 'ol/Observable.js';
 import {
   dedupeConsecutive,
+  isClosedRing,
+  openRing,
+  samePoint,
   formatArea,
+  formatHeightDelta,
   formatLength,
+  heightDelta,
   polygonArea,
   polylineLength,
+  polylineLength3d,
   segmentLength,
   type Coord,
 } from './measureMath.js';
+import { getIs3dActive, onViewModeChange } from '../ui/toggle3d.js';
+import {
+  restart3d,
+  snapshot3d,
+  start3d,
+  stop3d,
+  undo3d,
+  type MeasureSnap,
+  type MeasureSnapshot,
+  type SnapKind,
+} from '../viewer3d/measure3d.js';
 
 const COLOR = '#d81b60';
 const FONT = '500 12px Roboto, system-ui, sans-serif';
@@ -118,23 +138,28 @@ function measureStyle(feature: FeatureLike, resolution: number): Style[] {
   const coords = dedupeConsecutive((geom as LineString).getCoordinates());
   if (coords.length === 0) return [];
   const styles: Style[] = [];
+  // Uzavřený polygon (klik na první bod) — uzavírací hrana je součástí čáry.
+  const closed = isClosedRing(coords);
+  const ringPts = openRing(coords);
 
-  if (coords.length >= 3) {
-    const ring = [...coords, coords[0]!] as number[][];
+  if (ringPts.length >= 3) {
+    const ring = [...ringPts, ringPts[0]!] as number[][];
     const polygon = new Polygon([ring]);
     styles.push(new Style({ geometry: polygon, fill: areaFill }));
-    styles.push(new Style({
-      geometry: new LineString([coords[coords.length - 1]! as number[], coords[0]! as number[]]),
-      stroke: closingStroke,
-    }));
+    if (!closed) {
+      styles.push(new Style({
+        geometry: new LineString([coords[coords.length - 1]! as number[], coords[0]! as number[]]),
+        stroke: closingStroke,
+      }));
+    }
     styles.push(new Style({
       geometry: polygon.getInteriorPoint(),
-      text: label(formatArea(polygonArea(coords)), { bold: true }),
+      text: label(formatArea(polygonArea(ringPts)), { bold: true }),
     }));
   }
 
   styles.push(new Style({ stroke: haloStroke }), new Style({ stroke: lineStroke }));
-  styles.push(new Style({ geometry: new MultiPoint(coords as number[][]), image: vertexImage }));
+  styles.push(new Style({ geometry: new MultiPoint(ringPts as number[][]), image: vertexImage }));
 
   // Délky úseků u jejich středů (jen dost dlouhé, ať se popisky nepřekrývají).
   if (coords.length >= 3) {
@@ -167,50 +192,95 @@ const layer = new VectorLayer({ source, style: measureStyle, zIndex: 1000 });
 let draw: Draw | null = null;
 let snap: Snap | null = null;
 const snapFeatures = new Collection<Feature>();
-/** Aktuální přichycení kurzoru (null = volně). */
-let snapInfo: { kind: 'vertex' | 'edge' | 'intersection'; elementName: string } | null = null;
+/**
+ * Body rozkresleného měření jako cíl přichycení — klik na první bod
+ * polygon uzavře (a měření ukončí).
+ */
+const ownVertices = new Feature(new MultiPoint([]));
+let closing = false;
+/** Aktuální přichycení kurzoru ve 2D (null = volně). */
+let snapInfo: MeasureSnap | null = null;
 let sketchKey: EventsKey | null = null;
 let sketchCoords: Coord[] | null = null; // během kreslení (vč. pozice myši)
 let active = false;
+/** Pohled, ve kterém měření běží (2D mapa / 3D scéna). */
+let mode: '2d' | '3d' = '2d';
 
 let button: HTMLButtonElement;
 let card: HTMLElement;
 let lengthEl: HTMLElement;
+let lengthLabelEl: HTMLElement;
+let horizEl: HTMLElement;
+let dzEl: HTMLElement;
 let areaEl: HTMLElement;
+let areaLabelEl: HTMLElement;
 let pointsEl: HTMLElement;
 let snapEl: HTMLElement;
+let undoBtn: HTMLButtonElement;
+let restartBtn: HTMLButtonElement;
 
-const SNAP_KIND_LABEL = { vertex: 'vrchol', edge: 'hrana', intersection: 'průsečík' } as const;
+const SNAP_KIND_LABEL: Record<SnapKind, string> = {
+  vertex: 'vrchol',
+  edge: 'hrana',
+  intersection: 'průsečík',
+  surface: 'plocha',
+  terrain: 'terén',
+};
 
 export function isMeasureActive(): boolean {
   return active;
 }
 
-/** Aktuální měřené body: rozkreslená čára, jinak dokončené měření. */
 /** Body měření (pro testy přes dev háček): pevné body bez pozice kurzoru. */
 export function getMeasurePoints(): Coord[] {
-  const { coords, drawing } = currentCoords();
-  return drawing ? coords.slice(0, -1) : coords;
+  return snapshot().fixed;
 }
 
-function currentCoords(): { coords: Coord[]; drawing: boolean } {
+/** Měřené body 2D: rozkreslená čára (vč. kurzoru), jinak dokončené měření. */
+function currentCoords2d(): { coords: Coord[]; drawing: boolean } {
   if (sketchCoords) return { coords: sketchCoords, drawing: true };
   const f = source.getFeatures()[0];
   const g = f?.getGeometry() as LineString | undefined;
   return { coords: g ? g.getCoordinates() : [], drawing: false };
 }
 
+/** Jednotný pohled na stav měření (2D i 3D). */
+function snapshot(): MeasureSnapshot {
+  if (mode === '3d') return snapshot3d();
+  const { coords, drawing } = currentCoords2d();
+  return {
+    fixed: drawing ? coords.slice(0, -1) : coords,
+    live: dedupeConsecutive(coords),
+    drawing,
+    snap: snapInfo,
+  };
+}
+
 function updateCard(): void {
-  const { coords, drawing } = currentCoords();
-  // Při kreslení je poslední souřadnice pozice myši — není to pevný bod.
-  const fixed = drawing ? Math.max(0, coords.length - 1) : coords.length;
-  const pts = dedupeConsecutive(coords);
-  lengthEl.textContent = pts.length >= 2 ? formatLength(polylineLength(pts)) : '—';
-  areaEl.textContent = pts.length >= 3 ? formatArea(polygonArea(pts)) : 'od 3 bodů';
-  pointsEl.textContent = String(fixed);
-  snapEl.textContent = snapInfo
-    ? `${SNAP_KIND_LABEL[snapInfo.kind]} · ${snapInfo.elementName}`
+  if (!card) return;
+  const s = snapshot();
+  const pts = s.live;
+  const is3d = mode === '3d';
+  card.classList.toggle('measure-card--3d', is3d);
+  lengthLabelEl.textContent = is3d ? 'Vzdálenost 3D' : 'Vzdálenost';
+  areaLabelEl.textContent = is3d ? 'Plocha (průmět)' : 'Plocha';
+  lengthEl.textContent = pts.length >= 2
+    ? formatLength(is3d ? polylineLength3d(pts) : polylineLength(pts))
     : '—';
+  horizEl.textContent = pts.length >= 2 ? formatLength(polylineLength(pts)) : '—';
+  dzEl.textContent = pts.length >= 2 ? formatHeightDelta(heightDelta(pts)) : '—';
+  const ring = openRing(pts);
+  areaEl.textContent = ring.length >= 3 ? formatArea(polygonArea(ring)) : 'od 3 bodů';
+  const fixedCount = openRing(s.fixed).length;
+  pointsEl.textContent = isClosedRing(s.fixed) ? `${fixedCount} (uzavřeno)` : String(fixedCount);
+  // Zpět / Nové měření jen tehdy, když je co vrátit / zahodit.
+  undoBtn.disabled = s.fixed.length === 0;
+  restartBtn.disabled = s.fixed.length === 0;
+  snapEl.textContent = !s.snap
+    ? '—'
+    : s.snap.kind === 'terrain'
+      ? SNAP_KIND_LABEL.terrain
+      : `${SNAP_KIND_LABEL[s.snap.kind]} · ${s.snap.elementName}`;
 }
 
 /** Je souřadnice vrcholem geometrie prvku? (jinak jde o průsečík) */
@@ -226,7 +296,17 @@ function isFeatureVertex(feature: Feature, c: Coord): boolean {
 }
 
 function onSnap(e: SnapEvent): void {
-  const kind = e.segment && e.segment.length > 1
+  if (e.feature === ownVertices) {
+    const fixed = sketchCoords ? sketchCoords.slice(0, -1) : [];
+    const first = fixed.length >= 3 && samePoint(e.vertex, fixed[0]);
+    const elementName = first ? 'první bod (uzavřít)' : 'bod měření';
+    if (snapInfo?.elementName !== elementName) {
+      snapInfo = { kind: 'vertex', elementName };
+      updateCard();
+    }
+    return;
+  }
+  const kind: SnapKind = e.segment && e.segment.length > 1
     ? 'edge'
     : isFeatureVertex(e.feature, e.vertex) ? 'vertex' : 'intersection';
   const elementName = (e.feature.get('jvfElementName') as string | undefined) ?? 'prvek';
@@ -243,19 +323,21 @@ function onUnsnap(): void {
 }
 
 /**
- * Naplní přichytávání aktuálně kreslenými prvky JVF. Volá se při zapnutí
- * a po každé změně dat, viditelnosti vrstev, filtru prvků či changeset
- * přepínačů (main.ts → refreshMeasureSnap).
+ * Naplní přichytávání ve 2D aktuálně kreslenými prvky JVF. Volá se při
+ * zapnutí a po každé změně dat, viditelnosti vrstev, filtru prvků či
+ * changeset přepínačů (main.ts → refreshMeasureSnap). Ve 3D se přichytává
+ * přímo k viditelným objektům scény (viewer3d/measure3d.ts).
  */
 function refreshSnaps(): void {
   if (!map) return;
   snapFeatures.clear();
-  if (!active) {
+  if (!active || mode !== '2d') {
     if (snap) map.removeInteraction(snap);
     snap = null;
     return;
   }
   snapFeatures.extend(getSnapFeatures());
+  snapFeatures.push(ownVertices);
   if (!snap) {
     // Snap musí být přidán až po Draw (zpracuje události dřív).
     snap = new Snap({
@@ -281,8 +363,16 @@ function onDrawStart(e: DrawEvent): void {
   source.clear(); // jedno měření najednou (jako mapy.cz)
   const geom = e.feature.getGeometry() as LineString;
   sketchCoords = geom.getCoordinates();
+  closing = false;
   sketchKey = geom.on('change', () => {
     sketchCoords = geom.getCoordinates();
+    const fixed = sketchCoords.slice(0, -1);
+    (ownVertices.getGeometry() as MultiPoint).setCoordinates(fixed as number[][]);
+    // Klik na první bod (přichycený) → polygon uzavřít a měření ukončit.
+    if (!closing && isClosedRing(dedupeConsecutive(fixed))) {
+      closing = true;
+      setTimeout(() => draw?.finishDrawing(), 0);
+    }
     updateCard();
   });
   updateCard();
@@ -292,6 +382,7 @@ function endSketch(): void {
   if (sketchKey) unByKey(sketchKey);
   sketchKey = null;
   sketchCoords = null;
+  (ownVertices.getGeometry() as MultiPoint).setCoordinates([]);
 }
 
 function onDrawEnd(e: DrawEvent): void {
@@ -305,6 +396,10 @@ function onDrawEnd(e: DrawEvent): void {
 /** Vrátit poslední bod (rozkreslené i dokončené měření). */
 export function undoMeasurePoint(): void {
   if (!active) return;
+  if (mode === '3d') {
+    undo3d();
+    return;
+  }
   if (sketchCoords && draw) {
     draw.removeLastPoint();
     if (sketchCoords && sketchCoords.length <= 1) {
@@ -325,46 +420,65 @@ export function undoMeasurePoint(): void {
 
 /** Zahodit měření a začít znovu (nástroj zůstává zapnutý). */
 export function restartMeasure(): void {
+  if (mode === '3d') {
+    restart3d();
+    return;
+  }
   draw?.abortDrawing();
   endSketch();
   source.clear();
   updateCard();
 }
 
+function start2d(): void {
+  if (!map) return;
+  map.getTargetElement()?.classList.add('measure-active');
+  draw = new Draw({
+    source,
+    type: 'LineString',
+    style: measureStyle,
+    stopClick: true, // klik nevybírá prvky v mapě
+    freehandCondition: never,
+  });
+  draw.on('drawstart', onDrawStart);
+  draw.on('drawend', onDrawEnd);
+  draw.on('drawabort', () => { endSketch(); updateCard(); });
+  map.addInteraction(draw);
+  refreshSnaps();
+  setDoubleClickZoom(false);
+}
+
+function stop2d(): void {
+  if (!map) return;
+  map.getTargetElement()?.classList.remove('measure-active');
+  if (draw) {
+    draw.abortDrawing();
+    map.removeInteraction(draw);
+  }
+  draw = null;
+  endSketch();
+  refreshSnaps(); // odebere přichytávání (active = false)
+  snapInfo = null;
+  source.clear();
+  setDoubleClickZoom(true);
+}
+
 export function setMeasureActive(on: boolean): void {
   if (!map || on === active) return;
-  active = on;
+  if (on) {
+    mode = getIs3dActive() ? '3d' : '2d';
+    active = true;
+    if (mode === '3d') start3d(updateCard);
+    else start2d();
+  } else {
+    active = false;
+    if (mode === '3d') stop3d();
+    else stop2d();
+  }
   button.classList.toggle('active', on);
   button.setAttribute('aria-pressed', String(on));
   button.title = on ? 'Ukončit měření (Esc)' : 'Měřit vzdálenost a plochu';
   card.hidden = !on;
-  map.getTargetElement()?.classList.toggle('measure-active', on);
-  if (on) {
-    draw = new Draw({
-      source,
-      type: 'LineString',
-      style: measureStyle,
-      stopClick: true, // klik nevybírá prvky v mapě
-      freehandCondition: never,
-    });
-    draw.on('drawstart', onDrawStart);
-    draw.on('drawend', onDrawEnd);
-    draw.on('drawabort', () => { endSketch(); updateCard(); });
-    map.addInteraction(draw);
-    refreshSnaps();
-    setDoubleClickZoom(false);
-  } else {
-    if (draw) {
-      draw.abortDrawing();
-      map.removeInteraction(draw);
-    }
-    draw = null;
-    endSketch();
-    refreshSnaps(); // odebere přichytávání
-    snapInfo = null;
-    source.clear();
-    setDoubleClickZoom(true);
-  }
   updateCard();
 }
 
@@ -388,16 +502,17 @@ function onKeyDown(ev: KeyboardEvent): void {
 }
 
 /**
- * Přidá do mapy tlačítko měření a kartu s výsledky.
- * @param getFeatures právě kreslené prvky JVF pro přichytávání bodů.
+ * Přidá nad mapu (2D i 3D) tlačítko měření a kartu s výsledky.
+ * @param getFeatures právě kreslené prvky JVF pro přichytávání bodů ve 2D.
  */
 export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
   map = olMap;
   getSnapFeatures = getFeatures;
   map.addLayer(layer);
+  const mapArea = document.getElementById('map-area')!;
 
-  const btnWrap = document.createElement('div');
-  btnWrap.className = 'measure-control ol-unselectable ol-control';
+  const tools = document.createElement('div');
+  tools.className = 'map-tools';
   button = document.createElement('button');
   button.type = 'button';
   button.id = 'btn-measure';
@@ -407,11 +522,11 @@ export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
   button.setAttribute('aria-pressed', 'false');
   button.innerHTML = '<span class="material-symbols-outlined">straighten</span>';
   button.addEventListener('click', () => setMeasureActive(!active));
-  btnWrap.appendChild(button);
-  map.addControl(new Control({ element: btnWrap }));
+  tools.appendChild(button);
+  mapArea.appendChild(tools);
 
   card = document.createElement('div');
-  card.className = 'measure-card ol-unselectable';
+  card.className = 'measure-card';
   card.id = 'measure-card';
   card.hidden = true;
   card.setAttribute('role', 'status');
@@ -425,13 +540,16 @@ export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
       </button>
     </div>
     <dl class="measure-values">
-      <dt>Vzdálenost</dt><dd data-measure="length">—</dd>
-      <dt>Plocha</dt><dd data-measure="area">od 3 bodů</dd>
+      <dt data-measure-label="length">Vzdálenost</dt><dd data-measure="length">—</dd>
+      <dt class="measure-3d-only">Vodorovně</dt><dd class="measure-3d-only" data-measure="horizontal">—</dd>
+      <dt class="measure-3d-only">Převýšení</dt><dd class="measure-3d-only" data-measure="dz">—</dd>
+      <dt data-measure-label="area">Plocha</dt><dd data-measure="area">od 3 bodů</dd>
       <dt>Body</dt><dd data-measure="points">0</dd>
       <dt>Přichycení</dt><dd data-measure="snap">—</dd>
     </dl>
     <p class="measure-hint">Klikáním přidávejte body (přichytí se k vrcholům, hranám a průsečíkům prvků).
-      Dvojklik nebo klik na poslední bod měření ukončí, Backspace vrátí bod, Esc zavře.</p>
+      Klik na první bod uzavře polygon, dvojklik nebo klik na poslední bod měření ukončí,
+      Backspace vrátí bod, Esc zavře.</p>
     <div class="measure-actions">
       <button type="button" class="measure-text-btn" data-measure-action="undo">
         <span class="material-symbols-outlined">undo</span>Zpět
@@ -441,16 +559,24 @@ export function setupMeasure(olMap: OlMap, getFeatures: () => Feature[]): void {
       </button>
     </div>`;
   lengthEl = card.querySelector('[data-measure="length"]')!;
+  lengthLabelEl = card.querySelector('[data-measure-label="length"]')!;
+  horizEl = card.querySelector('[data-measure="horizontal"]')!;
+  dzEl = card.querySelector('[data-measure="dz"]')!;
   areaEl = card.querySelector('[data-measure="area"]')!;
+  areaLabelEl = card.querySelector('[data-measure-label="area"]')!;
   pointsEl = card.querySelector('[data-measure="points"]')!;
   snapEl = card.querySelector('[data-measure="snap"]')!;
+  undoBtn = card.querySelector('[data-measure-action="undo"]')!;
+  restartBtn = card.querySelector('[data-measure-action="restart"]')!;
   card.addEventListener('click', (ev) => {
     const action = (ev.target as HTMLElement).closest<HTMLElement>('[data-measure-action]')?.dataset['measureAction'];
     if (action === 'close') setMeasureActive(false);
     else if (action === 'undo') undoMeasurePoint();
     else if (action === 'restart') restartMeasure();
   });
-  map.addControl(new Control({ element: card }));
+  mapArea.appendChild(card);
 
   window.addEventListener('keydown', onKeyDown, { capture: true });
+  // Přepnutí 2D ↔ 3D měření ukončí (body patří k pohledu, ve kterém vznikly).
+  onViewModeChange(() => setMeasureActive(false));
 }

@@ -82,6 +82,18 @@ async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<voi
 }
 let currentObjekty: ObjektovyTyp[] = [];
 
+/** Posluchači přepnutí 2D ↔ 3D (např. měření se při přepnutí ukončí). */
+const viewModeListeners = new Set<(is3d: boolean) => void>();
+
+export function onViewModeChange(listener: (is3d: boolean) => void): () => void {
+  viewModeListeners.add(listener);
+  return () => viewModeListeners.delete(listener);
+}
+
+function notifyViewMode(): void {
+  for (const l of viewModeListeners) l(is3dActive);
+}
+
 export function getIs3dActive(): boolean {
   return is3dActive;
 }
@@ -398,6 +410,7 @@ function switchTo3d(
   objekty: ObjektovyTyp[]
 ): void {
   is3dActive = true;
+  notifyViewMode();
   btn.textContent = '2D';
   btn.title = 'Přepnout zpět na 2D mapu';
   btn.classList.add('active');
@@ -447,6 +460,7 @@ function switchTo2d(
   btn: HTMLButtonElement
 ): void {
   is3dActive = false;
+  notifyViewMode();
   btn.textContent = '3D';
   btn.title = 'Přepnout mezi 2D mapou a 3D pohledem';
   btn.classList.remove('active');

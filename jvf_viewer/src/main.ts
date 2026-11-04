@@ -64,6 +64,8 @@ import {
   highlightThreeFeature,
   pickFeatureFromClient,
   zoomToThreeExtent,
+  sjtskToScene,
+  projectSceneToClient,
 } from './viewer3d/threeScene.js';
 import { isEmpty, extend } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -113,6 +115,10 @@ if (import.meta.env.DEV) {
     getJvfLayers: () => currentJvfLayers,
     pick3d: (x: number, y: number) => pickFeatureFromClient(x, y),
     measurePoints: () => getMeasurePoints(),
+    project3d: (x: number, y: number, z: number) => {
+      const v = sjtskToScene(x, y, z);
+      return v ? projectSceneToClient(v) : null;
+    },
   };
 }
 initHighlightLayer(olMap);
@@ -431,6 +437,8 @@ olMap.on('singleclick', (evt) => {
 const threeCanvas = document.getElementById('three-canvas') as HTMLCanvasElement | null;
 threeCanvas?.addEventListener('click', (e) => {
   if (!getIs3dActive()) return;
+  // Během měření klik přidává body — prvky nevybírat.
+  if (isMeasureActive()) return;
   const picked = pickFeatureFromClient(e.clientX, e.clientY);
   if (!picked) return;
   ensureFeaturesPanelOpen(); // otevřít panel, pokud byl zavřený (R2/R3)

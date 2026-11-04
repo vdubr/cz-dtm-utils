@@ -9,14 +9,17 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Přidáno
 
-- **Měření vzdálenosti a plochy v mapě** — tlačítko s pravítkem v levém
-  horním rohu 2D mapy (inspirace mapy.cz): klikáním se přidávají body,
-  vzdálenost se počítá průběžně a od 3 bodů zároveň plocha mnohoúhelníku.
-  Popisky délek úseků, celkové délky a plochy v mapě, souhrn v kartě
-  (Zpět, Nové měření). Body se přichytávají k prvkům JVF — k vrcholům,
-  hranám linií a obvodů ploch a k průsečíkům, jen k právě viditelným
-  prvkům; kurzor a karta ukazují, k čemu je bod přichycený. Dvojklik
-  měření ukončí, Backspace vrátí bod, Esc zavře. Rovinně v S-JTSK.
+- **Měření vzdálenosti a plochy ve 2D i 3D** — tlačítko s pravítkem vlevo
+  dole (inspirace mapy.cz): klikáním se přidávají body, vzdálenost se
+  počítá průběžně a od 3 bodů zároveň plocha mnohoúhelníku; klik na první
+  bod polygon uzavře. Popisky délek úseků, celkové délky a plochy v mapě,
+  souhrn v kartě (Zpět a Nové měření aktivní jen s body). Body se
+  přichytávají k bodům měření a k prvkům JVF — k vrcholům, hranám linií
+  a obvodů ploch a k průsečíkům, jen k právě viditelným prvkům; kurzor
+  a karta ukazují, k čemu je bod přichycený. Dvojklik měření ukončí,
+  Backspace vrátí bod, Esc zavře. Ve 2D rovinně v S-JTSK; ve 3D bod
+  z místa pod kurzorem (objekt, terén) a navíc šikmá vzdálenost,
+  vodorovná vzdálenost a převýšení (skutečné výšky bez převýšení scény).
 - **Režimy aplikace JVF / UDM / JŽM** — přepínač v hlavičce; výchozí je JVF,
   do UDM a JŽM se přepíná ručně. Přepnutí zavře načtené soubory
   (s potvrzením); soubor jiného modelu nabídne přepnutí režimu, bez něj se

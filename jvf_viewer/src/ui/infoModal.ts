@@ -87,12 +87,15 @@ const INFO_CONTENT_HTML = `
       i přepínač režimu JVF / UDM / JŽM.
     </li>
     <li>
-      <strong>Měření</strong> — tlačítko s pravítkem v levém horním rohu 2D
-      mapy zapne měření (podobně jako na mapy.cz). Klikáním přidáváte body;
-      vzdálenost se počítá průběžně i k pozici kurzoru a od tří bodů se
-      zároveň ukazuje <strong>plocha</strong> mnohoúhelníku z bodů. V mapě
-      jsou popsané délky úseků, celková délka a plocha, v kartě vlevo dole
-      souhrn. Body se <strong>přichytávají k prvkům JVF</strong> — k vrcholům
+      <strong>Měření</strong> — tlačítko s pravítkem vlevo dole (ve 2D mapě
+      i ve 3D scéně) zapne měření (podobně jako na mapy.cz). Klikáním
+      přidáváte body; vzdálenost se počítá průběžně i k pozici kurzoru a od
+      tří bodů se zároveň ukazuje <strong>plocha</strong> mnohoúhelníku
+      z bodů. V mapě jsou popsané délky úseků, celková délka a plocha,
+      v kartě nad tlačítkem souhrn (<em>Zpět</em> a <em>Nové měření</em>
+      jsou aktivní, jen když je co vrátit). <strong>Klik na první bod
+      polygon uzavře</strong> — body měření se také přichytávají.
+      Body se <strong>přichytávají k prvkům JVF</strong> — k vrcholům
       (mají přednost), hranám linií a obvodů ploch a k průsečíkům linií;
       jen k prvkům, které jsou právě vidět (skrytá vrstva ani prvky
       skryté filtrem se nepřichytávají). Kurzor přichycení vyznačí
@@ -101,7 +104,13 @@ const INFO_CONTENT_HTML = `
       Dvojklik nebo klik na poslední bod měření ukončí (další klik začne
       nové), <em>Backspace</em> vrátí poslední bod, <em>Esc</em> nástroj
       zavře. Během měření klik nevybírá prvky a dvojklik nepřibližuje.
-      Délky a plochy jsou rovinné v S-JTSK (metry).
+      Ve 2D jsou délky a plochy rovinné v S-JTSK (metry).
+      <strong>Ve 3D</strong> se měří stejně: bod se vezme z místa pod
+      kurzorem (vrchol nebo hrana objektu, povrch plochy či terénu, jinak
+      vodorovná rovina), tažení myší dál otáčí scénou. Karta ukáže
+      <em>vzdálenost 3D</em> (šikmou), vodorovnou vzdálenost, převýšení
+      a plochu jako vodorovný průmět; výšky jsou skutečné (bez převýšení
+      scény). Přepnutí 2D ↔ 3D měření ukončí.
     </li>
     <li>
       <strong>3D pohled</strong> — vizualizace Z-souřadnic geometrií. Procházení

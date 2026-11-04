@@ -1613,3 +1613,121 @@ function animateCameraTo(target: THREE.Vector3, targetRadius: number, durationMs
   }
   step();
 }
+
+// ── Podpora měření ve 3D (viewer3d/measure3d.ts) ─────────────────────────────
+// Scéna: x = X − cx, z = cy − Y, y = (Z − cz) · převýšení. Měření drží body
+// v S-JTSK se skutečnou výškou, scénu jen kreslí.
+
+/** Je 3D scéna inicializovaná? */
+export function isThreeSceneReady(): boolean {
+  return state !== null;
+}
+
+/** Aktuální převýšení Z ve scéně. */
+export function getZExaggeration(): number {
+  return lastZExaggeration;
+}
+
+/** Souřadnice scény → S-JTSK [X, Y, skutečné Z]. */
+export function sceneToSjtsk(v: THREE.Vector3): [number, number, number] | null {
+  if (!state) return null;
+  const ex = lastZExaggeration || 1;
+  return [v.x + state.cx, state.cy - v.z, v.y / ex + state.cz];
+}
+
+/** S-JTSK [X, Y, Z] → souřadnice scény (s aktuálním převýšením). */
+export function sjtskToScene(x: number, y: number, z: number): THREE.Vector3 | null {
+  if (!state) return null;
+  return new THREE.Vector3(x - state.cx, (z - state.cz) * lastZExaggeration, state.cy - y);
+}
+
+/** Promítne bod scény na souřadnice klienta (px); null, je-li za kamerou. */
+export function projectSceneToClient(v: THREE.Vector3): { x: number; y: number } | null {
+  if (!state) return null;
+  const p = v.clone().project(state.camera);
+  if (p.z > 1 || p.z < -1) return null;
+  const rect = state.renderer.domElement.getBoundingClientRect();
+  return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height };
+}
+
+/** Je objekt i všichni jeho předci viditelný? */
+function isShown(obj: THREE.Object3D): boolean {
+  for (let o: THREE.Object3D | null = obj; o; o = o.parent) if (!o.visible) return false;
+  return true;
+}
+
+export interface MeasureHit {
+  point: THREE.Vector3;
+  object: THREE.Object3D;
+  /** Datový objekt JVF (název elementu), nebo terén. */
+  elementName: string | null;
+  isTerrain: boolean;
+}
+
+/**
+ * Paprsek pod kurzorem pro měření: zásahy VIDITELNÝCH datových objektů
+ * a terénu, seřazené podle vzdálenosti. U linie je `point` přímo na úsečce
+ * (Three.js), takže slouží jako přichycení k hraně.
+ */
+export function raycastForMeasure(clientX: number, clientY: number): MeasureHit[] {
+  if (!state) return [];
+  const { scene, camera, renderer, orbit } = state;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -(((clientY - rect.top) / rect.height) * 2 - 1),
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Line = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.params.Points = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.setFromCamera(ndc, camera);
+  const targets: THREE.Object3D[] = [];
+  scene.traverse((o) => {
+    if (o.userData[DATA_TAG] !== undefined && o.userData[HIGHLIGHT_TAG] !== true) targets.push(o);
+  });
+  const terrain = state.terrainMeshes.filter((m) => m.visible);
+  const hits = raycaster.intersectObjects([...targets, ...terrain], true);
+  const out: MeasureHit[] = [];
+  for (const h of hits) {
+    if (!isShown(h.object)) continue;
+    let isTerrain = false;
+    let elementName: string | null = null;
+    for (let o: THREE.Object3D | null = h.object; o; o = o.parent) {
+      if (o.userData[TERRAIN_TAG] === true) { isTerrain = true; break; }
+      const tag = o.userData[DATA_TAG];
+      if (typeof tag === 'string') { elementName = tag; break; }
+    }
+    if (!isTerrain && elementName === null) continue;
+    out.push({ point: h.point.clone(), object: h.object, elementName, isTerrain });
+  }
+  return out;
+}
+
+/** Bod na vodorovné rovině (výška scény `sceneY`) pod kurzorem. */
+export function rayPlaneFromClient(clientX: number, clientY: number, sceneY: number): THREE.Vector3 | null {
+  if (!state) return null;
+  const { camera, renderer } = state;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -(((clientY - rect.top) / rect.height) * 2 - 1),
+  ), camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -sceneY);
+  return raycaster.ray.intersectPlane(plane, new THREE.Vector3());
+}
+
+/** Přidá / odebere pomocný objekt (měření) do aktuální scény. */
+export function addSceneOverlay(obj: THREE.Object3D): void {
+  if (state && obj.parent !== state.scene) state.scene.add(obj);
+}
+export function removeSceneOverlay(obj: THREE.Object3D): void {
+  obj.parent?.remove(obj);
+}
+
+/** Velikost vykreslovací plochy v px (pro tloušťku čar LineMaterial). */
+export function getThreeCanvasSize(): { width: number; height: number } | null {
+  if (!state) return null;
+  const c = state.renderer.domElement;
+  return { width: c.clientWidth, height: c.clientHeight };
+}
