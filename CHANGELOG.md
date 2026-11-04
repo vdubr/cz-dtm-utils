@@ -173,6 +173,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
     šachta teplovodu, přístavy).
 - Swatch plochy v legendě a panelu vrstev zachovává průhlednost výplně
   (plocha jen obrysem už není plný čtverec).
+- **Mapa, legenda a 3D z jedné definice stylu** — zvýraznění změnových vět
+  (nové / editované / mazané) už prvek nepřebarví celý (osa komunikace
+  v legendě černá, v mapě zelená), ale kreslí pod ním průsvitný lem barvy
+  změny ve 2D i 3D; prvek si ponechá styl jako v legendě. 3D bere styl po
+  záznamech (varianty podle atributu jako ve 2D) a obrys plochy kreslí
+  barvou obrysu jako 2D. Záznam, jehož varianta nemá v Katalogu barvu
+  (např. OP silnice II. třídy), přebírá barvu z legendy místo náhradní
+  barvy obsahové části. Panel vrstev kreslí swatch stejnou funkcí jako
+  legenda a Přehled prvků.
 - **Rozpixelovaný katastr / DTM / podklad ve 3D** — při přiblížení se
   kolem středu pohledu stáhne podrobný výřez (podklad i překryvy, až
   ~0,1 m/px) a nanese se přes celkovou texturu terénu; stahuje se jen okolí

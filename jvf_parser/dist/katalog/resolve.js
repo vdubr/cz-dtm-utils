@@ -177,15 +177,25 @@ function compose(sym, geom, geomVar, attrVar) {
     return look;
 }
 /**
- * Vzhled záznamu podle Katalogu (bez záznamu jen vzhled objektu a geometrie).
+ * Vzhled záznamu podle Katalogu (bez záznamu vzhled objektu a geometrie).
  * `undefined` pokud objekt v Katalogu není.
+ *
+ * Když vzhled nemá barvu (základ objektu barvu nenese a varianta hodnoty
+ * atributu ji v Katalogu nemá vyplněnou — sloučené buňky tabulky, nebo
+ * hodnota chybí), doplní se barva z reprezentativního vzhledu — téže
+ * definice, kterou kreslí legenda a panel vrstev. Mapa, legenda i export
+ * tak nikdy nemají pro stejný objekt jinou barvu.
  */
 export function resolveKatalogLook(ot, zaznam) {
     const sym = SYMBOLOGY[ot.codeBase];
     if (!sym)
         return undefined;
     const geom = katalogGeomOf(ot.codeSuffix);
-    return compose(sym, geom, geometryVariant(sym, geom), pickVariant(attrCandidates(sym, zaznam), geom));
+    const look = compose(sym, geom, geometryVariant(sym, geom), pickVariant(attrCandidates(sym, zaznam), geom));
+    if (look.color || look.fill)
+        return look;
+    const rep = resolveKatalogRepresentativeLook(ot);
+    return rep ? { ...rep, ...look } : look;
 }
 /**
  * Reprezentativní vzhled (legenda, panel vrstev, hladina v CAD): když objekt

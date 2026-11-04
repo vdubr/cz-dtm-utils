@@ -8,57 +8,15 @@ import {
 } from '../state/layerVisibility.js';
 import { isContentPartVisible, subscribeFeatureFilter } from '../state/featureFilter.js';
 import { contentPartTitle } from '../state/contentParts.js';
+import { buildStyleSwatch, swatchKindForObjektovyTyp } from './symbolSwatch.js';
 
-const SVG_BASE = './symboly/';
-
-/** Build the 20×16 symbol element for a layer row. */
+/**
+ * Symbol řádku vrstvy — společný náhled se stejným stylem jako legenda
+ * a Přehled prvků (`buildStyleSwatch` nad `resolveRepresentativeStyle`).
+ */
 function buildSymbolEl(layer: JvfVectorLayer): HTMLElement {
   const ot = layer.objektovyTyp;
-  const geomType = ot.zaznamy[0]?.geometrie[0]?.type ?? 'Point';
-  const s = resolveRepresentativeStyle(ot);
-
-  if (geomType === 'Point') {
-    if (s.pointSvg) {
-      const img = document.createElement('img');
-      img.src = SVG_BASE + s.pointSvg;
-      img.width = 16;
-      img.height = 16;
-      img.className = 'layer-symbol-img';
-      return img;
-    }
-    // Fallback: filled circle
-    const span = document.createElement('span');
-    span.className = 'layer-symbol-dot';
-    span.style.background = s.strokeColor;
-    return span;
-  }
-
-  if (geomType === 'Polygon' || geomType === 'MultiCurve') {
-    // Show polygon as small filled square with border
-    if (geomType === 'Polygon') {
-      const span = document.createElement('span');
-      span.className = 'layer-symbol-polygon';
-      // Strip alpha suffix for border color
-      const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-      // Výplň i s průhledností — plocha jen obrysem (OP, záměry) má jen nádech.
-      span.style.background = s.fillColor;
-      span.style.borderColor = stroke;
-      return span;
-    }
-    // MultiCurve / LineString — horizontal line swatch
-    const span = document.createElement('span');
-    span.className = 'layer-symbol-line';
-    const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-    span.style.background = stroke;
-    return span;
-  }
-
-  // LineString fallback
-  const span = document.createElement('span');
-  span.className = 'layer-symbol-line';
-  const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-  span.style.background = stroke;
-  return span;
+  return buildStyleSwatch(resolveRepresentativeStyle(ot), swatchKindForObjektovyTyp(ot));
 }
 
 /**

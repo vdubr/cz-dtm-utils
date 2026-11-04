@@ -18,8 +18,9 @@ type EntityMeta = ReturnType<typeof getEntityCatalog>[string];
 
 /**
  * Adapter EntityMeta → ObjektovyTyp pro `resolveRepresentativeStyle()`.
- * Ten používá pouze `codeBase` a `obsahovaCast`, ale typový kontrakt
- * vyžaduje plný ObjektovyTyp; doplníme prázdný `zaznamy` array.
+ * Ten používá `codeBase`, `codeSuffix` (typ geometrie) a `obsahovaCast` —
+ * stejná definice stylu jako mapa; typový kontrakt vyžaduje plný
+ * ObjektovyTyp, doplníme prázdný `zaznamy` array.
  */
 function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
   const ot: ObjektovyTyp = {

@@ -118,9 +118,30 @@ describe('resolveKatalogLook — podle hodnoty atributu', () => {
     });
   });
 
-  it('reprezentativní vzhled bere barvu z varianty, když ji základ nemá', () => {
-    expect(resolveKatalogLook(ot('0100000113', '02'))).toEqual({});
+  it('bez barvy v základu i variantě: barva z reprezentativního vzhledu (jako legenda)', () => {
+    // Trasa vodovodu bez atributu → barva první varianty (jako legenda).
     expect(resolveKatalogRepresentativeLook(ot('0100000113', '02'))?.color).toBe('#005ce6');
+    expect(resolveKatalogLook(ot('0100000113', '02'))).toEqual(resolveKatalogRepresentativeLook(ot('0100000113', '02')));
+    // OP silnice II. třídy (4): varianta má v Katalogu jen tloušťku → barva
+    // jako v legendě, ne náhradní barva obsahové části.
+    expect(resolveKatalogLook(ot('0100000294', '03'), attrs({ TypOPPozemniKomunikace: 4 }))).toEqual({
+      color: '#000000',
+      widthMm: 0.18,
+    });
+  });
+
+  it('mapa a legenda mají pro každou entitu × hodnotu atributu barvu (žádný pád na náhradní)', () => {
+    const bezBarvy: string[] = [];
+    for (const e of Object.values(ENTITY_CATALOG)) {
+      const rep = resolveKatalogRepresentativeLook(e);
+      if (!rep?.color && !rep?.fill) continue; // objekt bez barvy v Katalogu vůbec
+      const map = KATALOG_VARIANT_ATTR[e.codeBase];
+      for (const v of [undefined, ...Object.keys(map?.valueToVariantIndex ?? {})]) {
+        const look = resolveKatalogLook(e, v === undefined ? undefined : attrs({ [map!.attrName]: v }));
+        if (!look?.color && !look?.fill) bezBarvy.push(`${e.elementName}=${v}`);
+      }
+    }
+    expect(bezBarvy).toEqual([]);
   });
 
   it('Appearance pro CAD: id symbolu dtm-…, výplň', () => {

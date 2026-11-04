@@ -98,6 +98,8 @@ const INFO_CONTENT_HTML = `
       v Nahlížení do KN</em>, který otevře parcelu ve veřejném Nahlížení do
       katastru nemovitostí s vlastníky (v nové záložce; aplikace vlastníky
       sama nestahuje — ČÚZK je strojově veřejně neposkytuje).
+      Mapa (2D i 3D), legenda, panel vrstev, Přehled prvků i export do CAD
+      používají <strong>jednu definici stylu</strong> — vzhled se neliší.
       Stylování podle <em>Katalogu kartografických symbolů DTM ČR</em> —
       barvy, čárkování linií a varianty podle atributů i podle typu
       geometrie (bod nese značku varianty, plocha obrys a výplň, definiční
@@ -208,13 +210,14 @@ const INFO_CONTENT_HTML = `
       <strong>nové</strong> (<code>i</code>) zeleně,
       <strong>editované</strong> (<code>u</code>) oranžově,
       <strong>mazané</strong> (<code>d</code>) sytě červeně. Po zaškrtnutí
-      se geometrie daného typu vykreslí příslušnou barvou ve 2D i 3D, takže
+      dostane geometrie daného typu ve 2D i 3D průsvitný lem příslušné
+      barvy — prvek sám zůstává ve svém stylu (stejném jako v legendě), takže
       rovnou vidíte, co přijetím dávky do DTM přibude, změní se nebo zmizí.
       Po odškrtnutí se záznamy daného typu skryjí. Default je vše zaškrtnuto.
       Funguje i pro nově vytvořené JVF soubory DI/TI, jejichž prvky ještě
       nemají přidělená DTM ID. Přepínač <strong>Zvýraznit změny
-      barvou</strong> přebarvení vypne — záznamy zůstanou viditelné, ale
-      kreslí se vlastní symbologií. U souborů <strong>UDM</strong> a
+      barvou</strong> lemy vypne — záznamy zůstanou viditelné jen ve vlastní
+      symbologii. U souborů <strong>UDM</strong> a
       <strong>ŽXML</strong> (data geodeta celá jako nová) je zvýraznění ve
       výchozím stavu vypnuté.
     </li>

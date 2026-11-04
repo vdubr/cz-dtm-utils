@@ -15,6 +15,7 @@ import { getOverlayStates } from './state/overlays.js';
 import {
   buildJvfLayers,
   addJvfLayersToMap,
+  isJvfHaloLayer,
   removeJvfLayersFromMap,
   isJvfFeatureDisplayed,
   type JvfVectorLayer,
@@ -427,7 +428,9 @@ olMap.on('singleclick', (evt) => {
       }
       return false;
     },
-    { hitTolerance: 4 },
+    // Lemy changeset záznamů nejsou klikatelné (jinak by lem sousedního
+    // prvku přebil klik na malý prvek při oddálení).
+    { hitTolerance: 4, layerFilter: (layer) => !isJvfHaloLayer(layer) },
   );
   if (!picked) return;
   const { elementName, objectId } = picked;

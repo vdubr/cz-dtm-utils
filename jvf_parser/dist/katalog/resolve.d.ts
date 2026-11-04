@@ -56,8 +56,14 @@ export declare function getKatalogSymbology(codeBase: string): ObjectSymbology |
  */
 export declare function parseKatalogLineStyle(lineStyle: string | undefined): number[] | undefined;
 /**
- * Vzhled záznamu podle Katalogu (bez záznamu jen vzhled objektu a geometrie).
+ * Vzhled záznamu podle Katalogu (bez záznamu vzhled objektu a geometrie).
  * `undefined` pokud objekt v Katalogu není.
+ *
+ * Když vzhled nemá barvu (základ objektu barvu nenese a varianta hodnoty
+ * atributu ji v Katalogu nemá vyplněnou — sloučené buňky tabulky, nebo
+ * hodnota chybí), doplní se barva z reprezentativního vzhledu — téže
+ * definice, kterou kreslí legenda a panel vrstev. Mapa, legenda i export
+ * tak nikdy nemají pro stejný objekt jinou barvu.
  */
 export declare function resolveKatalogLook(ot: CodeKey, zaznam?: AttrSource): KatalogLook | undefined;
 /**

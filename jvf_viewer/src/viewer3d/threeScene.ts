@@ -1,6 +1,9 @@
 import * as THREE from 'three';
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import type { ObjektovyTyp, Geometry } from 'jvf-parser';
-import { resolveStyle } from '../map/jvfLayers.js';
+import { resolveStyleForZaznam } from '../map/jvfLayers.js';
 import {
   isShowZapis,
   shouldHighlightZapis,
@@ -64,42 +67,98 @@ const ZAPIS_HIGHLIGHT_HEX: Record<ChangesetZapisType, number> = {
 };
 
 /**
- * Nastavit barvu materiálu(ů) objektu na `colorHex`. Sdílená implementace pro
- * `applyZapisColorToObject` (changeset barva) i `restoreOriginalColor`
- * (návrat na původní ČÚZK barvu) — obě jen zapisují hex do `material.color`.
- * Three.js Sprite (SVG ikona) má `SpriteMaterial` bez viditelného efektu, pokud
- * `color` chybí — proto `apply` bezpečně no-opuje, pokud materiál barvu nemá;
- * Line / LineLoop / Points mají `*BasicMaterial.color`.
+ * Lem changeset záznamu ve 3D (obdoba 2D): prvek si ponechá styl Katalogu
+ * (jako v legendě) a pod ním se kreslí průsvitný lem v barvě typu změny —
+ * u linií a obrysů tlustá čára (Line2), u bodů kruh. Lem je potomkem
+ * objektu (dědí viditelnost), nereaguje na raycast (výběr, měření)
+ * a zapíná / vypíná se v `applyChangesetHighlight`.
  */
-function setObjectMaterialColor(obj: THREE.Object3D, colorHex: number): void {
-  const withMat = obj as THREE.Object3D & { material?: unknown };
-  const mat = withMat.material as
-    | THREE.Material
-    | THREE.Material[]
-    | undefined;
-  if (!mat) return;
-  const apply = (m: THREE.Material): void => {
-    const colored = m as THREE.Material & { color?: THREE.Color };
-    if (colored.color) colored.color.setHex(colorHex);
-  };
-  if (Array.isArray(mat)) mat.forEach(apply);
-  else apply(mat);
+const ZAPIS_HALO_TAG = 'jvfZapisHalo';
+const ZAPIS_HALO_WIDTH_PX = 6;
+const ZAPIS_HALO_POINT_PX = 18;
+const zapisHaloLineMaterials = new Map<ChangesetZapisType, LineMaterial>();
+const zapisHaloPointMaterials = new Map<ChangesetZapisType, THREE.PointsMaterial>();
+let zapisHaloDot: THREE.Texture | null = null;
+
+function zapisHaloLineMaterial(zapis: ChangesetZapisType): LineMaterial {
+  let m = zapisHaloLineMaterials.get(zapis);
+  if (!m) {
+    m = new LineMaterial({
+      color: ZAPIS_HIGHLIGHT_HEX[zapis],
+      linewidth: ZAPIS_HALO_WIDTH_PX,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+    });
+    const size = getThreeCanvasSize();
+    if (size) m.resolution.set(size.width, size.height);
+    zapisHaloLineMaterials.set(zapis, m);
+  }
+  return m;
 }
 
-/** Aplikovat barvu changeset záznamu na materiál objektu. */
-function applyZapisColorToObject(obj: THREE.Object3D, colorHex: number): void {
-  setObjectMaterialColor(obj, colorHex);
+function zapisHaloPointMaterial(zapis: ChangesetZapisType): THREE.PointsMaterial {
+  let m = zapisHaloPointMaterials.get(zapis);
+  if (!m) {
+    if (!zapisHaloDot) {
+      // Kulatá tečka (PointsMaterial jinak kreslí čtverce).
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const ctx = c.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(32, 32, 30, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      zapisHaloDot = new THREE.CanvasTexture(c);
+    }
+    m = new THREE.PointsMaterial({
+      color: ZAPIS_HIGHLIGHT_HEX[zapis],
+      size: ZAPIS_HALO_POINT_PX,
+      sizeAttenuation: false,
+      map: zapisHaloDot,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+    });
+    zapisHaloPointMaterials.set(zapis, m);
+  }
+  return m;
 }
 
-/**
- * Vrátit objektu jeho původní barvu uloženou v `userData['jvfOrigColorHex']`
- * při buildu. Volá se, když uživatel odškrtne changeset checkbox
- * a `applyChangesetHighlight` chce vrátit obarvené objekty zpět na ČÚZK barvy.
- */
-function restoreOriginalColor(obj: THREE.Object3D): void {
-  const orig = obj.userData['jvfOrigColorHex'];
-  if (typeof orig !== 'number') return;
-  setObjectMaterialColor(obj, orig);
+/** Tloušťka lemu v px závisí na velikosti plátna — po změně velikosti. */
+function updateZapisHaloResolution(width: number, height: number): void {
+  for (const m of zapisHaloLineMaterials.values()) m.resolution.set(width, height);
+}
+
+/** Přidá objektu (linie, obrys, bod, symbol) lem v barvě typu změny. */
+function addZapisHalo(obj: THREE.Object3D, zapis: ChangesetZapisType): void {
+  let halo: THREE.Object3D | null = null;
+  if (obj instanceof THREE.Line) {
+    const pos = obj.geometry.getAttribute('position');
+    if (!pos || pos.count < 2) return;
+    const pts = Array.from(pos.array as ArrayLike<number>).slice(0, pos.count * 3);
+    if (obj instanceof THREE.LineLoop) pts.push(pts[0]!, pts[1]!, pts[2]!);
+    const g = new LineGeometry();
+    g.setPositions(pts);
+    halo = new Line2(g, zapisHaloLineMaterial(zapis));
+  } else if (obj instanceof THREE.Points || obj instanceof THREE.Sprite) {
+    const g = new THREE.BufferGeometry();
+    // Points: poloha v geometrii; Sprite: poloha objektu (lem v jeho počátku).
+    const at: number[] =
+      obj instanceof THREE.Points
+        ? Array.from(obj.geometry.getAttribute('position').array as ArrayLike<number>).slice(0, 3)
+        : [0, 0, 0];
+    g.setAttribute('position', new THREE.Float32BufferAttribute(at, 3));
+    halo = new THREE.Points(g, zapisHaloPointMaterial(zapis));
+  }
+  if (!halo) return;
+  halo.userData[ZAPIS_HALO_TAG] = true;
+  halo.raycast = () => {};
+  halo.renderOrder = -1;
+  halo.visible = shouldHighlightZapis(zapis);
+  obj.add(halo);
 }
 
 /** Buffer kolem JVF dat pro stahovaný terén (m) — režim jednoho projektu. */
@@ -521,12 +580,6 @@ function buildSceneObjects(
   // na tutéž instanci) a znovu se založí zde.
   const materialCache = new Map<string, THREE.Material>();
   for (const ot of objekty) {
-    const s = resolveStyle(ot);
-    const color = new THREE.Color(s.strokeColor);
-    // fillColor may have 2-digit alpha suffix (e.g. '#ebe9e855') — strip it for Three.js
-    const fillHex = s.fillColor === 'none' ? s.strokeColor
-      : s.fillColor.length === 9 ? s.fillColor.slice(0, 7) : s.fillColor;
-    const fillColor = new THREE.Color(fillHex);
     const key = layerKey(ot);
     // Klíč viditelnosti vrstvy (kvalifikovaný projektem při ≥2 projektech)
     // + provenience projektu pro filtr prvků.
@@ -536,24 +589,21 @@ function buildSceneObjects(
     const part = String(ot.obsahovaCast);
 
     for (const zaz of ot.zaznamy) {
+      // Styl záznamu — stejná definice jako ve 2D a v legendě (Katalog podle
+      // geometrie a hodnoty atributu, u dialektů jejich vzhled).
+      const s = resolveStyleForZaznam(ot, zaz);
+      const color = new THREE.Color(s.strokeColor);
       // Identifikace záznamu: DTM ID, nebo interní UUID pro záznamy bez ID
       // (nové prvky `ZapisObjektu='i'` — bez něj by nešly pickovat/zvýraznit).
       const objectId = resolveZaznamId(zaz, ot.zaznamy);
       // Holé DTM ID — podle něj hledá prvek panel chyb (viz findSceneObjects).
       const dtmId = dtmIdOf(zaz);
       const zapisObjektu = zaz.zapisObjektu;
-      // Changeset záznamy (i/u/d) mění barvu materiálu za běhu (viz komentář
-      // u `getOrCreateMaterial`) — pro ně vždy vytváříme vlastní instanci
-      // materiálu, aby přebarvení jednoho záznamu neovlivnilo ostatní.
-      const shareableMaterial = !isChangesetZapis(zapisObjektu);
+      // Materiály se sdílejí podle barvy (changeset záznamy se nepřebarvují —
+      // typ změny ukazuje lem, viz `addZapisHalo`).
+      const shareableMaterial = true;
       // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
       const levelKey = resolveLevelKey(zaz);
-      // Při buildu uložíme původní barvu vrstvy do userData — `applyChangesetHighlight`
-      // ji potřebuje pro vrácení changeset objektů zpět na původní vzhled,
-      // když uživatel checkbox odškrtne. Bez toho bychom po flipu znali jen
-      // aktuální (případně přebarvenou) barvu materiálu.
-      const origLineColor = color;
-      const origFillColor = fillColor;
       for (const geom of zaz.geometrie) {
         let obj: THREE.Object3D | null = null;
 
@@ -648,9 +698,10 @@ function buildSceneObjects(
             if (pts.length >= 9) {
               const g = new THREE.BufferGeometry();
               g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+              // Obrys plochy v barvě obrysu — stejně jako ve 2D.
               const mat = shareableMaterial
-                ? getOrCreateMaterial(materialCache, `line:${fillColor.getHex()}`, () => new THREE.LineBasicMaterial({ color: fillColor }))
-                : new THREE.LineBasicMaterial({ color: fillColor });
+                ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
+                : new THREE.LineBasicMaterial({ color });
               obj = new THREE.LineLoop(g, mat);
             }
             break;
@@ -681,11 +732,8 @@ function buildSceneObjects(
                 lineObj.userData['jvfLevel'] = levelKey;
                 lineObj.userData['jvfProjectId'] = projectKey;
                 lineObj.userData['jvfPart'] = part;
-                lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
                 lineObj.visible = computeObjectVisibility(lineObj);
-                if (isChangesetZapis(zapisObjektu) && shouldHighlightZapis(zapisObjektu)) {
-                  lineObj.material.color.setHex(ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
-                }
+                if (isChangesetZapis(zapisObjektu)) addZapisHalo(lineObj, zapisObjektu);
                 scene.add(lineObj);
               }
             }
@@ -702,14 +750,8 @@ function buildSceneObjects(
           obj.userData['jvfLevel'] = levelKey;
           obj.userData['jvfProjectId'] = projectKey;
           obj.userData['jvfPart'] = part;
-          // Polygon používá fillColor, ostatní geometrie používají strokeColor —
-          // pro restoraci po toggle off potřebujeme znát ten správný.
-          const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
-          obj.userData['jvfOrigColorHex'] = origColor.getHex();
           obj.visible = computeObjectVisibility(obj);
-          if (isChangesetZapis(zapisObjektu) && shouldHighlightZapis(zapisObjektu)) {
-            applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
-          }
+          if (isChangesetZapis(zapisObjektu)) addZapisHalo(obj, zapisObjektu);
           scene.add(obj);
           if (obj.userData['jvfSprite'] === true) spriteObjects.push(obj);
         }
@@ -735,6 +777,9 @@ function clearSceneObjects(scene: THREE.Scene, spriteObjects: THREE.Object3D[]):
   });
   for (const obj of toRemove) {
     scene.remove(obj);
+    for (const child of obj.children) {
+      if (child.userData[ZAPIS_HALO_TAG] === true) (child as THREE.Line | THREE.Points).geometry.dispose();
+    }
     const withGeom = obj as Partial<THREE.Line & THREE.Points>;
     withGeom.geometry?.dispose();
     const mat = withGeom.material;
@@ -1028,8 +1073,8 @@ export function resetThreeLayerVisibility(): void {
  * mazané). Pro každý objekt s `userData['jvfZapisObjektu']` ∈ {i, u, d}
  * nastaví viditelnost a barvu podle `isShowZapis(typ)`:
  *
- *   flag = true  → obj.visible = layerVisible, materiál v barvě typu změny
- *   flag = false → obj.visible = false (skryje), barva se vrací na původní
+ *   flag = true  → obj.visible = layerVisible, lem v barvě typu změny zapnutý
+ *   flag = false → obj.visible = false (skryje), lem vypnutý
  *
  * Funkce respektuje per-vrstvu skrytí (`hiddenLayers`) — když uživatel
  * skrývá celou vrstvu, changeset objekt z ní zůstává skrytý i když je
@@ -1048,10 +1093,8 @@ export function applyChangesetHighlight(): void {
     obj.visible =
       computeObjectVisibility(obj) &&
       (obj.userData['jvfSprite'] !== true || radiusOk);
-    if (show) {
-      applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapis]);
-    } else {
-      restoreOriginalColor(obj);
+    for (const child of obj.children) {
+      if (child.userData[ZAPIS_HALO_TAG] === true) child.visible = show;
     }
   });
 }
@@ -1527,6 +1570,7 @@ export function resizeThreeScene(canvas: HTMLCanvasElement): void {
   state.camera.aspect = width / height;
   state.camera.updateProjectionMatrix();
   state.renderer.setSize(width, height, false);
+  updateZapisHaloResolution(width, height);
 }
 
 // ── Highlight & zoom ─────────────────────────────────────────────────────────

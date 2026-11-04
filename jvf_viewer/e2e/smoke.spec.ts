@@ -273,6 +273,46 @@ test.describe('Načtení JVF souboru', () => {
     expect(noFill).not.toMatch(lesHatch);
   });
 
+  test('mapa a legenda: stejný styl i u změnových vět (změna jen lemem pod prvkem)', async ({ page }) => {
+    // ukazka_DI = změnové věty, všechny záznamy nové (i) → zvýraznění zapnuté.
+    await page.setInputFiles('#file-input', fixturePath('ukazka_DI.xml'));
+    await expect(page.locator('#toggle-highlight-zapis')).toBeChecked();
+    const look = await page.evaluate(() => {
+      type St = { getStroke(): { getColor(): string } | null } | null;
+      type L = {
+        objektovyTyp: { elementName: string };
+        olLayer: { getSource(): { getFeatures(): unknown[] }; getStyleFunction(): (f: unknown, r: number) => St };
+        haloLayer: { getStyleFunction(): (f: unknown, r: number) => St };
+      };
+      const l = (window as unknown as { __jvfDebug: { getJvfLayers(): L[] } }).__jvfDebug
+        .getJvfLayers()
+        .find((x) => x.objektovyTyp.elementName === 'OsaPozemniKomunikace')!;
+      const f = l.olLayer.getSource().getFeatures()[0];
+      return {
+        map: l.olLayer.getStyleFunction()(f, 1)?.getStroke()?.getColor(),
+        halo: l.haloLayer.getStyleFunction()(f, 1)?.getStroke()?.getColor(),
+      };
+    });
+    // Prvek ve stylu Katalogu (černá osa jako v legendě), změna = zelený lem.
+    expect(look.map).toBe('#000000');
+    expect(look.halo).toBe('#2da44e80');
+    const swatch = page.locator('.layer-item', { hasText: 'osa pozemní komunikace' }).locator('line, .layer-symbol-line').first();
+    const swatchColor = await swatch.evaluate((el) =>
+      el.getAttribute('stroke') ?? getComputedStyle(el).backgroundColor,
+    );
+    expect(['#000000', 'rgb(0, 0, 0)']).toContain(swatchColor);
+    // Bez zvýraznění lem zmizí, styl prvku zůstává.
+    await page.locator('#toggle-highlight-zapis').uncheck({ force: true });
+    const haloOff = await page.evaluate(() => {
+      type L = { objektovyTyp: { elementName: string }; olLayer: { getSource(): { getFeatures(): unknown[] } }; haloLayer: { getStyleFunction(): (f: unknown, r: number) => unknown } };
+      const l = (window as unknown as { __jvfDebug: { getJvfLayers(): L[] } }).__jvfDebug
+        .getJvfLayers()
+        .find((x) => x.objektovyTyp.elementName === 'OsaPozemniKomunikace')!;
+      return l.haloLayer.getStyleFunction()(l.olLayer.getSource().getFeatures()[0], 1) ?? null;
+    });
+    expect(haloOff).toBeNull();
+  });
+
   test('Export do CAD v režimu UDM stáhne DXF ve vzhledu UDM', async ({ page }) => {
     await switchMode(page, 'udm');
     await expect(page.locator('#btn-export-cad')).toBeVisible();

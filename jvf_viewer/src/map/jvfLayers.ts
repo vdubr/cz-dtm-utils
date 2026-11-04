@@ -48,8 +48,9 @@ export { KATALOG_FALLBACK_COLORS as LAYER_COLORS } from 'jvf-parser';
 /**
  * Barvy pro vizualizaci changeset záznamů podle `ZapisObjektu`:
  *   'i' — nové (zeleně), 'u' — editované (oranžově), 'd' — mazané (červeně).
- * Záměrně syté, aby šly typy změn na první pohled odlišit. Fill má 20 % alpha.
- * Barvy odpovídají badge barvám I/U/D v Přehledu prvků (style.css).
+ * Záměrně syté, aby šly typy změn na první pohled odlišit. Barvy odpovídají
+ * badge barvám I/U/D v Přehledu prvků (style.css). Kreslí se jako průsvitný
+ * lem POD prvkem — prvek sám si ponechá styl Katalogu (jako v legendě).
  */
 export const ZAPIS_HIGHLIGHT_COLORS: Record<
   ChangesetZapisType,
@@ -302,8 +303,25 @@ function createStyleForGeom(
   }
 }
 
+/**
+ * Lem changeset záznamu (pod prvkem): u linií a obrysů ploch široká
+ * průsvitná čára, u bodů průsvitný kruh pod symbolem. Barva = typ změny.
+ */
+function createZapisHaloStyle(geomType: Geometry['type'], s: ResolvedStyle, color: string): Style {
+  const halo = color + '80';
+  if (geomType === 'Point') {
+    return new Style({
+      image: new CircleStyle({ radius: 9, fill: new Fill({ color: halo }) }),
+    });
+  }
+  const width = (geomType === 'Polygon' ? Math.max(1, s.strokeWidthPx * 0.5) : s.strokeWidthPx) + 6;
+  return new Style({ stroke: new Stroke({ color: halo, width }) });
+}
+
 export interface JvfVectorLayer {
   olLayer: VectorLayer;
+  /** Lemy changeset záznamů (pod daty, neklikatelné). */
+  haloLayer: VectorLayer;
   objektovyTyp: ObjektovyTyp;
   featureCount: number;
   /** Id projektu, ze kterého vrstva pochází (null bez provenience). */
@@ -444,50 +462,66 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         if (!s || !geomType) return undefined;
         // Filtr prvků a changeset přepínače — odfiltrované záznamy se nekreslí.
         if (!isJvfFeatureDisplayed(feature)) return undefined;
-        // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — přebarvíme podle
-        // typu změny (zelená/oranžová/červená), je-li zvýraznění zapnuté.
-        const zo = feature.get('jvfZapisObjektu') as string | undefined;
-        if (isChangesetZapis(zo)) {
-          // Zvýraznění vypnuté → viditelný záznam s vlastní symbologií.
-          if (!isHighlightZapis()) return createStyleForGeom(geomType, s, resolution);
-          const hl = ZAPIS_HIGHLIGHT_COLORS[zo];
-          const zapisStyle: ResolvedStyle = {
-            ...s,
-            fillColor: hl.fill,
-            strokeColor: hl.stroke,
-            strokeWidthPx: Math.max(s.strokeWidthPx, 2),
-            // Bez SVG ikony — changeset body chceme barevnou tečkou, ne SVG
-            // symbol (jinak by uživatel barvu nepoznal — symbol kreslí ČÚZK
-            // barvami).
-            pointSvg: undefined,
-          };
-          return createStyleForGeom(geomType, zapisStyle, resolution);
-        }
+        // Changeset záznamy se kreslí ve vlastním stylu (jako v legendě);
+        // typ změny ukazuje lem ve vrstvě `haloLayer` pod daty.
         return createStyleForGeom(geomType, s, resolution);
       },
     });
 
+    // Lemy changeset záznamů (nové / editované / mazané): samostatná vrstva
+    // nad stejným zdrojem, pod vrstvami dat — lemy leží pod všemi prvky
+    // a nezachytávají klik (výběr prvku ji vyřazuje, viz `isJvfHaloLayer`).
+    // Viditelnost i překreslení (`olLayer.changed()` po změně filtrů
+    // a přepínačů) přebírá od vrstvy dat.
+    const haloLayer = new VectorLayer({
+      source,
+      updateWhileInteracting: true,
+      updateWhileAnimating: true,
+      properties: { [HALO_LAYER_PROP]: true },
+      style: (feature) => {
+        const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
+        const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
+        const zo = feature.get('jvfZapisObjektu') as string | undefined;
+        if (!s || !geomType || !isChangesetZapis(zo) || !isHighlightZapis()) return undefined;
+        if (!isJvfFeatureDisplayed(feature)) return undefined;
+        return createZapisHaloStyle(geomType, s, ZAPIS_HIGHLIGHT_COLORS[zo].stroke);
+      },
+    });
+    olLayer.on('change', () => haloLayer.changed());
+    olLayer.on('change:visible', () => haloLayer.setVisible(olLayer.getVisible()));
+
     olLayer.set('jvfNazev', ot.nazev);
     olLayer.set('jvfObsahova', ot.obsahovaCast);
 
-    layers.push({ olLayer, objektovyTyp: ot, featureCount: features.length, projectId });
+    layers.push({ olLayer, haloLayer, objektovyTyp: ot, featureCount: features.length, projectId });
   }
 
   return { layers, extent: totalExtent };
 }
 
-/** Pořadí vrstev JVF v mapě: nad podkladem (0) a překryvem DTM (1–5). */
+/** Pořadí vrstev JVF v mapě: nad podkladem (0) a překryvy DTM / KN (1–8). */
 export const JVF_LAYER_Z_INDEX = 10;
+/** Lemy changeset záznamů — pod daty JVF, nad překryvy. */
+const JVF_HALO_Z_INDEX = JVF_LAYER_Z_INDEX - 1;
+const HALO_LAYER_PROP = 'jvfHalo';
+
+/** Je vrstva lemů changeset záznamů? (Výběr prvku klikem ji přeskakuje.) */
+export function isJvfHaloLayer(layer: { get(key: string): unknown }): boolean {
+  return layer.get(HALO_LAYER_PROP) === true;
+}
 
 export function addJvfLayersToMap(map: Map, layers: JvfVectorLayer[]): void {
-  for (const { olLayer } of layers) {
+  for (const { olLayer, haloLayer } of layers) {
+    haloLayer.setZIndex(JVF_HALO_Z_INDEX);
+    map.addLayer(haloLayer);
     olLayer.setZIndex(JVF_LAYER_Z_INDEX);
     map.addLayer(olLayer);
   }
 }
 
 export function removeJvfLayersFromMap(map: Map, layers: JvfVectorLayer[]): void {
-  for (const { olLayer } of layers) {
+  for (const { olLayer, haloLayer } of layers) {
+    map.removeLayer(haloLayer);
     map.removeLayer(olLayer);
   }
 }
