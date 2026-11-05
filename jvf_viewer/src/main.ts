@@ -228,6 +228,7 @@ injectSpeedInsights();
 // jen produkce s klíčem VITE_POSTHOG_KEY, viz analytics.ts.
 initAnalytics();
 onViewModeChange(trackViewMode);
+document.querySelector('.linkedin-link')?.addEventListener('click', () => track('linkedin_click', {}));
 onMeasureActiveChange((on) => {
   if (on) track('measure', { view: getIs3dActive() ? '3d' : '2d' });
 });

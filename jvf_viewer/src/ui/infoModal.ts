@@ -453,8 +453,8 @@ const INFO_CONTENT_HTML = `
     JVF, velikost jen v hrubém pásmu), přepnutí režimu JVF / UDM / JŽM,
     kontrolu, Přehled prvků, klik na prvek v mapě (jen typ objektu, např.
     „budova"), měření, podkladové mapy, překryvy DTM / katastru,
-    dotaz na parcelu, dobu ve 3D, zapnutí SVG symbolů a terénu ve 3D, motiv
-    a export do CAD.
+    dotaz na parcelu, dobu ve 3D, zapnutí SVG symbolů a terénu ve 3D, motiv,
+    export do CAD a klik na odkaz autora (LinkedIn) v patičce.
     <strong>Nikdy</strong> se neodesílají názvy vašich souborů, souřadnice,
     ID prvků, atributy ani údaje o parcelách. Měření nepoužívá cookies ani
     úložiště prohlížeče (každé otevření stránky je nový anonymní návštěvník),
@@ -535,28 +535,28 @@ const INFO_CONTENT_HTML = `
   ${buildChangelogHtml()}
 `;
 
+/** Otevře dialog O aplikaci (odkaz „O aplikaci a historie verzí" ve spouštěči nástrojů). */
+export function openInfoModal(): void {
+  const modal = document.getElementById('info-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
 export function setupInfoModal(): void {
-  const btn = document.getElementById('btn-info');
   const modal = document.getElementById('info-modal');
   const closeBtn = document.getElementById('info-modal-close');
   const body = document.getElementById('info-modal-body');
 
-  if (!btn || !modal || !closeBtn || !body) {
+  if (!modal || !closeBtn || !body) {
     console.warn('[infoModal] chybí některý DOM prvek');
     return;
   }
 
   body.innerHTML = INFO_CONTENT_HTML;
 
-  const open = (): void => {
-    modal.style.display = 'flex';
-  };
-
   const close = (): void => {
     modal.style.display = 'none';
   };
 
-  btn.addEventListener('click', open);
   closeBtn.addEventListener('click', close);
 
   // Klik mimo dialog = zavření.

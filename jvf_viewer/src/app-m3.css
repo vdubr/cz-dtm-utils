@@ -334,7 +334,9 @@ html, body {
   align-items: flex-start;
   gap: 8px;
   max-width: 100%;
-  max-height: calc(100vh - 140px);
+  /* Karta se otevírá pod lištou mimo tok — šířka sloupce = šířka lišty,
+     takže otevřená karta neodsouvá sousední skupinu tlačítek. */
+  position: relative;
 }
 /* Tlačítko překryvu (Katastr): zapnutý překryv = jen aktivní barva textu a ikony. */
 .map-toggle-btn.is-on { color: var(--md-sys-color-primary); }
@@ -382,8 +384,13 @@ html, body {
   background: var(--md-sys-color-outline-variant);
 }
 .basemap-card {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1;
   width: 320px;
-  max-width: 100%;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 160px);
   min-height: 0;
   overflow-y: auto;
   box-sizing: border-box;
@@ -564,8 +571,6 @@ html, body {
   color: var(--md-sys-color-on-surface-variant);
   border-top: 1px solid var(--md-sys-color-outline-variant);
 }
-.footer-info-btn { width: 40px; height: 40px; border-radius: var(--md-sys-shape-corner-full); color: var(--md-sys-color-on-surface-variant); }
-.footer-info-btn .material-symbols-outlined { font-size: 24px; }
 .build-info { font-family: var(--md-sys-typescale-mono); font-size: 11px; }
 
 /* ===== Side sheets — validace a přehled prvků ===== */

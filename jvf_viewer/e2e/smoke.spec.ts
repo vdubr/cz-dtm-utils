@@ -660,7 +660,11 @@ test.describe('Přepínání 2D / 3D', () => {
 test.describe('Modály a ovládání', () => {
   test('modal O aplikaci se otevře a zavře', async ({ page }) => {
     await expect(page.locator('#info-modal')).toBeHidden();
-    await page.locator('#btn-info').click();
+    // Jediný vstup je odkaz ve spouštěči nástrojů (ikona „i" v patičce odpadla).
+    await expect(page.locator('#btn-info')).toHaveCount(0);
+    await page.locator('#btn-app-launcher').click();
+    await page.locator('.app-launcher-link', { hasText: 'O aplikaci a historie verzí' }).click();
+    await expect(page.locator('#app-launcher')).toBeHidden();
     await expect(page.locator('#info-modal')).toBeVisible();
     await expect(page.locator('#info-modal-body')).not.toBeEmpty();
 

@@ -21,7 +21,7 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   adrese: použití funkcí (soubor / ukázka, režim, kontrola, Přehled
   prvků, klik na prvek v mapě — jen typ objektu, měření, podklady,
   překryvy, dotaz na parcelu, motiv, export do CAD, SVG symboly a terén
-  ve 3D), aktivní čas v aplikaci a doba ve 3D. Bez cookies a úložiště
+  ve 3D, klik na LinkedIn autora), aktivní čas v aplikaci a doba ve 3D. Bez cookies a úložiště
   prohlížeče, bez záznamu obrazovky; nikdy názvy souborů, souřadnice,
   ID prvků, atributy ani údaje o parcelách. Popis v info modalu.
 - **Export do CAD i v režimu JVF** — tlačítko Export do CAD (AutoCAD DXF)
@@ -124,6 +124,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **„O aplikaci a historie verzí"** se otevírá jen ze spouštěče nástrojů —
+  zdvojená ikona „i" v patičce levého panelu odpadla.
+- **Karty nad mapou** (Podkladová mapa, DTM, Katastr) se otevírají pod lištou
+  přes mapu a neodsouvají sousední skupinu tlačítek.
 - **Vodotisk „Přetáhněte data ve formátu JVF"** s ikonou uprostřed levého
   panelu, dokud nejsou načtená data (v UDM a JŽM s formátem UDM / ŽXML);
   ikona je tlačítko, které otevře výběr souboru. Nahrazuje hlášku

@@ -25,6 +25,7 @@ import {
 } from '../state/appMode.js';
 import { getProjectCount } from '../state/projects.js';
 import { showConfirm } from './confirmModal.js';
+import { openInfoModal } from './infoModal.js';
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -201,9 +202,9 @@ export function setupAppModeSwitch(): void {
 
     const links = document.createElement('div');
     links.className = 'app-launcher-links';
-    for (const [label, targetId] of [
-      ['Legenda DTM', 'btn-legend'],
-      ['O aplikaci a historie verzí', 'btn-info'],
+    for (const [label, action] of [
+      ['Legenda DTM', () => document.getElementById('btn-legend')?.click()],
+      ['O aplikaci a historie verzí', openInfoModal],
     ] as const) {
       const link = document.createElement('button');
       link.type = 'button';
@@ -212,7 +213,7 @@ export function setupAppModeSwitch(): void {
       link.addEventListener('click', () => {
         close();
         closeDrawer();
-        document.getElementById(targetId)?.click();
+        action();
       });
       links.appendChild(link);
     }

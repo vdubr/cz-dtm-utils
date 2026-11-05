@@ -45,6 +45,8 @@ export interface AnalyticsEvents {
   view_3d: { seconds: number };
   theme_change: { theme: 'light' | 'dark' };
   export_dxf: { mode: string; format: string; fill: boolean };
+  /** Klik na odkaz autora (LinkedIn) v patičce panelu. */
+  linkedin_click: Record<string, never>;
 }
 
 type EventName = keyof AnalyticsEvents;
