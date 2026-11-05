@@ -37,7 +37,17 @@ export async function switchMode(page: Page, mode: 'jvf' | 'udm' | 'jzm'): Promi
   await expect(page.locator('html')).toHaveAttribute('data-app', mode);
 }
 
-/** Otevře kartu „Katastr" nad mapou (je-li zavřená) — přepínač a vrstvy katastru jsou v ní. */
+/** Otevře kartu překryvu nad mapou (je-li zavřená) — přepínač a vrstvy překryvu jsou v ní. */
+async function openOverlayCard(page: Page, id: 'dtm' | 'kn'): Promise<void> {
+  if (await page.locator(`#${id}-card`).isHidden()) await page.locator(`#btn-${id}-menu`).click();
+}
+
+/** Otevře kartu „Katastr" nad mapou (je-li zavřená). */
 export async function openKnCard(page: Page): Promise<void> {
-  if (await page.locator('#kn-card').isHidden()) await page.locator('#btn-kn-menu').click();
+  await openOverlayCard(page, 'kn');
+}
+
+/** Otevře kartu „DTM" nad mapou (je-li zavřená). */
+export async function openDtmCard(page: Page): Promise<void> {
+  await openOverlayCard(page, 'dtm');
 }

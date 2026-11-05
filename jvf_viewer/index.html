@@ -124,8 +124,6 @@
           <span class="drawer-app-name" data-app-name>JVF Prohlížeč</span>
           <span class="material-symbols-outlined" aria-hidden="true">apps</span>
         </button>
-        <!-- Překryv DTM ČR — obsah kreslí ui/overlayPanel.ts (katastr je kartou nad mapou) -->
-        <div class="panel-section overlay-section" id="overlay-dtm"></div>
         <div class="panel-section" id="projects-section" style="display:none">
           <button type="button" class="panel-section-title projects-header" id="projects-header" aria-expanded="true" title="Sbalit / rozbalit seznam projektů">
             <span class="material-symbols-outlined projects-chevron">expand_more</span>
@@ -195,14 +193,14 @@
       <div id="drawer-scrim" class="drawer-scrim" hidden></div>
       <main id="map-area">
         <div id="map-container"></div>
-        <!-- Podkladová mapa nad mapou (jako mapy.cz) — map/cuzk.ts: „Změnit mapu"
+        <!-- Podkladová mapa nad mapou (jako mapy.cz) — map/cuzk.ts: „Podkladová mapa"
              otevře kartu se seznamem náhledů, „Letecká" rychle přepne na ortofoto a zpět. -->
         <!-- Plovoucí ovládání nad mapou vlevo nahoře (ui/mapCard.ts). -->
         <div class="map-top-controls">
         <div id="basemap-control" class="map-control">
           <div class="basemap-bar" role="group" aria-label="Podkladová mapa">
             <button id="btn-basemap-menu" class="basemap-bar-btn basemap-bar-menu" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="basemap-card" title="Vybrat podkladovou mapu a její sytost">
-              <span class="material-symbols-outlined" aria-hidden="true">layers</span><span>Změnit mapu</span>
+              <span class="material-symbols-outlined" aria-hidden="true">layers</span><span>Podkladová mapa</span>
               <span id="basemap-spinner" class="terrain-spinner" hidden></span>
             </button>
             <button id="btn-basemap-quick" class="basemap-bar-btn" type="button" title="Přepnout na leteckou mapu (ortofoto)">
@@ -235,12 +233,19 @@
             </div>
           </div>
         </div>
-        <!-- Katastr nemovitostí — karta s překryvem z ČÚZK (obsah kreslí ui/overlayPanel.ts). -->
-        <div id="kn-control" class="map-control">
-          <div class="basemap-bar" role="group" aria-label="Katastr nemovitostí">
+        <!-- Překryvy DTM ČR a Katastr nemovitostí — jedna skupina tlačítek, každé
+             otevře svou kartu (obsah kreslí ui/overlayPanel.ts). -->
+        <div id="overlay-control" class="map-control">
+          <div class="basemap-bar" role="group" aria-label="Překryvné vrstvy">
+            <button id="btn-dtm-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="dtm-card" title="DTM ČR — překryv Digitální technické mapy ČR (ČÚZK), výběr vrstev a sytost">
+              <span class="material-symbols-outlined" aria-hidden="true">polyline</span><span>DTM</span>
+            </button>
             <button id="btn-kn-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="kn-card" title="Katastr nemovitostí — překryv ČÚZK, výběr vrstev a sytost">
               <span class="material-symbols-outlined" aria-hidden="true">grid_on</span><span>Katastr</span>
             </button>
+          </div>
+          <div id="dtm-card" class="basemap-card" role="dialog" aria-label="DTM ČR" hidden>
+            <div class="overlay-section" id="overlay-dtm"></div>
           </div>
           <div id="kn-card" class="basemap-card" role="dialog" aria-label="Katastr nemovitostí" hidden>
             <div class="overlay-section" id="overlay-kn"></div>

@@ -311,7 +311,7 @@ html, body {
 .section-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
 .section-icon-btn .material-symbols-outlined { font-size: 20px; }
 
-/* Podkladová mapa nad mapou (jako mapy.cz): skupina tlačítek „Změnit mapu |
+/* Podkladová mapa nad mapou (jako mapy.cz): skupina tlačítek „Podkladová mapa |
    Letecká" vlevo nahoře, karta se seznamem náhledů; vybraná mapa je
    podbarvená a pod ní je minimalistický posuvník sytosti. */
 .map-top-controls {
@@ -336,12 +336,8 @@ html, body {
   max-width: 100%;
   max-height: calc(100vh - 140px);
 }
-/* Tlačítko překryvu (Katastr): podbarvené, když je překryv zapnutý. */
-.map-toggle-btn.is-on {
-  background: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
-}
-.map-toggle-btn.is-on:hover { background: color-mix(in srgb, var(--md-sys-color-on-secondary-container) 12%, var(--md-sys-color-secondary-container)); }
+/* Tlačítko překryvu (Katastr): zapnutý překryv = jen aktivní barva textu a ikony. */
+.map-toggle-btn.is-on { color: var(--md-sys-color-primary); }
 /* Obsah překryvu v kartě (ui/overlayPanel.ts) — bez rámování sekce panelu. */
 .basemap-card .overlay-section { max-height: none; overflow: visible; padding: 2px 4px; }
 .basemap-bar {

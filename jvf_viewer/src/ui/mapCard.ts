@@ -1,5 +1,5 @@
 /**
- * Plovoucí karty nad mapou (Změnit mapu, Katastr — jako mapy.cz): tlačítko
+ * Plovoucí karty nad mapou (Podkladová mapa, DTM, Katastr — jako mapy.cz): tlačítko
  * otevře / zavře kartu, klik mimo nebo Esc ji zavře. Otevřená může být jen
  * jedna karta.
  */

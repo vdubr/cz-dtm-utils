@@ -44,7 +44,7 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   obrazy parcel, další prvky mapy, KM-D, analogové mapy, orientační mapa
   parcel) a vlastní sytostí; ve světlém motivu černý, v tmavém bílý
   (inverzní vrstvy ČÚZK), nad DTM a pod daty JVF, ve 3D přehoz přes terén.
-- **Překryvná vrstva DTM ČR** — v panelu vrstev pod podkladovými mapami:
+- **Překryvná vrstva DTM ČR** — tlačítko „DTM" nad mapou:
   Digitální technická mapa ČR ze služeb ČÚZK (IS DMVS, veřejné, bez
   přihlášení) jako volitelný rastrový překryv nad podkladem a pod daty JVF.
   Výběr všech vrstev, celých skupin (ZPS – plochy, DI, TI, přípojky, ZPS –
@@ -126,13 +126,14 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ### Změněno
 
 - **Výběr podkladové mapy nad mapou** (jako mapy.cz): tlačítko
-  „Změnit mapu" vlevo nahoře otevře kartu se seznamem náhledů — Základní
+  „Podkladová mapa" vlevo nahoře otevře kartu se seznamem náhledů — Základní
   mapa, Letecká (ortofoto) a Prázdná; vybraná mapa je podbarvená a pod
   Základní / Leteckou je minimalistický posuvník sytosti. Vedle je rychlé
-  přepnutí na leteckou mapu a zpět. Stejně tak **Katastr nemovitostí** —
-  tlačítko „Katastr" nad mapou otevře kartu s přepínačem, sytostí a výběrem
-  vrstev (podbarvené, když je katastr zapnutý). Sekce „Podkladové mapy"
-  a „Katastr nemovitostí" z levého panelu odpadly.
+  přepnutí na leteckou mapu a zpět. Stejně tak překryvy **DTM ČR**
+  a **Katastr nemovitostí** — tlačítka „DTM" a „Katastr" nad mapou otevřou
+  kartu s přepínačem, sytostí a výběrem vrstev; když je některá vrstva
+  překryvu zobrazená, má tlačítko aktivní barvu textu. Sekce „Podkladové
+  mapy", „DTM ČR" a „Katastr nemovitostí" z levého panelu odpadly.
 - **Sytost podkladu a překryvů od 0** — posuvníky jdou až na nulu, podklad
   lze udělat úplně průhledný (dřív minimum 10 %).
 - **Projekt v panelu: oko a zeměkoule** — oko u projektu skryje / zobrazí

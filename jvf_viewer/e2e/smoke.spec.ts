@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { loadSample, fixturePath, openKnCard, openTool, switchMode } from './helpers';
+import { loadSample, fixturePath, openDtmCard, openKnCard, openTool, switchMode } from './helpers';
 
 /**
  * Kolik prvků 2D mapy style funkce vrstev opravdu kreslí, seskupeno podle
@@ -1315,6 +1315,7 @@ test.describe('Modály a ovládání', () => {
     expect(await visibleDtm()).toEqual([]);
 
     // Zapnout → všech 5 služeb; celé služby přes WMTS, přípojky (bez WMTS) přes WMS.
+    await openDtmCard(page);
     await page.locator('#toggle-dtm').check();
     await expect(page.locator('#dtm-body')).toBeVisible();
     expect((await visibleDtm()).sort()).toEqual([
@@ -1341,10 +1342,13 @@ test.describe('Modály a ovládání', () => {
       && u.includes('LAYERS=bud,prisl_st') && !u.includes('teren_hrana') && u.includes('CRS=EPSG:5514'))).toBe(true);
 
     // Zrušit vše → nic; Vybrat vše → zpět; vypnutí → nic.
+    await openDtmCard(page);
     await page.locator('#overlay-dtm [data-overlay-all="0"]').click();
     expect(await visibleDtm()).toEqual([]);
+    await openDtmCard(page);
     await page.locator('#overlay-dtm [data-overlay-all="1"]').click();
     expect(await visibleDtm()).toHaveLength(5);
+    await openDtmCard(page);
     await page.locator('#toggle-dtm').uncheck();
     expect(await visibleDtm()).toEqual([]);
     await expect(page.locator('#dtm-body')).toBeHidden();
@@ -1591,6 +1595,7 @@ test.describe('Modály a ovládání', () => {
       void route.fulfill({ status: 200, contentType: 'image/png', body: png, headers: { 'access-control-allow-origin': '*' } });
     });
     await loadSample(page, 'ukazka_ZPS.xml');
+    await openDtmCard(page);
     await page.locator('#toggle-dtm').check();
     await page.locator('#btn-3d').click();
     // DTM ve 3D potřebuje terén → zapne se sám.
@@ -1615,7 +1620,7 @@ test.describe('Modály a ovládání', () => {
   });
 
   test('přepínání podkladových map přepíná aktivní tlačítko', async ({ page }) => {
-    // Karta „Změnit mapu" nad mapou; Esc ji zavře.
+    // Karta „Podkladová mapa" nad mapou; Esc ji zavře.
     const card = page.locator('#basemap-card');
     await expect(card).toBeHidden();
     await page.locator('#btn-basemap-menu').click();

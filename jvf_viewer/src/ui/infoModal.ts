@@ -62,7 +62,7 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK, přepínání
       jednotlivých vrstev v levém panelu. Podkladová mapa se vybírá tlačítkem
-      <em>Změnit mapu</em> vlevo nahoře nad mapou (seznam s náhledy:
+      <em>Podkladová mapa</em> vlevo nahoře nad mapou (seznam s náhledy:
       <em>Základní mapa</em>, <em>Letecká</em> (ortofoto) nebo
       <em>Prázdná</em>; vedle je rychlé přepnutí na leteckou mapu a zpět)
       — <em>Prázdná</em> — ta podklad vypne a JVF vrstvy zůstanou nad prázdným
@@ -72,8 +72,9 @@ const INFO_CONTENT_HTML = `
       2D mapu i 3D scénu. Tlačítko motivu v hlavičce přepíná
       <em>světlý (výchozí) / tmavý motiv</em> celé aplikace — panely,
       dialogy, pozadí pod vrstvami ve 2D i 3D.
-      <strong>DTM ČR (překryv)</strong> — přepínač pod podkladovými mapami
-      zobrazí nad podkladem Digitální technickou mapu ČR ze služeb ČÚZK
+      <strong>DTM ČR (překryv)</strong> — tlačítko <em>DTM</em> nad mapou
+      (vedle <em>Podkladová mapa</em>; se zobrazenou vrstvou DTM je zvýrazněné
+      barvou textu) otevře kartu s přepínačem, který zobrazí nad podkladem Digitální technickou mapu ČR ze služeb ČÚZK
       (IS DMVS, data krajských DTM; rastr — vektorová služba DTM celostátně
       neexistuje). Zaškrtnout jde všechny vrstvy (<em>Vybrat vše</em>), celé
       skupiny (ZPS – plochy, Dopravní infrastruktura, Technická
@@ -87,7 +88,8 @@ const INFO_CONTENT_HTML = `
       středu pohledu dočte podrobnější výřez podkladu i překryvů (jen okolí
       pohledu, po zastavení kamery), takže čáry zůstávají ostré.
       <strong>Katastr nemovitostí</strong> — tlačítko <em>Katastr</em> nad
-      mapou (vedle <em>Změnit mapu</em>; podbarvené, když je katastr zapnutý)
+      mapou (vedle <em>DTM</em>; se zobrazenou vrstvou katastru je zvýrazněné
+      barvou textu)
       otevře kartu se stejným překryvem z WMS ČÚZK
       (hranice parcel, parcelní čísla, obrazy parcel, další prvky mapy,
       KM-D, analogové mapy, orientační mapa parcel; všechny nebo jen

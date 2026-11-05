@@ -151,7 +151,7 @@ export function setupBaseLayerSwitcher(
 }
 
 /**
- * Plovoucí výběr podkladu nad mapou (jako mapy.cz): „Změnit mapu" otevře /
+ * Plovoucí výběr podkladu nad mapou (jako mapy.cz): „Podkladová mapa" otevře /
  * zavře kartu se seznamem náhledů (zavře ji i klik mimo nebo Esc), „Letecká"
  * přepne rychle na ortofoto a zpět na předchozí podklad.
  */

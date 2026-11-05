@@ -183,17 +183,17 @@ for (const overlay of getOverlayStates()) {
   setupOverlayPanel(overlay);
 }
 
-// Katastr nemovitostí = karta nad mapou (jako „Změnit mapu"); tlačítko je
-// podbarvené, když je překryv zapnutý.
-setupMapCard('btn-kn-menu', 'kn-card');
-{
-  const kn = getOverlayStates().find((s) => s.def.id === 'kn')!;
-  const knBtn = document.getElementById('btn-kn-menu');
-  const syncKnBtn = (): void => {
-    knBtn?.classList.toggle('is-on', kn.isEnabled());
+// DTM ČR a Katastr nemovitostí = karty nad mapou (jako „Podkladová mapa");
+// tlačítko má aktivní barvu textu, když je některá vrstva překryvu zobrazená.
+for (const overlay of getOverlayStates()) {
+  const id = overlay.def.id;
+  setupMapCard(`btn-${id}-menu`, `${id}-card`);
+  const btn = document.getElementById(`btn-${id}-menu`);
+  const syncBtn = (): void => {
+    btn?.classList.toggle('is-on', overlay.isActive());
   };
-  kn.subscribe(syncKnBtn);
-  syncKnBtn();
+  overlay.subscribe(syncBtn);
+  syncBtn();
 }
 
 // Setup 3D toggle — getObjekty returns current loaded data (union všech projektů)
