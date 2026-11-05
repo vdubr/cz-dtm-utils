@@ -138,8 +138,7 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     groupHeader.className = 'legend-cast-header';
     const color = LAYER_COLORS[cast] ?? '#90a4ae';
     groupHeader.innerHTML = `
-      <span class="layer-group-dot" style="background:${color}"></span>
-      <span class="legend-cast-name">${cast}</span>
+      <span class="legend-cast-name part-underline" style="--part-color:${color}">${cast}</span>
       <span class="legend-cast-count">${total} ${pluralTypes(total)}</span>
     `;
     groupEl.appendChild(groupHeader);

@@ -1,6 +1,6 @@
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
-import { getProject, isMultiProject, resolveLayerKey } from '../state/projects.js';
+import { resolveLayerKey } from '../state/projects.js';
 import {
   isLayerVisible,
   subscribeLayerVisibility,
@@ -84,14 +84,11 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
 
     const groupHeader = document.createElement('div');
     groupHeader.className = 'layer-group-header';
-    const groupColor = LAYER_COLORS[obsahovaCast] ?? '#90a4ae';
-    const groupDot = document.createElement('span');
-    groupDot.className = 'layer-group-dot';
-    groupDot.style.background = groupColor;
+    // Obsahová část = název tlustě podtržený barvou části (app-m3.css .part-underline).
     const groupName = document.createElement('span');
-    groupName.className = 'layer-group-name';
+    groupName.className = 'layer-group-name part-underline';
+    groupName.style.setProperty('--part-color', LAYER_COLORS[obsahovaCast] ?? '#90a4ae');
     groupName.textContent = obsahovaCast;
-    groupHeader.appendChild(groupDot);
     groupHeader.appendChild(groupName);
     groupEl.appendChild(groupHeader);
 
@@ -107,19 +104,6 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
       const leftEl = document.createElement('div');
       leftEl.className = 'layer-item-left';
       leftEl.appendChild(symbolEl);
-
-      // Při více projektech: barevná tečka projektu pro odlišení stejných
-      // objektových typů z různých souborů.
-      if (isMultiProject() && layer.projectId) {
-        const project = getProject(layer.projectId);
-        if (project) {
-          const projectDot = document.createElement('span');
-          projectDot.className = 'project-dot';
-          projectDot.style.background = project.color;
-          projectDot.title = `Projekt: ${project.nazev}`;
-          leftEl.appendChild(projectDot);
-        }
-      }
 
       const infoEl = document.createElement('div');
       infoEl.className = 'layer-item-info';

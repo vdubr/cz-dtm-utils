@@ -1006,6 +1006,8 @@ test.describe('Modály a ovládání', () => {
     await page.locator('.feature-row').first().click();
     const detail = page.locator('.feature-detail').first();
     await expect(detail).toContainText('2 — dálnice II. třídy');
+    // Detail uvádí projekt (soubor), do kterého záznam patří.
+    await expect(detail.locator('.feature-detail-project')).toHaveText('Projekt: test_ciselnik.xml');
   });
 
   test('protokol chyb (ServisJVFDTM) se zobrazí jako report modal', async ({ page }) => {

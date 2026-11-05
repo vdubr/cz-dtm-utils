@@ -444,13 +444,6 @@ html, body {
   padding: 6px 16px 4px;
 }
 
-.layer-group-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
 .layer-group-name {
   font-size: 11px;
   font-weight: 600;

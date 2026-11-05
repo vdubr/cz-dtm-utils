@@ -3,7 +3,7 @@ import { labelForAttribute } from 'jvf-parser';
 import { getActiveVersion } from '../state/activeVersion.js';
 import type OlMap from 'ol/Map.js';
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
-import { findFeature } from '../map/jvfLayers.js';
+import { findFeature, LAYER_COLORS } from '../map/jvfLayers.js';
 import { highlightFeature, clearHighlight, zoomToFeature } from '../map/highlight.js';
 import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature, applyFeatureFilter } from '../viewer3d/threeScene.js';
 import { getIs3dActive, notifyMapAreaResized } from './toggle3d.js';
@@ -340,6 +340,15 @@ function renderAttributes(z: ZaznamObjektu): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'feature-detail-inner';
 
+  // Projekt (soubor), do kterého záznam patří.
+  const ownProject = getProject(resolveProjectKey(z) ?? '');
+  if (ownProject) {
+    const projectLine = document.createElement('div');
+    projectLine.className = 'feature-detail-meta feature-detail-project';
+    projectLine.textContent = `Projekt: ${ownProject.nazev}`;
+    wrap.appendChild(projectLine);
+  }
+
   // CommonAttributes
   const common = z.commonAttributes ?? {};
   const commonEntries = Object.entries(common).filter(([, v]) => v !== undefined && v !== null && v !== '');
@@ -529,17 +538,8 @@ function renderRowsContent(): void {
       toggleLayerVisible(layerKey);
     });
 
-    header.append(chevron, buildLegendSwatchFor(ot));
-    // Barevná tečka projektu — jen při více projektech (odlišení stejných
-    // objektových typů z různých souborů).
-    if (project) {
-      const projectDot = document.createElement('span');
-      projectDot.className = 'project-dot';
-      projectDot.style.background = project.color;
-      projectDot.title = `Projekt: ${project.nazev}`;
-      header.appendChild(projectDot);
-    }
-    header.append(info, countBadge, eyeBtn);
+    // Projekt se v řádcích neukazuje (ani barevně) — je v detailu záznamu.
+    header.append(chevron, buildLegendSwatchFor(ot), info, countBadge, eyeBtn);
     header.addEventListener('click', () => toggleGroup(gKey));
     list.appendChild(header);
 
@@ -640,7 +640,16 @@ function renderContentFilterChips(): void {
     btn.type = 'button';
     btn.className = `features-filter-btn${currentFilter === filter ? ' active' : ''}`;
     btn.dataset['filter'] = filter;
-    btn.textContent = label;
+    if (filter === 'all') {
+      btn.textContent = label;
+    } else {
+      // Obsahová část = název tlustě podtržený barvou části (jako ve vrstvách a legendě).
+      const name = document.createElement('span');
+      name.className = 'part-underline';
+      name.style.setProperty('--part-color', LAYER_COLORS[filter] ?? '#90a4ae');
+      name.textContent = label;
+      btn.appendChild(name);
+    }
     btn.title = title;
     btn.addEventListener('click', () => setFilter(filter));
     filtersEl.appendChild(btn);

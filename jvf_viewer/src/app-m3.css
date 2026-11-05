@@ -491,7 +491,24 @@ html, body {
   color: var(--md-sys-color-on-surface);
   border-radius: var(--md-sys-shape-corner-full);
 }
-.layer-group-dot { width: 10px; height: 10px; }
+/* Obsahová část (ZPS, TI, DI, …) — název tlustě podtržený barvou části
+   (`--part-color` z KATALOG_FALLBACK_COLORS); vrstvy výkresu, legenda
+   a čipy filtru v Přehledu prvků. */
+.part-underline {
+  display: inline-block;
+  padding-bottom: 2px;
+  border-bottom: 3px solid var(--part-color, var(--md-sys-color-outline));
+  line-height: 1.2;
+}
+/* Ve vrstvách výkresu větší název části a podtržení přes celou šířku panelu. */
+.layer-group-header .layer-group-name.part-underline {
+  display: block;
+  flex: 1;
+  padding: 4px 4px 4px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--md-sys-color-on-surface);
+}
 .layer-item {
   min-height: 48px;
   padding: 4px 12px 4px 8px;
@@ -849,7 +866,6 @@ html, body {
   background: var(--md-sys-color-surface-container-high);
   align-items: baseline;
 }
-#legend-modal .legend-cast-header .layer-group-dot { width: 10px; height: 10px; align-self: center; }
 #legend-modal .legend-cast-name { font: 500 20px/28px var(--md-sys-typescale-font); letter-spacing: 0; }
 #legend-modal .legend-cast-count {
   margin-left: 0;

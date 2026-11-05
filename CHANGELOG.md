@@ -124,6 +124,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Obsahové části (ZPS, TI, DI, …) tlustým podtržením** názvu v barvě části
+  místo barevné tečky — ve vrstvách výkresu, legendě i čipech filtru
+  Přehledu prvků. Řádky vrstev a Přehledu prvků už nemají barevnou tečku
+  projektu; projekt záznamu je uvedený v jeho detailu.
 - **Odebrání projektu ikonou popelnice** místo „×", s potvrzením v dialogu;
   levý panel je o 20 px širší (340 px).
 - **Nadpis „Vrstvy výkresu"** v levém panelu místo „JVF vrstvy".

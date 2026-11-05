@@ -52,9 +52,9 @@ const INFO_CONTENT_HTML = `
       sekce lze <strong>sbalit</strong> (klik na „Projekty") — počet projektů
       zůstává v hlavičce vidět i po sbalení. Při ≥2 projektech přibude
       v Přehledu prvků řádek <em>Projekt</em> s přepínatelnými chipy —
-      odškrtnutý projekt se skryje v tabulce i ve 2D a 3D mapě. Vrstvy
-      a skupiny stejného typu z různých projektů jsou odlišené barevnou
-      tečkou projektu. Verze každého souboru se detekuje automaticky
+      odškrtnutý projekt se skryje v tabulce i ve 2D a 3D mapě.
+      V detailu záznamu (rozbalený řádek v Přehledu prvků) je uvedeno,
+      do kterého projektu patří. Verze každého souboru se detekuje automaticky
       (podporované 1.4.3, 1.5.0.1 i UDM); topologická validace běží pro každý
       projekt zvlášť dle jeho verze. 3D
       terén se při více projektech stahuje <strong>zvlášť kolem každého
