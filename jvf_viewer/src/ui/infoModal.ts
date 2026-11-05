@@ -198,9 +198,12 @@ const INFO_CONTENT_HTML = `
       objekt.
     </li>
     <li>
-      <strong>Legenda DTM</strong> — kompletní seznam všech ~360 objektových
-      typů specifikace s reprezentativními symboly a barvami podle
-      <em>Katalogu kartografických symbolů DTM ČR</em>. Barva swatche
+      <strong>Legenda DTM</strong> — všech ~360 objektových typů specifikace
+      jako <em>dlaždice</em>: velký náhled ve tvaru geometrie (značka bodu,
+      lomená linie, plocha s výplní a obrysem) v barvách, tloušťce
+      a čárkování podle <em>Katalogu kartografických symbolů DTM ČR</em>,
+      pod ním název a typ geometrie (bod, definiční bod, linie, plocha)
+      s kódem. Barva náhledu
       odpovídá tomu, jak se prvek vykreslí v mapě — i u sítí, které barvu
       nesou až ve variantách (elektro červená, plyn zelená, voda modrá,
       kanalizace hnědá, teplovod oranžová), takže legenda i vrstvový panel

@@ -124,6 +124,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Legenda DTM jako dlaždice** — velký náhled ve tvaru geometrie (značka
+  bodu, lomená linie, plocha s výplní a obrysem) podle Katalogu DTM ČR,
+  pod ním název a typ geometrie s kódem; definiční bod je odlišený od
+  plochy stejného jména, velmi světlé plochy mají jemný obrys.
 - **Přepínač 2D | 3D nad mapou vpravo nahoře** místo tlačítka „3D"
   v hlavičce.
 - **Tlačítko „Terén" nad mapou** (jen ve 3D, vedle Katastru, ikona hory)

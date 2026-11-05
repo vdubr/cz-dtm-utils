@@ -1,5 +1,6 @@
 // Legend modal — zobrazí kompletní legendu všech objektových typů z ENTITY_CATALOG
-// s reprezentativním swatch (point/line/polygon) podle stylu z Katalogu DTM.
+// jako mřížku dlaždic: velký náhled ve tvaru geometrie (bod / linie / plocha)
+// podle reprezentativního stylu z Katalogu DTM, pod ním název a typ geometrie.
 
 import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
@@ -7,7 +8,7 @@ import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.
 import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
 import { compareContentParts } from '../state/contentParts.js';
-import { buildStyleSwatch, type SwatchKind } from './symbolSwatch.js';
+import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -53,9 +54,32 @@ function swatchKindFor(meta: EntityMeta): SwatchKind {
   }
 }
 
-/** Náhled symbolu entity (sdílený se záhlavími kategorií v Přehledu prvků). */
-function buildLegendSwatch(meta: EntityMeta): HTMLElement {
-  return buildStyleSwatch(resolveRepresentativeStyle(entityMetaToObjektovyTyp(meta)), swatchKindFor(meta));
+/** Definiční bod plochy (`BudovaDefinicniBod`, v 1.4.3 `BudovaDefBod`). */
+function isDefBod(meta: EntityMeta): boolean {
+  return meta.geomType === 'point' && /(DefBod|DefinicniBod)$/i.test(meta.elementName);
+}
+
+/**
+ * Náhled entity ve tvaru geometrie (dlaždice legendy). Obecný definiční bod
+ * (značka `*_db.svg` nebo tečka) drobně jako v mapě; definiční bod s vlastní
+ * značkou plochy (hřbitov, komín, …) v plné velikosti.
+ */
+function buildLegendIcon(meta: EntityMeta): SVGSVGElement {
+  const style = resolveRepresentativeStyle(entityMetaToObjektovyTyp(meta));
+  const genericDefBod = isDefBod(meta) && (!style.pointSvg || /_db\.svg$/.test(style.pointSvg));
+  return buildGeometryIcon(style, swatchKindFor(meta), genericDefBod ? 14 : 32);
+}
+
+/** Typ geometrie česky — odliší dvojice se stejným názvem (definiční bod / plocha). */
+function geomLabel(meta: EntityMeta): string {
+  switch (meta.geomType) {
+    case 'point':
+      return isDefBod(meta) ? 'Definiční bod' : 'Bod';
+    case 'curve':
+      return 'Linie';
+    default:
+      return 'Plocha';
+  }
 }
 
 /** Render kompletní legendy do `#legend-modal-body`. */
@@ -131,25 +155,27 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
       grid.className = 'legend-grid';
 
       for (const meta of items) {
-        const row = document.createElement('div');
-        row.className = 'legend-item';
-        row.title = `${meta.elementName} · kód ${meta.codeBase}`;
+        const tile = document.createElement('div');
+        tile.className = 'legend-item legend-tile';
+        const name = meta.nazev || meta.elementName;
+        tile.title = [name, meta.skupinaObjektu, `${meta.elementName} · kód ${meta.codeBase}`]
+          .filter(Boolean)
+          .join('\n');
 
-        const swatch = buildLegendSwatch(meta);
-        const swatchWrap = document.createElement('div');
-        swatchWrap.className = 'legend-swatch';
-        swatchWrap.appendChild(swatch);
+        const preview = document.createElement('div');
+        preview.className = 'legend-swatch legend-tile-preview';
+        preview.appendChild(buildLegendIcon(meta));
 
         const info = document.createElement('div');
         info.className = 'legend-item-info';
         info.innerHTML = `
-          <span class="legend-name">${meta.nazev || meta.elementName}</span>
-          <span class="legend-meta">${meta.skupinaObjektu || ''} · ${meta.codeBase}</span>
+          <span class="legend-name">${name}</span>
+          <span class="legend-meta">${geomLabel(meta)} · ${meta.codeBase}</span>
         `;
 
-        row.appendChild(swatchWrap);
-        row.appendChild(info);
-        grid.appendChild(row);
+        tile.appendChild(preview);
+        tile.appendChild(info);
+        grid.appendChild(tile);
       }
 
       katEl.appendChild(grid);
