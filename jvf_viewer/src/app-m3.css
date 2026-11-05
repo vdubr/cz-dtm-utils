@@ -343,26 +343,26 @@ html, body {
 .basemap-bar {
   display: flex;
   align-items: center;
-  padding: 4px;
-  border-radius: 12px;
+  padding: 3px;
+  border-radius: 10px;
   background: var(--md-sys-color-surface-container-lowest);
   box-shadow: var(--md-sys-elevation-2, 0 2px 8px rgba(0, 0, 0, 0.18));
 }
 .basemap-bar-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 14px;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   background: transparent;
   color: var(--md-sys-color-on-surface-variant);
-  font: 500 15px/20px var(--md-sys-typescale-font);
+  font: 500 14px/20px var(--md-sys-typescale-font);
   white-space: nowrap;
   cursor: pointer;
 }
-.basemap-bar-btn .material-symbols-outlined { font-size: 22px; }
+.basemap-bar-btn .material-symbols-outlined { font-size: 20px; }
 .basemap-bar-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
 .basemap-bar-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
 .basemap-bar-menu { color: var(--md-sys-color-primary); }
@@ -371,8 +371,8 @@ html, body {
   content: '';
   position: absolute;
   left: -1px;
-  top: 8px;
-  bottom: 8px;
+  top: 7px;
+  bottom: 7px;
   width: 1px;
   background: var(--md-sys-color-outline-variant);
 }
