@@ -44,7 +44,7 @@ const INFO_CONTENT_HTML = `
       8 projektů). Hodí se pro navazující projekty, které chcete vidět
       společně v jedné mapě. Levý panel zobrazuje sekci
       <em>Projekty</em> se seznamem souborů (barevná tečka, počet záznamů)
-      a ikonou popelnice pro odebrání; odebráním posledního projektu se viewer
+      a ikonou popelnice pro odebrání (po potvrzení v dialogu); odebráním posledního projektu se viewer
       vrátí do prázdného stavu. <strong>Zeměkoule</strong> u projektu (nebo
       klik na řádek) přiblíží pohled na jeho rozsah (ve 2D mapě i ve 3D
       scéně); <strong>oko</strong> skryje / zobrazí všechny prvky projektu

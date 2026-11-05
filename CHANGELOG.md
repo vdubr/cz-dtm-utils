@@ -124,8 +124,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
-- **Odebrání projektu ikonou popelnice** místo „×"; levý panel je o 20 px
-  širší (340 px).
+- **Odebrání projektu ikonou popelnice** místo „×", s potvrzením v dialogu;
+  levý panel je o 20 px širší (340 px).
 - **Nadpis „Vrstvy výkresu"** v levém panelu místo „JVF vrstvy".
 - **Legenda DTM jako dlaždice** — velký náhled ve tvaru geometrie (značka
   bodu, lomená linie, plocha s výplní a obrysem) podle Katalogu DTM ČR,

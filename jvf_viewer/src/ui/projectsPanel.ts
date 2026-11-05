@@ -9,6 +9,11 @@ import {
   setProjectVisible,
   subscribeFeatureFilter,
 } from '../state/featureFilter.js';
+import { showConfirm } from './confirmModal.js';
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
 
 /**
  * Sekce „Projekty" v levém panelu — seznam načtených JVF souborů.
@@ -152,9 +157,19 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
     removeBtn.title = `Odebrat projekt „${project.nazev}"`;
     removeBtn.setAttribute('aria-label', removeBtn.title);
     removeBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
-    removeBtn.addEventListener('click', (e) => {
+    removeBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      callbacks.onRemove(project.id);
+      // Odebrání je potřeba potvrdit — přijde se o načtená data i kontrolu.
+      const choice = await showConfirm({
+        title: 'Odebrat projekt?',
+        bodyHtml: `<p>Projekt <strong>${escapeHtml(project.nazev)}</strong> se odebere z mapy,
+          vrstev výkresu i Přehledu prvků. Soubor na disku zůstane beze změny.</p>`,
+        buttons: [
+          { label: 'Zrušit', variant: 'secondary' },
+          { label: 'Odebrat', variant: 'danger' },
+        ],
+      });
+      if (choice === 'Odebrat') callbacks.onRemove(project.id);
     });
 
     row.append(dot, nameEl, countEl, zoomBtn, eyeBtn, removeBtn);

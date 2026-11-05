@@ -690,6 +690,25 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#info-modal')).toBeHidden();
   });
 
+  test('odebrání projektu popelnicí je potřeba potvrdit v dialogu', async ({ page }) => {
+    await loadSample(page);
+    const removeBtn = page.locator('.project-remove-btn').first();
+    const footer = page.locator('#confirm-modal-footer');
+
+    // Zrušit → projekt zůstává.
+    await removeBtn.click();
+    await expect(page.locator('#confirm-modal')).toBeVisible();
+    await footer.getByRole('button', { name: 'Zrušit' }).click();
+    await expect(page.locator('#confirm-modal')).toBeHidden();
+    await expect(page.locator('.project-item')).toHaveCount(1);
+
+    // Odebrat → projekt zmizí, panel vrstev ukáže vodotisk.
+    await removeBtn.click();
+    await footer.getByRole('button', { name: 'Odebrat' }).click();
+    await expect(page.locator('.project-item')).toHaveCount(0);
+    await expect(page.locator('#jvf-layers-list .panel-empty-hint')).toBeVisible();
+  });
+
   test('legenda DTM se otevře a filtruje se hledáním', async ({ page }) => {
     await page.locator('#btn-legend').click();
     await expect(page.locator('#legend-modal')).toBeVisible();
