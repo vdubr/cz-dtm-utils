@@ -67,7 +67,7 @@ const INFO_CONTENT_HTML = `
       <em>Podkladová mapa</em> vlevo nahoře nad mapou (seznam s náhledy:
       <em>Základní mapa</em>, <em>Letecká</em> (ortofoto) nebo
       <em>Prázdná</em>; vedle je rychlé přepnutí na leteckou mapu a zpět)
-      — <em>Prázdná</em> — ta podklad vypne a JVF vrstvy zůstanou nad prázdným
+      — <em>Prázdná</em> — ta podklad vypne a vrstvy výkresu zůstanou nad prázdným
       pozadím, které je ve světlém motivu bílé a v tmavém černé (užitečné pro
       kontrolu geometrie bez vizuálního šumu). Pod vybranou mapou je posuvník
       sytosti od 0 (podklad úplně průhledný) do 100 % — platí společně pro
@@ -209,7 +209,7 @@ const INFO_CONTENT_HTML = `
       kanalizace hnědá, teplovod oranžová), takže legenda i vrstvový panel
       souhlasí s mapou. Otevře se ikonou
       <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">legend_toggle</span>
-      vedle nadpisu <em>JVF vrstvy</em>. Lze fulltextově filtrovat podle
+      vedle nadpisu <em>Vrstvy výkresu</em>. Lze fulltextově filtrovat podle
       názvu, kódu nebo kategorie.
       <br>
       <em style="color:#8b949e;font-size:11px">

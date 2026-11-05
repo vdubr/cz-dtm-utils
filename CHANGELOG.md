@@ -124,6 +124,7 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Nadpis „Vrstvy výkresu"** v levém panelu místo „JVF vrstvy".
 - **Legenda DTM jako dlaždice** — velký náhled ve tvaru geometrie (značka
   bodu, lomená linie, plocha s výplní a obrysem) podle Katalogu DTM ČR,
   pod ním název a typ geometrie s kódem; definiční bod je odlišený od

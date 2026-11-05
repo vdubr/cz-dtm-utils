@@ -2243,7 +2243,7 @@ html, body {
 
 /* Sekce Projekty nesmí růst — .panel-section + .panel-section jí jinak dává
    flex:1 a rozdělila by volný prostor s JVF vrstvami (velká mezera pod
-   seznamem). Má zabírat jen výšku obsahu; JVF vrstvy vyplní zbytek. */
+   seznamem). Má zabírat jen výšku obsahu; Vrstvy výkresu vyplní zbytek. */
 #projects-section {
   flex: 0 0 auto;
 }

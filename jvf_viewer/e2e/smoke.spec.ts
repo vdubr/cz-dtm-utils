@@ -599,7 +599,7 @@ test.describe('Sekce Projekty', () => {
     expect(jvfBox).not.toBeNull();
 
     // Projekty se drží u obsahu (1 řádek + hlavička) — ne polovina panelu;
-    // veškerý volný prostor si bere sekce JVF vrstev.
+    // veškerý volný prostor si bere sekce Vrstvy výkresu.
     expect(projectsBox!.height).toBeLessThan(120);
     expect(jvfBox!.height).toBeGreaterThan(projectsBox!.height * 2);
 
