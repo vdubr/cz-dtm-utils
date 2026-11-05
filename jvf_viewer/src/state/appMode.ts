@@ -16,8 +16,12 @@
  * režim = nová položka `APP_MODES`.
  */
 import {
+  JVF_VERSIONS,
   LATEST_JVF_VERSION,
+  UDM_VERSIONS,
+  ZXML_VERSIONS,
   dialectOf,
+  formatVersionLabel,
   getDialect,
   type DialectId,
   type JvfDtm,
@@ -40,13 +44,18 @@ export interface AppModeDef {
   path: string;
   /** Titulek stránky (záložka prohlížeče). */
   docTitle: string;
+  /** Stručný popis nástroje a formátu (spouštěč nástrojů). */
+  description: string;
   /** Dialekt JVF DTM, se kterým režim pracuje (`undefined` = čisté JVF DTM). */
   dialect?: DialectId;
   /** Aktivní verze po přepnutí do režimu (legenda, číselníky). */
   defaultVersion: JvfVersion;
 }
 
-type ToolInfo = Pick<AppModeDef, 'appName' | 'org' | 'path' | 'docTitle'>;
+type ToolInfo = Pick<AppModeDef, 'appName' | 'org' | 'path' | 'docTitle' | 'description'>;
+
+/** Podporované verze formátu z registru (`1.4.3, 1.5.0.1`, `ŽXML 1.4.2.1, …`). */
+const versionList = (versions: readonly string[]): string => versions.map(formatVersionLabel).join(', ');
 
 /** Režim dialektu — název, výchozí verze a detekce souboru z registru dialektů. */
 function dialectMode(id: AppMode, label: string, title: string, dialect: DialectId, tool: ToolInfo): AppModeDef {
@@ -62,6 +71,9 @@ export const APP_MODES: readonly AppModeDef[] = [
     org: 'ČÚZK',
     path: '',
     docTitle: 'JVF DTM Prohlížeč — vizualizace a validace JVF souborů Digitální technické mapy ČR',
+    description:
+      `Digitální technická mapa ČR — změnové věty a výdeje krajských DTM pro IS DMVS (ČÚZK). ` +
+      `Formát JVF DTM ${JVF_VERSIONS.join(', ')} (XML), vzhled podle Katalogu DTM ČR.`,
     defaultVersion: LATEST_JVF_VERSION,
   },
   dialectMode('udm', 'UDM', 'UDM — Univerzální datový model ČKZ', 'udm', {
@@ -69,12 +81,18 @@ export const APP_MODES: readonly AppModeDef[] = [
     org: 'ČKZ',
     path: 'udm',
     docTitle: 'UDM Prohlížeč — Univerzální datový model ČKZ · DTM Prohlížeč',
+    description:
+      `Univerzální datový model České komory zeměměřičů — geodetická zaměření nad JVF DTM ` +
+      `rozšířená o další objekty. Formát ${versionList(UDM_VERSIONS)} (XML), vzhled podle knihovny ČKZ.`,
   }),
   dialectMode('jzm', 'JŽM', 'JŽM — Jednotná železniční mapa (ŽXML, DTMŽ Správy železnic)', 'zxml', {
     appName: 'JŽM Prohlížeč',
     org: 'SŽ',
     path: 'jzm',
     docTitle: 'JŽM Prohlížeč — Jednotná železniční mapa (ŽXML, Správa železnic) · DTM Prohlížeč',
+    description:
+      `Jednotná železniční mapa Správy železnic — data DTMŽ (koleje, nástupiště, zabezpečovací ` +
+      `zařízení, staničení). Formát ${versionList(ZXML_VERSIONS)} (XML), znaky SŽ.`,
   }),
 ];
 

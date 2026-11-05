@@ -420,13 +420,14 @@ const INFO_CONTENT_HTML = `
     model, s vlastním názvem a <strong>barevným schématem</strong> (ve světlém
     i tmavém motivu): <strong>JVF Prohlížeč</strong> (modrý, výchozí, na
     <code>/</code> — JVF DTM, symbologie dle Katalogu ČÚZK),
-    <strong>UDM Prohlížeč</strong> (tyrkysový, <code>/udm</code> — Univerzální
-    datový model ČKZ) a <strong>JŽM Prohlížeč</strong> (oranžový,
-    <code>/jzm</code> — Jednotná železniční mapa, data ŽXML Správy železnic
-    se znaky SŽ). UDM a JŽM mají vlastní ukázkové soubory a <em>Legendu
+    <strong>UDM Prohlížeč</strong> (zelený, <code>/udm</code> — Univerzální
+    datový model ČKZ) a <strong>JŽM Prohlížeč</strong> (oranžový jako Správa
+    železnic, <code>/jzm</code> — Jednotná železniční
+    mapa, data ŽXML Správy železnic se znaky SŽ). UDM a JŽM mají vlastní ukázkové soubory a <em>Legendu
     znaků</em>; <em>Export do CAD</em> je ve všech nástrojích. Mezi nástroji
     se přepíná <strong>spouštěčem</strong> (ikona mřížky vlevo v hlavičce,
-    na mobilu nahoře v panelu vrstev); dlaždice jsou odkazy, takže nástroj
+    na mobilu nahoře v panelu vrstev) — pod dlaždicemi je stručný popis
+    nástroje a formátu (aktivního, nebo toho pod kurzorem); dlaždice jsou odkazy, takže nástroj
     jde otevřít i v nové záložce (prostřední klik, Ctrl+klik). Přepnutí
     v místě zavře načtené soubory (při načtených datech se aplikace nejdřív
     zeptá). Načtete-li soubor jiného modelu (např. ŽXML v JVF), aplikace

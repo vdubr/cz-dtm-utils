@@ -189,8 +189,9 @@ html, body {
   font: 700 12px/1 var(--md-sys-typescale-font);
   letter-spacing: 0.2px;
 }
-.app-badge[data-app-id='udm'] { background: #00796b; }
-.app-badge[data-app-id='jzm'] { background: #b3400b; }
+/* UDM zelená; JŽM oranžová Správy železnic (#ff5200 z loga SŽ). */
+.app-badge[data-app-id='udm'] { background: #2e7d32; }
+.app-badge[data-app-id='jzm'] { background: #ff5200; }
 .app-title { display: flex; flex-direction: column; min-width: 0; }
 #app-header .app-title h1 { margin: 0; font: 500 18px/24px var(--md-sys-typescale-font); white-space: nowrap; }
 .app-family { font: 400 12px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); white-space: nowrap; }
@@ -234,6 +235,15 @@ html, body {
 .app-launcher-name { font: 500 13px/18px var(--md-sys-typescale-font); }
 .app-launcher-org { font: 400 11px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
 .app-launcher-tile.active .app-launcher-org { color: inherit; }
+/* Popis nástroje a formátu (aktivní / pod kurzorem) přes celou šířku. */
+.app-launcher-desc {
+  margin: 0;
+  min-height: 48px;
+  padding: 0 4px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.2px;
+  color: var(--md-sys-color-on-surface-variant);
+}
 .app-launcher-links {
   display: flex;
   flex-direction: column;

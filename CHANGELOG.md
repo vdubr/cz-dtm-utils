@@ -11,8 +11,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 - **Tři nástroje na jedné doméně: JVF (`/`), UDM (`/udm`), JŽM (`/jzm`)**
   — každý s vlastním názvem v hlavičce (JVF / UDM / JŽM Prohlížeč),
-  titulkem stránky a barevným schématem Material 3 (modrá, tyrkysová,
-  oranžová; světlý i tmavý motiv). Mezi nástroji se přepíná
+  titulkem stránky a barevným schématem Material 3 (JVF modrá, UDM
+  zelená, JŽM oranžová jako Správa železnic; světlý i tmavý motiv). Mezi nástroji se přepíná
   **spouštěčem** (ikona mřížky v hlavičce, na mobilu spodní panel z panelu
   vrstev) místo trojtlačítka; dlaždice jsou odkazy (nová záložka
   prostředním klikem). Staré adresy `/jvf_viewer/` a `?mode=udm` se

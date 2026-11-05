@@ -97,6 +97,13 @@ test.describe('Režimy aplikace (JVF / UDM)', () => {
     await expect(tiles).toHaveCount(3);
     expect(await tiles.evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).getAttribute('href')))).toEqual(['/', '/udm', '/jzm']);
     await expect(launcher.locator('.app-launcher-tile[data-mode-btn="jvf"]')).toHaveAttribute('aria-current', 'page');
+    // Popis nástroje a formátu: aktivní, při najetí na dlaždici její nástroj.
+    const desc = launcher.locator('.app-launcher-desc');
+    await expect(desc).toContainText('JVF DTM 1.4.3');
+    await launcher.locator('.app-launcher-tile[data-mode-btn="jzm"]').hover();
+    await expect(desc).toContainText('ŽXML 1.5.1.6');
+    await page.mouse.move(5, 700);
+    await expect(desc).toContainText('JVF DTM');
     await page.keyboard.press('Escape');
     await expect(launcher).toBeHidden();
   });

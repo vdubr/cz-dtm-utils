@@ -33,7 +33,8 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
 - [x] **T3 — Výraznější rozlišení režimů JVF / UDM / JŽM** — README §C
   - Hotovo 2026-11-05 (varianta B + C z návrhu): nástroje na `/`, `/udm`,
     `/jzm`, spouštěč v hlavičce (mobil: spodní panel z panelu vrstev),
-    barevné schéma každého nástroje (`app-themes.css`).
+    barevné schéma každého nástroje (`app-themes.css`; UDM zelená, JŽM
+    oranžová SŽ).
   - `state/appMode.ts` (`APP_MODES` `:44`), `ui/appModeSwitch.ts`
     (`applyAppModeToUi` `:37`), hlavička v `index.html`, tokeny akcentu
     v `src/app-m3.css`.

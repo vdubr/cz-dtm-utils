@@ -174,6 +174,28 @@ export function setupAppModeSwitch(): void {
       });
       grid.appendChild(tile);
     }
+    // Popis nástroje a formátu pod dlaždicemi: aktivní nástroj, při najetí
+    // / zaměření dlaždice popis jejího nástroje.
+    const desc = document.createElement('p');
+    desc.className = 'app-launcher-desc';
+    desc.id = 'app-launcher-desc';
+    desc.setAttribute('aria-live', 'polite');
+    const showDesc = (target: AppMode): void => {
+      desc.textContent = appModeDef(target).description;
+    };
+    for (const tile of grid.querySelectorAll<HTMLAnchorElement>('.app-launcher-tile')) {
+      const id = tile.dataset['modeBtn'] as AppMode;
+      tile.setAttribute('aria-describedby', 'app-launcher-desc');
+      tile.addEventListener('mouseenter', () => showDesc(id));
+      tile.addEventListener('focus', () => showDesc(id));
+    }
+    grid.addEventListener('mouseleave', () => showDesc(getAppMode()));
+    grid.addEventListener('focusout', (e) => {
+      if (!grid.contains(e.relatedTarget as Node | null)) showDesc(getAppMode());
+    });
+    showDesc(getAppMode());
+    onAppModeChange((mode) => showDesc(mode));
+
     const links = document.createElement('div');
     links.className = 'app-launcher-links';
     for (const [label, targetId] of [
@@ -191,7 +213,7 @@ export function setupAppModeSwitch(): void {
       });
       links.appendChild(link);
     }
-    panel.append(heading, grid, links);
+    panel.append(heading, grid, desc, links);
 
     for (const button of buttons) {
       button.addEventListener('click', (e) => {
