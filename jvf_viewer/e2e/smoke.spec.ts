@@ -655,6 +655,24 @@ test.describe('Přepínání 2D / 3D', () => {
     await expect(canvas).toBeHidden();
     await expect(mapContainer).toBeVisible();
   });
+
+  test('přepínač 2D | 3D nad mapou a tlačítko Terén jen ve 3D', async ({ page }) => {
+    await loadSample(page);
+    await expect(page.locator('#btn-view-2d')).toHaveClass(/active/);
+    await expect(page.locator('#btn-terrain')).toBeHidden();
+
+    await page.locator('#btn-3d').click();
+    await expect(page.locator('#three-canvas')).toBeVisible();
+    await expect(page.locator('#btn-view-2d')).not.toHaveClass(/active/);
+    await expect(page.locator('#btn-terrain')).toBeVisible();
+    await expect(page.locator('#btn-terrain')).toHaveAttribute('aria-pressed', 'false');
+
+    // „2D" vrací do mapy; „Terén" zmizí.
+    await page.locator('#btn-view-2d').click();
+    await expect(page.locator('#map-container')).toBeVisible();
+    await expect(page.locator('#btn-view-2d')).toHaveClass(/active/);
+    await expect(page.locator('#btn-terrain')).toBeHidden();
+  });
 });
 
 test.describe('Modály a ovládání', () => {
@@ -1608,7 +1626,7 @@ test.describe('Modály a ovládání', () => {
     await page.locator('#toggle-dtm').check();
     await page.locator('#btn-3d').click();
     // DTM ve 3D potřebuje terén → zapne se sám.
-    await expect(page.locator('#toggle-terrain')).toBeChecked({ timeout: 60_000 });
+    await expect(page.locator('#btn-terrain')).toHaveAttribute('aria-pressed', 'true', { timeout: 60_000 });
     await expect.poll(() => wms.filter((u) => u.includes('REQUEST=GetMap') && u.includes('BBOX=') && u.includes('CRS=EPSG:5514')).length,
       { timeout: 60_000 }).toBeGreaterThanOrEqual(5);
     // Jedno GetMap na službu, všechny na stejný bbox terénu.

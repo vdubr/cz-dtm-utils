@@ -162,7 +162,8 @@ const INFO_CONTENT_HTML = `
       scény). Přepnutí 2D ↔ 3D měření ukončí.
     </li>
     <li>
-      <strong>3D pohled</strong> — vizualizace Z-souřadnic geometrií. Procházení
+      <strong>3D pohled</strong> — přepínač <em>2D | 3D</em> vpravo nahoře
+      nad mapou. Vizualizace Z-souřadnic geometrií. Procházení
       scénou klávesami <code>W</code>/<code>A</code>/<code>S</code>/<code>D</code>
       nebo šipkami, výškové posouvání (<code>Q</code>/<code>E</code>),
       přiblížení/oddálení (<code>+</code> / <code>−</code>) a reset pohledu
@@ -174,7 +175,9 @@ const INFO_CONTENT_HTML = `
       mezi 2D a 3D režimem.
     </li>
     <li>
-      <strong>3D terén</strong> — pod vektorovými daty se ve 3D scéně zobrazuje
+      <strong>3D terén</strong> — tlačítko <em>Terén</em> nad mapou (vedle
+      <em>Katastr</em>, jen ve 3D; se zapnutým terénem je zvýrazněné barvou
+      textu) zobrazí pod vektorovými daty
       digitální model terénu <strong>ČÚZK DMR5G</strong> nad rozsahem načteného
       JVF souboru (při více projektech kolem každého zvlášť — viz výše).
       Povrch je obarven <em>hypsometricky</em> podle lokálního

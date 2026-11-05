@@ -323,7 +323,8 @@ html, body {
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
-  max-width: calc(100% - 24px);
+  /* Vpravo zůstává místo pro přepínač 2D | 3D. */
+  max-width: calc(100% - 24px - 112px);
   max-height: calc(100% - 24px);
   pointer-events: none;
 }
@@ -338,6 +339,20 @@ html, body {
      takže otevřená karta neodsouvá sousední skupinu tlačítek. */
   position: relative;
 }
+.map-control[hidden] { display: none; }
+/* Přepínač „2D | 3D" vpravo nahoře nad mapou (ui/toggle3d.ts). */
+.map-top-right {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 7;
+}
+.view-switch .basemap-bar-btn { min-width: 44px; justify-content: center; padding: 0 10px; font-weight: 600; }
+.view-switch .basemap-bar-btn.active {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.view-switch .basemap-bar-btn + .basemap-bar-btn::before { display: none; }
 /* Tlačítko překryvu (Katastr): zapnutý překryv = jen aktivní barva textu a ikony. */
 .map-toggle-btn.is-on { color: var(--md-sys-color-primary); }
 /* Obsah překryvu v kartě (ui/overlayPanel.ts) — bez rámování sekce panelu. */

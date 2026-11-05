@@ -68,8 +68,7 @@ async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<voi
     if (kind !== 'none' && !isTerrainVisible()) {
       await setTerrainVisible(true);
       track('terrain_load', { via: 'basemap' });
-      const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
-      if (terrainCheckbox) terrainCheckbox.checked = true;
+      syncTerrainButton();
     }
     setBasemapOpacity(getBasemapChoiceOpacity());
     await setBasemap(kind);
@@ -99,8 +98,7 @@ async function apply3dOverlays(): Promise<void> {
     if (wantsOverlay && !isTerrainVisible()) {
       await setTerrainVisible(true); // načte terén a nanese i překryvy
       track('terrain_load', { via: 'overlay' });
-      const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
-      if (terrainCheckbox) terrainCheckbox.checked = true;
+      syncTerrainButton();
     }
     // Pod překryvy patří podklad zvolený v panelu — při vstupu do 3D
     // s vypnutým terénem se nepřenesl, terén zapnul až překryv.
@@ -195,9 +193,8 @@ export function reloadThreeSceneData(objekty: ObjektovyTyp[]): void {
   }
   initThreeScene(canvas, objekty, currentZExaggeration);
   // Spinner: pokud je terén zapnutý, fetch běží na pozadí; zobrazíme indikátor
-  const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
   const terrainSpinner = document.getElementById('terrain-spinner') as HTMLElement | null;
-  if (terrainCheckbox?.checked && isTerrainVisible()) {
+  if (isTerrainVisible()) {
     // initThreeScene už spustil ensureTerrainLoaded (fire-and-forget)
     // Pro UX ukážeme spinner do dalšího requestu — bohužel bez promise handle
     // nemůžeme přesně vypnout. Řešení: krátká heuristika na 3 s, nebo nechat spinner off.
@@ -211,16 +208,21 @@ export function setup3dToggle(
   getObjekty: () => ObjektovyTyp[]
 ): void {
   const btn = document.getElementById('btn-3d') as HTMLButtonElement;
+  const btn2d = document.getElementById('btn-view-2d') as HTMLButtonElement | null;
   const mapContainer = document.getElementById('map-container') as HTMLDivElement;
   const threeCanvas = document.getElementById('three-canvas') as HTMLCanvasElement;
 
+  // Přepínač „2D | 3D" nad mapou: 3D přepíná tam i zpět, 2D vrací do mapy.
   btn.addEventListener('click', () => {
     if (is3dActive) {
-      switchTo2d(olMap, mapContainer, threeCanvas, btn);
+      switchTo2d(olMap, mapContainer, threeCanvas);
     } else {
       currentObjekty = getObjekty();
-      switchTo3d(mapContainer, threeCanvas, btn, currentObjekty);
+      switchTo3d(mapContainer, threeCanvas, currentObjekty);
     }
+  });
+  btn2d?.addEventListener('click', () => {
+    if (is3dActive) switchTo2d(olMap, mapContainer, threeCanvas);
   });
 
   // Collapse/expand bottom toolbars
@@ -280,18 +282,21 @@ export function setup3dToggle(
     });
   }
 
-  // Terén (ČÚZK DMR5G) toggle (jen 3D)
-  const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
+  // Terén (ČÚZK DMR5G) — tlačítko „Terén" nad mapou (jen 3D); zapnutý
+  // terén = aktivní barva textu jako u překryvů.
+  const terrainBtn = document.getElementById('btn-terrain') as HTMLButtonElement | null;
   const terrainSpinner = document.getElementById('terrain-spinner') as HTMLElement | null;
-  if (terrainCheckbox) {
-    terrainCheckbox.checked = isTerrainVisible();
-    terrainCheckbox.addEventListener('change', async () => {
-      if (terrainCheckbox.checked) {
+  if (terrainBtn) {
+    syncTerrainButton();
+    terrainBtn.addEventListener('click', async () => {
+      if (terrainBtn.disabled) return;
+      if (!isTerrainVisible()) {
         terrainSpinner?.removeAttribute('hidden');
-        terrainCheckbox.disabled = true;
+        terrainBtn.disabled = true;
         try {
           await setTerrainVisible(true);
           track('terrain_load', { via: 'toggle' });
+          syncTerrainButton();
           // Po zapnutí terénu nanést podklad zvolený v levém panelu.
           await apply3dBasemapFromChoice(false);
         } catch (err) {
@@ -300,15 +305,16 @@ export function setup3dToggle(
             'Nepodařilo se načíst terén z ČÚZK DMR5G:\n' +
             (err as Error).message
           );
-          terrainCheckbox.checked = false;
           // Zachovat konzistenci stavu v threeScene
           void setTerrainVisible(false);
         } finally {
           terrainSpinner?.setAttribute('hidden', '');
-          terrainCheckbox.disabled = false;
+          terrainBtn.disabled = false;
+          syncTerrainButton();
         }
       } else {
         await setTerrainVisible(false);
+        syncTerrainButton();
       }
     });
   }
@@ -459,17 +465,34 @@ export function setup3dToggle(
   });
 }
 
+/** Tlačítko „Terén" nad mapou podle stavu terénu ve 3D scéně. */
+function syncTerrainButton(): void {
+  const terrainBtn = document.getElementById('btn-terrain');
+  const on = isTerrainVisible();
+  terrainBtn?.classList.toggle('is-on', on);
+  terrainBtn?.setAttribute('aria-pressed', String(on));
+}
+
+/** Přepínač „2D | 3D" nad mapou a tlačítko „Terén" (jen ve 3D) podle pohledu. */
+function syncViewControls(): void {
+  for (const [id, active] of [['btn-view-2d', !is3dActive], ['btn-3d', is3dActive]] as const) {
+    const b = document.getElementById(id);
+    b?.classList.toggle('active', active);
+    b?.setAttribute('aria-pressed', String(active));
+  }
+  const terrainControl = document.getElementById('terrain-control');
+  if (terrainControl) terrainControl.hidden = !is3dActive;
+  syncTerrainButton();
+}
+
 function switchTo3d(
   mapContainer: HTMLDivElement,
   canvas: HTMLCanvasElement,
-  btn: HTMLButtonElement,
   objekty: ObjektovyTyp[]
 ): void {
   is3dActive = true;
   notifyViewMode();
-  btn.textContent = '2D';
-  btn.title = 'Přepnout zpět na 2D mapu';
-  btn.classList.add('active');
+  syncViewControls();
 
   // 2D highlight přestává být viditelný (mapa je skrytá); 3D highlight
   // znovu aplikujeme níže po inicializaci scény.
@@ -517,14 +540,11 @@ function switchTo3d(
 function switchTo2d(
   olMap: Map,
   mapContainer: HTMLDivElement,
-  canvas: HTMLCanvasElement,
-  btn: HTMLButtonElement
+  canvas: HTMLCanvasElement
 ): void {
   is3dActive = false;
   notifyViewMode();
-  btn.textContent = '3D';
-  btn.title = 'Přepnout mezi 2D mapou a 3D pohledem';
-  btn.classList.remove('active');
+  syncViewControls();
 
   if (resizeObserver) {
     resizeObserver.disconnect();

@@ -124,6 +124,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Přepínač 2D | 3D nad mapou vpravo nahoře** místo tlačítka „3D"
+  v hlavičce.
+- **Tlačítko „Terén" nad mapou** (jen ve 3D, vedle Katastru, ikona hory)
+  nahrazuje přepínač „Terén (ČÚZK DMR5G)" v levém panelu; se zapnutým
+  terénem má aktivní barvu textu.
 - **„O aplikaci a historie verzí"** se otevírá jen ze spouštěče nástrojů —
   zdvojená ikona „i" v patičce levého panelu odpadla.
 - **Karty nad mapou** (Podkladová mapa, DTM, Katastr) se otevírají pod lištou
