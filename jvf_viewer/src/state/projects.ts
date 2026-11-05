@@ -39,16 +39,22 @@ export const MAX_PROJECTS = 8;
  * Paleta barev pro odlišení projektů v UI. Barvy jsou čistě identifikační
  * (neodpovídají žádné specifikaci) a nepromítají se do stylování geometrií
  * v mapě — tam platí Katalog kartografických symbolů DTM.
+ *
+ * Volené tak, aby se nepletly s barvami obsahových částí
+ * (KATALOG_FALLBACK_COLORS: světle modrá ZPS, oranžová TI, žlutá DI, zelená
+ * GAD, fialová OPL/PSPI, šedomodrá OST): odstíny, které části nepoužívají
+ * (karmínová, petrolejová, indigová, purpurová), nebo tmavé tóny, které se
+ * od světlých barev částí liší jasem.
  */
 const PROJECT_COLORS = [
-  '#58a6ff', // modrá
-  '#f78166', // lososová
-  '#3fb950', // zelená
-  '#d2a8ff', // fialová
-  '#f2cc60', // žlutá
-  '#76e3ea', // tyrkysová
-  '#ff7b72', // červená
-  '#7ee787', // světle zelená
+  '#d32f4f', // karmínová
+  '#00897b', // petrolejová
+  '#3949ab', // indigová
+  '#8d5a3b', // hnědá
+  '#e91e8c', // purpurová
+  '#827717', // olivová
+  '#263238', // břidlicová
+  '#1b5e20', // tmavě zelená
 ];
 
 let seq = 0;

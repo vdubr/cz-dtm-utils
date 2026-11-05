@@ -340,12 +340,16 @@ function renderAttributes(z: ZaznamObjektu): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'feature-detail-inner';
 
-  // Projekt (soubor), do kterého záznam patří.
+  // Projekt (soubor), do kterého záznam patří — s barevnou tečkou projektu
+  // (stejná barva jako v sekci Projekty).
   const ownProject = getProject(resolveProjectKey(z) ?? '');
   if (ownProject) {
     const projectLine = document.createElement('div');
     projectLine.className = 'feature-detail-meta feature-detail-project';
-    projectLine.textContent = `Projekt: ${ownProject.nazev}`;
+    const dot = document.createElement('span');
+    dot.className = 'project-dot';
+    dot.style.background = ownProject.color;
+    projectLine.append(dot, `Projekt: ${ownProject.nazev}`);
     wrap.appendChild(projectLine);
   }
 
