@@ -801,6 +801,8 @@ html, body {
   gap: 8px;
   padding: 8px;
   min-height: 0;
+  border: none;
+  border-radius: 0;
 }
 .legend-tile .legend-tile-preview {
   width: 100%;
