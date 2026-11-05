@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000?logo=vercel)](https://cz-dtm-utils.vercel.app/jvf_viewer/)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000?logo=vercel)](https://cz-dtm-utils.vercel.app/)
 
 TypeScript monorepo for working with **JVF DTM** — the Czech *Jednotný Výměnný
 Formát Digitální Technické Mapy* (Unified Exchange Format for the Digital
@@ -12,7 +12,7 @@ dialects UDM 2.1.1 (ČKZ) and ŽXML 1.4.2.1 / 1.5.1.6 (railway DTMŽ data of
 Správa železnic) — the viewer has dedicated modes JVF / UDM / JŽM with
 dialect symbology, a symbol legend with SVG download and DXF export.
 
-> **Live demo:** https://cz-dtm-utils.vercel.app/jvf_viewer/
+> **Live demo:** https://cz-dtm-utils.vercel.app/
 >
 > Files are processed entirely in the browser — nothing is uploaded to a server.
 

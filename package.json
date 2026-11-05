@@ -19,6 +19,7 @@
     "typecheck": "npm run typecheck -w jvf-dtm-types && npm run typecheck -w jvf-parser && npm run typecheck -w jvf-topology && npm run typecheck -w jvf-cad && npm run typecheck -w jvf-viewer",
     "test": "npm run test -w jvf-parser && npm run test -w jvf-topology && npm run test -w jvf-cad",
     "generate": "npm run generate:all -w jvf-parser",
+    "build:app-themes": "tsx scripts/viewer/build-app-themes.ts",
     "check:generated": "npm run generate:all -w jvf-parser && git diff --exit-code -- ':(glob)jvf_parser/src/*/generated/*.ts' ':(exclude,glob)jvf_parser/src/*/generated/styles.ts'",
     "check:upstream": "python3 scripts/check-upstream-versions.py",
     "lint": "eslint .",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@material/material-color-utilities": "^0.4.0",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.7.0",

@@ -7,11 +7,13 @@
  *   - `jzm` — Jednotná železniční mapa: data DTMŽ Správy železnic ve
  *     formátu ŽXML, symbologie SŽ (fotokatalog MOZeK), Export do CAD.
  *
- * Do jiného režimu se uživatel přepíná vědomě (přepínač v hlavičce, nebo
- * nabídka při načtení souboru jiného modelu); přepnutí zavře načtené projekty.
- * Režim je v URL (`?mode=udm`), takže jde sdílet odkaz; bez parametru se
- * aplikace otevře v JVF. Režim dialektu se váže na registr dialektů
- * (`DIALECTS` v jvf-dtm-types) — další režim = nová položka `APP_MODES`.
+ * Každý režim je samostatný nástroj na vlastní adrese — `/` (JVF), `/udm`,
+ * `/jzm` — s vlastním názvem a barevným schématem (app-themes.css). Do jiného
+ * nástroje se uživatel přepíná vědomě (spouštěč nástrojů v hlavičce, nebo
+ * nabídka při načtení souboru jiného modelu); přepnutí zavře načtené
+ * projekty. Starý tvar `?mode=udm` se při načtení převede na cestu. Režim
+ * dialektu se váže na registr dialektů (`DIALECTS` v jvf-dtm-types) — další
+ * režim = nová položka `APP_MODES`.
  */
 import {
   LATEST_JVF_VERSION,
@@ -26,29 +28,59 @@ export type AppMode = 'jvf' | 'udm' | 'jzm';
 
 export interface AppModeDef {
   id: AppMode;
-  /** Krátký popisek na přepínači. */
+  /** Krátký popisek (odznak nástroje, dialogy). */
   label: string;
   /** Plný název (dialogy, nápověda). */
   title: string;
+  /** Název nástroje v hlavičce. */
+  appName: string;
+  /** Správce datového modelu (popisek ve spouštěči). */
+  org: string;
+  /** Cesta nástroje za `BASE_URL` (`''` = výchozí JVF na `/`). */
+  path: string;
+  /** Titulek stránky (záložka prohlížeče). */
+  docTitle: string;
   /** Dialekt JVF DTM, se kterým režim pracuje (`undefined` = čisté JVF DTM). */
   dialect?: DialectId;
   /** Aktivní verze po přepnutí do režimu (legenda, číselníky). */
   defaultVersion: JvfVersion;
 }
 
+type ToolInfo = Pick<AppModeDef, 'appName' | 'org' | 'path' | 'docTitle'>;
+
 /** Režim dialektu — název, výchozí verze a detekce souboru z registru dialektů. */
-function dialectMode(id: AppMode, label: string, title: string, dialect: DialectId): AppModeDef {
-  return { id, label, title, dialect, defaultVersion: getDialect(dialect).latest };
+function dialectMode(id: AppMode, label: string, title: string, dialect: DialectId, tool: ToolInfo): AppModeDef {
+  return { id, label, title, ...tool, dialect, defaultVersion: getDialect(dialect).latest };
 }
 
 export const APP_MODES: readonly AppModeDef[] = [
-  { id: 'jvf', label: 'JVF', title: 'JVF DTM', defaultVersion: LATEST_JVF_VERSION },
-  dialectMode('udm', 'UDM', 'UDM — Univerzální datový model ČKZ', 'udm'),
-  dialectMode('jzm', 'JŽM', 'JŽM — Jednotná železniční mapa (ŽXML, DTMŽ Správy železnic)', 'zxml'),
+  {
+    id: 'jvf',
+    label: 'JVF',
+    title: 'JVF DTM',
+    appName: 'JVF Prohlížeč',
+    org: 'ČÚZK',
+    path: '',
+    docTitle: 'JVF DTM Prohlížeč — vizualizace a validace JVF souborů Digitální technické mapy ČR',
+    defaultVersion: LATEST_JVF_VERSION,
+  },
+  dialectMode('udm', 'UDM', 'UDM — Univerzální datový model ČKZ', 'udm', {
+    appName: 'UDM Prohlížeč',
+    org: 'ČKZ',
+    path: 'udm',
+    docTitle: 'UDM Prohlížeč — Univerzální datový model ČKZ · DTM Prohlížeč',
+  }),
+  dialectMode('jzm', 'JŽM', 'JŽM — Jednotná železniční mapa (ŽXML, DTMŽ Správy železnic)', 'zxml', {
+    appName: 'JŽM Prohlížeč',
+    org: 'SŽ',
+    path: 'jzm',
+    docTitle: 'JŽM Prohlížeč — Jednotná železniční mapa (ŽXML, Správa železnic) · DTM Prohlížeč',
+  }),
 ];
 
 export const DEFAULT_APP_MODE: AppMode = 'jvf';
-const URL_PARAM = 'mode';
+/** Starý tvar odkazu (`?mode=udm`) — při načtení se převede na cestu. */
+const LEGACY_PARAM = 'mode';
 
 export function appModeDef(mode: AppMode): AppModeDef {
   return APP_MODES.find((m) => m.id === mode)!;
@@ -69,16 +101,47 @@ function isAppMode(v: string | null): v is AppMode {
   return APP_MODES.some((m) => m.id === v);
 }
 
+/** Adresa nástroje (`/`, `/udm`, `/jzm` — za `BASE_URL`). */
+export function appModeHref(target: AppMode): string {
+  return import.meta.env.BASE_URL + appModeDef(target).path;
+}
+
+/** Režim podle cesty (první segment za `BASE_URL`), nebo `null`. */
+export function appModeFromPath(pathname: string): AppMode | null {
+  const base = import.meta.env.BASE_URL;
+  const rest = pathname.startsWith(base) ? pathname.slice(base.length) : pathname.replace(/^\//, '');
+  const segment = rest.split('/').filter(Boolean)[0] ?? '';
+  return APP_MODES.find((m) => m.path !== '' && m.path === segment)?.id ?? null;
+}
+
 function readModeFromUrl(): AppMode {
   try {
-    const v = new URLSearchParams(window.location.search).get(URL_PARAM);
-    return isAppMode(v) ? v : DEFAULT_APP_MODE;
+    const fromPath = appModeFromPath(window.location.pathname);
+    if (fromPath) return fromPath;
+    const legacy = new URLSearchParams(window.location.search).get(LEGACY_PARAM);
+    return isAppMode(legacy) ? legacy : DEFAULT_APP_MODE;
   } catch {
     return DEFAULT_APP_MODE;
   }
 }
 
+/** Zapíše adresu nástroje do URL (bez nového záznamu historie). */
+function writeModeToUrl(target: AppMode): void {
+  try {
+    const url = new URL(window.location.href);
+    url.pathname = appModeHref(target);
+    url.searchParams.delete(LEGACY_PARAM);
+    if (url.href !== window.location.href) window.history.replaceState(null, '', url);
+  } catch {
+    // URL je jen pohodlí (sdílení odkazu) — bez ní režim funguje dál.
+  }
+}
+
 let mode: AppMode = typeof window === 'undefined' ? DEFAULT_APP_MODE : readModeFromUrl();
+// Starý odkaz `?mode=udm` → `/udm`.
+if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has(LEGACY_PARAM)) {
+  writeModeToUrl(mode);
+}
 
 type Listener = (mode: AppMode) => void;
 const listeners = new Set<Listener>();
@@ -94,14 +157,7 @@ export function getAppMode(): AppMode {
 export function setAppMode(next: AppMode): void {
   if (next === mode) return;
   mode = next;
-  try {
-    const url = new URL(window.location.href);
-    if (next === DEFAULT_APP_MODE) url.searchParams.delete(URL_PARAM);
-    else url.searchParams.set(URL_PARAM, next);
-    window.history.replaceState(null, '', url);
-  } catch {
-    // URL je jen pohodlí (sdílení odkazu) — bez ní režim funguje dál.
-  }
+  writeModeToUrl(next);
   for (const fn of listeners) fn(next);
 }
 

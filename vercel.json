@@ -2,8 +2,87 @@
   "buildCommand": "npm run build",
   "outputDirectory": "jvf_viewer/dist",
   "installCommand": "npm install --ignore-scripts=false",
+  "redirects": [
+    {
+      "source": "/jvf_viewer",
+      "has": [
+        {
+          "type": "query",
+          "key": "mode",
+          "value": "udm"
+        }
+      ],
+      "destination": "/udm",
+      "statusCode": 301
+    },
+    {
+      "source": "/jvf_viewer/",
+      "has": [
+        {
+          "type": "query",
+          "key": "mode",
+          "value": "udm"
+        }
+      ],
+      "destination": "/udm",
+      "statusCode": 301
+    },
+    {
+      "source": "/jvf_viewer",
+      "has": [
+        {
+          "type": "query",
+          "key": "mode",
+          "value": "jzm"
+        }
+      ],
+      "destination": "/jzm",
+      "statusCode": 301
+    },
+    {
+      "source": "/jvf_viewer/",
+      "has": [
+        {
+          "type": "query",
+          "key": "mode",
+          "value": "jzm"
+        }
+      ],
+      "destination": "/jzm",
+      "statusCode": 301
+    },
+    {
+      "source": "/jvf_viewer",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/jvf_viewer/",
+      "destination": "/",
+      "statusCode": 301
+    },
+    {
+      "source": "/jvf_viewer/:path+",
+      "destination": "/:path+",
+      "statusCode": 301
+    }
+  ],
   "rewrites": [
-    { "source": "/jvf_viewer/(.*)", "destination": "/$1" },
-    { "source": "/jvf_viewer", "destination": "/index.html" }
+    {
+      "source": "/udm",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/udm/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/jzm",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/jzm/",
+      "destination": "/index.html"
+    }
   ]
 }

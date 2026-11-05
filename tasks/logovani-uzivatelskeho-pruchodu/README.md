@@ -33,7 +33,7 @@ otázky (hlavně nástroj a soukromí).
 | `active_time` | skrytí / zavření stránky | `seconds` — aktivní čas od posledního odeslání (součet = čas v aplikaci) |
 | `file_load` | načtení vlastního souboru | `mode`, `version` (např. 1.4.3, udm-2.1.1), `size` (pásmo) |
 | `sample_load` | načtení ukázky z nabídky | `sample` (název ukázky — veřejný), `mode` |
-| `mode_change` | přepnutí JVF / UDM / JŽM (i `?mode=`) | `mode` |
+| `mode_change` | přepnutí JVF / UDM / JŽM (spouštěč, nabídka u souboru) | `mode` |
 | `topology_check` | Zkontrolovat | `mode`, `result` (ok / warnings / errors) |
 | `features_panel` | otevření Přehledu prvků | `via` (button / map_click) |
 | `map_feature_click` | klik na prvek v mapě (2D / 3D) | `view`, `type` (typ objektu z katalogu, např. `BudovaPlocha`) |

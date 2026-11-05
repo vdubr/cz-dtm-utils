@@ -9,7 +9,8 @@ export default defineConfig({
     __COMMIT_HASH__: JSON.stringify(commitHash),
     __BUILD_TIME__: JSON.stringify(buildTime),
   },
-  base: '/jvf_viewer/',
+  // Nástroje na kořeni domény: / (JVF), /udm, /jzm (vercel.json přepisy).
+  base: '/',
   optimizeDeps: {
     include: ['ol', 'proj4', 'three'],
     exclude: ['jvf-parser', 'jvf-cad', 'geotiff'],

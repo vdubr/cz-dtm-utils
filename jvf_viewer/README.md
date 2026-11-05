@@ -4,7 +4,7 @@ Browser application for inspecting and validating **JVF DTM 1.4.3** files —
 2D map, 3D scene with terrain, topological validation and an error panel
 with click-to-zoom.
 
-> **Live:** https://cz-dtm-utils.vercel.app/jvf_viewer/
+> **Live:** https://cz-dtm-utils.vercel.app/
 >
 > Files are processed entirely in the browser. Nothing is uploaded to a
 > server — the only outbound requests are tiles and DEM tiles from public

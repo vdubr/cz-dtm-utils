@@ -62,7 +62,7 @@ export const ZAPIS_HIGHLIGHT_COLORS: Record<
 };
 
 /** Base path for SVG symbols served from public/symboly/ */
-const SVG_BASE = './symboly/';
+const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
 /**
  * Referenční měřítko pro převod mm (papírová velikost v katalogu) na metry

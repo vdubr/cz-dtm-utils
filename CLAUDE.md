@@ -33,8 +33,9 @@ nasazení nové verze — nikdy ne průběžně.
       — notes vyplnit z odpovídající sekce `CHANGELOG.md` (česky).
    i. Vercel auto-deployne `main`.
 
-- Produkční URL: **https://cz-dtm-utils.vercel.app/jvf_viewer/** (přímý odkaz)
-- Také dostupné na: **https://cz-dtm-utils.vercel.app/** (root redirect)
+- Produkční URL: **https://cz-dtm-utils.vercel.app/** (JVF), nástroje
+  **/udm** a **/jzm** (přepisy ve `vercel.json`, Vite `base: '/'`; staré
+  `/jvf_viewer/` a `?mode=…` se trvale přesměrují)
 
 ### Verzování — CalVer (semver-kompatibilní)
 
@@ -174,8 +175,11 @@ Přidání dalšího dialektu / verze:
 4. Styly (`src/<id>/generated/styles.ts`) → `STYLES_BY_DIALECT` v
    `src/styles/resolve.ts`; SVG do `jvf_viewer/public/symboly/<dialekt>/`.
 5. Topologie: `crossObjectChecksForVersion` (`jvf_topology/src/1.4.3/index.ts`).
-6. Viewer: režim v `APP_MODES` (`state/appMode.ts`), ukázky s `data-mode`
-   v `index.html`, info modal, CHANGELOG.
+6. Viewer: režim v `APP_MODES` (`state/appMode.ts` — název, cesta, titulek),
+   přepis cesty ve `vercel.json`, barevné schéma v
+   `scripts/viewer/build-app-themes.ts` (→ `src/app-themes.css`), barva
+   odznaku v `app-m3.css`, ukázky s `data-mode` v `index.html`, info modal,
+   CHANGELOG.
 
 ### Aktualizace verze datového modelu
 

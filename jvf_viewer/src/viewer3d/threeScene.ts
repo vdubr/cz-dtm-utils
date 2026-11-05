@@ -291,7 +291,7 @@ let basemapRequestId = 0;
 const svgTextureCache = new Map<string, THREE.Texture>();
 
 /** Base path pro SVG symboly (stejný jako v 2D). */
-const SVG_BASE = './symboly/';
+const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
 /**
  * Konverze nativní pixelové velikosti SVG na metry v terénu.

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { loadSample, fixturePath, switchMode } from './helpers';
+import { loadSample, fixturePath, openTool, switchMode } from './helpers';
 
 /**
  * Kolik prvků 2D mapy style funkce vrstev opravdu kreslí, seskupeno podle
@@ -36,7 +36,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('Základní stav aplikace', () => {
   test('stránka se načte s hlavičkou a prázdným stavem', async ({ page }) => {
     await expect(page).toHaveTitle(/JVF DTM Prohlížeč/);
-    await expect(page.locator('#app-header h1')).toHaveText('JVF DTM Prohlížeč');
+    await expect(page.locator('#app-header h1')).toHaveText('JVF Prohlížeč');
 
     // Bez načtených dat jsou datové akce zakázané.
     await expect(page.locator('#btn-validate')).toBeDisabled();
@@ -58,24 +58,62 @@ test.describe('Základní stav aplikace', () => {
 });
 
 test.describe('Režimy aplikace (JVF / UDM)', () => {
-  test('výchozí režim je JVF; ?mode=udm otevře rovnou UDM', async ({ page }) => {
-    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
-    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).not.toHaveClass(/active/);
-    expect(new URL(page.url()).searchParams.get('mode')).toBeNull();
+  test('výchozí nástroj je JVF na /; /udm otevře rovnou UDM', async ({ page }) => {
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'jvf');
+    await expect(page.locator('html')).not.toHaveAttribute('data-app', 'udm');
+    expect(new URL(page.url()).pathname).toBe('/');
 
-    await page.goto('./?mode=udm');
-    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).toHaveClass(/active/);
+    await page.goto('/udm');
+    await expect(page).toHaveTitle(/^UDM Prohlížeč/);
+    await expect(page.locator('#app-header h1')).toHaveText('UDM Prohlížeč');
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'udm');
     await page.locator('#btn-upload-menu').click();
     await expect(page.locator('.upload-menu-item:visible')).toHaveCount(3);
     await expect(page.locator('.upload-menu-item[data-sample="udm_minimal.xml"]')).toBeVisible();
   });
 
-  test('přepnutí bez dat je okamžité a zapíše režim do URL', async ({ page }) => {
+  test('přepnutí bez dat je okamžité a zapíše nástroj do adresy (/udm, /)', async ({ page }) => {
     await switchMode(page, 'udm');
     await expect(page.locator('#confirm-modal')).toBeHidden();
-    expect(new URL(page.url()).searchParams.get('mode')).toBe('udm');
+    expect(new URL(page.url()).pathname).toBe('/udm');
     await switchMode(page, 'jvf');
-    expect(new URL(page.url()).searchParams.get('mode')).toBeNull();
+    expect(new URL(page.url()).pathname).toBe('/');
+  });
+
+  test('starý odkaz ?mode=jzm se převede na /jzm', async ({ page }) => {
+    await page.goto('/?mode=jzm');
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'jzm');
+    const url = new URL(page.url());
+    expect(url.pathname).toBe('/jzm');
+    expect(url.searchParams.get('mode')).toBeNull();
+  });
+
+  test('spouštěč nástrojů: dlaždice jsou odkazy na /, /udm, /jzm; aktivní je zvýrazněná; Esc zavře', async ({ page }) => {
+    await page.locator('#btn-app-launcher').click();
+    const launcher = page.locator('#app-launcher');
+    await expect(launcher).toBeVisible();
+    await expect(page.locator('#btn-app-launcher')).toHaveAttribute('aria-expanded', 'true');
+    const tiles = launcher.locator('.app-launcher-tile');
+    await expect(tiles).toHaveCount(3);
+    expect(await tiles.evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).getAttribute('href')))).toEqual(['/', '/udm', '/jzm']);
+    await expect(launcher.locator('.app-launcher-tile[data-mode-btn="jvf"]')).toHaveAttribute('aria-current', 'page');
+    await page.keyboard.press('Escape');
+    await expect(launcher).toBeHidden();
+  });
+
+  test('každý nástroj má vlastní barevné schéma (i v tmavém motivu)', async ({ page }) => {
+    const primary = () =>
+      page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--md-sys-color-primary').trim());
+    const jvf = await primary();
+    await switchMode(page, 'udm');
+    const udm = await primary();
+    await switchMode(page, 'jzm');
+    const jzm = await primary();
+    expect(new Set([jvf, udm, jzm]).size).toBe(3);
+    await page.locator('#btn-theme').click();
+    const jzmDark = await primary();
+    expect(jzmDark).not.toBe(jzm);
+    await expect(page.locator('#app-badge')).toHaveText('JŽM');
   });
 
   test('soubor UDM v režimu JVF: Zrušit = nenačte se, Přepnout = načte se v UDM', async ({ page }) => {
@@ -84,12 +122,12 @@ test.describe('Režimy aplikace (JVF / UDM)', () => {
     await page.locator('#confirm-modal-footer button', { hasText: 'Zrušit' }).click();
     await expect(page.locator('#loading-overlay')).toBeHidden();
     await expect(page.locator('#btn-validate')).toBeDisabled();
-    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'jvf');
 
     await page.setInputFiles('#file-input', fixturePath('udm_minimal.xml'));
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do UDM' }).click();
     await expect(page.locator('#loading-overlay')).toBeHidden();
-    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).toHaveClass(/active/);
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'udm');
     await expect(page.locator('.project-item .project-name')).toHaveAttribute('title', /UDM 2\.1\.1/);
   });
 
@@ -99,22 +137,22 @@ test.describe('Režimy aplikace (JVF / UDM)', () => {
     await expect(page.locator('#confirm-modal-title')).toHaveText(/režimu JVF/);
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do JVF' }).click();
     await expect(page.locator('#loading-overlay')).toBeHidden();
-    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'jvf');
     await expect(page.locator('.project-item .project-name')).toHaveAttribute('title', 'Verze JVF 1.4.3');
   });
 
   test('přepnutí s načtenými daty se ptá a zavře projekty', async ({ page }) => {
     await loadSample(page, 'ukazka_ZPS.xml');
-    await page.locator('#app-mode-switch [data-mode-btn="udm"]').click();
+    await openTool(page, 'udm');
     await expect(page.locator('#confirm-modal-body')).toContainText('zavře načtený soubor');
     // Zrušit → nic se nemění
     await page.locator('#confirm-modal-footer button', { hasText: 'Zrušit' }).click();
     await expect(page.locator('#projects-list .project-item')).toHaveCount(1);
-    await expect(page.locator('#app-mode-switch [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'jvf');
     // Přepnout → projekty pryč, prázdný stav
-    await page.locator('#app-mode-switch [data-mode-btn="udm"]').click();
+    await openTool(page, 'udm');
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do UDM' }).click();
-    await expect(page.locator('#app-mode-switch [data-mode-btn="udm"]')).toHaveClass(/active/);
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'udm');
     await expect(page.locator('#projects-section')).toBeHidden();
     await expect(page.locator('#btn-validate')).toBeDisabled();
   });
@@ -354,9 +392,9 @@ test.describe('Načtení JVF souboru', () => {
 });
 
 test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
-  test('?mode=jzm: ukázky ŽXML v nabídce, Export do CAD a Legenda znaků viditelné', async ({ page }) => {
-    await page.goto('./?mode=jzm');
-    await expect(page.locator('#app-mode-switch [data-mode-btn="jzm"]')).toHaveClass(/active/);
+  test('/jzm: ukázky ŽXML v nabídce, Export do CAD a Legenda znaků viditelné', async ({ page }) => {
+    await page.goto('/jzm');
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'jzm');
     await page.locator('#btn-upload-menu').click();
     await expect(page.locator('.upload-menu-item:visible')).toHaveCount(3);
     await expect(page.locator('.upload-menu-item[data-sample="zxml_nadrazi.xml"]')).toBeVisible();
@@ -370,7 +408,7 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await expect(page.locator('#confirm-modal-title')).toHaveText(/režimu JŽM/);
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do JŽM' }).click();
     await expect(page.locator('#loading-overlay')).toBeHidden();
-    await expect(page.locator('#app-mode-switch [data-mode-btn="jzm"]')).toHaveClass(/active/);
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'jzm');
     await expect(page.locator('.project-item .project-name')).toHaveAttribute(
       'title',
       'Verze ŽXML 1.4.2.1 (JVF 1.4.3)',
@@ -456,7 +494,16 @@ test.describe('Vzhled (Material Design 3)', () => {
     await expect(panel).not.toBeInViewport();
     await page.locator('#btn-drawer').click();
     await expect(panel).toBeInViewport();
-    await expect(page.locator('#app-mode-switch-drawer [data-mode-btn="jvf"]')).toHaveClass(/active/);
+    // Nástroj a spouštěč jsou na mobilu v panelu vrstev (spodní panel přes mapu).
+    await expect(page.locator('#btn-app-launcher')).toBeHidden();
+    await expect(page.locator('#btn-app-launcher-drawer')).toContainText('JVF Prohlížeč');
+    await page.locator('#btn-app-launcher-drawer').click();
+    await expect(page.locator('#app-launcher')).toBeVisible();
+    await expect(panel).not.toBeInViewport();
+    await page.locator('.app-launcher-tile[data-mode-btn="udm"]').click();
+    await expect(page.locator('html')).toHaveAttribute('data-app', 'udm');
+    await page.locator('#btn-drawer').click();
+    await expect(panel).toBeInViewport();
     await page.locator('#drawer-scrim').click({ position: { x: 370, y: 400 } });
     await expect(panel).not.toBeInViewport();
   });
@@ -663,7 +710,7 @@ test.describe('Modály a ovládání', () => {
   });
 
   test('filtr obsahových částí nabízí části z dat (UDM: ZPSUDM, DIUDM, OST) a filtruje', async ({ page }) => {
-    await page.goto('./?mode=udm');
+    await page.goto('/udm');
     await page.setInputFiles('#file-input', fixturePath('UDM_ukazka-1.xml'));
     await expect(page.locator('#btn-features')).toBeEnabled({ timeout: 30_000 });
     await page.locator('#btn-features').click();
@@ -757,7 +804,7 @@ test.describe('Modály a ovládání', () => {
   });
 
   test('filtr obsahové části v tabulce ztlumí odfiltrované části v panelu vrstev', async ({ page }) => {
-    await page.goto('./?mode=udm');
+    await page.goto('/udm');
     await page.setInputFiles('#file-input', fixturePath('UDM_ukazka-1.xml'));
     await expect(page.locator('#btn-features')).toBeEnabled({ timeout: 30_000 });
     await page.locator('#btn-features').click();
@@ -769,7 +816,7 @@ test.describe('Modály a ovládání', () => {
   });
 
   test('filtr obsahové části filtruje i mapu', async ({ page }) => {
-    await page.goto('./?mode=udm');
+    await page.goto('/udm');
     await page.setInputFiles('#file-input', fixturePath('UDM_ukazka-1.xml'));
     await expect(page.locator('#btn-features')).toBeEnabled({ timeout: 30_000 });
     await page.locator('#btn-features').click();
@@ -967,7 +1014,7 @@ test.describe('Modály a ovládání', () => {
     ] as const;
     // Očekávané hodnoty ze stejných funkcí (modul načtený z dev serveru).
     const expected = (n: number) => page.evaluate(async ({ px, n }) => {
-      const m = await import('/jvf_viewer/src/map/measureMath.ts');
+      const m = await import('/src/map/measureMath.ts');
       const d = (window as unknown as { __jvfDebug: { olMap: import('ol/Map').default } }).__jvfDebug;
       const coords = px.slice(0, n).map((p) => d.olMap.getCoordinateFromPixel([p[0], p[1]])!);
       return {
@@ -1030,7 +1077,7 @@ test.describe('Modály a ovládání', () => {
     await expect(card.locator('[data-measure="points"]')).toHaveText('3 (uzavřeno)');
 
     const r = await page.evaluate(async () => {
-      const m = await import('/jvf_viewer/src/map/measureMath.ts');
+      const m = await import('/src/map/measureMath.ts');
       const pts = (window as unknown as { __jvfDebug: { measurePoints: () => number[][] } }).__jvfDebug.measurePoints();
       return {
         n: pts.length,
@@ -1162,7 +1209,7 @@ test.describe('Modály a ovládání', () => {
 
     // Hodnoty v kartě odpovídají bodům (stejné funkce z dev serveru).
     const exp = await page.evaluate(async () => {
-      const m = await import('/jvf_viewer/src/map/measureMath.ts');
+      const m = await import('/src/map/measureMath.ts');
       const pts = (window as unknown as { __jvfDebug: Dbg }).__jvfDebug.measurePoints();
       return {
         len3d: m.formatLength(m.polylineLength3d(pts)),

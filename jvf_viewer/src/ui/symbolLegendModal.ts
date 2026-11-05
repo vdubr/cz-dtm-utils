@@ -18,7 +18,7 @@ import {
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { createZip, type ZipEntry } from '../util/zip.js';
 
-const SVG_BASE = './symboly/';
+const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
 export interface SymbolEntry {
   symbol: string;

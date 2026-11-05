@@ -119,8 +119,9 @@ const INFO_CONTENT_HTML = `
       a Přehledu prvků se zavírají křížkem v hlavičce nebo znovu tlačítkem
       v liště. Na úzké obrazovce (mobil, tablet na výšku) je levý panel
       vrstev <strong>výsuvný</strong> — otevře se ikonou nabídky vlevo
-      nahoře, zavře klepnutím vedle panelu nebo klávesou Esc; v panelu je
-      i přepínač režimu JVF / UDM / JŽM.
+      nahoře, zavře klepnutím vedle panelu nebo klávesou Esc; nahoře v panelu
+      je aktuální nástroj, klepnutím se otevře spouštěč nástrojů (JVF / UDM /
+      JŽM) jako spodní panel.
     </li>
     <li>
       <strong>Měření</strong> — tlačítko s pravítkem vlevo dole (ve 2D mapě
@@ -413,20 +414,25 @@ const INFO_CONTENT_HTML = `
     schematické nádraží v Řevnicích se smyšlenými daty).
   </p>
 
-  <h3>Režimy aplikace</h3>
+  <h3>Nástroje JVF / UDM / JŽM</h3>
   <p>
-    Přepínač <strong>JVF / UDM / JŽM</strong> v hlavičce určuje, s jakým
-    datovým modelem pracujete. Výchozí je <strong>JVF</strong> (JVF DTM,
-    symbologie dle Katalogu ČÚZK). Režim <strong>UDM</strong> přidává
-    symbologii UDM, režim <strong>JŽM</strong> (Jednotná železniční mapa)
-    data ŽXML Správy železnic se znaky SŽ; oba mají vlastní ukázkové
-    soubory a <em>Legendu znaků</em> (<em>Export do CAD</em> je ve všech
-    režimech). Přepnutí zavře
-    načtené soubory (při načtených datech se aplikace nejdřív zeptá).
-    Načtete-li soubor jiného modelu (např. ŽXML v režimu JVF), aplikace
-    nabídne přepnutí — bez něj se soubor nenačte. Režim je v adrese stránky
-    (<code>?mode=udm</code>, <code>?mode=jzm</code>), takže odkaz lze sdílet;
-    bez parametru se aplikace otevře v režimu JVF.
+    DTM Prohlížeč jsou tři nástroje na jedné adrese, každý pro jiný datový
+    model, s vlastním názvem a <strong>barevným schématem</strong> (ve světlém
+    i tmavém motivu): <strong>JVF Prohlížeč</strong> (modrý, výchozí, na
+    <code>/</code> — JVF DTM, symbologie dle Katalogu ČÚZK),
+    <strong>UDM Prohlížeč</strong> (tyrkysový, <code>/udm</code> — Univerzální
+    datový model ČKZ) a <strong>JŽM Prohlížeč</strong> (oranžový,
+    <code>/jzm</code> — Jednotná železniční mapa, data ŽXML Správy železnic
+    se znaky SŽ). UDM a JŽM mají vlastní ukázkové soubory a <em>Legendu
+    znaků</em>; <em>Export do CAD</em> je ve všech nástrojích. Mezi nástroji
+    se přepíná <strong>spouštěčem</strong> (ikona mřížky vlevo v hlavičce,
+    na mobilu nahoře v panelu vrstev); dlaždice jsou odkazy, takže nástroj
+    jde otevřít i v nové záložce (prostřední klik, Ctrl+klik). Přepnutí
+    v místě zavře načtené soubory (při načtených datech se aplikace nejdřív
+    zeptá). Načtete-li soubor jiného modelu (např. ŽXML v JVF), aplikace
+    nabídne přepnutí — bez něj se soubor nenačte. Adresu nástroje lze
+    sdílet; starší odkazy <code>?mode=udm</code> se převedou na
+    <code>/udm</code>.
   </p>
 
   <h3>Měření používání</h3>

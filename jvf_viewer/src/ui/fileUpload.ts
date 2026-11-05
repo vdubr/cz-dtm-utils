@@ -212,8 +212,8 @@ async function loadSample(
 ): Promise<void> {
   loadingOverlay.style.display = 'flex';
   try {
-    // `base` v Vite je '/jvf_viewer/', takže `./fixtures/...` je vůči HTML stránce
-    const resp = await fetch(`./fixtures/${name}`);
+    // Absolutně od `BASE_URL` — stránka může být na /udm, /jzm.
+    const resp = await fetch(`${import.meta.env.BASE_URL}fixtures/${name}`);
     if (!resp.ok) {
       throw new Error(`HTTP ${resp.status} — soubor nenalezen`);
     }

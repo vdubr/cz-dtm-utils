@@ -10,7 +10,7 @@ Stav: `[ ]` TODO · `[x]` hotovo.
   - O aplikaci JVF DTM Prohlížeč: co umí (prohlížení a kontrola JVF DTM,
     UDM, ŽXML, 2D/3D, překryvy DTM ČR a katastru, export do CAD ve vzhledu
     Katalogu DTM ČR), pro koho je, odkaz na
-    https://cz-dtm-utils.vercel.app/jvf_viewer/ a snímky obrazovky.
+    https://cz-dtm-utils.vercel.app/ a snímky obrazovky.
   - Podklady: info modal (`jvf_viewer/src/ui/infoModal.ts`),
     `CHANGELOG.md` (novinky nové verze).
   - Ideálně po vydání nové verze (merge `develop → main`, release).

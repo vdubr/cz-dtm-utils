@@ -4,8 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
  * Playwright konfigurace pro e2e (klikací) testy JVF DTM Prohlížeče.
  *
  * Testy si samy nastartují Vite dev server (`npm run dev`) na fixním portu
- * a jedou proti němu. Base `/jvf_viewer/` odpovídá `vite.config.ts`, takže
- * vstupní URL je `http://localhost:5173/jvf_viewer/`.
+ * a jedou proti němu. Base `/` odpovídá `vite.config.ts`, takže vstupní
+ * URL je `http://localhost:5173/` (JVF), nástroje `/udm`, `/jzm`.
  *
  * Poznámka k síti: podkladové mapy (ČÚZK WMS) a 3D terén (DMR5G) vyžadují
  * externí síť přes dev proxy. Smoke testy níže na těchto externích zdrojích
@@ -22,14 +22,14 @@ export default defineConfig({
   workers: process.env['CI'] ? 1 : undefined,
   reporter: process.env['CI'] ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://localhost:5173/jvf_viewer/',
+    baseURL: 'http://localhost:5173/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npm run dev -- --port 5173 --strictPort',
-    url: 'http://localhost:5173/jvf_viewer/',
+    url: 'http://localhost:5173/',
     reuseExistingServer: !process.env['CI'],
     timeout: 120_000,
   },

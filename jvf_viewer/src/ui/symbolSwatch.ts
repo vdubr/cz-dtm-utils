@@ -6,7 +6,7 @@
 import type { ObjektovyTyp } from 'jvf-parser';
 import { resolveRepresentativeStyle, type ResolvedStyle } from '../map/jvfLayers.js';
 
-const SVG_BASE = './symboly/';
+const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
 /** Konceptuální typ náhledu. */
 export type SwatchKind = 'point' | 'line' | 'polygon';

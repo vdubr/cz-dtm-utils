@@ -173,42 +173,105 @@ html, body {
 }
 .upload-menu-item:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
 
-/* Segmented button — režim aplikace. */
-.app-mode-switch {
-  height: 40px;
-  margin-left: 8px;
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: var(--md-sys-shape-corner-full);
-  overflow: hidden;
-  background: transparent;
-}
-.app-mode-switch button {
+/* Spouštěč nástrojů (JVF / UDM / JŽM) a odznak nástroje — ui/appModeSwitch.ts.
+   Barva odznaku = barva značky nástroje (stejná ve světlém i tmavém motivu),
+   barvy rozhraní nástroje = app-themes.css. */
+.app-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 100%;
-  padding: 0 16px;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  color: var(--md-sys-color-on-surface);
-  font: 500 14px/20px var(--md-sys-typescale-font);
-  letter-spacing: 0.1px;
-  cursor: pointer;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #2e5bba;
+  color: #ffffff;
+  font: 700 12px/1 var(--md-sys-typescale-font);
+  letter-spacing: 0.2px;
 }
-.app-mode-switch button + button { border-left: 1px solid var(--md-sys-color-outline); }
-.app-mode-switch button:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
-.app-mode-switch button.active {
+.app-badge[data-app-id='udm'] { background: #00796b; }
+.app-badge[data-app-id='jzm'] { background: #b3400b; }
+.app-title { display: flex; flex-direction: column; min-width: 0; }
+#app-header .app-title h1 { margin: 0; font: 500 18px/24px var(--md-sys-typescale-font); white-space: nowrap; }
+.app-family { font: 400 12px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); white-space: nowrap; }
+.app-launcher-btn[aria-expanded='true'] {
   background: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
 }
-.app-mode-switch button.active::before {
-  content: 'check';
-  font-family: 'Material Symbols Outlined';
-  font-size: 18px;
-  line-height: 1;
+.app-launcher {
+  position: fixed;
+  top: 64px;
+  left: 12px;
+  z-index: 1200;
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: var(--md-sys-elevation-2, 0 6px 24px rgba(0, 0, 0, 0.18));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.app-mode-switch button:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.app-launcher[hidden] { display: none; }
+.app-launcher-heading { font: 500 14px/20px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
+.app-launcher-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.app-launcher-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 4px 12px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--md-sys-color-on-surface);
+}
+.app-launcher-tile .app-badge { width: 48px; height: 48px; border-radius: 12px; font-size: 13px; }
+.app-launcher-tile:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.app-launcher-tile.active { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.app-launcher-tile:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.app-launcher-name { font: 500 13px/18px var(--md-sys-typescale-font); }
+.app-launcher-org { font: 400 11px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
+.app-launcher-tile.active .app-launcher-org { color: inherit; }
+.app-launcher-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+.app-launcher-link {
+  min-height: 40px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  text-align: left;
+  cursor: pointer;
+}
+.app-launcher-link:hover { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); }
+/* Řádek nástroje v panelu vrstev — jen mobil (viz media query níže). */
+.drawer-app-btn {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  margin: 4px 0 8px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 16px;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font: 500 16px/24px var(--md-sys-typescale-font);
+  text-align: left;
+  cursor: pointer;
+}
+.drawer-app-btn .app-badge { width: 32px; height: 32px; border-radius: 8px; font-size: 11px; }
+.drawer-app-name { flex: 1; }
 
 /* ===== Navigation drawer (panel vrstev) ===== */
 #layer-panel {
@@ -670,9 +733,24 @@ html, body {
 @media (max-width: 840px) {
   #app-header { padding: 4px 8px; gap: 4px; flex-wrap: nowrap; }
   .drawer-toggle { display: inline-flex; }
-  .app-logo { display: none; }
-  #app-header h1 { font-size: 18px; overflow: hidden; text-overflow: ellipsis; }
-  .header-left .app-mode-switch { display: none; }
+  /* Na mobilu je nástroj (a spouštěč) v panelu vrstev — hlavička je úzká. */
+  .app-logo,
+  .app-family,
+  #btn-app-launcher { display: none; }
+  .header-left { flex: 1 1 auto; overflow: hidden; }
+  #app-header .app-title { overflow: hidden; }
+  #app-header .app-title h1 { font-size: 16px; overflow: hidden; text-overflow: ellipsis; }
+  .drawer-app-btn { display: flex; }
+  /* Spouštěč na mobilu = spodní panel. */
+  .app-launcher {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 28px 28px 0 0;
+    padding: 20px 16px 28px;
+  }
   .header-right { gap: 4px; }
   #layer-panel {
     position: fixed;
@@ -695,10 +773,6 @@ html, body {
     z-index: 899;
     background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
   }
-  /* Režim aplikace je v draweru (kopii vytváří main.ts). */
-  .drawer-mode-switch { display: flex; margin: 8px 0 4px; }
-  .drawer-mode-switch .app-mode-switch { display: inline-flex; margin: 0; width: 100%; }
-  .drawer-mode-switch .app-mode-switch button { flex: 1 1 0; justify-content: center; }
   #error-panel,
   #features-panel {
     position: fixed;
@@ -707,10 +781,6 @@ html, body {
     width: 100vw !important;
     max-width: 100vw;
   }
-}
-
-@media (min-width: 841px) {
-  .drawer-mode-switch { display: none; }
 }
 
 /* Přehled prvků — hlavička kategorie ve stylu položky legendy DTM

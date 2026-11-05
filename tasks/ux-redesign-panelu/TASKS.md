@@ -30,7 +30,10 @@ Stav: `[ ]` TODO · `[~]` rozpracováno · `[x]` hotovo.
     přepne na „Data"; mobilní výsuvný panel funguje; layout test e2e
     (panel vrstev) upravený a zelený.
 
-- [ ] **T3 — Výraznější rozlišení režimů JVF / UDM / JŽM** — README §C
+- [x] **T3 — Výraznější rozlišení režimů JVF / UDM / JŽM** — README §C
+  - Hotovo 2026-11-05 (varianta B + C z návrhu): nástroje na `/`, `/udm`,
+    `/jzm`, spouštěč v hlavičce (mobil: spodní panel z panelu vrstev),
+    barevné schéma každého nástroje (`app-themes.css`).
   - `state/appMode.ts` (`APP_MODES` `:44`), `ui/appModeSwitch.ts`
     (`applyAppModeToUi` `:37`), hlavička v `index.html`, tokeny akcentu
     v `src/app-m3.css`.

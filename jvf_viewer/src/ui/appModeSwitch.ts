@@ -1,8 +1,12 @@
 /**
- * Přepínač režimu aplikace (JVF / UDM, …) v hlavičce a dialogy kolem něj.
+ * Spouštěč nástrojů (JVF / UDM / JŽM) v hlavičce a dialogy kolem přepnutí.
  *
- * - Klik na jiný režim: jsou-li načtené soubory, zeptá se (přepnutím se
- *   zavřou), pak `setAppMode` → main.ts vyčistí projekty a přestaví UI.
+ * - Každý nástroj má vlastní adresu (`/`, `/udm`, `/jzm`), název v hlavičce
+ *   a barevné schéma (`data-app` na <html> → app-themes.css).
+ * - Dlaždice spouštěče jsou odkazy: prostřední klik / Ctrl+klik otevře
+ *   nástroj v nové záložce; běžný klik přepne v místě — jsou-li načtené
+ *   soubory, zeptá se (přepnutím se zavřou), pak `setAppMode` → main.ts
+ *   vyčistí projekty a přestaví UI.
  * - Načtení souboru jiného modelu (`ensureAppModeForFile`): nabídne přepnutí
  *   do režimu souboru; bez přepnutí se soubor nenačte.
  * - Prvky s atributem `data-mode="udm"` (seznam režimů oddělený mezerou) se
@@ -13,6 +17,7 @@ import {
   APP_MODES,
   appModeDef,
   appModeForDtm,
+  appModeHref,
   getAppMode,
   onAppModeChange,
   setAppMode,
@@ -33,18 +38,33 @@ function closingNote(): string {
   return `<p>Přepnutím se zavře ${files}.</p>`;
 }
 
-/** Zobrazí jen prvky patřící aktuálnímu režimu, zvýrazní tlačítko režimu. */
+/**
+ * Promítne nástroj do UI: barevné schéma (`data-app`), název a odznak
+ * v hlavičce, titulek stránky, aktivní dlaždici spouštěče a prvky patřící
+ * jen některým nástrojům (`data-mode="udm jzm"` — ukázky, Legenda znaků, …).
+ */
 export function applyAppModeToUi(mode: AppMode = getAppMode()): void {
+  const def = appModeDef(mode);
   document.body.dataset['appMode'] = mode;
+  document.documentElement.dataset['app'] = mode;
+  document.title = def.docTitle;
   document.querySelectorAll<HTMLElement>('[data-mode]').forEach((el) => {
     const modes = (el.dataset['mode'] ?? '').split(/\s+/);
     el.hidden = !modes.includes(mode);
   });
-  // Hlavička i kopie v panelu vrstev (mobil, `#app-mode-switch-drawer`).
-  document.querySelectorAll<HTMLButtonElement>('.app-mode-switch button').forEach((btn) => {
-    const active = btn.dataset['modeBtn'] === mode;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-pressed', String(active));
+  // Odznak a název nástroje — hlavička i řádek v panelu vrstev (mobil).
+  document.querySelectorAll<HTMLElement>('[data-app-badge]').forEach((badge) => {
+    badge.textContent = def.label;
+    badge.dataset['appId'] = mode;
+  });
+  document.querySelectorAll<HTMLElement>('[data-app-name]').forEach((el) => {
+    el.textContent = def.appName;
+  });
+  document.querySelectorAll<HTMLAnchorElement>('.app-launcher-tile').forEach((tile) => {
+    const active = tile.dataset['modeBtn'] === mode;
+    tile.classList.toggle('active', active);
+    if (active) tile.setAttribute('aria-current', 'page');
+    else tile.removeAttribute('aria-current');
   });
 }
 
@@ -97,23 +117,101 @@ export async function ensureAppModeForFile(data: JvfDtm, fileName: string): Prom
   return true;
 }
 
-/** Vykreslí přepínač do `#app-mode-switch` a navěsí obsluhu. */
+/**
+ * Vykreslí spouštěč nástrojů (`#app-launcher`) a navěsí obsluhu. Otevírá ho
+ * tlačítko v hlavičce (`#btn-app-launcher`, desktop) i řádek nástroje
+ * v panelu vrstev (`#btn-app-launcher-drawer`, mobil — tam je spouštěč
+ * spodním panelem).
+ */
 export function setupAppModeSwitch(): void {
-  for (const id of ['app-mode-switch', 'app-mode-switch-drawer']) {
-    const host = document.getElementById(id);
-    if (!host) continue;
-    host.innerHTML = '';
+  const buttons = ['btn-app-launcher', 'btn-app-launcher-drawer']
+    .map((id) => document.getElementById(id) as HTMLButtonElement | null)
+    .filter((b): b is HTMLButtonElement => b !== null);
+  const panel = document.getElementById('app-launcher');
+  if (buttons.length > 0 && panel) {
+    let opener: HTMLButtonElement | null = null;
+    const close = (focusButton = false): void => {
+      if (panel.hidden) return;
+      panel.hidden = true;
+      for (const b of buttons) b.setAttribute('aria-expanded', 'false');
+      if (focusButton) opener?.focus();
+    };
+    const open = (from: HTMLButtonElement): void => {
+      opener = from;
+      panel.hidden = false;
+      from.setAttribute('aria-expanded', 'true');
+      panel.querySelector<HTMLElement>('.app-launcher-tile.active, .app-launcher-tile')?.focus();
+    };
+    /** Výběr v mobilním panelu vrstev zavře i panel (jako tlačítka v něm). */
+    const closeDrawer = (): void => {
+      document.body.classList.remove('drawer-open');
+      document.getElementById('btn-drawer')?.setAttribute('aria-expanded', 'false');
+    };
+
+    panel.innerHTML = '';
+    const heading = document.createElement('span');
+    heading.className = 'app-launcher-heading';
+    heading.textContent = 'Nástroje DTM';
+    const grid = document.createElement('div');
+    grid.className = 'app-launcher-grid';
     for (const m of APP_MODES) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.dataset['modeBtn'] = m.id;
-      btn.textContent = m.label;
-      btn.title = `Režim ${m.title}`;
-      btn.addEventListener('click', () => {
+      const tile = document.createElement('a');
+      tile.className = 'app-launcher-tile';
+      tile.href = appModeHref(m.id);
+      tile.dataset['modeBtn'] = m.id;
+      tile.title = m.title;
+      tile.innerHTML =
+        `<span class="app-badge" data-app-id="${m.id}" aria-hidden="true">${escapeHtml(m.label)}</span>` +
+        `<span class="app-launcher-name">${escapeHtml(m.label)}</span>` +
+        `<span class="app-launcher-org">${escapeHtml(m.org)}</span>`;
+      tile.addEventListener('click', (e) => {
+        // Nová záložka / okno: nechat prohlížeči.
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        close();
+        closeDrawer();
         void requestAppMode(m.id);
       });
-      host.appendChild(btn);
+      grid.appendChild(tile);
     }
+    const links = document.createElement('div');
+    links.className = 'app-launcher-links';
+    for (const [label, targetId] of [
+      ['Legenda DTM', 'btn-legend'],
+      ['O aplikaci a historie verzí', 'btn-info'],
+    ] as const) {
+      const link = document.createElement('button');
+      link.type = 'button';
+      link.className = 'app-launcher-link';
+      link.textContent = label;
+      link.addEventListener('click', () => {
+        close();
+        closeDrawer();
+        document.getElementById(targetId)?.click();
+      });
+      links.appendChild(link);
+    }
+    panel.append(heading, grid, links);
+
+    for (const button of buttons) {
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!panel.hidden) {
+          close();
+          return;
+        }
+        // Z panelu vrstev (mobil): panel zavřít, spouštěč je spodní panel přes mapu.
+        if (button.id === 'btn-app-launcher-drawer') closeDrawer();
+        open(button);
+      });
+    }
+    document.addEventListener('click', (e) => {
+      const target = e.target as Node | null;
+      if (!panel.hidden && target && !panel.contains(target) && !buttons.some((b) => b.contains(target))) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) close(true);
+    });
   }
   applyAppModeToUi();
   onAppModeChange((mode) => applyAppModeToUi(mode));
