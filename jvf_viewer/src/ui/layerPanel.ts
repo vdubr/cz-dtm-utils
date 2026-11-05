@@ -8,6 +8,7 @@ import {
 } from '../state/layerVisibility.js';
 import { isContentPartVisible, subscribeFeatureFilter } from '../state/featureFilter.js';
 import { contentPartTitle } from '../state/contentParts.js';
+import { appModeDef, getAppMode } from '../state/appMode.js';
 import { buildStyleSwatch, swatchKindForObjektovyTyp } from './symbolSwatch.js';
 
 /**
@@ -54,8 +55,17 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
   const container = document.getElementById('jvf-layers-list')!;
   container.innerHTML = '';
 
+  // Bez dat vodotisk „Přetáhněte data ve formátu …" uprostřed panelu;
+  // ikona je tlačítko nahrání (data-upload-trigger → ui/fileUpload.ts).
   if (layers.length === 0) {
-    container.innerHTML = '<div class="empty-hint">Nahrajte JVF soubor</div>';
+    const format = appModeDef(getAppMode()).dataFormat;
+    container.innerHTML = `
+      <div class="empty-hint panel-empty-hint">
+        <button type="button" class="panel-empty-upload" data-upload-trigger title="Nahrát soubor z disku" aria-label="Nahrát soubor z disku">
+          <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+        </button>
+        <span>Přetáhněte data ve formátu <span data-app-format>${format}</span></span>
+      </div>`;
     return;
   }
 

@@ -60,6 +60,9 @@ export function applyAppModeToUi(mode: AppMode = getAppMode()): void {
   document.querySelectorAll<HTMLElement>('[data-app-name]').forEach((el) => {
     el.textContent = def.appName;
   });
+  document.querySelectorAll<HTMLElement>('[data-app-format]').forEach((el) => {
+    el.textContent = def.dataFormat;
+  });
   document.querySelectorAll<HTMLAnchorElement>('.app-launcher-tile').forEach((tile) => {
     const active = tile.dataset['modeBtn'] === mode;
     tile.classList.toggle('active', active);

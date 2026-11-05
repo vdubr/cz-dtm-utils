@@ -46,13 +46,15 @@ export interface AppModeDef {
   docTitle: string;
   /** Stručný popis nástroje a formátu (spouštěč nástrojů). */
   description: string;
+  /** Název datového formátu (vodotisk „Přetáhněte data ve formátu …"). */
+  dataFormat: string;
   /** Dialekt JVF DTM, se kterým režim pracuje (`undefined` = čisté JVF DTM). */
   dialect?: DialectId;
   /** Aktivní verze po přepnutí do režimu (legenda, číselníky). */
   defaultVersion: JvfVersion;
 }
 
-type ToolInfo = Pick<AppModeDef, 'appName' | 'org' | 'path' | 'docTitle' | 'description'>;
+type ToolInfo = Pick<AppModeDef, 'appName' | 'org' | 'path' | 'docTitle' | 'description' | 'dataFormat'>;
 
 /** Podporované verze formátu z registru (`1.4.3, 1.5.0.1`, `ŽXML 1.4.2.1, …`). */
 const versionList = (versions: readonly string[]): string => versions.map(formatVersionLabel).join(', ');
@@ -74,6 +76,7 @@ export const APP_MODES: readonly AppModeDef[] = [
     description:
       `Digitální technická mapa ČR — změnové věty a výdeje krajských DTM pro IS DMVS (ČÚZK). ` +
       `Formát JVF DTM ${JVF_VERSIONS.join(', ')} (XML), vzhled podle Katalogu DTM ČR.`,
+    dataFormat: 'JVF',
     defaultVersion: LATEST_JVF_VERSION,
   },
   dialectMode('udm', 'UDM', 'UDM — Univerzální datový model ČKZ', 'udm', {
@@ -84,6 +87,7 @@ export const APP_MODES: readonly AppModeDef[] = [
     description:
       `Univerzální datový model České komory zeměměřičů — geodetická zaměření nad JVF DTM ` +
       `rozšířená o další objekty. Formát ${versionList(UDM_VERSIONS)} (XML), vzhled podle knihovny ČKZ.`,
+    dataFormat: 'UDM',
   }),
   dialectMode('jzm', 'JŽM', 'JŽM — Jednotná železniční mapa (ŽXML, DTMŽ Správy železnic)', 'zxml', {
     appName: 'JŽM Prohlížeč',
@@ -93,6 +97,7 @@ export const APP_MODES: readonly AppModeDef[] = [
     description:
       `Jednotná železniční mapa Správy železnic — data DTMŽ (koleje, nástupiště, zabezpečovací ` +
       `zařízení, staničení). Formát ${versionList(ZXML_VERSIONS)} (XML), znaky SŽ.`,
+    dataFormat: 'ŽXML',
   }),
 ];
 

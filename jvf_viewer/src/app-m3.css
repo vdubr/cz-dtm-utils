@@ -776,6 +776,47 @@ html, body {
 .symbol-legend-item .legend-name { color: #1a1b20; font: 500 12px/16px var(--md-sys-typescale-font); }
 .symbol-legend-item .legend-meta { color: #44464f; }
 
+/* Vodotisk uprostřed prázdného panelu vrstev — ikona a „Přetáhněte data
+   ve formátu …" (index.html, ui/layerPanel.ts). */
+.panel-empty-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 24px 16px;
+  text-align: center;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 75%, transparent);
+  font: 500 16px/22px var(--md-sys-typescale-font);
+}
+/* Ikona = tlačítko nahrání (otevře výběr souboru jako „Nahrát soubor"). */
+.panel-empty-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 4px;
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  border-radius: 24px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 150ms var(--md-sys-motion-standard), color 150ms, border-color 150ms;
+}
+.panel-empty-upload .material-symbols-outlined {
+  font-size: 52px;
+  font-variation-settings: 'wght' 300;
+}
+.panel-empty-upload:hover {
+  border-color: var(--md-sys-color-primary);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+  color: var(--md-sys-color-primary);
+}
+.panel-empty-upload:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+
 /* Overlaye. */
 #loading-overlay,
 #drop-overlay { background: color-mix(in srgb, var(--md-sys-color-surface) 80%, transparent); }

@@ -42,8 +42,13 @@ test.describe('Základní stav aplikace', () => {
     await expect(page.locator('#btn-validate')).toBeDisabled();
     await expect(page.locator('#btn-features')).toBeDisabled();
 
-    // Panel vrstev ukazuje výzvu k nahrání.
-    await expect(page.locator('#jvf-layers-list .empty-hint')).toHaveText('Nahrajte JVF soubor');
+    // Uprostřed panelu vrstev je vodotisk s výzvou k přetažení dat.
+    await expect(page.locator('#jvf-layers-list .panel-empty-hint')).toBeVisible();
+    await expect(page.locator('#jvf-layers-list .panel-empty-hint')).toHaveText(/Přetáhněte data ve formátu JVF/);
+    // Ikona vodotisku otevře výběr souboru (stejně jako „Nahrát soubor").
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator('#jvf-layers-list [data-upload-trigger]').click();
+    expect((await chooser).isMultiple()).toBe(true);
   });
 
   test('nabídka ukázkových souborů se otevře a nabízí fixtures', async ({ page }) => {

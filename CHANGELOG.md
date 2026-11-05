@@ -124,6 +124,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Vodotisk „Přetáhněte data ve formátu JVF"** s ikonou uprostřed levého
+  panelu, dokud nejsou načtená data (v UDM a JŽM s formátem UDM / ŽXML);
+  ikona je tlačítko, které otevře výběr souboru. Nahrazuje hlášku
+  „Nahrajte JVF soubor".
 
 - **Výběr podkladové mapy nad mapou** (jako mapy.cz): tlačítko
   „Podkladová mapa" vlevo nahoře otevře kartu se seznamem náhledů — Základní

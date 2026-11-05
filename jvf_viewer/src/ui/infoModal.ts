@@ -30,7 +30,9 @@ const INFO_CONTENT_HTML = `
       <strong>Nahrát soubor</strong> — výběr JVF XML souboru z disku (lze
       vybrat i více souborů naráz), nebo jednoduše
       <strong>přetažení souborů myší</strong> (drag &amp; drop)
-      kamkoli nad okno aplikace. Parsování probíhá v prohlížeči. Vedle
+      kamkoli nad okno aplikace (dokud nejsou data načtená, připomíná to
+      vodotisk uprostřed levého panelu; klik na jeho ikonu otevře výběr
+      souboru stejně jako <em>Nahrát soubor</em>). Parsování probíhá v prohlížeči. Vedle
       tlačítka je šipka s rychlým výběrem přiložených
       <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL, UDM a ŽXML —
       nabídka ukazuje ukázky aktivního režimu).

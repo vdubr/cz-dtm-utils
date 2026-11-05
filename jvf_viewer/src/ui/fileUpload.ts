@@ -142,6 +142,11 @@ export function setupFileUpload(
   btnUpload.addEventListener('click', () => {
     fileInput.click();
   });
+  // Další spouštěče nahrání — ikona ve vodotisku prázdného panelu vrstev
+  // (překresluje se, proto delegovaně).
+  document.addEventListener('click', (e) => {
+    if ((e.target as Element | null)?.closest('[data-upload-trigger]')) fileInput.click();
+  });
 
   fileInput.addEventListener('change', async () => {
     // Multi-výběr: každý soubor se přidá jako samostatný projekt.
