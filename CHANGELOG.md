@@ -124,6 +124,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Odebrání projektu ikonou popelnice** místo „×"; levý panel je o 20 px
+  širší (340 px).
 - **Nadpis „Vrstvy výkresu"** v levém panelu místo „JVF vrstvy".
 - **Legenda DTM jako dlaždice** — velký náhled ve tvaru geometrie (značka
   bodu, lomená linie, plocha s výplní a obrysem) podle Katalogu DTM ČR,
@@ -197,6 +199,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   objekty ZPSUDM a H3D.
 
 ### Opraveno
+- **Posuvník sytosti podkladové mapy jde znovu táhnout** — dřív reagoval
+  jen na kliknutí, tažení se po prvním kroku přerušilo.
 
 - **Vzhled JVF podle Katalogu DTM ČR** — vzhled se nově řídí i typem
   geometrie (bod / linie / plocha / definiční bod), ne jen kódem objektu:

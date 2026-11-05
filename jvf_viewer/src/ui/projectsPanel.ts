@@ -16,7 +16,7 @@ import {
  * Každý řádek: barevná tečka projektu, název souboru (tooltip s verzí
  * JVF DTM / dialektu), počet záznamů, zeměkoule (přiblížit na rozsah
  * projektu), oko (skrýt / zobrazit všechny prvky projektu ve 2D, 3D
- * i v Přehledu prvků — dimenze projekt filtru prvků) a × pro odebrání.
+ * i v Přehledu prvků — dimenze projekt filtru prvků) a popelnice pro odebrání.
  * Sekce se zobrazuje jen pokud je načten
  * aspoň jeden projekt — bez dat se UI nemění (prázdný stav vieweru).
  *
@@ -30,7 +30,7 @@ import {
  */
 
 export interface ProjectsPanelCallbacks {
-  /** Volá se po kliknutí na × u projektu. Orchestraci (rebuild) řeší volající. */
+  /** Volá se po kliknutí na popelnici u projektu. Orchestraci (rebuild) řeší volající. */
   onRemove: (projectId: string) => void;
   /** Volá se po kliknutí na řádek projektu — zoom na extent projektu (2D i 3D). */
   onZoom: (projectId: string) => void;
@@ -145,10 +145,13 @@ export function renderProjectsPanel(callbacks: ProjectsPanelCallbacks): void {
       setProjectVisible(project.id, !isProjectVisible(project.id));
     });
 
+    // Popelnice — odebrat projekt.
     const removeBtn = document.createElement('button');
-    removeBtn.className = 'project-remove-btn';
-    removeBtn.textContent = '×';
+    removeBtn.type = 'button';
+    removeBtn.className = 'project-icon-btn project-remove-btn';
     removeBtn.title = `Odebrat projekt „${project.nazev}"`;
+    removeBtn.setAttribute('aria-label', removeBtn.title);
+    removeBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
     removeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       callbacks.onRemove(project.id);
