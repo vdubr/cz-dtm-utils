@@ -99,18 +99,26 @@ export function setupBaseLayerSwitcher(
     zmLayer.setOpacity(opacity);
     ortofotoLayer.setOpacity(opacity);
     btns.forEach((b) => {
-      b.classList.toggle('active', b.dataset['layer'] === kind);
-      b.setAttribute('aria-pressed', String(b.dataset['layer'] === kind));
+      const active = b.dataset['layer'] === kind;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-checked', String(active));
+      b.closest('.basemap-item')?.classList.toggle('active', active);
     });
-    // Sytost nemá bez podkladu smysl.
+    // Posuvník sytosti pod vybranou mapou; bez podkladu („Prázdná") nemá smysl.
+    const opacityRow = document.getElementById('basemap-opacity-row');
+    const activeItem = document.querySelector<HTMLElement>(`#base-layer-btns .basemap-item[data-layer="${kind}"]`);
+    if (opacityRow) {
+      if (kind !== 'none' && activeItem) activeItem.appendChild(opacityRow);
+      opacityRow.hidden = kind === 'none';
+    }
     if (opacitySlider) opacitySlider.disabled = kind === 'none';
   }
   subscribeBasemapChoice(applyChoiceTo2d);
   applyChoiceTo2d();
 
-  // Segmentový přepínač: Základní mapa / Ortofoto / Prázdná. „Prázdná"
-  // (`none`) = bez podkladu, pod vrstvami je pozadí mapy podle motivu
-  // (bílé / černé, viz toggle3d.ts).
+  // Seznam podkladů s náhledy: Základní mapa / Letecká (ortofoto) / Prázdná.
+  // „Prázdná" (`none`) = bez podkladu, pod vrstvami je pozadí mapy podle
+  // motivu (bílé / černé, viz toggle3d.ts).
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
       setBasemapChoice((btn.dataset['layer'] ?? 'none') as BasemapChoice);

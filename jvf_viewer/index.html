@@ -126,15 +126,30 @@
         </button>
         <div class="panel-section">
           <div class="panel-section-title">Podkladové mapy</div>
-          <div id="base-layer-btns" class="base-layer-btns">
-            <button class="base-btn active" data-layer="zm" title="Podklad ČÚZK Základní mapa">Základní mapa</button>
-            <button class="base-btn" data-layer="ortofoto" title="Podklad ČÚZK Ortofoto">Ortofoto</button>
-            <button class="base-btn" data-layer="none" title="Bez podkladu — bílé pozadí, v tmavém motivu černé">Prázdná</button>
-          </div>
-          <div class="basemap-opacity-row">
-            <span class="material-symbols-outlined basemap-opacity-icon" title="Sytost podkladové mapy (2D i 3D textura na terénu)">opacity</span>
-            <input type="range" class="m3-slider" id="basemap-opacity" min="0" max="100" value="100" title="Sytost podkladové mapy (2D i 3D textura na terénu) — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
-            <span id="basemap-spinner" class="terrain-spinner" hidden></span>
+          <!-- Seznam podkladů s náhledy (map/cuzk.ts); posuvník sytosti se přesouvá pod vybranou mapu. -->
+          <div id="base-layer-btns" class="basemap-list" role="radiogroup" aria-label="Podkladová mapa">
+            <div class="basemap-item active" data-layer="zm">
+              <button class="base-btn active" type="button" data-layer="zm" role="radio" aria-checked="true" title="Podklad ČÚZK — Základní mapa ČR">
+                <img class="basemap-thumb" src="/podklady/zakladni.jpg" alt="" width="88" height="56" loading="lazy" />
+                <span class="basemap-label">Základní mapa</span>
+              </button>
+              <div class="basemap-opacity-row" id="basemap-opacity-row">
+                <input type="range" class="m3-slider" id="basemap-opacity" min="0" max="100" value="100" aria-label="Sytost podkladové mapy" title="Sytost podkladové mapy (2D i 3D textura na terénu) — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
+                <span id="basemap-spinner" class="terrain-spinner" hidden></span>
+              </div>
+            </div>
+            <div class="basemap-item" data-layer="ortofoto">
+              <button class="base-btn" type="button" data-layer="ortofoto" role="radio" aria-checked="false" title="Podklad ČÚZK — Ortofoto ČR (letecké snímky)">
+                <img class="basemap-thumb" src="/podklady/letecka.jpg" alt="" width="88" height="56" loading="lazy" />
+                <span class="basemap-label">Letecká</span>
+              </button>
+            </div>
+            <div class="basemap-item" data-layer="none">
+              <button class="base-btn" type="button" data-layer="none" role="radio" aria-checked="false" title="Bez podkladu — bílé pozadí, v tmavém motivu černé">
+                <span class="basemap-thumb basemap-thumb-blank" aria-hidden="true"></span>
+                <span class="basemap-label">Prázdná</span>
+              </button>
+            </div>
           </div>
         </div>
         <!-- Překryvné vrstvy ČÚZK (DTM ČR, katastr) — obsah kreslí ui/overlayPanel.ts -->

@@ -125,6 +125,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Změněno
 
+- **Výběr podkladové mapy jako seznam s náhledy** (jako mapy.cz):
+  Základní mapa, Letecká (ortofoto) a Prázdná; vybraná mapa je podbarvená
+  a pod Základní / Leteckou je minimalistický posuvník sytosti.
 - **Sytost podkladu a překryvů od 0** — posuvníky jdou až na nulu, podklad
   lze udělat úplně průhledný (dřív minimum 10 %).
 - **Projekt v panelu: oko a zeměkoule** — oko u projektu skryje / zobrazí

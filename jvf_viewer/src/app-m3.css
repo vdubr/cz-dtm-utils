@@ -311,74 +311,71 @@ html, body {
 .section-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
 .section-icon-btn .material-symbols-outlined { font-size: 20px; }
 
-/* Podkladová mapa = segmented button. */
-.base-layer-btns {
-  gap: 0;
-  height: 40px;
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: var(--md-sys-shape-corner-full);
-  overflow: hidden;
-}
-.base-btn {
-  height: 100%;
+/* Podkladová mapa = seznam s náhledy (jako mapy.cz); vybraná mapa je
+   podbarvená a pod ní je minimalistický posuvník sytosti. */
+.basemap-list { display: flex; flex-direction: column; gap: 2px; padding: 0; }
+.basemap-item { border-radius: 16px; }
+.basemap-item.active { background: var(--md-sys-color-surface-container-high); }
+.basemap-list .base-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 6px;
   border: none;
-  border-radius: 0;
+  border-radius: 16px;
   background: transparent;
   color: var(--md-sys-color-on-surface);
-  font: 500 14px/20px var(--md-sys-typescale-font);
+  font: 500 15px/20px var(--md-sys-typescale-font);
   letter-spacing: 0.1px;
-}
-.base-btn + .base-btn { border-left: 1px solid var(--md-sys-color-outline); }
-.base-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); border-color: var(--md-sys-color-outline); }
-.base-btn.active {
-  background: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
-  border-color: var(--md-sys-color-outline);
-}
-.base-btn.active::before {
-  content: 'check';
-  font-family: 'Material Symbols Outlined';
-  font-size: 18px;
-  line-height: 1;
-  margin-right: 6px;
-  vertical-align: -4px;
-}
-.base-layer-btns { padding: 0; }
-.base-btn {
-  flex: 1 1 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin: 0;
-  padding: 0 12px;
+  text-align: left;
   white-space: nowrap;
+  cursor: pointer;
 }
-.base-btn.active::before { margin: 0; vertical-align: 0; }
+.basemap-list .base-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent); color: var(--md-sys-color-on-surface); }
+.basemap-list .base-btn.active { background: transparent; color: var(--md-sys-color-primary); font-weight: 700; }
+.basemap-list .base-btn.active::before { content: none; }
+.basemap-list .base-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.basemap-thumb {
+  flex-shrink: 0;
+  display: block;
+  width: 88px;
+  height: 56px;
+  box-sizing: border-box;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 10px;
+  object-fit: cover;
+}
+.base-btn.active .basemap-thumb { border: 3px solid var(--md-sys-color-primary); }
+.basemap-thumb-blank { background: var(--app-map-background); }
+.basemap-item .basemap-opacity-row { margin: 0; padding: 0 14px 8px; }
+.basemap-opacity-row[hidden] { display: none; }
 
 .basemap-opacity-row { gap: 12px; padding: 12px 4px 4px; }
-.basemap-opacity-icon { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
-#basemap-opacity { height: 20px; background: transparent; }
+#basemap-opacity { flex: 1; height: 20px; background: transparent; }
 #basemap-opacity::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--md-sys-color-secondary-container);
+  background: var(--md-sys-color-outline-variant);
 }
 #basemap-opacity::-webkit-slider-thumb {
-  width: 20px;
-  height: 20px;
-  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
   border-radius: 50%;
   background: var(--md-sys-color-primary);
   border: none;
   box-shadow: none;
 }
-#basemap-opacity::-moz-range-track { height: 4px; border-radius: 2px; background: var(--md-sys-color-secondary-container); }
+#basemap-opacity::-moz-range-track { height: 4px; border-radius: 2px; background: var(--md-sys-color-outline-variant); }
 #basemap-opacity::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
-#basemap-opacity::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--md-sys-color-primary); border: none; }
+#basemap-opacity::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--md-sys-color-primary); border: none; }
 /* Bez podkladu (volba „Prázdná") nemá sytost smysl — vypnutý stav M3. */
 #basemap-opacity:disabled { opacity: 0.38; cursor: default; }
-.basemap-opacity-row:has(#basemap-opacity:disabled) .basemap-opacity-icon { opacity: 0.38; }
 
 /* Vrstvy = list (dense). */
 .layer-group-header {

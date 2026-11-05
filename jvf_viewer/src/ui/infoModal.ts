@@ -60,13 +60,14 @@ const INFO_CONTENT_HTML = `
       tak nestáhnou obří model přes prázdnou plochu mezi nimi.
     </li>
     <li>
-      <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK (Základní
-      mapa nebo Ortofoto), přepínání jednotlivých vrstev v levém panelu.
-      Volba <em>Prázdná</em> podklad vypne — JVF vrstvy zůstanou nad
-      prázdným pozadím, které je ve světlém motivu bílé a v tmavém černé
-      (užitečné pro kontrolu geometrie bez vizuálního šumu). Posuvník sytosti pod
-      tlačítky řídí průhlednost podkladu od 0 (podklad úplně průhledný) do
-      100 % — platí společně pro 2D mapu i 3D scénu. Tlačítko motivu v hlavičce přepíná
+      <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK, přepínání
+      jednotlivých vrstev v levém panelu. Podkladová mapa se vybírá ze seznamu
+      s náhledy: <em>Základní mapa</em>, <em>Letecká</em> (ortofoto) nebo
+      <em>Prázdná</em> — ta podklad vypne a JVF vrstvy zůstanou nad prázdným
+      pozadím, které je ve světlém motivu bílé a v tmavém černé (užitečné pro
+      kontrolu geometrie bez vizuálního šumu). Pod vybranou mapou je posuvník
+      sytosti od 0 (podklad úplně průhledný) do 100 % — platí společně pro
+      2D mapu i 3D scénu. Tlačítko motivu v hlavičce přepíná
       <em>světlý (výchozí) / tmavý motiv</em> celé aplikace — panely,
       dialogy, pozadí pod vrstvami ve 2D i 3D.
       <strong>DTM ČR (překryv)</strong> — přepínač pod podkladovými mapami
@@ -173,7 +174,7 @@ const INFO_CONTENT_HTML = `
       <em>vrstevnicemi po 1 m</em> (zvýrazněnými každých 10 m). Terénní mesh
       i vrstevnice reagují na nastavené převýšení výšky a pomáhají zasadit
       geometrie do reliéfu krajiny. Je-li v levém panelu zvolená podkladová
-      mapa (<em>Základní mapa</em> nebo <em>Ortofoto</em>), namapuje se místo
+      mapa (<em>Základní mapa</em> nebo <em>Letecká</em>), namapuje se místo
       hypsometrie jako <strong>textura na povrch terénu</strong> — stejná
       volba i sytost jako ve 2D, jedno ovládání pro oba režimy; volba
       podkladu ve 3D automaticky zapne terén. Vypnutím podkladu se terén

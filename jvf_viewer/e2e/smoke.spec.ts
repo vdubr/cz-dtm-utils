@@ -1608,7 +1608,12 @@ test.describe('Modály a ovládání', () => {
 
     await ortofoto.click();
     await expect(ortofoto).toHaveClass(/active/);
+    await expect(ortofoto).toHaveText('Letecká');
+    await expect(ortofoto).toHaveAttribute('aria-checked', 'true');
     await expect(zm).not.toHaveClass(/active/);
+    // Posuvník sytosti je pod vybranou mapou.
+    await expect(page.locator('.basemap-item[data-layer="ortofoto"] #basemap-opacity')).toBeVisible();
+    await expect(page.locator('.basemap-item[data-layer="zm"] #basemap-opacity')).toHaveCount(0);
   });
 
   test('podklad „Prázdná" vypne podklad; pozadí je bílé, v tmavém motivu černé', async ({ page }) => {
@@ -1618,6 +1623,7 @@ test.describe('Modály a ovládání', () => {
     await expect(prazdna).toHaveClass(/active/);
     await expect(page.locator('.base-btn[data-layer="zm"]')).not.toHaveClass(/active/);
     await expect(page.locator('#basemap-opacity')).toBeDisabled();
+    await expect(page.locator('#basemap-opacity')).toBeHidden();
 
     // Žádná dlaždicová vrstva podkladu není viditelná.
     const visibleBase = await page.evaluate(() => {
