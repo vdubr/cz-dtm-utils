@@ -86,7 +86,9 @@ const INFO_CONTENT_HTML = `
       DTM přehodí přes terén (terén se zapne sám). Při přiblížení se kolem
       středu pohledu dočte podrobnější výřez podkladu i překryvů (jen okolí
       pohledu, po zastavení kamery), takže čáry zůstávají ostré.
-      <strong>Katastr nemovitostí</strong> — stejný překryv z WMS ČÚZK
+      <strong>Katastr nemovitostí</strong> — tlačítko <em>Katastr</em> nad
+      mapou (vedle <em>Změnit mapu</em>; podbarvené, když je katastr zapnutý)
+      otevře kartu se stejným překryvem z WMS ČÚZK
       (hranice parcel, parcelní čísla, obrazy parcel, další prvky mapy,
       KM-D, analogové mapy, orientační mapa parcel; všechny nebo jen
       vybrané). Ve světlém motivu je katastr černý, v tmavém bílý (inverzní

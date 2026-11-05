@@ -8,6 +8,7 @@ import { markDialectObjekty } from './map/dialectStyle.js';
 import { appModeDef, getAppMode, onAppModeChange } from './state/appMode.js';
 import { setActiveVersion } from './state/activeVersion.js';
 import { setupAppModeSwitch } from './ui/appModeSwitch.js';
+import { setupMapCard } from './ui/mapCard.js';
 import { createOlMap } from './map/olMap.js';
 import { createZmLayer, createOrtofotoLayer, setupBaseLayerSwitcher } from './map/cuzk.js';
 import { setupOverlayLayers } from './map/overlayLayers.js';
@@ -180,6 +181,19 @@ setupBaseLayerSwitcher(olMap, zmLayer, ortofotoLayer);
 for (const overlay of getOverlayStates()) {
   setupOverlayLayers(olMap, overlay, (loading) => setOverlayLoading(overlay.def.id, loading));
   setupOverlayPanel(overlay);
+}
+
+// Katastr nemovitostí = karta nad mapou (jako „Změnit mapu"); tlačítko je
+// podbarvené, když je překryv zapnutý.
+setupMapCard('btn-kn-menu', 'kn-card');
+{
+  const kn = getOverlayStates().find((s) => s.def.id === 'kn')!;
+  const knBtn = document.getElementById('btn-kn-menu');
+  const syncKnBtn = (): void => {
+    knBtn?.classList.toggle('is-on', kn.isEnabled());
+  };
+  kn.subscribe(syncKnBtn);
+  syncKnBtn();
 }
 
 // Setup 3D toggle — getObjekty returns current loaded data (union všech projektů)

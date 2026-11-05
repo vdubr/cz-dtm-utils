@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { loadSample, fixturePath, openTool, switchMode } from './helpers';
+import { loadSample, fixturePath, openKnCard, openTool, switchMode } from './helpers';
 
 /**
  * Kolik prvků 2D mapy style funkce vrstev opravdu kreslí, seskupeno podle
@@ -1374,8 +1374,11 @@ test.describe('Modály a ovládání', () => {
       return /LAYERS=([^&]*)/.exec(u ?? '')?.[1] ?? '';
     };
 
+    await openKnCard(page);
+
     await page.locator('#toggle-kn').check();
     await expect(page.locator('#kn-body')).toBeVisible();
+    await expect(page.locator('#btn-kn-menu')).toHaveClass(/is-on/);
     expect(await knVisible()).toEqual(['wms']);
     await expect.poll(lastLayers).toBe('hranice_parcel,parcelni_cisla,obrazy_parcel,dalsi_p_mapy,RST_KMD,RST_KN,omp');
 
@@ -1384,7 +1387,9 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect.poll(lastLayers).toBe('hranice_parcel_i,parcelni_cisla_i,obrazy_parcel_i,dalsi_p_mapy_i,RST_KMD_I,RST_KN_I,omp_i');
 
-    // Odškrtnout parcelní čísla → vrstva zmizí z LAYERS.
+    // Odškrtnout parcelní čísla → vrstva zmizí z LAYERS (karta se klikem
+    // na přepínač motivu zavřela).
+    await openKnCard(page);
     await page.locator('[data-overlay-sub="kn:parcelni_cisla"]').uncheck();
     await expect.poll(lastLayers).toBe('hranice_parcel_i,obrazy_parcel_i,dalsi_p_mapy_i,RST_KMD_I,RST_KN_I,omp_i');
 
@@ -1397,8 +1402,11 @@ test.describe('Modály a ovládání', () => {
     expect(z.kn).toBeGreaterThan(z.dtm);
     expect(z.kn).toBeLessThan(10);
 
+    await openKnCard(page);
+
     await page.locator('#toggle-kn').uncheck();
     expect(await knVisible()).toEqual([]);
+    await expect(page.locator('#btn-kn-menu')).not.toHaveClass(/is-on/);
   });
 
   test('katastr: tlačítko vlastníka parcely — dotaz GetFeatureInfo a odkaz do Nahlížení do KN', async ({ page }) => {
@@ -1439,6 +1447,7 @@ test.describe('Modály a ovládání', () => {
     await loadSample(page, 'ukazka_ZPS.xml');
     const btn = page.locator('#btn-parcel');
     await expect(btn).toBeHidden(); // bez katastru není
+    await openKnCard(page);
     await page.locator('#toggle-kn').check();
     await expect(btn).toBeVisible();
 
@@ -1493,6 +1502,7 @@ test.describe('Modály a ovládání', () => {
     await expect(card).toBeHidden();
     await expect(btn).toHaveAttribute('aria-pressed', 'false');
     await page.locator('#btn-measure').click();
+    await openKnCard(page);
     await page.locator('#toggle-kn').uncheck();
     await expect(btn).toBeHidden();
   });
@@ -1511,6 +1521,7 @@ test.describe('Modály a ovládání', () => {
     });
     await page.setInputFiles('#file-input', fixturePath('test_klik_plocha.xml'));
     await expect(page.locator('#btn-features')).toBeEnabled();
+    await openKnCard(page);
     await page.locator('#toggle-kn').check();
     await page.locator('#btn-3d').click();
     // Celková textura terénu (celý výřez dat + okolí).
@@ -1552,6 +1563,7 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#btn-features')).toBeEnabled();
     await page.locator('#btn-3d').click();
     await page.waitForTimeout(1500);
+    await openKnCard(page);
     await page.locator('#toggle-kn').check();
     await page.locator('#btn-parcel').click();
     const c = (await page.locator('#three-canvas').boundingBox())!;

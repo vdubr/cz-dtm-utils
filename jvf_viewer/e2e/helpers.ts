@@ -36,3 +36,8 @@ export async function switchMode(page: Page, mode: 'jvf' | 'udm' | 'jzm'): Promi
   await openTool(page, mode);
   await expect(page.locator('html')).toHaveAttribute('data-app', mode);
 }
+
+/** Otevře kartu „Katastr" nad mapou (je-li zavřená) — přepínač a vrstvy katastru jsou v ní. */
+export async function openKnCard(page: Page): Promise<void> {
+  if (await page.locator('#kn-card').isHidden()) await page.locator('#btn-kn-menu').click();
+}

@@ -3,6 +3,7 @@ import XYZ from 'ol/source/XYZ.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
 import Map from 'ol/Map.js';
 import { track } from '../analytics.js';
+import { setupMapCard } from '../ui/mapCard.js';
 import {
   getBasemapChoice,
   setBasemapChoice,
@@ -155,29 +156,8 @@ export function setupBaseLayerSwitcher(
  * přepne rychle na ortofoto a zpět na předchozí podklad.
  */
 function setupBasemapCard(): void {
-  const menuBtn = document.getElementById('btn-basemap-menu') as HTMLButtonElement | null;
-  const card = document.getElementById('basemap-card');
+  setupMapCard('btn-basemap-menu', 'basemap-card');
   const quick = document.getElementById('btn-basemap-quick') as HTMLButtonElement | null;
-  if (menuBtn && card) {
-    const close = (focus = false): void => {
-      if (card.hidden) return;
-      card.hidden = true;
-      menuBtn.setAttribute('aria-expanded', 'false');
-      if (focus) menuBtn.focus();
-    };
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      card.hidden = !card.hidden;
-      menuBtn.setAttribute('aria-expanded', String(!card.hidden));
-    });
-    document.addEventListener('click', (e) => {
-      const t = e.target as Node | null;
-      if (!card.hidden && t && !card.contains(t) && !menuBtn.contains(t)) close();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !card.hidden) close(true);
-    });
-  }
   quick?.addEventListener('click', () => {
     const target = getBasemapChoice() === 'ortofoto' ? quickReturn() : 'ortofoto';
     setBasemapChoice(target);
