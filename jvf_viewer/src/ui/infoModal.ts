@@ -61,9 +61,11 @@ const INFO_CONTENT_HTML = `
     </li>
     <li>
       <strong>2D mapa</strong> — vektorové vrstvy nad podklady ČÚZK, přepínání
-      jednotlivých vrstev v levém panelu. Podkladová mapa se vybírá ze seznamu
-      s náhledy: <em>Základní mapa</em>, <em>Letecká</em> (ortofoto) nebo
-      <em>Prázdná</em> — ta podklad vypne a JVF vrstvy zůstanou nad prázdným
+      jednotlivých vrstev v levém panelu. Podkladová mapa se vybírá tlačítkem
+      <em>Změnit mapu</em> vlevo nahoře nad mapou (seznam s náhledy:
+      <em>Základní mapa</em>, <em>Letecká</em> (ortofoto) nebo
+      <em>Prázdná</em>; vedle je rychlé přepnutí na leteckou mapu a zpět)
+      — <em>Prázdná</em> — ta podklad vypne a JVF vrstvy zůstanou nad prázdným
       pozadím, které je ve světlém motivu bílé a v tmavém černé (užitečné pro
       kontrolu geometrie bez vizuálního šumu). Pod vybranou mapou je posuvník
       sytosti od 0 (podklad úplně průhledný) do 100 % — platí společně pro

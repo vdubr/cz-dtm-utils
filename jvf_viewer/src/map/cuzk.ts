@@ -89,6 +89,9 @@ export function setupBaseLayerSwitcher(
   const btns = document.querySelectorAll<HTMLButtonElement>('#base-layer-btns .base-btn');
   const opacitySlider = document.getElementById('basemap-opacity') as HTMLInputElement | null;
 
+  /** Poslední podklad mimo leteckou mapu — kam vrací rychlé tlačítko. */
+  let lastNonAerial: BasemapChoice = getBasemapChoice() === 'ortofoto' ? 'zm' : getBasemapChoice();
+
   // Jediný zdroj pravdy je sdílený stav basemapChoice — 2D vrstvy jsou jen
   // jeho konzument (3D texturu na terénu konzumuje toggle3d).
   function applyChoiceTo2d(): void {
@@ -112,6 +115,16 @@ export function setupBaseLayerSwitcher(
       opacityRow.hidden = kind === 'none';
     }
     if (opacitySlider) opacitySlider.disabled = kind === 'none';
+    // Rychlé tlačítko: na letecké mapě nabízí návrat na předchozí podklad.
+    if (kind !== 'ortofoto') lastNonAerial = kind;
+    const quick = document.getElementById('btn-basemap-quick');
+    if (quick) {
+      const toAerial = kind !== 'ortofoto';
+      const label = toAerial ? 'Letecká' : lastNonAerial === 'none' ? 'Prázdná' : 'Základní';
+      quick.querySelector('[data-quick-label]')!.textContent = label;
+      quick.querySelector('[data-quick-icon]')!.textContent = toAerial ? 'flight' : 'map';
+      quick.title = toAerial ? 'Přepnout na leteckou mapu (ortofoto)' : `Zpět na podklad ${label}`;
+    }
   }
   subscribeBasemapChoice(applyChoiceTo2d);
   applyChoiceTo2d();
@@ -126,10 +139,54 @@ export function setupBaseLayerSwitcher(
     });
   });
 
+  setupBasemapCard();
+
   if (opacitySlider) {
     opacitySlider.value = String(Math.round(getBasemapChoiceOpacity() * 100));
     opacitySlider.addEventListener('input', () => {
       setBasemapChoiceOpacity(Number(opacitySlider.value) / 100);
     });
   }
+}
+
+/**
+ * Plovoucí výběr podkladu nad mapou (jako mapy.cz): „Změnit mapu" otevře /
+ * zavře kartu se seznamem náhledů (zavře ji i klik mimo nebo Esc), „Letecká"
+ * přepne rychle na ortofoto a zpět na předchozí podklad.
+ */
+function setupBasemapCard(): void {
+  const menuBtn = document.getElementById('btn-basemap-menu') as HTMLButtonElement | null;
+  const card = document.getElementById('basemap-card');
+  const quick = document.getElementById('btn-basemap-quick') as HTMLButtonElement | null;
+  if (menuBtn && card) {
+    const close = (focus = false): void => {
+      if (card.hidden) return;
+      card.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+      if (focus) menuBtn.focus();
+    };
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      card.hidden = !card.hidden;
+      menuBtn.setAttribute('aria-expanded', String(!card.hidden));
+    });
+    document.addEventListener('click', (e) => {
+      const t = e.target as Node | null;
+      if (!card.hidden && t && !card.contains(t) && !menuBtn.contains(t)) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !card.hidden) close(true);
+    });
+  }
+  quick?.addEventListener('click', () => {
+    const target = getBasemapChoice() === 'ortofoto' ? quickReturn() : 'ortofoto';
+    setBasemapChoice(target);
+    track('basemap_change', { basemap: target });
+  });
+}
+
+/** Kam se vrátí rychlé tlačítko z letecké mapy (podle popisku tlačítka). */
+function quickReturn(): BasemapChoice {
+  const label = document.querySelector('#btn-basemap-quick [data-quick-label]')?.textContent;
+  return label === 'Prázdná' ? 'none' : 'zm';
 }

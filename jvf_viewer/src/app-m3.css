@@ -311,8 +311,69 @@ html, body {
 .section-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
 .section-icon-btn .material-symbols-outlined { font-size: 20px; }
 
-/* Podkladová mapa = seznam s náhledy (jako mapy.cz); vybraná mapa je
+/* Podkladová mapa nad mapou (jako mapy.cz): skupina tlačítek „Změnit mapu |
+   Letecká" vlevo nahoře, karta se seznamem náhledů; vybraná mapa je
    podbarvená a pod ní je minimalistický posuvník sytosti. */
+.basemap-control {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  max-height: calc(100% - 24px);
+}
+.basemap-bar {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: var(--md-sys-elevation-2, 0 2px 8px rgba(0, 0, 0, 0.18));
+}
+.basemap-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font: 500 15px/20px var(--md-sys-typescale-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.basemap-bar-btn .material-symbols-outlined { font-size: 22px; }
+.basemap-bar-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.basemap-bar-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.basemap-bar-menu { color: var(--md-sys-color-primary); }
+.basemap-bar-btn + .basemap-bar-btn { position: relative; }
+.basemap-bar-btn + .basemap-bar-btn::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--md-sys-color-outline-variant);
+}
+.basemap-card {
+  width: 320px;
+  max-width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: var(--md-sys-elevation-2, 0 6px 24px rgba(0, 0, 0, 0.18));
+}
+.basemap-card[hidden] { display: none; }
 .basemap-list { display: flex; flex-direction: column; gap: 2px; padding: 0; }
 .basemap-item { border-radius: 16px; }
 .basemap-item.active { background: var(--md-sys-color-surface-container-high); }
@@ -356,6 +417,8 @@ html, body {
 .basemap-opacity-row[hidden] { display: none; }
 
 .basemap-opacity-row { gap: 12px; padding: 12px 4px 4px; }
+/* Ikona sytosti u překryvů DTM / katastru (ui/overlayPanel.ts). */
+.basemap-opacity-icon { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
 #basemap-opacity { flex: 1; height: 20px; background: transparent; }
 #basemap-opacity::-webkit-slider-runnable-track {
   height: 4px;

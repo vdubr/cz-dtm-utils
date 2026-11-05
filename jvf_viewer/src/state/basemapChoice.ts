@@ -2,7 +2,7 @@
  * Sdílený stav volby podkladové mapy a její průhlednosti.
  *
  * Jeden zdroj pravdy pro 2D (OL dlaždicové vrstvy ČÚZK) i 3D (textura na
- * terénu DMR): tlačítka a posuvník v levém panelu (sekce Podkladové mapy)
+ * terénu DMR): výběr „Změnit mapu" nad mapou a posuvník pod vybranou mapou
  * sem zapisují, konzumenti se přihlašují přes subscribe. Stejný vzor jako
  * `changesetToggle` / `featureFilter`.
  */

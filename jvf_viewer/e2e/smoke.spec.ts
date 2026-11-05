@@ -1591,6 +1591,7 @@ test.describe('Modály a ovládání', () => {
   });
 
   test('posuvník sytosti podkladu jde až na 0 (podklad úplně průhledný)', async ({ page }) => {
+    await page.locator('#btn-basemap-menu').click();
     const slider = page.locator('#basemap-opacity');
     await expect(slider).toHaveAttribute('min', '0');
     await slider.fill('0');
@@ -1602,6 +1603,12 @@ test.describe('Modály a ovládání', () => {
   });
 
   test('přepínání podkladových map přepíná aktivní tlačítko', async ({ page }) => {
+    // Karta „Změnit mapu" nad mapou; Esc ji zavře.
+    const card = page.locator('#basemap-card');
+    await expect(card).toBeHidden();
+    await page.locator('#btn-basemap-menu').click();
+    await expect(card).toBeVisible();
+    await expect(page.locator('#btn-basemap-menu')).toHaveAttribute('aria-expanded', 'true');
     const zm = page.locator('.base-btn[data-layer="zm"]');
     const ortofoto = page.locator('.base-btn[data-layer="ortofoto"]');
     await expect(zm).toHaveClass(/active/);
@@ -1614,9 +1621,23 @@ test.describe('Modály a ovládání', () => {
     // Posuvník sytosti je pod vybranou mapou.
     await expect(page.locator('.basemap-item[data-layer="ortofoto"] #basemap-opacity')).toBeVisible();
     await expect(page.locator('.basemap-item[data-layer="zm"] #basemap-opacity')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(card).toBeHidden();
+  });
+
+  test('rychlé tlačítko Letecká přepne na ortofoto a zpět', async ({ page }) => {
+    const quick = page.locator('#btn-basemap-quick');
+    await expect(quick).toHaveText(/Letecká/);
+    await quick.click();
+    await expect(page.locator('.base-btn[data-layer="ortofoto"]')).toHaveClass(/active/);
+    await expect(quick).toHaveText(/Základní/);
+    await quick.click();
+    await expect(page.locator('.base-btn[data-layer="zm"]')).toHaveClass(/active/);
+    await expect(quick).toHaveText(/Letecká/);
   });
 
   test('podklad „Prázdná" vypne podklad; pozadí je bílé, v tmavém motivu černé', async ({ page }) => {
+    await page.locator('#btn-basemap-menu').click();
     const prazdna = page.locator('.base-btn[data-layer="none"]');
     await expect(prazdna).toHaveText('Prázdná');
     await prazdna.click();
@@ -1640,7 +1661,8 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     expect(await bg()).toBe('rgb(0, 0, 0)');
 
-    // Opakovaný klik na aktivní volbu nic nevypíná (segmentový přepínač).
+    // Opakovaný klik na aktivní volbu nic nevypíná.
+    if (await page.locator('#basemap-card').isHidden()) await page.locator('#btn-basemap-menu').click();
     const zm = page.locator('.base-btn[data-layer="zm"]');
     await zm.click();
     await zm.click();
