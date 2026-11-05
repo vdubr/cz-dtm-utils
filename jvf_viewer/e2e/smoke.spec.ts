@@ -1646,6 +1646,21 @@ test.describe('Modály a ovládání', () => {
     expect(opacity).toBe(0);
   });
 
+  test('posuvník sytosti podkladu jde chytit a táhnout (ne jen kliknout)', async ({ page }) => {
+    await page.locator('#btn-basemap-menu').click();
+    const slider = page.locator('#basemap-opacity');
+    const box = (await slider.boundingBox())!;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width - 4, y);
+    await page.mouse.down();
+    for (let i = 1; i <= 10; i++) {
+      await page.mouse.move(box.x + box.width - 4 - (box.width * 0.6 * i) / 10, y);
+    }
+    await page.mouse.up();
+    // Tažení o 60 % šířky — ne jen první krok (dřív se zastavilo na ~95).
+    expect(Number(await slider.inputValue())).toBeLessThan(60);
+  });
+
   test('přepínání podkladových map přepíná aktivní tlačítko', async ({ page }) => {
     // Karta „Podkladová mapa" nad mapou; Esc ji zavře.
     const card = page.locator('#basemap-card');

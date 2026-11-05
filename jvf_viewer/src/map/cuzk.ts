@@ -112,7 +112,9 @@ export function setupBaseLayerSwitcher(
     const opacityRow = document.getElementById('basemap-opacity-row');
     const activeItem = document.querySelector<HTMLElement>(`#base-layer-btns .basemap-item[data-layer="${kind}"]`);
     if (opacityRow) {
-      if (kind !== 'none' && activeItem) activeItem.appendChild(opacityRow);
+      // Přesunout jen při změně podkladu — přesun prvku v DOM během tažení
+      // (změna sytosti volá tuto funkci také) by tažení posuvníku přerušil.
+      if (kind !== 'none' && activeItem && opacityRow.parentElement !== activeItem) activeItem.appendChild(opacityRow);
       opacityRow.hidden = kind === 'none';
     }
     if (opacitySlider) opacitySlider.disabled = kind === 'none';
