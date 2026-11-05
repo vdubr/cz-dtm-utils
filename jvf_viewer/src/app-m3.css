@@ -788,43 +788,77 @@ html, body {
 .legend-name { font: 400 14px/20px var(--md-sys-typescale-font); letter-spacing: 0.25px; }
 .legend-meta { font: 400 12px/16px var(--md-sys-typescale-font); letter-spacing: 0.4px; color: var(--md-sys-color-on-surface-variant); }
 
-/* Legenda DTM jako dlaždice: náhled ve tvaru geometrie na „papíře" (světlý
-   i v tmavém motivu — barvy symbolů jsou barvy mapy), pod ním název a typ. */
+/* Legenda DTM jako dlaždice: každá kategorie je jeden souvislý světlý
+   „list" (i v tmavém motivu — barvy symbolů jsou barvy mapy) bez mezer
+   a rámečků; dlaždice = náhled ve tvaru geometrie, pod ním název a typ. */
 #legend-modal .legend-grid {
   grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap: 8px;
+  gap: 0;
+  /* Mírně průsvitný list — prosvítá pozadí dialogu. */
+  background: color-mix(in srgb, #fbfaf7 82%, transparent);
 }
+:root[data-theme='dark'] #legend-modal .legend-grid { background: color-mix(in srgb, #e4e2dc 88%, transparent); }
 .legend-tile {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
-  padding: 8px;
+  gap: 4px;
+  padding: 4px 0 12px;
   min-height: 0;
   border: none;
   border-radius: 0;
+  background: transparent;
+  transition: background 120ms var(--md-sys-motion-standard);
 }
+.legend-tile:hover { background: rgba(26, 27, 32, 0.05); }
 .legend-tile .legend-tile-preview {
   width: 100%;
-  height: 72px;
+  height: 68px;
   border: none;
   border-radius: 0;
-  background: #fbfaf7;
+  background: transparent;
   box-sizing: border-box;
 }
-:root[data-theme='dark'] .legend-tile .legend-tile-preview { background: #e4e2dc; }
 .legend-tile .legend-geom-icon { display: block; }
-.legend-tile .legend-item-info { gap: 2px; padding: 0 2px; }
+.legend-tile .legend-item-info { gap: 2px; padding: 0 12px; align-items: center; text-align: center; }
 .legend-tile .legend-name {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   white-space: normal;
+  color: #1a1b20;
   font: 500 13px/18px var(--md-sys-typescale-font);
   letter-spacing: 0.1px;
 }
-.legend-tile .legend-meta { font: 400 11px/16px var(--md-sys-typescale-font); letter-spacing: 0.3px; }
+.legend-tile .legend-meta { color: #5d5e66; font: 400 11px/16px var(--md-sys-typescale-font); letter-spacing: 0.3px; }
+.legend-tile .legend-code { color: #80818a; font-variant-numeric: tabular-nums; }
+.legend-tile .legend-name + .legend-meta { margin-top: 2px; }
+
+/* Nadpis obsahové části (ZPS, TI, …) v legendě DTM — jen typografie:
+   tečka barvy části, název a počet typů; přilepený nahoře s pozadím
+   dialogu, bez pruhu, rámečku a čipu. */
+#legend-modal .legend-cast-header {
+  gap: 10px;
+  padding: 12px 0 8px;
+  margin-bottom: 4px;
+  border: none;
+  border-radius: 0;
+  background: var(--md-sys-color-surface-container-high);
+  align-items: baseline;
+}
+#legend-modal .legend-cast-header .layer-group-dot { width: 10px; height: 10px; align-self: center; }
+#legend-modal .legend-cast-name { font: 500 20px/28px var(--md-sys-typescale-font); letter-spacing: 0; }
+#legend-modal .legend-cast-count {
+  margin-left: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+#legend-modal .legend-kat-header { padding: 12px 0 8px; }
 .symbol-legend-item {
   border-radius: var(--md-sys-shape-corner-medium);
   border: 1px solid var(--md-sys-color-outline-variant);

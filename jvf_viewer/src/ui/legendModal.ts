@@ -82,6 +82,12 @@ function geomLabel(meta: EntityMeta): string {
   }
 }
 
+/** „typ / typy / typů" podle počtu. */
+function pluralTypes(n: number): string {
+  if (n === 1) return 'typ';
+  return n >= 2 && n <= 4 ? 'typy' : 'typů';
+}
+
 /** Render kompletní legendy do `#legend-modal-body`. */
 function renderLegendContent(container: HTMLElement, filter: string = ''): void {
   container.innerHTML = '';
@@ -134,7 +140,7 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     groupHeader.innerHTML = `
       <span class="layer-group-dot" style="background:${color}"></span>
       <span class="legend-cast-name">${cast}</span>
-      <span class="legend-cast-count">${total}</span>
+      <span class="legend-cast-count">${total} ${pluralTypes(total)}</span>
     `;
     groupEl.appendChild(groupHeader);
 
@@ -170,7 +176,8 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
         info.className = 'legend-item-info';
         info.innerHTML = `
           <span class="legend-name">${name}</span>
-          <span class="legend-meta">${geomLabel(meta)} · ${meta.codeBase}</span>
+          <span class="legend-meta">${geomLabel(meta)}</span>
+          <span class="legend-meta legend-code">${meta.codeBase}</span>
         `;
 
         tile.appendChild(preview);
