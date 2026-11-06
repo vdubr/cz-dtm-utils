@@ -358,6 +358,10 @@ html, body {
 /* Po kliknutí krátce problikne aktivní barvou (třída is-flash z ui/toggle3d.ts). */
 .zoom-switch .basemap-bar-btn:active,
 .zoom-switch .basemap-bar-btn.is-flash { color: var(--md-sys-color-primary); }
+/* … a znak krátce ztuční. */
+.zoom-switch .basemap-bar-btn .material-symbols-outlined { transition: font-variation-settings 120ms; }
+.zoom-switch .basemap-bar-btn:active .material-symbols-outlined,
+.zoom-switch .basemap-bar-btn.is-flash .material-symbols-outlined { font-variation-settings: 'wght' 700; }
 .view-switch .basemap-bar-btn { min-width: 44px; justify-content: center; padding: 0 10px; font-weight: 600; }
 /* Aktivní pohled jako aktivní překryv — jen barva písma, bez podbarvení. */
 .view-switch .basemap-bar-btn.active { color: var(--md-sys-color-primary); }
