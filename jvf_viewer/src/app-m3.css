@@ -761,7 +761,8 @@ html, body {
 .modal-overlay { background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent); backdrop-filter: none; }
 .modal-dialog {
   border: none;
-  border-radius: var(--md-sys-shape-corner-extra-large);
+  /* O 4 px méně než M3 extra-large (28 px) — méně kulaté rohy. */
+  border-radius: 24px;
   background: var(--md-sys-color-surface-container-high);
   color: var(--md-sys-color-on-surface);
   box-shadow: var(--md-sys-elevation-3);
