@@ -8,7 +8,11 @@ pravidla podle hodnot číselníků a natočení.
 
 Objekty JVF (`0100…`) kreslí ISTEM stejnými značkami a barvami jako Katalog
 DTM ČR (shodné SVG, šířky i čárkování) — viewer i CAD je proto v JŽM kreslí
-Katalogem (`usesDialectStyle`), styly SLD se přebírají jen pro objekty SŽ.
+Katalogem (`usesDialectStyle`). Ze SLD objektů JVF se přebírají jen pravidla
+na **rozšíření číselníků SŽ** (`ZXML_JVF_EXTENSIONS`, `getExtensionTable`):
+hodnoty, které JVF nezná (`CS_REFKODY_DOMEN.JVF_XSD_KOD` chybí nebo se liší
+od kódu v ŽXML — kabelová rezerva u zařízení elektrické sítě → JVF 98),
+a atributy SŽ u objektů JVF (typ koleje, typ plochy železnice). Jen v JŽM.
 
 ## Původ
 
@@ -19,12 +23,16 @@ Katalogem (`usesDialectStyle`), styly SLD se přebírají jen pro objekty SŽ.
 
 ## Obsah
 
-- `sz-styles.json` — výtah SLD platných objektů SŽ (`<codeBase>-<geometrie>` →
-  název, XML element, obsahová část, SLD) a atributů, na které pravidla
-  odkazují (`PropertyName` = `CS_ATR_OBJEKT_DTM.KOD` → XML element).
+- `sld-styles.json` — výtah SLD platných objektů SŽ a objektů JVF s pravidly
+  na rozšíření SŽ (`<codeBase>-<geometrie>` → název, XML element, obsahová
+  část, SLD), atributů, na které pravidla odkazují (`PropertyName` =
+  `CS_ATR_OBJEKT_DTM.KOD` → XML element), a hodnot z filtrů (`Literal` =
+  `CS_REFKODY_DOMEN.KOD` → kód v ŽXML, převod do JVF, platnost).
 - `SVG/<id>.svg` — použité značky normalizované pro CAD: jen `<path>`,
   transformace a styly rozpuštěné (svgelements), barvy ze SLD, `width/height`
-  v jednotkách 0,01 mm papíru. Id `sz-<8 hex>` = SHA-1 normalizovaného SVG.
+  v jednotkách 0,01 mm papíru, rámec souměrný kolem vkládacího bodu. Id
+  `sz-<8 hex>` = SHA-1 normalizovaného SVG. Viewer má navíc náhledy oříznuté
+  na kresbu (`symboly/zxml/nahled/`, legenda a panely).
 
 Generované výstupy mimo tento adresář:
 `jvf_parser/src/zxml-1.5.1.6/generated/styles.ts` (a shodný
@@ -36,13 +44,24 @@ Generované výstupy mimo tento adresář:
 - **Měřítko:** pravidla pokrývající 1:400 (podrobné zobrazení); objekt bez
   takového pravidla → pravidla s nejmenším `MinScaleDenominator`.
 - **Filtry:** bez filtru → `base`; jedna rovnost → `rules` (XML element
-  atributu, kód hodnoty v ŽXML přes `../ldm/attribute-map.csv`); `And`, `Or`,
+  atributu, kód hodnoty v ŽXML z `values`); `And`, `Or`,
   `PropertyIsNotEqualTo` → `cases` (`when` / `unless`, platí první shoda —
-  např. zařízení sítě EK SŽ podle využití × typu).
+  např. zařízení sítě EK SŽ podle využití × typu). `And` dvou rovností
+  téhož atributu (chyba v SLD) se čte jako `Or`. Pravidlo s rovností na
+  **neplatnou hodnotu** číselníku (`PLATNOST_DO` v minulosti) se vynechá.
 - **Čáry:** `stroke`, `stroke-width`, `stroke-dasharray` → barva, `widthMm`,
   `dashMm`. Jednotky SLD jsou mm papíru stejně jako v Katalogu DTM ČR
   (ověřeno: plynovod 0,13 / „36 8", osa PK 0,7 / „60 6"). Druhá čára se
   vzorem příček (čárka < 0,5 mm, mezera ≥ 5 mm — úhelník) → `ticksMm`.
+  Další čáry → `lines` (`offsetMm` z `PerpendicularOffset`, kladně vlevo ve
+  směru linie, mm papíru jako čárkování); pravidlo bez osy (brzda) →
+  `axis: false`; značky na koncích linie (`startPoint`/`endPoint`, krátké
+  příčky) → `endTicks` souběžné čáry (spojka s osou); `GraphicStroke` →
+  `lineSymbol` (značka natočená podél linie, `intervalMm` = šířka značky +
+  `Gap`, `startMm` = `InitialGap` + půl šířky; grafika nahrazuje čáru, čáru
+  dodá případné pravidlo bez filtru).
+- **Obvod plochy (geometrie 5)** nemá v ŽXML vlastní kód — jeho čáru přebírá
+  plocha (-03).
 - **Značky:** inline SVG nebo `WellKnownName` (circle, square, triangle);
   `Size` je zobrazovací velikost portálu, ne mm — u objektů JVF odpovídá
   značkám Katalogu v poměru ~1,53 (medián 48 párů, Size 4 ↔ 2,62 mm), výška
@@ -54,10 +73,10 @@ Generované výstupy mimo tento adresář:
 
 ## Omezení
 
-- Nepřebírá se: souběžné čáry (`PerpendicularOffset`, 20×), značky v linii
-  (`GraphicStroke`, 1×), značky na koncích linie (`startPoint`/`endPoint`, 6×),
-  popisy (`TextSymbolizer`, 3×).
-- V CAD jsou značky jednobarevné (blok v barvě převažující barvy značky).
+- Nepřebírají se popisy (`TextSymbolizer`).
+- V CAD jsou značky jednobarevné (blok v barvě převažující barvy značky);
+  osa linie se v CAD zachová i tam, kde ji SLD nekreslí (brzda, zábradlí) —
+  je to zaměřená geometrie a nese XDATA záznamu.
 - Dva objekty SŽ z LDM nemají SLD — kreslí se černou čarou.
 
 ## Přegenerování
@@ -69,6 +88,8 @@ python3 scripts/zxml/extract-sld.py <cesta>/istem_export_LDM_1502_V23.sqlite
 python3 scripts/zxml/ldm-attributes.py <cesta>/SZ_LDM_1.5.0.2_V23.xlsx   # jen při nové verzi LDM
 python3 scripts/zxml/build-zxml-styles.py
 python3 scripts/cad/build-cad-symbols.py --profile zxml
+python3 scripts/zxml/samplegen.py      # ukázky vč. vzorníku znaků zxml_vzornik.xml
+cp jvf_parser/samples/zxml-1.5.1.6/zxml_*.xml jvf_viewer/public/fixtures/
 npm --prefix jvf_parser run build && npm --prefix jvf_cad run build
 ```
 

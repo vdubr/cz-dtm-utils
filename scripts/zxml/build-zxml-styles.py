@@ -3,36 +3,32 @@
 Generátor symbologie ŽXML (DTMŽ, Správa železnic) z oficiálních stylů SLD.
 
 Vstupy (v repozitáři):
-  - jvf_parser/docs/zxml-1.5.1.6/sld/sz-styles.json  styly SLD objektů SŽ z exportu
-    LDM (`istem_export_LDM_*.sqlite`, výtah `scripts/zxml/extract-sld.py`)
-  - jvf_parser/docs/zxml-1.5.1.6/ldm/attribute-map.csv  kódy hodnot LDM ↔ ŽXML
+  - jvf_parser/docs/zxml-1.5.1.6/sld/sld-styles.json  styly SLD objektů SŽ a objektů JVF
+    s pravidly na rozšíření číselníků SŽ, atributy a hodnoty z filtrů (výtah z exportu
+    LDM `istem_export_LDM_*.sqlite` skriptem `scripts/zxml/extract-sld.py`)
   - jvf_parser/docs/zxml-1.5.1.6/ldm/ldm-objects.csv    objekty LDM (SŽ bez SLD)
 
 Výstupy:
   - jvf_parser/src/zxml-1.5.1.6/generated/styles.ts a (shodný)
-    jvf_parser/src/zxml-1.4.2.1/generated/styles.ts — ZXML_STYLES jen pro objekty
-    SŽ (`999…`); objekty JVF kreslí viewer i CAD Katalogem DTM ČR (ISTEM je
-    kreslí stejnými značkami a barvami)
+    jvf_parser/src/zxml-1.4.2.1/generated/styles.ts:
+      ZXML_STYLES          objekty SŽ (`999…`),
+      ZXML_JVF_EXTENSIONS  objekty JVF — jen položky na rozšíření číselníků SŽ
+                           (ostatní vzhled objektů JVF = Katalog DTM ČR)
   - jvf_parser/docs/zxml-1.5.1.6/sld/SVG/<id>.svg — značky normalizované pro CAD
     (jen <path>, transformace rozpuštěné, width/height v 0,01 mm papíru)
   - jvf_viewer/public/symboly/zxml/<id>_<barva>.svg — tytéž značky pro viewer
     (rámec souměrný kolem vkládacího bodu) a nahled/<id>_<barva>.svg — náhled
     oříznutý na kresbu (legenda znaků, panely)
 
-Převod SLD → `ObjectStyle`:
-  - pravidla pro podrobné měřítko (`TARGET_SCALE`; když žádné nepokrývá, ta
-    s nejmenším MinScaleDenominator),
-  - pravidlo bez filtru → `base`; filtr s jednou rovností → `rules`
-    (atribut = XML element, hodnota = kód v ŽXML); složený filtr (And, Or,
-    NotEqualTo) → `cases` (první shoda),
-  - LineSymbolizer → barva, tloušťka, čárkování (mm papíru jako Katalog DTM ČR);
-    druhá čára se vzorem příček (plot, úhelník) → `ticksMm`; souběžné čáry
-    (PerpendicularOffset), značky v linii (GraphicStroke) a značky na koncích
-    linie se nepřebírají,
-  - PointSymbolizer → značka (inline SVG nebo WellKnownName), výška
-    `Size / SIZE_PER_MM` mm, natočení `fixedRotation(<atribut>)` → `rotationAttr`,
+Převod SLD → `ObjectStyle` (podrobně v jvf_parser/docs/zxml-1.5.1.6/sld/README.md):
+  - pravidla pro podrobné měřítko (`TARGET_SCALE`),
+  - bez filtru → `base`; jedna rovnost → `rules`; And/Or/NotEqualTo → `cases`;
+    pravidla na neplatné hodnoty číselníků se vynechají,
+  - LineSymbolizer → barva, tloušťka, čárkování, příčky (`ticksMm`), další čáry
+    s odsazením (`lines`), linie bez osy (`axis: false`), spojky na koncích
+    (`endTicks`), GraphicStroke → značka podél linie (`lineSymbol`),
+  - PointSymbolizer → značka (výška `Size / SIZE_PER_MM` mm), natočení,
   - PolygonSymbolizer → výplň a obrys; TextSymbolizer se nepřebírá.
-Barva vzhledu se značkou = převažující barva značky (SVG nese vlastní barvy).
 
 Spuštění z rootu repa (Python s balíkem svgelements):
     python3 scripts/zxml/build-zxml-styles.py
@@ -52,9 +48,9 @@ from pathlib import Path
 from svgelements import SVG, Path as SvgPath, Shape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from zxml_common import ATTR_MAP, DOCS, LDM_OBJECTS, ROOT, read_csv  # noqa: E402
+from zxml_common import DOCS, LDM_OBJECTS, ROOT, read_csv  # noqa: E402
 
-SLD_JSON = DOCS / 'sld' / 'sz-styles.json'
+SLD_JSON = DOCS / 'sld' / 'sld-styles.json'
 OUT_SVG_DOCS = DOCS / 'sld' / 'SVG'
 OUT_SVG = ROOT / 'jvf_viewer/public/symboly/zxml'
 OUT_TS = [ROOT / 'jvf_parser/src/zxml-1.5.1.6/generated/styles.ts',
@@ -236,6 +232,7 @@ def mark_svg(mark) -> tuple[str, float, float, Counter, Box]:
 
 symbols: dict[str, str] = {}   # id → normalizované SVG (rozměry v 0,01 mm)
 previews: dict[str, str] = {}  # id → náhled oříznutý na kresbu
+symbol_width_mm: dict[str, float] = {}  # id → šířka značky v mm papíru (značky v linii)
 
 
 def symbol_of(graphic) -> tuple[str, str] | None:
@@ -280,6 +277,7 @@ def symbol_of(graphic) -> tuple[str, str] | None:
     sid = 'sz-' + hashlib.sha1(svg.encode()).hexdigest()[:8]
     symbols[sid] = svg
     previews[sid] = preview
+    symbol_width_mm[sid] = vw * k / 100
     return sid, (colors.most_common(1)[0][0] if colors else BLACK)
 
 
@@ -302,30 +300,68 @@ def stroke_app(stroke) -> dict:
     return app
 
 
+def number(el, default: float = 0.0) -> float:
+    try:
+        return float(el.text) if el is not None and el.text and el.text.strip() else default
+    except ValueError:
+        return default
+
+
+def line_symbol(gs) -> dict | None:
+    """GraphicStroke → značka opakovaná podél linie (rozestupy v mm papíru jako čárkování)."""
+    graphic = child(gs, 'Graphic')
+    sym = symbol_of(graphic) if graphic is not None else None
+    if not sym:
+        return None
+    width_mm = symbol_width_mm[sym[0]]
+    gap = number(child(gs, 'Gap'))
+    start = number(child(gs, 'InitialGap'))
+    return {'symbol': sym[0], 'color': sym[1],
+            'intervalMm': round(width_mm + gap, 3), 'startMm': round(start + width_mm / 2, 3)}
+
+
 def rule_app(rule, key: str, attrs: dict) -> dict:
-    """Symbolizéry jednoho pravidla → Appearance."""
+    """Symbolizéry jednoho pravidla → Appearance (+ interní `_axis`: pravidlo kreslí osu)."""
     geom = key.split('-')[1]
     app: dict = {}
     main = None
+    lines: list[dict] = []
+    ends = any(child(ps, 'Geometry') is not None for ps in children(rule, 'PointSymbolizer'))
     for ls in children(rule, 'LineSymbolizer'):
-        if child(ls, 'PerpendicularOffset') is not None:
-            stats['souběžnáČára'] += 1
-            continue
         stroke = child(ls, 'Stroke')
         if stroke is None:
             continue
-        if child(stroke, 'GraphicStroke') is not None:
-            stats['graphicStroke'] += 1
+        offset = number(child(ls, 'PerpendicularOffset'))
+        gs = child(stroke, 'GraphicStroke')
+        if gs is not None:
+            # Grafika nahrazuje čáru (SE 1.1) — tah se nekreslí.
+            sym = line_symbol(gs)
+            if sym and 'lineSymbol' not in app:
+                app['lineSymbol'] = sym
+                stats['značkaVLinii'] += 1
             continue
         a = stroke_app(stroke)
-        if main is None and not is_ticks(a.get('dashMm')):
+        if offset:
+            a['offsetMm'] = offset
+            if ends:
+                a['endTicks'] = True
+            lines.append(a)
+            stats['souběžnáČára'] += 1
+        elif main is None and not is_ticks(a.get('dashMm')):
             main = a
         elif is_ticks(a.get('dashMm')) and 'ticksMm' not in app:
             app['ticksMm'] = a['dashMm']
         else:
-            stats['dalšíČára'] += 1
+            lines.append(a)
+            stats['dalšíČáraPřesOsu'] += 1
     if main:
         app.update(main)
+    if lines:
+        app['lines'] = lines
+        app.setdefault('color', lines[0].get('color', BLACK))
+    app['_axis'] = main is not None
+    if ends:
+        stats['spojkyNaKoncíchLinie'] += 1
     for ps in children(rule, 'PolygonSymbolizer'):
         fill = svg_params(child(ps, 'Fill'))
         fc = norm_hex(fill.get('fill'))
@@ -333,10 +369,10 @@ def rule_app(rule, key: str, attrs: dict) -> dict:
             app['fill'] = fc
         for k, v in stroke_app(child(ps, 'Stroke')).items() if child(ps, 'Stroke') is not None else []:
             app.setdefault(k, v)
+        app['_axis'] = True
     for ps in children(rule, 'PointSymbolizer'):
         if child(ps, 'Geometry') is not None:
-            stats['značkaNaKoncíchLinie'] += 1
-            continue
+            continue  # značky na koncích linie → spojky `endTicks` souběžných čar
         if geom == '02':
             stats['bodováZnačkaNaLinii'] += 1
             continue
@@ -357,80 +393,168 @@ def rule_app(rule, key: str, attrs: dict) -> dict:
     return app
 
 
+def finish(app: dict, base_axis: bool) -> dict:
+    """Interní `_axis` → `axis: false`, když osu nekreslí ani základ, ani pravidlo."""
+    out = {k: v for k, v in app.items() if k != '_axis'}
+    if not (base_axis or app.get('_axis')) and (out.get('lines') or out.get('lineSymbol')):
+        out['axis'] = False
+    return out
+
+
 def scale_range(rule) -> tuple[float, float]:
     mn, mx = child(rule, 'MinScaleDenominator'), child(rule, 'MaxScaleDenominator')
     return (float(mn.text) if mn is not None else 0.0, float(mx.text) if mx is not None else math.inf)
 
 
-def main() -> None:
-    data = json.loads(SLD_JSON.read_text(encoding='utf-8'))
-    attrs = data['attributes']
-    # (atribut KOD, kód hodnoty LDM) → kód hodnoty v ŽXML
-    value_xml = {(r['attrCode'], r['valueCode']): r['valueXml'] for r in read_csv(ATTR_MAP) if r['valueCode']}
+def expand_same_attr(conj: list[tuple[str, str, str]]) -> list[list[tuple[str, str, str]]]:
+    """And dvou rovností téhož atributu (chyba v SLD SŽ, např. DruhPlotu=a ∧ DruhPlotu=b)
+    nemůže platit — vykládá se jako Or."""
+    eq: dict[str, list] = defaultdict(list)
+    rest = []
+    for c in conj:
+        (eq[c[0]] if c[1] == 'eq' else rest).append(c)
+    if all(len(v) == 1 for v in eq.values()):
+        return [conj]
+    stats['AndTéhožAtributuJakoOr'] += 1
+    return [list(combo) + rest for combo in product(*eq.values())]
+
+
+def build_style(key: str, obj: dict, attrs: dict, values: dict, extensions_only: bool) -> dict | None:
+    """SLD objektu → ObjectStyle. `extensions_only`: jen pravidla na rozšíření číselníků SŽ
+    (objekty JVF) — vzhled položky už obsahuje i pravidla bez filtru (Katalog je nemá)."""
+    rules = ET.fromstring(obj['sld']).findall('.//Rule')
+    chosen = [r for r in rules if scale_range(r)[0] <= TARGET_SCALE < scale_range(r)[1]]
+    if not chosen and rules:
+        lo = min(scale_range(r)[0] for r in rules)
+        chosen = [r for r in rules if scale_range(r)[0] == lo]
+        stats['pravidlaMimoMěřítko'] += 1
 
     def cond(prop: str, val: str) -> tuple[str, str] | None:
         a = attrs.get(prop)
         if not a or not a['xmlLeaf']:
             return None
-        return a['xmlLeaf'], value_xml.get((prop, val), val)
+        v = values.get(val)
+        return a['xmlLeaf'], (v['xsd'] if v and v['xsd'] else val)
 
-    styles: dict[str, dict] = {}
-    for key, obj in data['objects'].items():
-        rules = ET.fromstring(obj['sld']).findall('.//Rule')
-        chosen = [r for r in rules if scale_range(r)[0] <= TARGET_SCALE < scale_range(r)[1]]
-        if not chosen and rules:
-            lo = min(scale_range(r)[0] for r in rules)
-            chosen = [r for r in rules if scale_range(r)[0] == lo]
-            stats['pravidlaMimoMěřítko'] += 1
-        base: dict = {}
-        by_attr: dict[str, dict[str, dict]] = defaultdict(dict)
-        cases: list[dict] = []
-        for rule in chosen:
-            app = rule_app(rule, key, attrs)
-            if not app:
+    base: dict = {}
+    by_attr: dict[str, dict[str, dict]] = defaultdict(dict)
+    cases: list[dict] = []
+    filtered = []
+    for rule in chosen:
+        app = rule_app(rule, key, attrs)
+        flt = child(rule, 'Filter')
+        if flt is None or child(rule, 'ElseFilter') is not None:
+            for k, v in app.items():
+                base[k] = base.get(k) or v if k == '_axis' else base.get(k, v)
+            continue
+        if any(k != '_axis' for k in app):
+            filtered.append((rule, app, flt))
+    base_axis = bool(base.get('_axis'))
+    for rule, app, flt in filtered:
+        dnf = parse_filter(next(iter(flt)))
+        if dnf is None:
+            warn(f'{key}: nepodporovaný filtr {ET.tostring(flt, encoding="unicode")[:120]}')
+            stats['nepodporovanýFiltr'] += 1
+            continue
+        for conj in (c for raw in dnf for c in expand_same_attr(raw)):
+            # Neplatná hodnota číselníku (PLATNOST_DO v minulosti) v datech nebude:
+            # rovnost → pravidlo nikdy neplatí, nerovnost → podmínka vždy splněna.
+            if any(op == 'eq' and not values.get(val, {}).get('valid', True) for _p, op, val in conj):
+                stats['pravidloNaNeplatnouHodnotu'] += 1
                 continue
-            flt = child(rule, 'Filter')
-            if flt is None or child(rule, 'ElseFilter') is not None:
-                for k, v in app.items():
-                    base.setdefault(k, v)
+            conj = [c for c in conj if values.get(c[2], {}).get('valid', True)]
+            if extensions_only and not any(op == 'eq' and values.get(val, {}).get('valid') and values[val]['jvf'] != values[val]['xsd']
+                                           for _p, op, val in conj):
                 continue
-            dnf = parse_filter(next(iter(flt)))
-            if dnf is None:
-                warn(f'{key}: nepodporovaný filtr {ET.tostring(flt, encoding="unicode")[:120]}')
-                stats['nepodporovanýFiltr'] += 1
+            resolved = [cond(prop, val) for prop, _op, val in conj]
+            if any(c is None for c in resolved):
+                warn(f'{key}: filtr na neznámý atribut {conj}')
+                stats['neznámýAtribut'] += 1
                 continue
-            for conj in dnf:
-                when: dict[str, str] = {}
-                unless: dict[str, str] = {}
-                resolved = [cond(prop, val) for prop, _op, val in conj]
-                if any(c is None for c in resolved):
-                    warn(f'{key}: filtr na neznámý atribut {conj}')
-                    stats['neznámýAtribut'] += 1
-                    continue
-                for (_prop, op, _val), (leaf, val) in zip(conj, resolved):
-                    (when if op == 'eq' else unless)[leaf] = val
-                if len(when) == 1 and not unless:
-                    (a, v), = when.items()
-                    by_attr[a].setdefault(v, app)
-                else:
-                    case: dict = {'when': when}
-                    if unless:
-                        case['unless'] = unless
-                    case['app'] = app
-                    cases.append(case)
+            when: dict[str, str] = {}
+            unless: dict[str, str] = {}
+            for (_prop, op, _val), (leaf, val) in zip(conj, resolved):
+                (when if op == 'eq' else unless)[leaf] = val
+            item = {**{k: v for k, v in base.items() if k != '_axis'}, **app} if extensions_only else app
+            item = finish(item, base_axis)
+            if len(when) == 1 and not unless:
+                (a, v), = when.items()
+                by_attr[a].setdefault(v, item)
+            else:
+                case: dict = {'when': when}
+                if unless:
+                    case['unless'] = unless
+                case['app'] = item
+                cases.append(case)
+    if extensions_only:
+        if not by_attr and not cases:
+            return None
+        base = {}
+    else:
         if not base and (by_attr or cases):
             # Vzhled bez filtru chybí → základ z první položky (legenda, hladina v CAD).
             first = next(iter(next(iter(by_attr.values())).values())) if by_attr else cases[0]['app']
             base = {k: v for k, v in first.items() if k in ('color', 'widthMm', 'dashMm', 'fill')}
+        base = finish(base, base_axis)
         base.setdefault('color', BLACK)
         base.setdefault('widthMm', BASE_WIDTH)
-        style: dict = {'base': base}
-        if by_attr:
-            style['rules'] = [{'attr': a, 'values': dict(sorted(v.items(), key=lambda kv: (len(kv[0]), kv[0])))}
-                              for a, v in sorted(by_attr.items())]
-        if cases:
-            style['cases'] = cases
-        styles[key] = style
+    style: dict = {'base': base}
+    if by_attr:
+        style['rules'] = [{'attr': a, 'values': dict(sorted(v.items(), key=lambda kv: (len(kv[0]), kv[0])))}
+                          for a, v in sorted(by_attr.items())]
+    if cases:
+        style['cases'] = cases
+    return style
+
+
+def merge_obvod(ext: dict[str, dict]) -> None:
+    """Obvod plochy (geometrie 05) nemá v ŽXML vlastní kód — jeho čáru přebírá plocha (-03)."""
+    LINE_KEYS = ('color', 'widthMm', 'dashMm', 'lines', 'lineSymbol', 'ticksMm', 'axis')
+    for key in [k for k in ext if k.endswith('-05')]:
+        src = ext.pop(key)
+        tgt = ext.setdefault(key[:-3] + '-03', {'base': {}})
+        rules = {r['attr']: r['values'] for r in tgt.setdefault('rules', [])}
+        for r in src.get('rules', []):
+            dst = rules.setdefault(r['attr'], {})
+            for v, a in r['values'].items():
+                cur = dst.setdefault(v, {})
+                for k in LINE_KEYS:
+                    if k in a:
+                        cur.setdefault(k, a[k])
+        tgt['rules'] = [{'attr': a, 'values': v} for a, v in sorted(rules.items())]
+        if not tgt['rules']:
+            del tgt['rules']
+        cases = {json.dumps(c['when'], sort_keys=True): c for c in tgt.setdefault('cases', [])}
+        for c in src.get('cases', []):
+            cur = cases.setdefault(json.dumps(c['when'], sort_keys=True), {'when': c['when'], 'app': {}})
+            for k in LINE_KEYS:
+                if k in c['app']:
+                    cur['app'].setdefault(k, c['app'][k])
+        tgt['cases'] = list(cases.values())
+        if not tgt['cases']:
+            del tgt['cases']
+        stats['obvodDoPlochy'] += 1
+
+
+def apps_of(st: dict) -> list[dict]:
+    return [st['base']] + [a for r in st.get('rules', []) for a in r['values'].values()] \
+        + [c['app'] for c in st.get('cases', [])]
+
+
+def main() -> None:
+    data = json.loads(SLD_JSON.read_text(encoding='utf-8'))
+    attrs, values = data['attributes'], data['values']
+
+    styles: dict[str, dict] = {}
+    ext: dict[str, dict] = {}
+    for key, obj in data['objects'].items():
+        if key.startswith('999'):
+            styles[key] = build_style(key, obj, attrs, values, extensions_only=False)
+        else:
+            st = build_style(key, obj, attrs, values, extensions_only=True)
+            if st:
+                ext[key] = st
+    merge_obvod(ext)
 
     # Objekty SŽ z LDM bez SLD — černá čára.
     for o in read_csv(LDM_OBJECTS):
@@ -441,10 +565,12 @@ def main() -> None:
 
     # --- SVG ------------------------------------------------------------------------
     used: set[tuple[str, str]] = set()
-    for st in styles.values():
-        apps = [st['base']] + [a for r in st.get('rules', []) for a in r['values'].values()] \
-            + [c['app'] for c in st.get('cases', [])]
-        used.update((a['symbol'], a['color']) for a in apps if 'symbol' in a)
+    for st in list(styles.values()) + list(ext.values()):
+        for a in apps_of(st):
+            if 'symbol' in a:
+                used.add((a['symbol'], a['color']))
+            if 'lineSymbol' in a:
+                used.add((a['lineSymbol']['symbol'], a['lineSymbol']['color']))
     for d in (OUT_SVG, OUT_SVG_DOCS):
         if d.exists():
             shutil.rmtree(d)
@@ -457,27 +583,38 @@ def main() -> None:
         (OUT_SVG / 'nahled' / f'{sid}_{color[1:]}.svg').write_text(previews[sid], encoding='utf-8')
 
     # --- TS ---------------------------------------------------------------------------
+    def table(name: str, doc: list[str], rows: dict[str, dict]) -> list[str]:
+        out = doc + [f'export const {name}: Record<string, ObjectStyle> = {{']
+        for key in sorted(rows):
+            out.append(f'  {json.dumps(key)}: {json.dumps(rows[key], ensure_ascii=False, separators=(",", ":"))},')
+        return out + ['};', '']
+
     lines = [
         '// Generováno skriptem scripts/zxml/build-zxml-styles.py — NEEDITOVAT ručně.',
-        f'// Zdroj: styly SLD objektů SŽ z exportu LDM DTMŽ ({data["source"]},',
-        '// jvf_parser/docs/zxml-1.5.1.6/sld). Jen objekty SŽ (`999…`) — objekty JVF se kreslí',
-        '// Katalogem DTM ČR. Klíč `<codeBase>-<suffix>` (01 Bod, 02 Linie, 03 Plocha); pravidla',
-        '// podle XML elementu v AtributyObjektu a kódu hodnoty číselníku v ŽXML.',
+        f'// Zdroj: styly SLD z exportu LDM DTMŽ ({data["source"]}, jvf_parser/docs/zxml-1.5.1.6/sld).',
+        '// Klíč `<codeBase>-<suffix>` (01 Bod, 02 Linie, 03 Plocha, 04 Definiční bod); pravidla podle',
+        '// XML elementu v AtributyObjektu a kódu hodnoty číselníku v ŽXML.',
         '',
         "import type { ObjectStyle } from '../../styles/types.js';",
         '',
-        'export const ZXML_STYLES: Record<string, ObjectStyle> = {',
     ]
-    for key in sorted(styles):
-        lines.append(f'  {json.dumps(key)}: {json.dumps(styles[key], ensure_ascii=False, separators=(",", ":"))},')
-    lines += ['};', '']
+    lines += table('ZXML_STYLES', ['/** Objekty SŽ (`999…`). */'], styles)
+    lines += table('ZXML_JVF_EXTENSIONS', [
+        '/**',
+        ' * Objekty JVF — jen pravidla na rozšíření číselníků SŽ (hodnoty, které JVF nezná, např.',
+        ' * kabelová rezerva u zařízení elektrické sítě); ostatní vzhled podle Katalogu DTM ČR.',
+        ' * Položka je úplný vzhled (včetně pravidel SLD bez filtru), `base` je prázdný.',
+        ' */',
+    ], ext)
     for out in OUT_TS:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text('\n'.join(lines), encoding='utf-8')
 
     n_rules = sum(len(s.get('rules', [])) for s in styles.values())
     n_cases = sum(len(s.get('cases', [])) for s in styles.values())
-    print(f'{len(styles)} objektů SŽ, {n_rules} pravidel podle atributu, {n_cases} složených pravidel, '
+    n_ext = sum(len(r['values']) for s in ext.values() for r in s.get('rules', [])) + sum(len(s.get('cases', [])) for s in ext.values())
+    print(f'{len(styles)} objektů SŽ ({n_rules} pravidel podle atributu, {n_cases} složených), '
+          f'{len(ext)} objektů JVF s rozšířením SŽ ({n_ext} položek), '
           f'{len({s for s, _ in used})} značek ({len(used)} SVG → {OUT_SVG.relative_to(ROOT)})')
     print(f'statistika: {dict(sorted(stats.items()))}')
     print('→ ' + ', '.join(str(p.relative_to(ROOT)) for p in OUT_TS))

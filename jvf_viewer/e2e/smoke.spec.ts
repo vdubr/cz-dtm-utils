@@ -411,10 +411,53 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await page.goto('/jzm');
     await expect(page.locator('html')).toHaveAttribute('data-app', 'jzm');
     await page.locator('#btn-upload-menu').click();
-    await expect(page.locator('.upload-menu-item:visible')).toHaveCount(3);
+    await expect(page.locator('.upload-menu-item:visible')).toHaveCount(4);
     await expect(page.locator('.upload-menu-item[data-sample="zxml_nadrazi.xml"]')).toBeVisible();
     await expect(page.locator('#btn-export-cad')).toBeVisible();
     await expect(page.locator('#btn-symbol-legend')).toBeVisible();
+  });
+
+  test('vzorník znaků SŽ: souběžné čáry, značky podél linie, rozšíření číselníků SŽ (2D, legenda, 3D)', async ({ page }) => {
+    await switchMode(page, 'jzm');
+    await page.locator('#btn-upload-menu').click();
+    await page.locator('.upload-menu-item[data-sample="zxml_vzornik.xml"]').click();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    const info = await page.evaluate(() => {
+      type S = {
+        lineNoAxis?: boolean;
+        lineStrokes?: { endTicks: boolean }[];
+        lineRepeat?: { svg: string };
+        pointSvg?: string;
+      };
+      type L = { objektovyTyp: { elementName: string }; olLayer: { getSource(): { getFeatures(): { get(k: string): unknown }[] } } };
+      const layers = (window as unknown as { __jvfDebug: { getJvfLayers(): L[] } }).__jvfDebug.getJvfLayers();
+      const styles = (el: string): S[] =>
+        layers.find((l) => l.objektovyTyp.elementName === el)?.olLayer.getSource().getFeatures()
+          .map((f) => f.get('jvfResolvedStyle') as S) ?? [];
+      return {
+        brzda: styles('Brzda').some((st) => st.lineNoAxis && (st.lineStrokes?.length ?? 0) > 0),
+        izolovana: styles('IzolovanaKolejnice').some((st) => st.lineStrokes?.some((l) => l.endTicks)),
+        zabradli: styles('ZabradliHorniHrana').every((st) => st.lineRepeat?.svg.startsWith('zxml/')),
+        // Objekt JVF: hodnoty z rozšíření číselníku SŽ značkou SLD (zbytek Katalogem).
+        elektro: styles('ZarizeniElektrickeSite').filter((st) => st.pointSvg?.startsWith('zxml/')).length,
+      };
+    });
+    expect(info.brzda).toBe(true);
+    expect(info.izolovana).toBe(true);
+    expect(info.zabradli).toBe(true);
+    expect(info.elektro).toBeGreaterThan(3);
+
+    await page.locator('#btn-symbol-legend').click();
+    await page.locator('#symbol-legend-modal-search').fill('značka v linii');
+    await expect(page.locator('.symbol-legend-item').first()).toBeVisible();
+    await page.locator('#symbol-legend-modal-search').fill('kabelová rezerva');
+    await expect(page.locator('.symbol-legend-item', { hasText: 'zařízení elektrické sítě' }).first()).toBeVisible();
+    await page.locator('#symbol-legend-modal-close').click();
+
+    await page.locator('#btn-3d').click();
+    await expect(page.locator('#three-canvas')).toBeVisible();
+    await expect.poll(() => page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { lineSymbols3d: () => number } }).__jvfDebug.lineSymbols3d())).toBeGreaterThan(20);
   });
 
   test('soubor ŽXML v režimu JVF nabídne přepnutí do JŽM', async ({ page }) => {

@@ -32,13 +32,16 @@ export { parseUdm, detectUdmVersionString } from './udm-2.1.1/parser.js';
 // — viewer i export do CAD.
 export {
   getStyleTable,
+  getExtensionTable,
   getObjectStyle,
   resolveAppearance,
+  resolveExtensionAppearance,
   resolveRepresentativeAppearance,
   resolveRotationDeg,
   usesDialectStyle,
 } from './styles/resolve.js';
-export type { Appearance, AttrRule, CaseRule, ObjectStyle, StyleTable } from './styles/types.js';
+export type { Appearance, AttrRule, CaseRule, LineStroke, LineSymbol, ObjectStyle, StyleTable } from './styles/types.js';
+export { endConnectors, offsetPolyline, pointsAlongLine, type PointAlong } from './styles/lineGeometry.js';
 
 // Katalog kartografických symbolů DTM ČR (ČÚZK) — vzhled čistého JVF DTM
 // podle typu geometrie a hodnot atributů (viewer i export do CAD).

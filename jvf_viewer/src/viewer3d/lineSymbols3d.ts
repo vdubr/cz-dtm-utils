@@ -89,6 +89,84 @@ function buildTemplate(text: string, m: LineSymbolMetrics): THREE.Group {
   return group;
 }
 
+/** Vzdálenosti po 3D délce linie (`pts` = x, y, z, …) — kumulativně od začátku. */
+function cumulativeLengths(pts: number[]): number[] {
+  const n = pts.length / 3;
+  const out = [0];
+  for (let i = 1; i < n; i++) {
+    const dx = pts[i * 3]! - pts[(i - 1) * 3]!;
+    const dy = pts[i * 3 + 1]! - pts[(i - 1) * 3 + 1]!;
+    const dz = pts[i * 3 + 2]! - pts[(i - 1) * 3 + 2]!;
+    out.push(out[i - 1]! + Math.hypot(dx, dy, dz));
+  }
+  return out;
+}
+
+const repeatTemplates = new Map<string, Promise<{ group: THREE.Group; scale: number } | null>>();
+
+/** Vzor značky ŽXML (vkládací bod = střed viewBoxu) a měřítko SVG jednotka → metry. */
+function loadRepeatTemplate(svg: string): Promise<{ group: THREE.Group; scale: number } | null> {
+  let t = repeatTemplates.get(svg);
+  if (!t) {
+    t = fetch(SVG_BASE + svg)
+      .then((r) => (r.ok ? r.text() : ''))
+      .then((text) => {
+        if (!text) return null;
+        const root = new DOMParser().parseFromString(text, 'image/svg+xml').documentElement;
+        const vb = (root.getAttribute('viewBox') ?? '').split(/[\s,]+/).map(Number);
+        const width = Number(root.getAttribute('width'));
+        const [vw, vh] = [vb[2] ?? 0, vb[3] ?? 0];
+        if (!(vw > 0 && vh > 0 && width > 0)) return null;
+        const group = buildTemplate(text, { aspect: vw / vh, baseline: 0.5, stroke: 1, width: vw });
+        return { group, scale: (width * SVG_UNIT_TO_M) / vw };
+      })
+      .catch(() => null);
+    repeatTemplates.set(svg, t);
+  }
+  return t;
+}
+
+/**
+ * ŽXML: značka opakovaná podél linie (GraphicStroke SLD — příčky plotu,
+ * tečky zábradlí) ve vodorovné rovině, natočená podle úseku, v rozestupu
+ * a od začátku podle stylu (mm papíru → m terénu).
+ */
+export function addRepeatSymbols3d(line: THREE.Object3D, s: ResolvedStyle, pts: number[]): void {
+  const r = s.lineRepeat;
+  const n = pts.length / 3;
+  if (!r || n < 2 || r.intervalMm <= 0) return;
+  const cumulative = cumulativeLengths(pts);
+  const total = cumulative[n - 1]!;
+  const groups: THREE.Group[] = [];
+  let seg = 1;
+  for (let d = r.startMm * MM_TO_M; d <= total; d += r.intervalMm * MM_TO_M) {
+    while (seg < n - 1 && cumulative[seg]! < d) seg++;
+    const a = (seg - 1) * 3;
+    const b = seg * 3;
+    const segLen = cumulative[seg]! - cumulative[seg - 1]!;
+    if (segLen <= 0) continue;
+    const t = (d - cumulative[seg - 1]!) / segLen;
+    const group = new THREE.Group();
+    group.position.set(
+      pts[a]! + (pts[b]! - pts[a]!) * t,
+      pts[a + 1]! + (pts[b + 1]! - pts[a + 1]!) * t + LIFT_M,
+      pts[a + 2]! + (pts[b + 2]! - pts[a + 2]!) * t,
+    );
+    group.rotation.y = -Math.atan2(pts[b + 2]! - pts[a + 2]!, pts[b]! - pts[a]!);
+    group.userData[SYMBOL_TAG] = true;
+    line.add(group);
+    groups.push(group);
+  }
+  if (groups.length === 0) return;
+  void loadRepeatTemplate(r.svg).then((tpl) => {
+    if (!tpl) return;
+    for (const g of groups) {
+      g.scale.setScalar(tpl.scale);
+      g.add(tpl.group.clone());
+    }
+  });
+}
+
 /** Linie se značkou: čárkování v metrech (pro `LineDashedMaterial`), jinak `null`. */
 export function lineSymbolDash3d(s: ResolvedStyle): { dash: number; gap: number } | null {
   if (!s.lineSymbolSvg || !s.lineDashMm || s.lineDashMm.length < 2) return null;

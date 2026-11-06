@@ -160,6 +160,27 @@ describe('exportDxf — čisté JVF DTM ve vzhledu Katalogu DTM ČR', () => {
     expect(value(layer, '420')).toBe(String(0x646464));
   });
 
+  it('ŽXML vzorník: souběžné čáry, značky podél linie a rozšíření číselníků SŽ', () => {
+    const dtm = loadJvf('jvf_parser/samples/zxml-1.5.1.6/zxml_vzornik.xml');
+    const r = exportDxf(dtm);
+    checkStructure(r.dxf);
+    expect(r.skipped).toBe(0);
+    const ents = records(pairs(r.dxf), 'ENTITIES');
+    const on = (el: string) => ents.filter((e) => value(e, '8')?.endsWith(`_${el}`));
+    const records_ = (el: string) => dtm.objekty.find((o) => o.elementName === el)!.zaznamy.length;
+    // Brzda: osa (data) + 1–2 souběžné čáry na záznam.
+    const isLine = (e: string[][]) => e[0]![1] === 'LWPOLYLINE' || e[0]![1] === 'POLYLINE';
+    expect(on('Brzda').filter(isLine).length).toBeGreaterThan(records_('Brzda'));
+    // Izolovaná kolejnice: souběžná čára a dvě spojky s osou.
+    expect(on('IzolovanaKolejnice').length).toBeGreaterThanOrEqual(records_('IzolovanaKolejnice') * 4);
+    // Zábradlí: tečky jako bloky SŽ podél linie.
+    const dots = on('ZabradliHorniHrana').filter((e) => e[0]![1] === 'INSERT');
+    expect(dots.length).toBeGreaterThan(1);
+    expect(value(dots[0]!, '2')).toMatch(/^SZ_[0-9a-f]{8}$/);
+    // Objekt JVF s hodnotou z rozšíření číselníku SŽ (plot) — značky SLD podél linie.
+    expect(on('Plot').some((e) => e[0]![1] === 'INSERT' && /^SZ_/.test(value(e, '2') ?? ''))).toBe(true);
+  });
+
   it('podrobný bod ZPS: blok značky Katalogu v barvě SVG', () => {
     const p = pairs(exportDxf(loadJvf('jvf_parser/samples/1.4.3/ukazka_ZPS.xml')).dxf);
     const bod = records(p, 'ENTITIES').find((e) => value(e, '8') === 'ZPS_PodrobnyBodZPS')!;

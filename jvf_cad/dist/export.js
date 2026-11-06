@@ -15,7 +15,7 @@
  *
  * Souřadnice beze změny (EPSG:5514, metry), měřítko symbolů a textů 1:500.
  */
-import { getStyleTable, usesDialectStyle, labelForAttribute, resolveAppearance, resolveKatalogAppearance, resolveKatalogRepresentativeAppearance, resolveRepresentativeAppearance, } from 'jvf-parser';
+import { endConnectors, getExtensionTable, getStyleTable, offsetPolyline, pointsAlongLine, resolveExtensionAppearance, usesDialectStyle, labelForAttribute, resolveAppearance, resolveKatalogAppearance, resolveKatalogRepresentativeAppearance, resolveRepresentativeAppearance, } from 'jvf-parser';
 import { DxfDocument } from './dxf/document.js';
 import { CAD_SYMBOLS, blockNameFor, symbolColorFor } from './symbols.js';
 import { textHeightFor, isTextObject } from './text.js';
@@ -91,7 +91,11 @@ export function exportDxf(dtm, options = {}) {
     const styles = options.styles ?? getStyleTable(dtm.verze);
     const dialectFor = (ot) => Boolean(styles) && (options.styles !== undefined || usesDialectStyle(dtm.verze, ot));
     const representative = (ot) => dialectFor(ot) ? resolveRepresentativeAppearance(styles, ot) : resolveKatalogRepresentativeAppearance(ot);
-    const appearance = (ot, zaznam) => dialectFor(ot) ? resolveAppearance(styles, ot, zaznam) : resolveKatalogAppearance(ot, zaznam);
+    // ŽXML: záznam objektu JVF s hodnotou z rozšíření číselníku SŽ podle SLD (jako viewer).
+    const extensions = options.styles ? undefined : getExtensionTable(dtm.verze);
+    const appearance = (ot, zaznam) => dialectFor(ot)
+        ? resolveAppearance(styles, ot, zaznam)
+        : (extensions && resolveExtensionAppearance(extensions, ot, zaznam)) || resolveKatalogAppearance(ot, zaznam);
     let entities = 0;
     let skipped = 0;
     const ensureLinetype = (dashMm) => {
@@ -155,6 +159,12 @@ export function exportDxf(dtm, options = {}) {
                 if (n === 0)
                     skipped++;
                 entities += n;
+                if (geom.type === 'LineString' || geom.type === 'MultiCurve') {
+                    entities += writeLineExtras(doc, curvesOf(geom, flatten), app, style, {
+                        linetype: ensureLinetype,
+                        block: ensureBlock,
+                    });
+                }
             }
         }
     }
@@ -198,6 +208,50 @@ function writeGeometry(doc, geom, style, ctx) {
         default:
             return 0;
     }
+}
+function curvesOf(geom, flatten) {
+    if (geom.type === 'LineString')
+        return [toPoints(geom.data.coordinates, geom.data.srsDimension, flatten)];
+    if (geom.type === 'MultiCurve')
+        return geom.data.curves.map((c) => toPoints(c.coordinates, c.srsDimension, flatten));
+    return [];
+}
+/**
+ * ŽXML: souběžné čáry linie (odsazení v mm papíru 1:500 → m, kladně vlevo),
+ * spojky s osou na koncích a značka opakovaná podél linie (bloky natočené
+ * podle úseku) — na hladině objektu, bez XDATA (ta je u osy). Osa se v CAD
+ * zachová i u linií, které SLD bez osy kreslí (je to zaměřená geometrie).
+ */
+function writeLineExtras(doc, curves, app, style, h) {
+    let n = 0;
+    for (const pts of curves) {
+        if (pts.length < 2)
+            continue;
+        for (const l of app.lines ?? []) {
+            const off = offsetPolyline(pts, (l.offsetMm ?? 0) * MM_TO_M);
+            const extra = { layer: style.layer, lineweight: lineweight(l.widthMm ?? app.widthMm) };
+            if (l.color)
+                extra.color = l.color;
+            const lt = h.linetype(l.dashMm);
+            if (lt)
+                extra.linetype = lt;
+            n += writeLine(doc, off, false, extra);
+            if (l.endTicks) {
+                for (const c of endConnectors(pts, off))
+                    n += writeLine(doc, c, false, extra);
+            }
+        }
+        const ls = app.lineSymbol;
+        const block = ls ? h.block(ls.symbol) : undefined;
+        if (ls && block) {
+            const color = symbolColorFor(ls.symbol) ?? ls.color;
+            for (const p of pointsAlongLine(pts, ls.startMm * MM_TO_M, ls.intervalMm * MM_TO_M)) {
+                doc.insert(block, p.x, p.y, p.z ?? 0, (p.angle * 180) / Math.PI, { layer: style.layer, color });
+                n++;
+            }
+        }
+    }
+    return n;
 }
 /**
  * Výplň plochy (HATCH SOLID pod obrysy) — vnější obrys + otvory, ve 2D

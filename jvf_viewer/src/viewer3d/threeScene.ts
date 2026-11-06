@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
-import type { ObjektovyTyp, Geometry } from 'jvf-parser';
-import { resolveStyleForZaznam, type ResolvedStyle } from '../map/jvfLayers.js';
-import { addLineSymbols3d, countLineSymbols3d, lineSymbolDash3d } from './lineSymbols3d.js';
+import { endConnectors, offsetPolyline, type ObjektovyTyp, type Geometry } from 'jvf-parser';
+import { resolveStyleForZaznam, type ResolvedLineStroke, type ResolvedStyle } from '../map/jvfLayers.js';
+import { addLineSymbols3d, addRepeatSymbols3d, countLineSymbols3d, lineSymbolDash3d } from './lineSymbols3d.js';
 import {
   isShowZapis,
   shouldHighlightZapis,
@@ -582,9 +582,46 @@ function buildLine3d(
     ? getOrCreateMaterial(materialCache, `dashed:${color.getHex()}:${dash.dash}:${dash.gap}`, () =>
         new THREE.LineDashedMaterial({ color, dashSize: dash.dash, gapSize: dash.gap }))
     : getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }));
-  const line = new THREE.Line(g, mat);
+  // ŽXML linie bez osy (brzda — jen souběžné čáry): osa zůstane pro výběr
+  // kliknutím a viditelnost potomků, ale nekreslí se.
+  const line = new THREE.Line(g, s.lineNoAxis
+    ? getOrCreateMaterial(materialCache, 'line:hidden', () => new THREE.LineBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }))
+    : mat);
   if (dash) line.computeLineDistances();
   if (s.lineSymbolSvg) addLineSymbols3d(line, s, pts);
+  for (const ls of s.lineStrokes ?? []) line.add(buildOffsetLine3d(pts, ls, materialCache));
+  if (s.lineRepeat) addRepeatSymbols3d(line, s, pts);
+  return line;
+}
+
+/** Metry terénu na 1 mm papíru (1 : 500). */
+const MM_TO_M_3D = 0.5;
+
+/**
+ * ŽXML: souběžná čára linie ve 3D — odsazení ve vodorovné rovině (kladně
+ * vlevo ve směru linie, jako 2D), výška bodů osy, spojky s osou na koncích.
+ * Scéna má z = jih (z = cy − Y), proto se odsazuje v souřadnicích (x, −z).
+ */
+function buildOffsetLine3d(pts: number[], ls: ResolvedLineStroke, materialCache: Map<string, THREE.Material>): THREE.Object3D {
+  const map: number[][] = [];
+  for (let i = 0; i + 2 < pts.length; i += 3) map.push([pts[i]!, -pts[i + 2]!, pts[i + 1]!]);
+  const off = offsetPolyline(map, ls.offsetMm * MM_TO_M_3D);
+  const toScene = (line: number[][]): number[] => line.flatMap((p) => [p[0]!, p[2]!, -p[1]!]);
+  const color = new THREE.Color(ls.color);
+  const dash = ls.dashMm && ls.dashMm.length >= 2 ? ls.dashMm : undefined;
+  const mat = dash
+    ? getOrCreateMaterial(materialCache, `dashed:${color.getHex()}:${dash.join(',')}`, () =>
+        new THREE.LineDashedMaterial({ color, dashSize: dash[0]! * MM_TO_M_3D, gapSize: dash[1]! * MM_TO_M_3D }))
+    : getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }));
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(toScene(off), 3));
+  const line = new THREE.Line(g, mat);
+  if (dash) line.computeLineDistances();
+  if (ls.endTicks) {
+    const cg = new THREE.BufferGeometry();
+    cg.setAttribute('position', new THREE.Float32BufferAttribute(endConnectors(map, off).flatMap(toScene), 3));
+    line.add(new THREE.LineSegments(cg, getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))));
+  }
   return line;
 }
 

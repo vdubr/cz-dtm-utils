@@ -8,7 +8,7 @@ první položku číselníku, jinak hodnotu podle datového typu — pokud ji
 specifikace ukázky nepřepíše. Geometrie podle typu `cmn:GeometrieObjektu…`.
 
 Použití (z kořene repa):
-    python3 scripts/zxml/samplegen.py                # obě ukázky
+    python3 scripts/zxml/samplegen.py                # všechny ukázky
     xmllint --noout --schema jvf_parser/docs/zxml-1.5.1.6/xsd/index/index_data.xsd <soubor>
 
 Ukázky jsou smyšlená data — viz `SAMPLES` níže.
@@ -432,7 +432,91 @@ def nadrazi() -> str:
     )
 
 
-SAMPLES = {'zxml_minimal.xml': minimal, 'zxml_nadrazi.xml': nadrazi}
+STYLES_TS = ROOT / 'jvf_parser/src/zxml-1.5.1.6/generated/styles.ts'
+SLD_JSON = ROOT / 'jvf_parser/docs/zxml-1.5.1.6/sld/sld-styles.json'
+
+
+def style_tables() -> dict[str, dict[str, dict]]:
+    """Vygenerované tabulky stylů ŽXML (ZXML_STYLES, ZXML_JVF_EXTENSIONS) z TS."""
+    import json
+    import re
+    tables: dict[str, dict[str, dict]] = {}
+    current = None
+    for line in STYLES_TS.read_text(encoding='utf-8').splitlines():
+        m = re.match(r'export const (\w+):', line)
+        if m:
+            current = tables.setdefault(m.group(1), {})
+            continue
+        m = re.match(r'\s+"(\d{10}-\d\d)": (\{.*\}),$', line)
+        if m and current is not None:
+            current[m.group(1)] = json.loads(m.group(2))
+    return tables
+
+
+def contexts(style: dict, with_base: bool) -> list[tuple[str, dict[str, object]]]:
+    """(popisek, atributy záznamu) pro každý vzhled objektu: základ, hodnoty, kombinace."""
+    out = [('základ', {})] if with_base else []
+    for r in style.get('rules', []):
+        out += [(f'{r["attr"]}={v}', {r['attr']: v}) for v in r['values']]
+    for c in style.get('cases', []):
+        out.append(('+'.join(f'{k}={v}' for k, v in c['when'].items()), dict(c['when'])))
+    return out
+
+
+def vzornik() -> str:
+    """Vzorník znaků SŽ: každý objekt SŽ v každém vzhledu (základ, hodnoty číselníků,
+    kombinace) a objekty JVF s rozšířením číselníků SŽ. Body v mřížce, linie po
+    40 m v řádcích, plochy 30 × 8 m."""
+    import json
+    tables = style_tables()
+    elements = {k: o['element'] for k, o in json.loads(SLD_JSON.read_text(encoding='utf-8'))['objects'].items()}
+    objs: dict[str, list[Rec]] = {}
+    skipped = []
+    col = {'01': 0, '02': 0, '03': 0, '04': 0}
+    row = {'01': 0.0, '02': 0.0, '03': 0.0, '04': 0.0}
+    # Pásy vzorníku napříč tratí (t): body 0…, linie 300…, plochy 700…
+    BAND = {'01': 0.0, '02': 300.0, '03': 700.0, '04': 1000.0}
+    PER_ROW = {'01': 25, '02': 6, '03': 6, '04': 25}
+    STEP = {'01': (12.0, 12.0), '02': (55.0, 10.0), '03': (40.0, 14.0), '04': (12.0, 12.0)}
+    for table, with_base in (('ZXML_STYLES', True), ('ZXML_JVF_EXTENSIONS', False)):
+        for key, style in sorted(tables.get(table, {}).items()):
+            suffix = key.split('-')[1]
+            element = elements.get(key) or elements.get(key[:-2] + '05')
+            if suffix not in col or not element or element not in OBJECTS:
+                skipped.append(key)
+                continue
+            for _label, attrs in contexts(style, with_base):
+                ds, dt = STEP[suffix]
+                s0 = col[suffix] * ds
+                t0 = BAND[suffix] + row[suffix] * dt
+                if suffix in ('01', '04'):
+                    coords = [P(s0, t0)]
+                elif suffix == '02':
+                    coords = [P(s0, t0), P(s0 + 20, t0), P(s0 + 40, t0 + 4)]
+                else:
+                    coords = rect(s0, s0 + 30, t0, t0 + 8)
+                rec = Rec('Ins', coords, dict(attrs))
+                try:
+                    emit_record(Schema(OBJECTS[element]).tns, Schema(OBJECTS[element]), rec)
+                except (ValueError, KeyError) as e:
+                    skipped.append(f'{key} {attrs}: {e}')
+                    continue
+                objs.setdefault(element, []).append(rec)
+                col[suffix] += 1
+                if col[suffix] >= PER_ROW[suffix]:
+                    col[suffix] = 0
+                    row[suffix] += 1
+    for x in skipped:
+        print('  vzorník přeskočil:', x)
+    return document(
+        'Vzorník znaků SŽ — objekty SŽ ve všech vzhledech stylů SLD a objekty JVF s rozšířením '
+        'číselníků SŽ (smyšlená data, generuje scripts/zxml/samplegen.py)',
+        sorted(objs.items()),
+        'kompletní zápis',
+    )
+
+
+SAMPLES = {'zxml_minimal.xml': minimal, 'zxml_nadrazi.xml': nadrazi, 'zxml_vzornik.xml': vzornik}
 
 
 def main() -> None:

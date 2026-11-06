@@ -5,7 +5,7 @@
 import { dialectOf } from 'jvf-dtm-types';
 import type { ObjektovyTyp, ZaznamObjektu } from 'jvf-dtm-types';
 import { UDM_STYLES } from '../udm-2.1.1/generated/styles.js';
-import { ZXML_STYLES } from '../zxml-1.5.1.6/generated/styles.js';
+import { ZXML_JVF_EXTENSIONS, ZXML_STYLES } from '../zxml-1.5.1.6/generated/styles.js';
 import type { Appearance, CaseRule, ObjectStyle, StyleTable } from './types.js';
 
 type CodeKey = Pick<ObjektovyTyp, 'codeBase' | 'codeSuffix'>;
@@ -23,6 +23,42 @@ const STYLES_BY_DIALECT: Readonly<Record<string, StyleTable>> = {
 export function getStyleTable(version: string): StyleTable | undefined {
   const d = dialectOf(version);
   return d ? STYLES_BY_DIALECT[d.id] : undefined;
+}
+
+/**
+ * Rozšíření číselníků dialektu u objektů JVF (ŽXML: hodnoty, které SŽ přidala
+ * k číselníkům JVF nebo atributy SŽ u objektů JVF) — jen v souborech dialektu.
+ */
+const EXTENSIONS_BY_DIALECT: Readonly<Record<string, StyleTable>> = {
+  zxml: ZXML_JVF_EXTENSIONS,
+};
+
+/** Tabulka rozšíření číselníků u objektů JVF pro verzi, nebo `undefined`. */
+export function getExtensionTable(version: string): StyleTable | undefined {
+  const d = dialectOf(version);
+  return d ? EXTENSIONS_BY_DIALECT[d.id] : undefined;
+}
+
+/**
+ * Vzhled záznamu objektu JVF podle rozšíření číselníku dialektu: úplný vzhled
+ * položky, jejíž hodnoty záznam má (složená pravidla mají přednost), jinak
+ * `undefined` — záznam se kreslí Katalogem DTM ČR.
+ */
+export function resolveExtensionAppearance(
+  extensions: StyleTable,
+  ot: CodeKey,
+  zaznam: ZaznamObjektu
+): Appearance | undefined {
+  const style = getObjectStyle(extensions, ot);
+  if (!style) return undefined;
+  const hit = style.cases?.find((c) => caseMatches(c, zaznam));
+  if (hit) return { ...hit.app };
+  for (const rule of style.rules ?? []) {
+    const raw = zaznam.attributes?.[rule.attr];
+    const app = raw === undefined || raw === null ? undefined : rule.values[String(raw)];
+    if (app) return { ...app };
+  }
+  return undefined;
 }
 
 /** Styl objektového typu (klíč `<code_base>-<suffix>`), nebo `undefined`. */

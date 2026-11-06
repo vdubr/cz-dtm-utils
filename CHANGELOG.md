@@ -85,11 +85,23 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   (`StaniceniData`). Info ikona projektu ukazuje verzi ŽXML i podkladového JVF.
 - **Oficiální symbologie SŽ** — objekty SŽ se kreslí podle stylů SLD
   z exportu datového modelu DTMŽ (portál ISTEM, LDM 1.5.0.2 V23): barvy,
-  tloušťky, čárkování a příčky čar, 335 vektorových značek podle hodnot
+  tloušťky, čárkování a příčky čar, vektorové značky podle hodnot
   číselníků i jejich kombinací (např. využití × typ zařízení EK SŽ),
-  natočení podle atributu `Natoceni`. Stejné značky v barvě SLD jsou
-  i v exportu do CAD jako bloky. Objekty JVF se v JŽM kreslí Katalogem
-  DTM ČR (ISTEM pro ně používá tytéž značky ČÚZK).
+  natočení podle atributu `Natoceni`. **Liniové znaky kompletně**:
+  souběžné čáry s odsazením (MIB, ztužující kolejnice, příkop se
+  zpevněným dnem…), linie jen ze souběžných čar (brzda), spojky s osou
+  na koncích (izolovaná kolejnice) a značky opakované podél linie
+  (zábradlí, ploty) — v mapě 2D i 3D, v legendě, panelech i v exportu
+  do CAD (souběžné čáry jako polylinie, značky jako bloky).
+- **Rozšíření číselníků SŽ u objektů JVF (jen JŽM)** — hodnoty, které SŽ
+  přidala k číselníkům JVF (kabelová rezerva u zařízení elektrické sítě,
+  armatura plynovodu, lapol…), a atributy SŽ u objektů JVF (typ koleje,
+  typ plochy železnice, druh plotu…) se kreslí podle SLD; ostatní objekty
+  JVF Katalogem DTM ČR (ISTEM pro ně používá tytéž značky ČÚZK). Pravidla
+  SLD na neplatné hodnoty číselníků se nepřebírají.
+- **Vzorník znaků SŽ** (`zxml_vzornik.xml`, nabídka u „Nahrát soubor"
+  v JŽM) — každý objekt SŽ ve všech vzhledech a objekty JVF s rozšířením
+  číselníků SŽ.
 - **Legenda znaků (UDM, JŽM)** — přehled všech znaků datového modelu po
   objektech a hodnotách číselníků s hledáním; tlačítko **Stáhnout SVG (ZIP)**
   zabalí znaky jako SVG do složek podle objektů se seznamem `znaky.csv`.

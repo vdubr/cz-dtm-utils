@@ -4,7 +4,7 @@
  */
 import { dialectOf } from 'jvf-dtm-types';
 import { UDM_STYLES } from '../udm-2.1.1/generated/styles.js';
-import { ZXML_STYLES } from '../zxml-1.5.1.6/generated/styles.js';
+import { ZXML_JVF_EXTENSIONS, ZXML_STYLES } from '../zxml-1.5.1.6/generated/styles.js';
 /**
  * Tabulky stylů podle dialektu. Kódy objektů ŽXML jsou v 1.4.2.1 i 1.5.1.6
  * stejné, sdílí se tedy jedna tabulka (styly SLD z LDM 1.5.0.2).
@@ -17,6 +17,38 @@ const STYLES_BY_DIALECT = {
 export function getStyleTable(version) {
     const d = dialectOf(version);
     return d ? STYLES_BY_DIALECT[d.id] : undefined;
+}
+/**
+ * Rozšíření číselníků dialektu u objektů JVF (ŽXML: hodnoty, které SŽ přidala
+ * k číselníkům JVF nebo atributy SŽ u objektů JVF) — jen v souborech dialektu.
+ */
+const EXTENSIONS_BY_DIALECT = {
+    zxml: ZXML_JVF_EXTENSIONS,
+};
+/** Tabulka rozšíření číselníků u objektů JVF pro verzi, nebo `undefined`. */
+export function getExtensionTable(version) {
+    const d = dialectOf(version);
+    return d ? EXTENSIONS_BY_DIALECT[d.id] : undefined;
+}
+/**
+ * Vzhled záznamu objektu JVF podle rozšíření číselníku dialektu: úplný vzhled
+ * položky, jejíž hodnoty záznam má (složená pravidla mají přednost), jinak
+ * `undefined` — záznam se kreslí Katalogem DTM ČR.
+ */
+export function resolveExtensionAppearance(extensions, ot, zaznam) {
+    const style = getObjectStyle(extensions, ot);
+    if (!style)
+        return undefined;
+    const hit = style.cases?.find((c) => caseMatches(c, zaznam));
+    if (hit)
+        return { ...hit.app };
+    for (const rule of style.rules ?? []) {
+        const raw = zaznam.attributes?.[rule.attr];
+        const app = raw === undefined || raw === null ? undefined : rule.values[String(raw)];
+        if (app)
+            return { ...app };
+    }
+    return undefined;
 }
 /** Styl objektového typu (klíč `<code_base>-<suffix>`), nebo `undefined`. */
 export function getObjectStyle(styles, ot) {

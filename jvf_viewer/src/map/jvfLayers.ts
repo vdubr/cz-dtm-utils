@@ -3,6 +3,8 @@ import VectorSource from 'ol/source/Vector.js';
 import Feature, { type FeatureLike } from 'ol/Feature.js';
 import OlPoint from 'ol/geom/Point.js';
 import OlLineString from 'ol/geom/LineString.js';
+import OlMultiLineString from 'ol/geom/MultiLineString.js';
+import type OlGeometry from 'ol/geom/Geometry.js';
 import OlPolygon from 'ol/geom/Polygon.js';
 import Style from 'ol/style/Style.js';
 import CircleStyle from 'ol/style/Circle.js';
@@ -13,6 +15,7 @@ import { extend, createEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
 import type OlMap from 'ol/Map.js';
 import type { ObjektovyTyp, ZaznamObjektu, Geometry, GmlPolygon } from 'jvf-parser';
+import { endConnectors, offsetPolyline } from 'jvf-parser';
 import {
   KATALOG_DEFAULT_COLOR as DEFAULT_COLOR,
   KATALOG_FALLBACK_COLORS as FALLBACK_COLORS,
@@ -38,6 +41,7 @@ import {
 import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import { getLineSymbol, loadLineSymbol } from './lineSymbolShapes.js';
 import { drawLineSymbols } from './lineSymbolRenderer.js';
+import { drawRepeatSymbols, getRepeatImage, loadRepeatImage } from './repeatSymbol.js';
 import {
   isContentPartVisible,
   isLevelVisible,
@@ -169,6 +173,21 @@ export interface ResolvedStyle {
   lineSymbolSvg?: string;
   /** Příčky na plné čáře [tloušťka, rozestup] v mm papíru (plot). */
   lineTicksMm?: number[];
+  /** Další čáry linie (ŽXML) — souběžné s osou (odsazení v mm papíru, kladně vlevo). */
+  lineStrokes?: ResolvedLineStroke[];
+  /** Osa linie se nekreslí, jen `lineStrokes` / `lineRepeat` (ŽXML, např. brzda). */
+  lineNoAxis?: boolean;
+  /** Značka opakovaná podél linie (ŽXML GraphicStroke): SVG a rozestupy v mm papíru. */
+  lineRepeat?: { svg: string; intervalMm: number; startMm: number };
+}
+
+export interface ResolvedLineStroke {
+  color: string;
+  widthPx: number;
+  dashMm?: number[];
+  offsetMm: number;
+  /** Konce spojit s osou kolmou úsečkou (izolovaná kolejnice). */
+  endTicks: boolean;
 }
 
 /** Příčka je oproti linii širší tah (jako ČÚZK: ~2,5× tloušťka čáry, nejméně 3 px). */
@@ -236,6 +255,67 @@ function createLineSymbolStyle(s: ResolvedStyle, resolution: number): Style | nu
 }
 
 /**
+ * Odvozené geometrie linie (souběžné čáry) — geometrie prvku se nemění,
+ * počítají se jednou na prvek a odsazení.
+ */
+const derivedGeometry = new WeakMap<FeatureLike, Map<string, OlGeometry>>();
+
+function derived(feature: FeatureLike, key: string, build: (coords: number[][]) => OlGeometry): OlGeometry | undefined {
+  let cache = derivedGeometry.get(feature);
+  if (!cache) {
+    cache = new Map();
+    derivedGeometry.set(feature, cache);
+  }
+  let g = cache.get(key);
+  if (!g) {
+    const geom = feature.getGeometry();
+    if (!(geom instanceof OlLineString)) return undefined;
+    g = build(geom.getCoordinates());
+    cache.set(key, g);
+  }
+  return g;
+}
+
+/** Další čáry linie (ŽXML): souběžné s osou v odsazení (mm papíru → m), s případnými spojkami na koncích. */
+function createLineStrokeStyles(s: ResolvedStyle, resolution: number): Style[] {
+  return (s.lineStrokes ?? []).map((ls) => {
+    const d = ls.offsetMm * MM_TO_MAP_METERS;
+    return new Style({
+      geometry: (f) =>
+        derived(f, `${d}${ls.endTicks ? 't' : ''}`, (coords) => {
+          const off = offsetPolyline(coords, d);
+          return ls.endTicks ? new OlMultiLineString([off, ...endConnectors(coords, off)]) : new OlLineString(off);
+        }),
+      stroke: new Stroke({
+        color: ls.color,
+        width: ls.widthPx,
+        ...(ls.dashMm ? { lineDash: dashMmToPx(ls.dashMm, resolution) } : {}),
+        lineCap: 'butt',
+      }),
+    });
+  });
+}
+
+/** Značka opakovaná podél linie (ŽXML GraphicStroke), nebo `null`, dokud se SVG nenačte. */
+function createRepeatStyle(s: ResolvedStyle, resolution: number): Style | null {
+  const r = s.lineRepeat;
+  const image = r ? getRepeatImage(r.svg) : undefined;
+  if (!r || !image) return null;
+  const toPx = (mm: number): number => (mm * MM_TO_MAP_METERS) / resolution;
+  return new Style({
+    renderer: (coords, state) => {
+      const pr = state.pixelRatio;
+      drawRepeatSymbols(state.context, coords as number[][], {
+        image,
+        pxPerUnit: (SVG_PX_TO_METERS / resolution) * pr,
+        intervalPx: toPx(r.intervalMm) * pr,
+        startPx: toPx(r.startMm) * pr,
+      });
+    },
+  });
+}
+
+/**
  * ResolvedStyle ze vzhledu Katalogu DTM ČR (`resolveKatalogLook` — podle typu
  * geometrie a hodnot atributů). Plocha bez výplně (ochranná pásma, záměry)
  * dostane jen průsvitný nádech barvy obrysu; linie a obrys bez barvy přebírá
@@ -271,6 +351,21 @@ function buildDialectResolvedStyle(look: DialectLook): ResolvedStyle {
     pointSvg: look.symbolPath,
     ...(app.ticksMm ? { lineTicksMm: app.ticksMm } : {}),
     ...(look.rotationDeg ? { pointRotationDeg: look.rotationDeg } : {}),
+    ...(app.lines
+      ? {
+          lineStrokes: app.lines.map((l) => ({
+            color: l.color ?? color,
+            widthPx: mmToPx(l.widthMm ?? app.widthMm ?? 0.25),
+            ...(l.dashMm ? { dashMm: l.dashMm } : {}),
+            offsetMm: l.offsetMm ?? 0,
+            endTicks: Boolean(l.endTicks),
+          })),
+        }
+      : {}),
+    ...(app.axis === false ? { lineNoAxis: true } : {}),
+    ...(app.lineSymbol && look.lineSymbolPath
+      ? { lineRepeat: { svg: look.lineSymbolPath, intervalMm: app.lineSymbol.intervalMm, startMm: app.lineSymbol.startMm } }
+      : {}),
   };
 }
 
@@ -437,7 +532,15 @@ function createStyleForGeom(
       // Značka vložená do linie (blesk vedení, třída silnice, …) nad čarou,
       // příčky plotu přes čáru.
       const extra = s.lineSymbolSvg ? createLineSymbolStyle(s, resolution) : createTickStyle(s, resolution);
-      return extra ? [line, extra] : line;
+      // ŽXML: souběžné čáry, značka opakovaná podél linie, linie bez osy.
+      if (!s.lineStrokes && !s.lineRepeat && !s.lineNoAxis) return extra ? [line, extra] : line;
+      const repeat = createRepeatStyle(s, resolution);
+      return [
+        ...(s.lineNoAxis ? [] : [line]),
+        ...(extra ? [extra] : []),
+        ...createLineStrokeStyles(s, resolution),
+        ...(repeat ? [repeat] : []),
+      ];
     }
     case 'Polygon':
       return new Style({
@@ -653,6 +756,14 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     }
     if (lineSymbolFiles.size > 0) {
       void Promise.all([...lineSymbolFiles].map(loadLineSymbol)).then(() => olLayer.changed());
+    }
+    const repeatFiles = new Set<string>();
+    for (const f of features) {
+      const svg = (f.get('jvfResolvedStyle') as ResolvedStyle | undefined)?.lineRepeat?.svg;
+      if (svg) repeatFiles.add(svg);
+    }
+    if (repeatFiles.size > 0) {
+      void Promise.all([...repeatFiles].map(loadRepeatImage)).then(() => olLayer.changed());
     }
     olLayer.on('change:visible', () => haloLayer.setVisible(olLayer.getVisible()));
 

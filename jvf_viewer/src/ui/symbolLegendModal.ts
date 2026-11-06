@@ -11,6 +11,7 @@ import {
   dialectOf,
   formatVersionLabel,
   getEntityCatalog,
+  getExtensionTable,
   getStyleTable,
   labelForAttribute,
   type Appearance,
@@ -48,21 +49,29 @@ export function collectSymbols(version: string): SymbolEntry[] {
     Object.values(getEntityCatalog(version)).map((m) => [`${m.codeBase}-${m.codeSuffix}`, m])
   );
   const out: SymbolEntry[] = [];
-  const push = (code: string, app: Appearance, extra: Partial<SymbolEntry> = {}): void => {
-    if (!app.symbol) return;
+  const add = (code: string, symbol: string, color: string, extra: Partial<SymbolEntry>): void => {
     const meta = byCode.get(code);
-    const color = app.color ?? '#000000';
     out.push({
-      symbol: app.symbol,
+      symbol,
       color,
-      path: `${dialect.id}/${app.symbol}_${hex(color)}.svg`,
+      path: `${dialect.id}/${symbol}_${hex(color)}.svg`,
       objectName: meta?.nazev ?? code,
       elementName: meta?.elementName ?? code,
       code,
       ...extra,
     });
   };
-  for (const [code, style] of Object.entries(styles)) {
+  // Bodová značka a značka opakovaná podél linie (ŽXML).
+  const push = (code: string, app: Appearance, extra: Partial<SymbolEntry> = {}): void => {
+    if (app.symbol) add(code, app.symbol, app.color ?? '#000000', extra);
+    if (app.lineSymbol) {
+      const label = extra.valueLabel ?? (extra.value ? `${extra.attr} = ${extra.value}` : 'základní znak');
+      add(code, app.lineSymbol.symbol, app.lineSymbol.color, { ...extra, valueLabel: `${label} (značka v linii)` });
+    }
+  };
+  // ŽXML: objekty JVF s rozšířením číselníků SŽ — jen položky rozšíření (bez základu).
+  const extensions = getExtensionTable(version) ?? {};
+  for (const [code, style] of [...Object.entries(styles), ...Object.entries(extensions)]) {
     push(code, style.base);
     for (const rule of style.rules ?? []) {
       for (const [value, app] of Object.entries(rule.values)) {

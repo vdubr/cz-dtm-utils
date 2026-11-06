@@ -20,6 +20,32 @@ export interface Appearance {
     fill?: string;
     /** Příčky na plné čáře [tloušťka, rozestup, …] v mm papíru (plot, úhelník). */
     ticksMm?: number[];
+    /** Další čáry linie (ŽXML: další LineSymbolizer SLD) — souběžné s osou nebo přes ni. */
+    lines?: LineStroke[];
+    /** `false` = osa linie se nekreslí, jen `lines` / `lineSymbol` (např. brzda SŽ). */
+    axis?: boolean;
+    /** Značka opakovaná podél linie (ŽXML: GraphicStroke SLD). */
+    lineSymbol?: LineSymbol;
+}
+/** Další čára linie; délky v mm papíru (1:500) jako `widthMm` a `dashMm`. */
+export interface LineStroke {
+    color?: string;
+    widthMm?: number;
+    dashMm?: number[];
+    /** Odsazení od osy, kladné vlevo ve směru linie (SLD PerpendicularOffset). */
+    offsetMm?: number;
+    /** Na koncích spojit souběžnou čáru s osou kolmou úsečkou (izolovaná kolejnice). */
+    endTicks?: boolean;
+}
+/** Značka opakovaná podél linie, natočená ve směru linie (osa X značky = linie). */
+export interface LineSymbol {
+    /** Id symbolu (SVG v `public/symboly/<dialekt>/`, blok v CAD). */
+    symbol: string;
+    color: string;
+    /** Rozestup středů značek v mm papíru. */
+    intervalMm: number;
+    /** Poloha středu první značky od začátku linie v mm papíru. */
+    startMm: number;
 }
 /** Vzhled podle hodnoty atributu (číselníku): `values[kód] → vzhled`. */
 export interface AttrRule {

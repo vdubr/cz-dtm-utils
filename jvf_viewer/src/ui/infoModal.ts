@@ -434,12 +434,19 @@ const INFO_CONTENT_HTML = `
     styly SLD z exportu datového modelu DTMŽ (portál ISTEM): barvy (ZDD
     žlutá, ZDT fialová a modrá…), čárkování a příčky čar, vektorové značky
     podle hodnot číselníků (i jejich kombinací, např. využití × typ
-    zařízení EK) natočené podle atributu <code>Natoceni</code>. Objekty JVF
-    se v JŽM kreslí Katalogem DTM ČR (ISTEM pro ně používá tytéž značky
-    ČÚZK), ve vieweru i v exportu do CAD. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
+    zařízení EK) natočené podle atributu <code>Natoceni</code>. Linie mají
+    i souběžné čáry s odsazením (MIB, ztužující kolejnice, brzda jen ze
+    souběžných čar), spojky s osou na koncích (izolovaná kolejnice)
+    a značky opakované podél linie (zábradlí, ploty) — ve 2D, 3D, legendě
+    i v exportu do CAD. Objekty JVF se v JŽM kreslí Katalogem DTM ČR (ISTEM
+    pro ně používá tytéž značky ČÚZK); jen hodnoty z <strong>rozšíření
+    číselníků SŽ</strong> (např. kabelová rezerva u zařízení elektrické sítě,
+    typ koleje u osy koleje) se kreslí podle SLD — v čistém JVF se nepoužijí.
+    Všechny znaky ukazuje vzorník <code>zxml_vzornik.xml</code> v nabídce
+    ukázek. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
     verzi JVF (objekty SŽ do párů nevstupují). Ukázky ŽXML jsou v režimu JŽM
-    v nabídce vedle tlačítka „Nahrát soubor" (oficiální ukázka SŽ a
-    schematické nádraží v Řevnicích se smyšlenými daty).
+    v nabídce vedle tlačítka „Nahrát soubor" (oficiální ukázka SŽ,
+    schematické nádraží v Řevnicích a vzorník znaků SŽ se smyšlenými daty).
   </p>
 
   <h3>Nástroje JVF / UDM / JŽM</h3>

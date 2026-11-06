@@ -4,7 +4,7 @@
  * stejně. Vzhled podle stylu načtených dat (`resolveDataStyle`), legenda
  * velkou ikonou geometrie (`buildGeometryIcon`).
  */
-import type { ObjektovyTyp } from 'jvf-parser';
+import { endConnectors, offsetPolyline, pointsAlongLine, type ObjektovyTyp } from 'jvf-parser';
 import { resolveDataStyle, tickWidthPx, type ResolvedStyle } from '../map/jvfLayers.js';
 import { LINE_SYMBOLS } from '../map/lineSymbols.generated.js';
 import { loadLineSymbol, partStrokePx } from '../map/lineSymbolShapes.js';
@@ -62,6 +62,13 @@ export function buildStyleSwatch(s: ResolvedStyle, kind: SwatchKind): HTMLElemen
     span.style.background = s.fillColor;
     span.style.borderColor = opaque(s.strokeColor);
     return span;
+  }
+
+  // ŽXML: souběžné čáry, linie bez osy, značka opakovaná podél linie.
+  if (hasLineExtras(s)) {
+    const svg = svgEl('svg', { width: '24', height: '16', viewBox: '0 0 24 16', class: 'layer-symbol-line-svg' });
+    svg.append(...lineWithExtras(s, [[0, 8], [24, 8]], 1.5, { offsetPx: 5, dashPx: 6, intervalPx: 10, sizePx: 6 }));
+    return svg as unknown as HTMLElement;
   }
 
   // Linie se značkou (Katalog *_l_*.svg): úsek čáry, značka, úsek čáry.
@@ -212,6 +219,65 @@ function lineWithTicks(d: string, stroke: string, strokeWidth: number, gapPx: nu
   ];
 }
 
+/** Má linie souběžné čáry, značku opakovanou podél linie nebo skrytou osu (ŽXML)? */
+function hasLineExtras(s: ResolvedStyle): boolean {
+  return Boolean(s.lineStrokes || s.lineRepeat || s.lineNoAxis);
+}
+
+interface ExtrasScale {
+  /** Největší odsazení souběžné čáry v px náhledu. */
+  offsetPx: number;
+  /** Nejdelší úsek čárkování v px náhledu. */
+  dashPx: number;
+  intervalPx: number;
+  sizePx: number;
+}
+
+/**
+ * Linie ŽXML v náhledu: osa (není-li skrytá), souběžné čáry s odsazením
+ * zmenšeným do náhledu (pořadí a strana jako v mapě), spojky na koncích
+ * a značky opakované podél osy.
+ */
+function lineWithExtras(s: ResolvedStyle, pts: number[][], width: number, k: ExtrasScale): SVGElement[] {
+  const toD = (line: number[][]): string => 'M' + line.map((q) => `${q[0]!.toFixed(1)} ${q[1]!.toFixed(1)}`).join(' L');
+  const dash = (mm: number[] | undefined): Record<string, string> => {
+    if (!mm || mm.length < 2) return {};
+    const scale = k.dashPx / Math.max(...mm);
+    return { 'stroke-dasharray': mm.map((v) => Math.max(1, v * scale).toFixed(1)).join(' ') };
+  };
+  const out: SVGElement[] = [];
+  const base = { fill: 'none', 'stroke-linejoin': 'round' };
+  if (!s.lineNoAxis) {
+    out.push(svgEl('path', { ...base, d: toD(pts), stroke: opaque(s.strokeColor), 'stroke-width': width.toFixed(1), ...dash(s.lineDashMm) }));
+  }
+  const maxMm = Math.max(0, ...(s.lineStrokes ?? []).map((l) => Math.abs(l.offsetMm)));
+  for (const l of s.lineStrokes ?? []) {
+    // SVG má osu Y dolů — „vlevo ve směru linie" je záporné odsazení.
+    const off = offsetPolyline(pts, maxMm > 0 ? (-l.offsetMm / maxMm) * k.offsetPx : 0);
+    const d = [off, ...(l.endTicks ? endConnectors(pts, off) : [])].map(toD).join(' ');
+    out.push(svgEl('path', {
+      ...base,
+      d,
+      stroke: opaque(l.color),
+      'stroke-width': Math.max(1, (width * l.widthPx) / Math.max(1, s.strokeWidthPx)).toFixed(1),
+      ...dash(l.dashMm),
+    }));
+  }
+  if (s.lineRepeat) {
+    for (const p of pointsAlongLine(pts, k.intervalPx / 2, k.intervalPx)) {
+      out.push(svgEl('image', {
+        href: SVG_BASE + s.lineRepeat.svg,
+        x: (p.x - k.sizePx / 2).toFixed(1),
+        y: (p.y - k.sizePx / 2).toFixed(1),
+        width: String(k.sizePx),
+        height: String(k.sizePx),
+        transform: `rotate(${((p.angle * 180) / Math.PI).toFixed(1)} ${p.x.toFixed(1)} ${p.y.toFixed(1)})`,
+      }));
+    }
+  }
+  return out;
+}
+
 /** Rozměr ikony geometrie (viewBox) — dlaždice legendy DTM. */
 const ICON_W = 96;
 const ICON_H = 56;
@@ -280,6 +346,11 @@ export function buildGeometryIcon(
   }
 
   const width = Math.min(6, Math.max(1.5, s.strokeWidthPx * 1.4));
+  if (hasLineExtras(s)) {
+    const pts = [[8, 44], [32, 18], [58, 38], [88, 12]];
+    svg.append(...lineWithExtras(s, pts, width, { offsetPx: 8, dashPx: 14, intervalPx: 22, sizePx: 12 }));
+    return svg;
+  }
   if (s.lineSymbolSvg) {
     // Rovná linie se značkou v mezeře uprostřed (jako mapa ČÚZK).
     svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, width, ICON_W, ICON_H / 2, 46, 20, 6));

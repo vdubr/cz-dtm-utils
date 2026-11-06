@@ -8,12 +8,16 @@
  * 2D vrstev, 3D scény i panelů).
  *
  * UDM pokrývá všechny objekty DTM i nad rámec DTM. ŽXML (styly SLD SŽ) má
- * vzhled jen u objektů SŽ (`999…`); objekty JVF se kreslí symbologií ČÚZK.
+ * vzhled u objektů SŽ (`999…`); objekty JVF se kreslí symbologií ČÚZK, jen
+ * záznamy s hodnotou z rozšíření číselníku SŽ (např. kabelová rezerva
+ * u zařízení elektrické sítě) podle SLD — `getExtensionTable`.
  */
 import {
   dialectOf,
+  getExtensionTable,
   getStyleTable,
   resolveAppearance,
+  resolveExtensionAppearance,
   resolveRepresentativeAppearance,
   resolveRotationDeg,
   usesDialectStyle,
@@ -30,6 +34,8 @@ interface DialectBinding {
 }
 
 const bindings = new WeakMap<ObjektovyTyp, DialectBinding>();
+/** Objekty JVF v souboru dialektu s rozšířením číselníku (vzhled jen u záznamů s ním). */
+const extensionBindings = new WeakMap<ObjektovyTyp, DialectBinding>();
 
 /**
  * Označit objektové typy projektu dané verze — kreslit symbologií dialektu.
@@ -39,11 +45,14 @@ export function markDialectObjekty(objekty: readonly ObjektovyTyp[], version: st
   const dialect = dialectOf(version);
   const styles = getStyleTable(version);
   if (!dialect || !styles) return;
+  const extensions = getExtensionTable(version);
   for (const ot of objekty) {
     // ŽXML: objekty JVF zůstávají v symbologii ČÚZK (sdílené pravidlo
-    // s exportem do CAD — `usesDialectStyle`).
-    if (!usesDialectStyle(version, ot)) continue;
-    bindings.set(ot, { symbolDir: dialect.id, styles });
+    // s exportem do CAD — `usesDialectStyle`), kromě rozšíření číselníků SŽ.
+    if (usesDialectStyle(version, ot)) bindings.set(ot, { symbolDir: dialect.id, styles });
+    else if (extensions?.[`${ot.codeBase}-${ot.codeSuffix}`]) {
+      extensionBindings.set(ot, { symbolDir: dialect.id, styles: extensions });
+    }
   }
 }
 
@@ -58,6 +67,12 @@ export interface DialectLook {
   symbolPath: string | undefined;
   /** Natočení symbolu ve stupních (atribut `rotationAttr`), jinak `undefined`. */
   rotationDeg: number | undefined;
+  /** Cesta k SVG značky opakované podél linie (`appearance.lineSymbol`). */
+  lineSymbolPath: string | undefined;
+}
+
+function svgPath(dir: string, symbol: string, color: string): string {
+  return `${dir}/${symbol}_${color.replace('#', '').toLowerCase()}.svg`;
 }
 
 function look(binding: DialectBinding, app: Appearance | undefined, zaznam?: ZaznamObjektu): DialectLook | undefined {
@@ -65,17 +80,23 @@ function look(binding: DialectBinding, app: Appearance | undefined, zaznam?: Zaz
   const color = app.color ?? '#000000';
   return {
     appearance: app,
-    symbolPath: app.symbol
-      ? `${binding.symbolDir}/${app.symbol}_${color.replace('#', '').toLowerCase()}.svg`
-      : undefined,
+    symbolPath: app.symbol ? svgPath(binding.symbolDir, app.symbol, color) : undefined,
     rotationDeg: resolveRotationDeg(app, zaznam),
+    lineSymbolPath: app.lineSymbol
+      ? svgPath(binding.symbolDir, app.lineSymbol.symbol, app.lineSymbol.color)
+      : undefined,
   };
 }
 
-/** Vzhled typu / záznamu dle dialektu, nebo `undefined` (typ není označen). */
+/**
+ * Vzhled typu / záznamu dle dialektu, nebo `undefined` (typ není označen;
+ * u objektu JVF záznam bez hodnoty z rozšíření číselníku dialektu).
+ */
 export function resolveDialectLook(ot: ObjektovyTyp, zaznam?: ZaznamObjektu): DialectLook | undefined {
   const b = bindings.get(ot);
-  return b ? look(b, resolveAppearance(b.styles, ot, zaznam), zaznam) : undefined;
+  if (b) return look(b, resolveAppearance(b.styles, ot, zaznam), zaznam);
+  const e = zaznam && extensionBindings.get(ot);
+  return e ? look(e, resolveExtensionAppearance(e.styles, ot, zaznam), zaznam) : undefined;
 }
 
 /** Reprezentativní vzhled typu (legenda, panel vrstev). */

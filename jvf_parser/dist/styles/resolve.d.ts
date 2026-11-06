@@ -3,6 +3,14 @@ import type { Appearance, ObjectStyle, StyleTable } from './types.js';
 type CodeKey = Pick<ObjektovyTyp, 'codeBase' | 'codeSuffix'>;
 /** Tabulka stylů pro verzi datového modelu, nebo `undefined` (čisté JVF DTM). */
 export declare function getStyleTable(version: string): StyleTable | undefined;
+/** Tabulka rozšíření číselníků u objektů JVF pro verzi, nebo `undefined`. */
+export declare function getExtensionTable(version: string): StyleTable | undefined;
+/**
+ * Vzhled záznamu objektu JVF podle rozšíření číselníku dialektu: úplný vzhled
+ * položky, jejíž hodnoty záznam má (složená pravidla mají přednost), jinak
+ * `undefined` — záznam se kreslí Katalogem DTM ČR.
+ */
+export declare function resolveExtensionAppearance(extensions: StyleTable, ot: CodeKey, zaznam: ZaznamObjektu): Appearance | undefined;
 /** Styl objektového typu (klíč `<code_base>-<suffix>`), nebo `undefined`. */
 export declare function getObjectStyle(styles: StyleTable, ot: CodeKey): ObjectStyle | undefined;
 /**
