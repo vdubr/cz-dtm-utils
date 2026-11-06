@@ -567,11 +567,13 @@ html, body {
 .three-options-footer { padding: 8px 0; border-top: 1px solid var(--md-sys-color-outline-variant); }
 
 /* Projekty = list. */
+/* Projekty jako vrstvy výkresu: hover od kraje ke kraji panelu, bez zaoblení. */
+#projects-list { margin: 0 -12px; }
 .project-item {
   min-height: 56px;
-  padding: 8px 4px 8px 12px;
+  padding: 8px 16px 8px 24px;
   gap: 12px;
-  border-radius: var(--md-sys-shape-corner-full);
+  border-radius: 0;
 }
 .project-item:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
 .project-dot { width: 12px; height: 12px; }
@@ -1090,33 +1092,29 @@ html, body {
 /* ===== Měření vzdálenosti a plochy (map/measure.ts) ===== */
 /* Nástroje nad mapou i 3D scénou (vlevo dole v #map-area). */
 .map-tools { position: absolute; bottom: 12px; left: 12px; z-index: 6; display: flex; flex-direction: row; gap: 8px; }
+/* Stejný styl jako lišty nad mapou (.basemap-bar-btn): bílý podklad, šedá
+   ikona; aktivní nástroj jen barvou ikony, bez podbarvení. */
 .map-tools .measure-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 38px;
   margin: 0;
   border: none;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-primary);
-  box-shadow: var(--md-sys-elevation-3);
+  border-radius: 10px;
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface-variant);
+  box-shadow: var(--md-sys-elevation-2, 0 2px 8px rgba(0, 0, 0, 0.18));
   cursor: pointer;
 }
-.map-tools .measure-btn:hover,
-.map-tools .measure-btn:focus {
-  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, var(--md-sys-color-surface-container-high));
-  outline: none;
+.map-tools .measure-btn:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-lowest));
 }
-.map-tools .measure-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
-.map-tools .measure-btn .material-symbols-outlined { font-size: 22px; }
-.map-tools .measure-btn.active,
-.map-tools .measure-btn.active:hover,
-.map-tools .measure-btn.active:focus {
-  background: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-}
+.map-tools .measure-btn:focus { outline: none; }
+.map-tools .measure-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.map-tools .measure-btn .material-symbols-outlined { font-size: 20px; }
+.map-tools .measure-btn.active { color: var(--md-sys-color-primary); }
 .measure-active canvas,
 .parcel-active canvas { cursor: crosshair; }
 
