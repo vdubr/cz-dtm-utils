@@ -82,6 +82,7 @@ import {
   sjtskToScene,
   projectSceneToClient,
   getLineSymbol3dCount,
+  getScene3dStats,
 } from './viewer3d/threeScene.js';
 import { isEmpty, extend } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
@@ -133,6 +134,7 @@ if (import.meta.env.DEV) {
     measurePoints: () => getMeasurePoints(),
     parcel3dRings: () => getParcel3dRingCount(),
     lineSymbols3d: () => getLineSymbol3dCount(),
+    scene3dStats: () => getScene3dStats(),
     project3d: (x: number, y: number, z: number) => {
       const v = sjtskToScene(x, y, z);
       return v ? projectSceneToClient(v) : null;

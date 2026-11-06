@@ -458,6 +458,24 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await expect(page.locator('#three-canvas')).toBeVisible();
     await expect.poll(() => page.evaluate(() =>
       (window as unknown as { __jvfDebug: { lineSymbols3d: () => number } }).__jvfDebug.lineSymbols3d())).toBeGreaterThan(20);
+
+    // SVG značky bodů: rastr textur je omezený (velké SVG SŽ by zahltily GPU
+    // a WebGL by ztratil kontext — scéna po posunu zmizela).
+    await page.locator('#three-canvas').evaluate((c) => {
+      (window as unknown as { __lost: number }).__lost = 0;
+      c.addEventListener('webglcontextlost', () => (window as unknown as { __lost: number }).__lost++);
+    });
+    await page.locator('#toggle-svg-symbols').check({ force: true });
+    const box = (await page.locator('#three-canvas').boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down({ button: 'right' });
+    await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2 + 30, { steps: 10 });
+    await page.mouse.up({ button: 'right' });
+    await page.waitForTimeout(1000);
+    expect(await page.evaluate(() => (window as unknown as { __lost: number }).__lost)).toBe(0);
+    const stats = await page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { scene3dStats: () => { drawCalls: number } | null } }).__jvfDebug.scene3dStats());
+    expect(stats?.drawCalls).toBeGreaterThan(100);
   });
 
   test('soubor ŽXML v režimu JVF nabídne přepnutí do JŽM', async ({ page }) => {

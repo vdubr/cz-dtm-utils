@@ -303,36 +303,53 @@ const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
  */
 const SVG_PX_TO_METERS = 0.005;
 
-/** Načte SVG jako THREE.Texture. Vrací cachovanou instanci pro opakované volání. */
+/**
+ * Nejdelší strana rastru značky v px. SVG mají nativní velikost v jednotkách
+ * 0,01 mm papíru (značka SŽ se stožárem i přes 2 000 px) — rastr v plné
+ * velikosti by zahltil paměť GPU (vzorník SŽ ~0,6 GB, ztráta kontextu WebGL).
+ * Sprite na obrazovce víc nezabere; fyzická velikost se bere z rozměrů SVG.
+ */
+const MAX_SPRITE_TEXTURE_PX = 256;
+
+/** Sprity podle SVG — po načtení textury dostanou fyzickou velikost (bez procházení scény). */
+const spritesByTexture = new Map<string, Set<THREE.Sprite>>();
+
+/** Nativní rozměry SVG (jednotky 0,01 mm) načtené textury, jinak `undefined`. */
+function svgSizeOf(tex: THREE.Texture): [number, number] | undefined {
+  return tex.userData['svgSize'] as [number, number] | undefined;
+}
+
+/**
+ * Načte SVG jako texturu (rastr nejvýš `MAX_SPRITE_TEXTURE_PX`). Vrací
+ * cachovanou instanci pro opakované volání; po načtení nastaví sprity
+ * registrované v `spritesByTexture` na fyzickou velikost SVG.
+ */
 function getSvgTexture(svgFile: string): THREE.Texture {
   const cached = svgTextureCache.get(svgFile);
   if (cached) return cached;
 
-  const loader = new THREE.TextureLoader();
-  const tex = loader.load(SVG_BASE + svgFile, (loaded) => {
-    // SVG načteno — projdi všechny sprity používající tuto texturu a nastav
-    // jim správnou fyzickou velikost podle nativních rozměrů SVG. Texture
-    // loader je asynchronní, takže při vytvoření spritu jsme ještě neznali
-    // image.width/height. Po načtení je textura sdílená přes cache, můžeme
-    // sprity v aktivní scéně dohledat přes `userData.jvfSpriteTexKey`.
-    if (state) {
-      const w = (loaded.image as HTMLImageElement | undefined)?.width ?? 0;
-      const h = (loaded.image as HTMLImageElement | undefined)?.height ?? 0;
-      if (w > 0 && h > 0) {
-        const sx = w * SVG_PX_TO_METERS;
-        const sy = h * SVG_PX_TO_METERS;
-        state.scene.traverse((obj) => {
-          if (obj.userData['jvfSpriteTexKey'] === svgFile) {
-            obj.scale.set(sx, sy, 1);
-          }
-        });
-      }
-      state.renderer.render(state.scene, state.camera);
-    }
-  });
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 1;
+  const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
+  const img = new Image();
+  img.onload = () => {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!(w > 0 && h > 0)) return;
+    const k = Math.min(1, MAX_SPRITE_TEXTURE_PX / Math.max(w, h));
+    canvas.width = Math.max(1, Math.round(w * k));
+    canvas.height = Math.max(1, Math.round(h * k));
+    canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+    tex.userData['svgSize'] = [w, h];
+    tex.needsUpdate = true;
+    for (const sprite of spritesByTexture.get(svgFile) ?? []) {
+      sprite.scale.set(w * SVG_PX_TO_METERS, h * SVG_PX_TO_METERS, 1);
+    }
+  };
+  img.src = SVG_BASE + svgFile;
   svgTextureCache.set(svgFile, tex);
   return tex;
 }
@@ -684,10 +701,10 @@ function buildSceneObjects(
               // nativních rozměrů SVG (konvence ČÚZK Katalog: 1 SVG-px =
               // 0,01 mm na papíře × 1:500 = 0,005 m v terénu).
               //
-              // Texture loader je asynchronní; při prvním vytvoření spritu
+              // SVG se načítá asynchronně; při prvním vytvoření spritu
               // textura ještě nemá rozměry. Použijeme proto fallback scale
-              // (0.5 m) a po načtení texturu callback v `getSvgTexture`
-              // přepočítá sprity se shodným `jvfSpriteTexKey`.
+              // (0.5 m) a po načtení `getSvgTexture` přepočítá sprity
+              // registrované v `spritesByTexture`.
               //
               // depthTest=true: sprite respektuje hloubku scény (nepřekrývá
               // všechno jako dřív s depthTest=false).
@@ -703,14 +720,16 @@ function buildSceneObjects(
                 : makeSpriteMaterial();
               const sprite = new THREE.Sprite(mat);
               sprite.position.set(x, y3, z3);
-              const img = (tex.image as HTMLImageElement | undefined);
-              if (img && img.width > 0 && img.height > 0) {
-                sprite.scale.set(img.width * SVG_PX_TO_METERS, img.height * SVG_PX_TO_METERS, 1);
+              const size = svgSizeOf(tex);
+              if (size) {
+                sprite.scale.set(size[0] * SVG_PX_TO_METERS, size[1] * SVG_PX_TO_METERS, 1);
               } else {
                 sprite.scale.set(0.5, 0.5, 1); // placeholder, přepíše se po načtení
               }
+              let registered = spritesByTexture.get(s.pointSvg);
+              if (!registered) spritesByTexture.set(s.pointSvg, (registered = new Set()));
+              registered.add(sprite);
               sprite.userData['jvfSprite'] = true;
-              sprite.userData['jvfSpriteTexKey'] = s.pointSvg;
               obj = sprite;
             } else {
               const geomPt = new THREE.BufferGeometry();
@@ -818,6 +837,7 @@ function buildSceneObjects(
 // v `buildSceneObjects`) — `Material.dispose()` je idempotentní, takže
 // vícenásobné volání na tutéž instanci je neškodné.
 function clearSceneObjects(scene: THREE.Scene, spriteObjects: THREE.Object3D[]): void {
+  spritesByTexture.clear();
   const toRemove: THREE.Object3D[] = [];
   scene.traverse((obj) => {
     // Terén má vlastní TERRAIN_TAG a NEMÁ DATA_TAG — nepromazat ho.
@@ -1815,6 +1835,14 @@ export function zoomToThreeExtent(
 /** Počet značek v liniích ve 3D scéně (0 bez scény) — ladění, e2e. */
 export function getLineSymbol3dCount(): number {
   return state ? countLineSymbols3d(state.scene) : 0;
+}
+
+/** Velikost 3D scény (objekty, volání kreslení posledního snímku) — ladění, e2e. */
+export function getScene3dStats(): { objects: number; drawCalls: number } | null {
+  if (!state) return null;
+  let objects = 0;
+  state.scene.traverse(() => objects++);
+  return { objects, drawCalls: state.renderer.info.render.calls };
 }
 
 export function zoomToThreeFeature(elementName: string, objectId: string): void {

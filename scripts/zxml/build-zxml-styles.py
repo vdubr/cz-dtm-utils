@@ -264,7 +264,10 @@ def symbol_of(graphic) -> tuple[str, str] | None:
     cx, cy = vw / 2, vh / 2
     hw = max(cx, cx - bx0, bx1 - cx)
     hh = max(cy, cy - by0, by1 - cy)
-    k = size / SIZE_PER_MM * 100 / vh   # jednotek 0,01 mm na jednotku viewBoxu
+    # `Size` je výška grafiky (SE 1.1), ISTEM u širokých značek (tabulky
+    # návěstidel s ramenem) píše `<Size type="width">` = šířka.
+    by_width = size_el is not None and size_el.get('type') == 'width'
+    k = size / SIZE_PER_MM * 100 / (vw if by_width else vh)   # jednotek 0,01 mm na jednotku viewBoxu
     dec = max(1, 4 - math.floor(math.log10(max(vw, vh))))
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(2 * hw * k, 1)}" height="{fmt(2 * hh * k, 1)}" '
            f'viewBox="{fmt(cx - hw, dec)} {fmt(cy - hh, dec)} {fmt(2 * hw, dec)} {fmt(2 * hh, dec)}">{paths}</svg>\n')

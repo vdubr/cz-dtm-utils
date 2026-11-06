@@ -235,6 +235,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   objekty ZPSUDM a H3D.
 
 ### Opraveno
+- **3D: SVG značky bodů rychle a bez výpadku scény** — značky se rastrují
+  nejvýš na 256 px (fyzická velikost beze změny); dřív v nativní velikosti
+  SVG, u vzorníku SŽ ~0,6 GB textur, WebGL ztratil kontext a scéna po
+  posunu zmizela. Široké značky SŽ (tabulky návěstidel s ramenem) mají
+  velikost podle šířky (`Size type="width"` v SLD), ne 5× větší.
 - **JŽM: objekty JVF podle Katalogu ČÚZK i v exportu do CAD** — DXF ze
   souboru ŽXML kreslil objekty JVF jen barvou obsahové části, viewer je
   přitom kreslil podle Katalogu; teď jedno sdílené pravidlo

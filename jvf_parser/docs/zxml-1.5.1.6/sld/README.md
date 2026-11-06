@@ -65,7 +65,8 @@ Generované výstupy mimo tento adresář:
 - **Značky:** inline SVG nebo `WellKnownName` (circle, square, triangle);
   `Size` je zobrazovací velikost portálu, ne mm — u objektů JVF odpovídá
   značkám Katalogu v poměru ~1,53 (medián 48 párů, Size 4 ↔ 2,62 mm), výška
-  značky = `Size / 1,53` mm. Vkládací bod = střed viewBoxu (SVG SŽ mají
+  značky = `Size / 1,53` mm; `<Size type="width">` (ISTEM u širokých značek —
+  tabulky návěstidel s ramenem) je šířka. Vkládací bod = střed viewBoxu (SVG SŽ mají
   stožáry návěstidel dokreslené tak, aby střed ležel v bodě).
   `fixedRotation(<atribut>)` → `rotationAttr` (Natoceni). Barva vzhledu =
   převažující barva značky.
