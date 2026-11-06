@@ -235,6 +235,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   objekty ZPSUDM a H3D.
 
 ### Opraveno
+- **3D: SVG ikony bodů nemizí při přiblížení** — ikona se skrývala podle
+  vzdálenosti kamery od středu otáčení (nad 150 m) a nic ji nenahradilo;
+  teď se podle skutečné velikosti na obrazovce střídá ikona a puntík
+  (jako 2D), hned po zapnutí i při každém pohybu kamery.
 - **3D: SVG značky bodů rychle a bez výpadku scény** — značky se rastrují
   nejvýš na 256 px (fyzická velikost beze změny); dřív v nativní velikosti
   SVG, u vzorníku SŽ ~0,6 GB textur, WebGL ztratil kontext a scéna po

@@ -417,13 +417,11 @@ export function setUseSvgSymbols(value: boolean): void {
 let lastZExaggeration = 1;
 
 /**
- * Hranice, nad kterou se SVG sprity skrývají (ekvivalent 2D
- * `HIDE_ICON_RESOLUTION`). Při velkém oddálení kamery od pivotu by
- * sprity pokrývaly scénu jako kobercová mozaika. Hodnota je v metrech
- * (jednotkách scény) — sprite je velký 2 m, takže nad ~150 m vzdálenosti
- * jsou ikony stejně skoro neviditelné.
+ * Nejmenší výška SVG ikony bodu na obrazovce (px). Menší ikona by byla
+ * nečitelná a při oddálení by sprity pokrývaly scénu jako mozaika — místo
+ * ní se kreslí puntík (jako 2D, kde ikonu při oddálení nahradí tečka).
  */
-const SPRITE_HIDE_RADIUS = 150;
+const MIN_SPRITE_PX = 6;
 
 function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void {
   const { spherical, center } = orbit;
@@ -442,36 +440,40 @@ function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void 
     // Marker mění velikost se vzdáleností kamery, aby byl vždy viditelný
     const s = spherical.radius * 0.015;
     state.pivotMarker.scale.setScalar(s);
-    // Skrýt SVG sprity při velkém oddálení (čitelnost scény).
-    updateSpriteVisibility(state.spriteObjects, spherical.radius);
+    // SVG ikony bodů: malé na obrazovce → puntík (čitelnost scény).
+    updateSpriteVisibility(state.spriteObjects, camera, state.renderer.domElement.clientHeight);
     // Při přiblížení podrobnější textura okolí pohledu (po zastavení kamery).
     scheduleTerrainDetail();
   }
 }
 
 /**
- * Skryje / zobrazí SVG sprity podle vzdálenosti kamery (resp. radiusu
- * orbitu). Volá se z `updateCamera` při KAŽDÉ změně kamery (tedy i při
- * každém mousemove během orbit/pan) — proto iterujeme jen přes
- * `state.spriteObjects` (udržovaný seznam sprite objektů), NIKOLI
- * `scene.traverse` přes celou scénu, které by bylo výrazně dražší na
- * velkých souborech. Při větším oddálení než `SPRITE_HIDE_RADIUS` se
- * sprity skryjí, body zůstanou reprezentovány barevnými puntíky, které
- * renderujeme zvlášť (vždy).
- *
- * V současné implementaci nemáme paralelní vrstvu puntíků — sprite je
- * jediná reprezentace bodu při zapnutém SVG toggle. Skrytí spritu = bod
- * není vidět vůbec. To je akceptovatelný kompromis: uživatel chce při
- * silném oddálení vidět hlavně linie a plochy, body znovu uvidí po
- * přiblížení.
+ * SVG ikona bodu, nebo puntík místo ní — podle výšky ikony na obrazovce
+ * (`MIN_SPRITE_PX`). Každý sprite má dvojici puntík (`userData.jvfDot`).
+ * Volá se z `updateCamera` při KAŽDÉ změně kamery — proto jen přes
+ * `state.spriteObjects` (udržovaný seznam spritů), ne `scene.traverse`.
  */
-function updateSpriteVisibility(spriteObjects: THREE.Object3D[], radius: number): void {
-  const radiusOk = radius < SPRITE_HIDE_RADIUS;
+function updateSpriteVisibility(spriteObjects: THREE.Object3D[], camera: THREE.PerspectiveCamera, viewportPx: number): void {
+  // px obrazovky na 1 m ve vzdálenosti 1 m (perspektiva, svislé FOV).
+  const pxPerMeter = (viewportPx || 600) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
   for (const obj of spriteObjects) {
+    const dist = camera.position.distanceTo(obj.position) || 1;
+    const big = (obj.scale.y * pxPerMeter) / dist >= MIN_SPRITE_PX;
+    obj.userData['jvfSpriteBig'] = big;
     // AND s ostatními přepínači (vrstvy / changeset / filtr prvků) —
-    // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý sprite.
-    obj.visible = radiusOk && computeObjectVisibility(obj);
+    // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý bod.
+    const visible = computeObjectVisibility(obj);
+    obj.visible = visible && big;
+    const dot = obj.userData['jvfDot'] as THREE.Object3D | undefined;
+    if (dot) dot.visible = visible && !big;
   }
+}
+
+/** Úroveň detailu bodu se SVG ikonou: ikona jen dost velká, puntík jen místo malé ikony. */
+function lodVisible(obj: THREE.Object3D): boolean {
+  if (obj.userData['jvfSprite'] === true) return obj.userData['jvfSpriteBig'] !== false;
+  const sprite = obj.userData['jvfDotFor'] as THREE.Object3D | undefined;
+  return sprite ? sprite.userData['jvfSpriteBig'] === false : true;
 }
 
 function createPivotMarker(): THREE.Object3D {
@@ -702,6 +704,16 @@ function buildSceneObjects(
             const z3 = cy - (c[1] ?? 0);
             const y3 = ((c[2] ?? 0) - cz) * zExaggeration;
 
+            const makeDot = (): THREE.Points => {
+              const geomPt = new THREE.BufferGeometry();
+              geomPt.setAttribute('position', new THREE.Float32BufferAttribute([x, y3, z3], 3));
+              const makePointsMaterial = (): THREE.PointsMaterial =>
+                new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
+              const mat = shareableMaterial
+                ? getOrCreateMaterial(materialCache, `points:${color.getHex()}`, makePointsMaterial)
+                : makePointsMaterial();
+              return new THREE.Points(geomPt, mat);
+            };
             if (useSvgSymbols && s.pointSvg) {
               // Sprite s SVG texturou — fyzická velikost v metrech podle
               // nativních rozměrů SVG (konvence ČÚZK Katalog: 1 SVG-px =
@@ -736,19 +748,13 @@ function buildSceneObjects(
               if (!registered) spritesByTexture.set(s.pointSvg, (registered = new Set()));
               registered.add(sprite);
               sprite.userData['jvfSprite'] = true;
+              // Puntík místo ikony, když je na obrazovce malá (viz updateSpriteVisibility).
+              const dot = makeDot();
+              dot.userData['jvfDotFor'] = sprite;
+              sprite.userData['jvfDot'] = dot;
               obj = sprite;
             } else {
-              const geomPt = new THREE.BufferGeometry();
-              geomPt.setAttribute(
-                'position',
-                new THREE.Float32BufferAttribute([x, y3, z3], 3)
-              );
-              const makePointsMaterial = (): THREE.PointsMaterial =>
-                new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
-              const mat = shareableMaterial
-                ? getOrCreateMaterial(materialCache, `points:${color.getHex()}`, makePointsMaterial)
-                : makePointsMaterial();
-              obj = new THREE.Points(geomPt, mat);
+              obj = makeDot();
             }
             break;
           }
@@ -825,10 +831,19 @@ function buildSceneObjects(
           obj.userData['jvfLevel'] = levelKey;
           obj.userData['jvfProjectId'] = projectKey;
           obj.userData['jvfPart'] = part;
-          obj.visible = computeObjectVisibility(obj);
+          obj.visible = computeObjectVisibility(obj) && lodVisible(obj);
           if (isChangesetZapis(zapisObjektu)) addZapisHalo(obj, zapisObjektu);
           scene.add(obj);
           if (obj.userData['jvfSprite'] === true) spriteObjects.push(obj);
+          const dot = obj.userData['jvfDot'] as THREE.Object3D | undefined;
+          if (dot) {
+            // Puntík nese identitu záznamu (výběr kliknutím, filtry, vrstvy).
+            for (const k of [DATA_TAG, LAYER_KEY_TAG, 'jvfObjectId', 'jvfDtmId', 'jvfZapisObjektu', 'jvfLevel', 'jvfProjectId', 'jvfPart']) {
+              dot.userData[k] = obj.userData[k];
+            }
+            dot.visible = computeObjectVisibility(dot) && lodVisible(dot);
+            scene.add(dot);
+          }
         }
       }
     }
@@ -1108,6 +1123,7 @@ export function rebuildSceneGeometry(zExaggeration: number): void {
   clearThreeHighlight();
   clearSceneObjects(state.scene, state.spriteObjects);
   buildSceneObjects(state.scene, state.objekty, state.cx, state.cy, state.cz, zExaggeration, state.spriteObjects);
+  updateSpriteVisibility(state.spriteObjects, state.camera, state.renderer.domElement.clientHeight);
   for (const mesh of state.terrainMeshes) {
     updateTerrainZExaggeration(mesh, zExaggeration);
   }
@@ -1124,14 +1140,13 @@ export function setThreeLayerVisible(layerKey: string, visible: boolean): void {
   if (visible) hiddenLayers.delete(layerKey);
   else hiddenLayers.add(layerKey);
   if (!state) return;
-  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     if (obj.userData[LAYER_KEY_TAG] === layerKey) {
       // AND s changeset přepínači a filtrem prvků — zobrazení vrstvy nesmí
       // od-skrýt objekt skrytý jiným přepínačem.
       obj.visible =
         computeObjectVisibility(obj) &&
-        (obj.userData['jvfSprite'] !== true || radiusOk);
+        lodVisible(obj);
     }
   });
 }
@@ -1160,7 +1175,6 @@ export function resetThreeLayerVisibility(): void {
  */
 export function applyChangesetHighlight(): void {
   if (!state) return;
-  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     const zapis = obj.userData['jvfZapisObjektu'];
     if (!isChangesetZapis(zapis)) return;
@@ -1168,7 +1182,7 @@ export function applyChangesetHighlight(): void {
     // Viditelnost = AND všech přepínačů (vrstvy / changeset / filtr prvků)
     obj.visible =
       computeObjectVisibility(obj) &&
-      (obj.userData['jvfSprite'] !== true || radiusOk);
+      lodVisible(obj);
     for (const child of obj.children) {
       if (child.userData[ZAPIS_HALO_TAG] === true) child.visible = show;
     }
@@ -1186,12 +1200,11 @@ export function applyChangesetHighlight(): void {
  */
 export function applyFeatureFilter(): void {
   if (!state) return;
-  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     if (obj.userData[DATA_TAG] === undefined) return;
     obj.visible =
       computeObjectVisibility(obj) &&
-      (obj.userData['jvfSprite'] !== true || radiusOk);
+      lodVisible(obj);
   });
 }
 
@@ -1847,19 +1860,25 @@ export function getLineSymbol3dCount(): number {
  * Velikost 3D scény (objekty, volání kreslení posledního snímku, SVG sprity
  * a z nich ty s načtenou texturou) — ladění, e2e.
  */
-export function getScene3dStats(): { objects: number; drawCalls: number; sprites: number; spritesLoaded: number } | null {
+export function getScene3dStats(): {
+  objects: number; drawCalls: number; sprites: number; spritesLoaded: number; spritesVisible: number; dotsVisible: number;
+} | null {
   if (!state) return null;
   let objects = 0;
   let sprites = 0;
   let spritesLoaded = 0;
+  let spritesVisible = 0;
+  let dotsVisible = 0;
   state.scene.traverse((o) => {
     objects++;
+    if (o.userData['jvfDotFor'] && o.visible) dotsVisible++;
     if (!(o instanceof THREE.Sprite)) return;
     sprites++;
+    if (o.visible) spritesVisible++;
     const map = (o.material as THREE.SpriteMaterial).map;
     if (map && svgSizeOf(map) && (map.image as HTMLCanvasElement).width > 1) spritesLoaded++;
   });
-  return { objects, drawCalls: state.renderer.info.render.calls, sprites, spritesLoaded };
+  return { objects, drawCalls: state.renderer.info.render.calls, sprites, spritesLoaded, spritesVisible, dotsVisible };
 }
 
 export function zoomToThreeFeature(elementName: string, objectId: string): void {

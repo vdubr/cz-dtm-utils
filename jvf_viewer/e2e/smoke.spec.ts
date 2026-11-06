@@ -475,12 +475,15 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await page.mouse.up({ button: 'right' });
     await page.waitForTimeout(1000);
     expect(await page.evaluate(() => (window as unknown as { __lost: number }).__lost)).toBe(0);
-    type Stats = { drawCalls: number; sprites: number; spritesLoaded: number } | null;
+    type Stats = { drawCalls: number; sprites: number; spritesLoaded: number; spritesVisible: number; dotsVisible: number } | null;
     const stats = () => page.evaluate(() =>
       (window as unknown as { __jvfDebug: { scene3dStats: () => Stats } }).__jvfDebug.scene3dStats());
     expect((await stats())?.drawCalls).toBeGreaterThan(100);
     // Všechny sprity mají texturu v plné (omezené) velikosti — ne zástupce 1×1.
     await expect.poll(async () => { const st = await stats(); return st && st.sprites > 100 && st.spritesLoaded === st.sprites; }).toBe(true);
+    // Každý bod je vidět — ikona, nebo (malá na obrazovce) puntík místo ní.
+    const st = (await stats())!;
+    expect(st.spritesVisible + st.dotsVisible).toBe(st.sprites);
     expect(webglErrors).toEqual([]);
   });
 
