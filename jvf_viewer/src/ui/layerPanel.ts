@@ -1,5 +1,5 @@
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
-import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
+import { LAYER_COLORS, resolveDataStyle } from '../map/jvfLayers.js';
 import { resolveLayerKey } from '../state/projects.js';
 import {
   isLayerVisible,
@@ -17,7 +17,13 @@ import { buildStyleSwatch, swatchKindForObjektovyTyp } from './symbolSwatch.js';
  */
 function buildSymbolEl(layer: JvfVectorLayer): HTMLElement {
   const ot = layer.objektovyTyp;
-  return buildStyleSwatch(resolveRepresentativeStyle(ot), swatchKindForObjektovyTyp(ot));
+  return buildStyleSwatch(resolveDataStyle(ot).style, swatchKindForObjektovyTyp(ot));
+}
+
+/** Tooltip s použitými variantami značky („nástěnná konzola 3×, …"). */
+function variantsNote(layer: JvfVectorLayer): string {
+  const { variants } = resolveDataStyle(layer.objektovyTyp);
+  return variants.length > 0 ? `\nZnačka podle typu: ${variants.map((v) => `${v.value} ${v.count}×`).join(', ')}` : '';
 }
 
 /**
@@ -97,7 +103,7 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
       const layerKey = resolveLayerKey(layer.objektovyTyp);
       item.className = 'layer-item active';
       item.dataset['layerKey'] = layerKey;
-      item.title = `Kliknutím zapnout/vypnout vrstvu „${layer.objektovyTyp.nazev || layer.objektovyTyp.elementName}“`;
+      item.title = `Kliknutím zapnout/vypnout vrstvu „${layer.objektovyTyp.nazev || layer.objektovyTyp.elementName}“${variantsNote(layer)}`;
 
       const symbolEl = buildSymbolEl(layer);
 

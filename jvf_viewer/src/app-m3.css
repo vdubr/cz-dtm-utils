@@ -877,6 +877,8 @@ html, body {
 }
 .legend-tile .legend-meta { color: #5d5e66; font: 400 11px/16px var(--md-sys-typescale-font); letter-spacing: 0.3px; }
 .legend-tile .legend-code { color: #80818a; font-variant-numeric: tabular-nums; }
+/* Hodnota atributu varianty („nástěnná konzola") — pod názvem objektu. */
+.legend-tile .legend-variant { color: #3a3b42; font-weight: 500; white-space: normal; }
 .legend-tile .legend-name + .legend-meta { margin-top: 2px; }
 
 /* Nadpis obsahové části (ZPS, TI, …) v legendě DTM — jen typografie:

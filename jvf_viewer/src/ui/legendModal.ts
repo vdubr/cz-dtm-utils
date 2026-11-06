@@ -5,7 +5,7 @@
 import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
-import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
+import { LAYER_COLORS, resolveRepresentativeStyle, resolveVariantStyles, type VariantStyle } from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
 import { compareContentParts } from '../state/contentParts.js';
 import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
@@ -70,6 +70,17 @@ function buildLegendIcon(meta: EntityMeta): SVGSVGElement {
   return buildGeometryIcon(style, swatchKindFor(meta), genericDefBod ? 14 : 32);
 }
 
+/** Varianty vzhledu entity podle hodnoty atributu (prázdné = jeden vzhled). */
+function legendVariants(meta: EntityMeta): VariantStyle[] {
+  return resolveVariantStyles(entityMetaToObjektovyTyp(meta));
+}
+
+/** Položka legendy: entita a varianty, které se mají ukázat jako dlaždice. */
+interface LegendEntry {
+  meta: EntityMeta;
+  variants: VariantStyle[];
+}
+
 /** Typ geometrie česky — odliší dvojice se stejným názvem (definiční bod / plocha). */
 function geomLabel(meta: EntityMeta): string {
   switch (meta.geomType) {
@@ -94,34 +105,41 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
 
   // Seskup katalog aktivní verze podle obsahovaCast → kategorieObjektu →
   // skupinaObjektu. Verzně-vědomé — pro 1.5.0.1 obsahuje i PSPI a nové typy.
+  // Hledá se i v hodnotách variant („sloup" najde sloupy podpěrného
+  // zařízení) — pak se ukážou jen odpovídající varianty.
   const filterLower = filter.trim().toLowerCase();
-  const allEntities = Object.values(getEntityCatalog(getActiveVersion()));
-  const filtered = filterLower
-    ? allEntities.filter((m) => {
-        return (
-          m.nazev.toLowerCase().includes(filterLower) ||
-          m.elementName.toLowerCase().includes(filterLower) ||
-          m.codeBase.includes(filterLower) ||
-          m.kategorieObjektu.toLowerCase().includes(filterLower) ||
-          m.skupinaObjektu.toLowerCase().includes(filterLower)
-        );
-      })
-    : allEntities;
+  const filtered: LegendEntry[] = [];
+  for (const m of Object.values(getEntityCatalog(getActiveVersion()))) {
+    const variants = legendVariants(m);
+    const metaHit =
+      !filterLower ||
+      m.nazev.toLowerCase().includes(filterLower) ||
+      m.elementName.toLowerCase().includes(filterLower) ||
+      m.codeBase.includes(filterLower) ||
+      m.kategorieObjektu.toLowerCase().includes(filterLower) ||
+      m.skupinaObjektu.toLowerCase().includes(filterLower);
+    if (metaHit) {
+      filtered.push({ meta: m, variants });
+      continue;
+    }
+    const hits = variants.filter((v) => v.value.toLowerCase().includes(filterLower));
+    if (hits.length > 0) filtered.push({ meta: m, variants: hits });
+  }
 
   if (filtered.length === 0) {
     container.innerHTML = '<div class="empty-hint">Nic neodpovídá hledanému výrazu.</div>';
     return;
   }
 
-  // Mapa: obsahovaCast → kategorieObjektu → EntityMeta[]
-  const groups = new Map<string, Map<string, EntityMeta[]>>();
-  for (const meta of filtered) {
-    const cast = meta.obsahovaCast || '—';
-    const kat = meta.kategorieObjektu || '—';
+  // Mapa: obsahovaCast → kategorieObjektu → LegendEntry[]
+  const groups = new Map<string, Map<string, LegendEntry[]>>();
+  for (const entry of filtered) {
+    const cast = entry.meta.obsahovaCast || '—';
+    const kat = entry.meta.kategorieObjektu || '—';
     if (!groups.has(cast)) groups.set(cast, new Map());
     const catMap = groups.get(cast)!;
     if (!catMap.has(kat)) catMap.set(kat, []);
-    catMap.get(kat)!.push(meta);
+    catMap.get(kat)!.push(entry);
   }
 
   // Stabilní pořadí: JVF, UDM, ŽXML, ostatní (alfa) — viz state/contentParts.ts.
@@ -146,7 +164,7 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     const sortedKats = [...catMap.keys()].sort((a, b) => a.localeCompare(b, 'cs'));
     for (const kat of sortedKats) {
       const items = catMap.get(kat)!;
-      items.sort((a, b) => a.nazev.localeCompare(b.nazev, 'cs'));
+      items.sort((a, b) => a.meta.nazev.localeCompare(b.meta.nazev, 'cs'));
 
       const katEl = document.createElement('div');
       katEl.className = 'legend-kat-group';
@@ -159,29 +177,36 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
       const grid = document.createElement('div');
       grid.className = 'legend-grid';
 
-      for (const meta of items) {
-        const tile = document.createElement('div');
-        tile.className = 'legend-item legend-tile';
-        const name = meta.nazev || meta.elementName;
-        tile.title = [name, meta.skupinaObjektu, `${meta.elementName} · kód ${meta.codeBase}`]
-          .filter(Boolean)
-          .join('\n');
+      for (const { meta, variants } of items) {
+        // Objekt se vzhledem podle atributu = dlaždice pro každou hodnotu.
+        const tiles: { variant?: string; icon: SVGSVGElement }[] = variants.length > 0
+          ? variants.map((v) => ({ variant: v.value, icon: buildGeometryIcon(v.style, swatchKindFor(meta), 32) }))
+          : [{ icon: buildLegendIcon(meta) }];
+        for (const { variant, icon } of tiles) {
+          const tile = document.createElement('div');
+          tile.className = 'legend-item legend-tile';
+          const name = meta.nazev || meta.elementName;
+          tile.title = [name, variant, meta.skupinaObjektu, `${meta.elementName} · kód ${meta.codeBase}`]
+            .filter(Boolean)
+            .join('\n');
 
-        const preview = document.createElement('div');
-        preview.className = 'legend-swatch legend-tile-preview';
-        preview.appendChild(buildLegendIcon(meta));
+          const preview = document.createElement('div');
+          preview.className = 'legend-swatch legend-tile-preview';
+          preview.appendChild(icon);
 
-        const info = document.createElement('div');
-        info.className = 'legend-item-info';
-        info.innerHTML = `
-          <span class="legend-name">${name}</span>
-          <span class="legend-meta">${geomLabel(meta)}</span>
-          <span class="legend-meta legend-code">${meta.codeBase}</span>
-        `;
+          const info = document.createElement('div');
+          info.className = 'legend-item-info';
+          info.innerHTML = `
+            <span class="legend-name">${name}</span>
+            ${variant ? `<span class="legend-meta legend-variant">${variant}</span>` : ''}
+            <span class="legend-meta">${geomLabel(meta)}</span>
+            <span class="legend-meta legend-code">${meta.codeBase}</span>
+          `;
 
-        tile.appendChild(preview);
-        tile.appendChild(info);
-        grid.appendChild(tile);
+          tile.appendChild(preview);
+          tile.appendChild(info);
+          grid.appendChild(tile);
+        }
       }
 
       katEl.appendChild(grid);

@@ -204,7 +204,11 @@ const INFO_CONTENT_HTML = `
       lomená linie, plocha s výplní a obrysem) v barvách, tloušťce
       a čárkování podle <em>Katalogu kartografických symbolů DTM ČR</em>,
       pod ním název a typ geometrie (bod, definiční bod, linie, plocha)
-      s kódem. Barva náhledu
+      s kódem. Objekty, jejichž značka závisí na atributu (podpěrné zařízení
+      podle typu, trasy sítí podle napětí, …), mají dlaždici pro každou
+      hodnotu — hledání najde i ji (např. „konzola"). Panel vrstev
+      a Přehled prvků ukazují značku nejčastější hodnoty v načtených datech
+      (výčet v tooltipu řádku vrstvy). Barva náhledu
       odpovídá tomu, jak se prvek vykreslí v mapě — i u sítí, které barvu
       nesou až ve variantách (elektro červená, plyn zelená, voda modrá,
       kanalizace hnědá, teplovod oranžová), takže legenda i vrstvový panel

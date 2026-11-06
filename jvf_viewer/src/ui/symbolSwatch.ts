@@ -4,7 +4,7 @@
  * stejně. Vzhled podle reprezentativního stylu (`resolveRepresentativeStyle`).
  */
 import type { ObjektovyTyp } from 'jvf-parser';
-import { resolveRepresentativeStyle, type ResolvedStyle } from '../map/jvfLayers.js';
+import { resolveDataStyle, type ResolvedStyle } from '../map/jvfLayers.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
@@ -194,6 +194,7 @@ export function buildGeometryIcon(
 export function buildLegendSwatchFor(ot: ObjektovyTyp, kind = swatchKindForObjektovyTyp(ot)): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'legend-swatch';
-  wrap.appendChild(buildStyleSwatch(resolveRepresentativeStyle(ot), kind));
+  // Značka podle načtených dat (u variant podle atributu nejčastější hodnota).
+  wrap.appendChild(buildStyleSwatch(resolveDataStyle(ot).style, kind));
   return wrap;
 }

@@ -729,7 +729,8 @@ test.describe('Modály a ovládání', () => {
     await page.locator('#btn-legend').click();
     await expect(page.locator('#legend-modal')).toBeVisible();
     await page.locator('#legend-modal-search').fill('trasa elektrické sítě');
-    await expect(page.locator('.legend-item')).toHaveCount(1);
+    // Varianty podle napěťové hladiny = dlaždice pro každou (NN, VN, VVN, …).
+    await expect(page.locator('.legend-item').first()).toBeVisible();
 
     // Swatch trasy elektrické sítě nese červenou (#e60000) z variant — ne
     // oranžový TI fallback. (#ff9800 zůstává jen barvou hlavičky obsahové části.)

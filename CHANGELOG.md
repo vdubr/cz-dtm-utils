@@ -211,6 +211,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   objekty ZPSUDM a H3D.
 
 ### Opraveno
+- **Legenda a panel vrstev u objektů se značkou podle atributu** — legenda
+  ukazovala jen první variantu Katalogu (podpěrné zařízení vždy jako
+  „stožár příhradový"), takže neodpovídala mapě a varianty jako „nástěnná
+  konzola" nešly vyhledat. Legenda má nově dlaždici pro každou hodnotu
+  (hledá i v nich), panel vrstev a Přehled prvků značku podle dat.
 - **Posuvník sytosti podkladové mapy jde znovu táhnout** — dřív reagoval
   jen na kliknutí, tažení se po prvním kroku přerušilo.
 

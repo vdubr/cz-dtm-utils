@@ -19,6 +19,8 @@ import {
   parseKatalogLineStyle,
   resolveKatalogLook,
   resolveKatalogRepresentativeLook,
+  resolveKatalogVariantLooks,
+  resolveKatalogVariantValue,
   type KatalogLook,
 } from 'jvf-parser';
 import {
@@ -222,6 +224,58 @@ export function resolveRepresentativeStyle(ot: ObjektovyTyp): ResolvedStyle {
   if (dialect) return buildDialectResolvedStyle(dialect);
   const look = resolveKatalogRepresentativeLook(ot);
   return look ? buildKatalogResolvedStyle(look, ot.obsahovaCast) : resolveStyle(ot);
+}
+
+/** Styl jedné hodnoty atributu (dlaždice legendy). */
+export interface VariantStyle {
+  /** Hodnota atributu z Katalogu („nástěnná konzola", „NN", …). */
+  value: string;
+  style: ResolvedStyle;
+}
+
+/**
+ * Styly objektu podle hodnoty atributu (Katalog DTM ČR) — legenda ukáže
+ * dlaždici pro každou, aby odpovídala mapě. Prázdné u objektů s jedním
+ * vzhledem a u dialektů (UDM, ŽXML mají vlastní symbologii).
+ */
+export function resolveVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
+  if (resolveDialectRepresentativeLook(ot)) return [];
+  return resolveKatalogVariantLooks(ot).map((v) => ({
+    value: v.value,
+    style: buildKatalogResolvedStyle(v.look, ot.obsahovaCast),
+  }));
+}
+
+/** Styl podle načtených dat a počty hodnot atributu, podle kterých se vzhled liší. */
+export interface DataStyle {
+  style: ResolvedStyle;
+  /** Hodnoty atributu s vlastním vzhledem a jejich počet záznamů (sestupně). */
+  variants: { value: string; count: number }[];
+}
+
+/**
+ * Značka objektového typu podle načtených záznamů (panel vrstev, Přehled
+ * prvků): u objektů, jejichž vzhled závisí na atributu (podpěrné zařízení,
+ * trasy sítí, …), vzhled nejčastější hodnoty v datech — ne první varianty
+ * Katalogu, kterou kreslí legenda bez dat. Jinak reprezentativní styl.
+ */
+export function resolveDataStyle(ot: ObjektovyTyp): DataStyle {
+  const representative = { style: resolveRepresentativeStyle(ot), variants: [] };
+  if (ot.zaznamy.length === 0 || resolveDialectRepresentativeLook(ot)) return representative;
+  const counts = new globalThis.Map<string, { count: number; first: ZaznamObjektu }>();
+  for (const z of ot.zaznamy) {
+    const value = resolveKatalogVariantValue(ot, z);
+    if (value === undefined) continue;
+    const entry = counts.get(value);
+    if (entry) entry.count++;
+    else counts.set(value, { count: 1, first: z });
+  }
+  if (counts.size === 0) return representative;
+  const sorted = [...counts.entries()].sort((a, b) => b[1].count - a[1].count);
+  return {
+    style: resolveStyleForZaznam(ot, sorted[0]![1].first),
+    variants: sorted.map(([value, { count }]) => ({ value, count })),
+  };
 }
 
 /**
