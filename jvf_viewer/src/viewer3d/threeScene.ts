@@ -328,9 +328,9 @@ function getSvgTexture(svgFile: string): THREE.Texture {
   const cached = svgTextureCache.get(svgFile);
   if (cached) return cached;
 
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 1;
-  const tex = new THREE.CanvasTexture(canvas);
+  const placeholder = document.createElement('canvas');
+  placeholder.width = placeholder.height = 1;
+  const tex = new THREE.CanvasTexture(placeholder);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
@@ -340,9 +340,15 @@ function getSvgTexture(svgFile: string): THREE.Texture {
     const h = img.naturalHeight;
     if (!(w > 0 && h > 0)) return;
     const k = Math.min(1, MAX_SPRITE_TEXTURE_PX / Math.max(w, h));
+    const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(w * k));
     canvas.height = Math.max(1, Math.round(h * k));
     canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+    // Textura už mohla být nahraná v GPU v rozměru zástupce (1×1) — three.js
+    // ji při změně rozměru jen přepisuje (glCopySubTexture → GL_INVALID_VALUE);
+    // dispose uvolní starou, při dalším vykreslení se alokuje v nové velikosti.
+    tex.image = canvas;
+    tex.dispose();
     tex.userData['svgSize'] = [w, h];
     tex.needsUpdate = true;
     for (const sprite of spritesByTexture.get(svgFile) ?? []) {
@@ -1837,12 +1843,23 @@ export function getLineSymbol3dCount(): number {
   return state ? countLineSymbols3d(state.scene) : 0;
 }
 
-/** Velikost 3D scény (objekty, volání kreslení posledního snímku) — ladění, e2e. */
-export function getScene3dStats(): { objects: number; drawCalls: number } | null {
+/**
+ * Velikost 3D scény (objekty, volání kreslení posledního snímku, SVG sprity
+ * a z nich ty s načtenou texturou) — ladění, e2e.
+ */
+export function getScene3dStats(): { objects: number; drawCalls: number; sprites: number; spritesLoaded: number } | null {
   if (!state) return null;
   let objects = 0;
-  state.scene.traverse(() => objects++);
-  return { objects, drawCalls: state.renderer.info.render.calls };
+  let sprites = 0;
+  let spritesLoaded = 0;
+  state.scene.traverse((o) => {
+    objects++;
+    if (!(o instanceof THREE.Sprite)) return;
+    sprites++;
+    const map = (o.material as THREE.SpriteMaterial).map;
+    if (map && svgSizeOf(map) && (map.image as HTMLCanvasElement).width > 1) spritesLoaded++;
+  });
+  return { objects, drawCalls: state.renderer.info.render.calls, sprites, spritesLoaded };
 }
 
 export function zoomToThreeFeature(elementName: string, objectId: string): void {

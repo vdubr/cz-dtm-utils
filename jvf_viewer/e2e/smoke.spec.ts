@@ -418,6 +418,8 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
   });
 
   test('vzorník znaků SŽ: souběžné čáry, značky podél linie, rozšíření číselníků SŽ (2D, legenda, 3D)', async ({ page }) => {
+    const webglErrors: string[] = [];
+    page.on('console', (m) => { if (/GL_INVALID/.test(m.text())) webglErrors.push(m.text()); });
     await switchMode(page, 'jzm');
     await page.locator('#btn-upload-menu').click();
     await page.locator('.upload-menu-item[data-sample="zxml_vzornik.xml"]').click();
@@ -473,9 +475,13 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await page.mouse.up({ button: 'right' });
     await page.waitForTimeout(1000);
     expect(await page.evaluate(() => (window as unknown as { __lost: number }).__lost)).toBe(0);
-    const stats = await page.evaluate(() =>
-      (window as unknown as { __jvfDebug: { scene3dStats: () => { drawCalls: number } | null } }).__jvfDebug.scene3dStats());
-    expect(stats?.drawCalls).toBeGreaterThan(100);
+    type Stats = { drawCalls: number; sprites: number; spritesLoaded: number } | null;
+    const stats = () => page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { scene3dStats: () => Stats } }).__jvfDebug.scene3dStats());
+    expect((await stats())?.drawCalls).toBeGreaterThan(100);
+    // Všechny sprity mají texturu v plné (omezené) velikosti — ne zástupce 1×1.
+    await expect.poll(async () => { const st = await stats(); return st && st.sprites > 100 && st.spritesLoaded === st.sprites; }).toBe(true);
+    expect(webglErrors).toEqual([]);
   });
 
   test('soubor ŽXML v režimu JVF nabídne přepnutí do JŽM', async ({ page }) => {
