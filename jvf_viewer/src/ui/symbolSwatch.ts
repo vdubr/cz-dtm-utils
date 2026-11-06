@@ -6,6 +6,7 @@
  */
 import type { ObjektovyTyp } from 'jvf-parser';
 import { resolveDataStyle, type ResolvedStyle } from '../map/jvfLayers.js';
+import { LINE_SYMBOLS } from './lineSymbols.generated.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
@@ -57,7 +58,7 @@ export function buildStyleSwatch(s: ResolvedStyle, kind: SwatchKind): HTMLElemen
   const stroke = opaque(s.strokeColor);
   if (s.lineSymbolSvg) {
     const svg = svgEl('svg', { width: '24', height: '16', viewBox: '0 0 24 16', class: 'layer-symbol-line-svg' });
-    svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, 2, 24, 8, 14, 12));
+    svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, 1.5, 24, 8, 12, 10, 2));
     return svg as unknown as HTMLElement;
   }
 
@@ -115,7 +116,9 @@ function luminance(color: string): number {
 
 /**
  * Rovná linie se značkou v mezeře uprostřed (jak ji kreslí Katalog DTM ČR):
- * úsek čáry, značka (`symbolW` × `symbolH`, poměr stran zachovaný), úsek čáry.
+ * úsek čáry, mezera, značka, mezera, úsek čáry. Značka má zachovaný poměr
+ * stran (nejvýš `maxW` × `maxH`) a sedí tak, aby její vlastní čára navazovala
+ * na linii (`LINE_SYMBOLS` — zub plynovodu visí pod čarou, blesk nad ní).
  */
 function lineWithSymbol(
   file: string,
@@ -123,23 +126,26 @@ function lineWithSymbol(
   strokeWidth: number,
   width: number,
   y: number,
-  symbolW: number,
-  symbolH: number,
+  maxW: number,
+  maxH: number,
+  gap: number,
 ): SVGElement[] {
-  const gapStart = (width - symbolW) / 2;
+  const { aspect, baseline } = LINE_SYMBOLS[file] ?? { aspect: 1, baseline: 0.5 };
+  const h = Math.min(maxH, maxW / aspect);
+  const w = h * aspect;
+  const left = (width - w) / 2;
   const segment = (x1: number, x2: number): SVGElement =>
     svgEl('line', { x1: String(x1), y1: String(y), x2: String(x2), y2: String(y), stroke, 'stroke-width': String(strokeWidth) });
   return [
-    segment(0, gapStart),
+    segment(0, left - gap),
     svgEl('image', {
       href: SVG_BASE + file,
-      x: String(gapStart),
-      y: String(y - symbolH / 2),
-      width: String(symbolW),
-      height: String(symbolH),
-      preserveAspectRatio: 'xMidYMid meet',
+      x: String(left),
+      y: String(y - baseline * h),
+      width: String(w),
+      height: String(h),
     }),
-    segment(gapStart + symbolW, width),
+    segment(left + w + gap, width),
   ];
 }
 
@@ -213,7 +219,7 @@ export function buildGeometryIcon(
   const width = Math.min(6, Math.max(1.5, s.strokeWidthPx * 1.4));
   if (s.lineSymbolSvg) {
     // Rovná linie se značkou v mezeře uprostřed (jako mapa ČÚZK).
-    svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, width, ICON_W, ICON_H / 2, 34, 22));
+    svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, width, ICON_W, ICON_H / 2, 46, 20, 6));
     return svg;
   }
   const line = svgEl('path', {

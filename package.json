@@ -20,6 +20,7 @@
     "test": "npm run test -w jvf-parser && npm run test -w jvf-topology && npm run test -w jvf-cad",
     "generate": "npm run generate:all -w jvf-parser",
     "build:app-themes": "tsx scripts/viewer/build-app-themes.ts",
+    "build:line-symbols": "python3 scripts/viewer/build-line-symbols.py",
     "check:generated": "npm run generate:all -w jvf-parser && git diff --exit-code -- ':(glob)jvf_parser/src/*/generated/*.ts' ':(exclude,glob)jvf_parser/src/*/generated/styles.ts'",
     "check:upstream": "python3 scripts/check-upstream-versions.py",
     "lint": "eslint .",
