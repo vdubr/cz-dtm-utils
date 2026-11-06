@@ -154,9 +154,9 @@ symbolů v `jvf_parser/docs/udm-2.1.1/`; generátory v `scripts/udm/`
 značky Katalogu DTM ČR z `jvf_viewer/public/symboly`).
 
 ŽXML (data DTMŽ Správy železnic) 1.4.2.1 a 1.5.1.6: XSD v
-`jvf_parser/docs/zxml-*/`, znaky SŽ vektorizované z fotokatalogu MOZeK v
-`jvf_parser/docs/zxml-1.5.1.6/{mozek,knihovny}/`; skripty v `scripts/zxml/`
-(vektorizace, styly, generátor ukázek `samplegen.py`).
+`jvf_parser/docs/zxml-*/`, symbologie SŽ ze stylů SLD v exportu LDM
+(`istem_export_LDM_*.sqlite`) v `jvf_parser/docs/zxml-1.5.1.6/{sld,ldm}/`;
+skripty v `scripts/zxml/` (výtah SLD, styly, generátor ukázek `samplegen.py`).
 
 ## Dialekty JVF DTM (UDM, ŽXML) a režimy aplikace
 

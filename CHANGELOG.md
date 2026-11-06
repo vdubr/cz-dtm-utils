@@ -83,11 +83,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   včetně českých popisků číselníků SŽ; objekty SŽ tvoří obsahové části
   ZDT / ZDD / H3D / ODSZ / SKLEP. Parser čte i staničení objektů
   (`StaniceniData`). Info ikona projektu ukazuje verzi ŽXML i podkladového JVF.
-- **Znaky SŽ** — objekty ŽXML se kreslí znaky zpětně vektorizovanými
-  z obrázků fotokatalogu MOZeK (SŽ M20/MP014): 206 bodových znaků
-  a 49 vzorů čar, vzhled podle hodnot číselníků, natočení symbolu podle
-  atributu `Natoceni`; barvy podle obsahové části. Stejné znaky jsou
-  i v exportu do CAD jako bloky.
+- **Oficiální symbologie SŽ** — objekty SŽ se kreslí podle stylů SLD
+  z exportu datového modelu DTMŽ (portál ISTEM, LDM 1.5.0.2 V23): barvy,
+  tloušťky, čárkování a příčky čar, 335 vektorových značek podle hodnot
+  číselníků i jejich kombinací (např. využití × typ zařízení EK SŽ),
+  natočení podle atributu `Natoceni`. Stejné značky v barvě SLD jsou
+  i v exportu do CAD jako bloky. Objekty JVF se v JŽM kreslí Katalogem
+  DTM ČR (ISTEM pro ně používá tytéž značky ČÚZK).
 - **Legenda znaků (UDM, JŽM)** — přehled všech znaků datového modelu po
   objektech a hodnotách číselníků s hledáním; tlačítko **Stáhnout SVG (ZIP)**
   zabalí znaky jako SVG do složek podle objektů se seznamem `znaky.csv`.
@@ -222,11 +224,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ### Opraveno
 - **JŽM: objekty JVF podle Katalogu ČÚZK i v exportu do CAD** — DXF ze
-  souboru ŽXML kreslil objekty JVF bez vlastní značky SŽ jen barvou obsahové
-  části, viewer je přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
-  (`usesDialectStyle`). Studna, drobná sakrální stavba, komín, vrt a jiné
-  zařízení staveb TI mají místo značky vektorizované z fotokatalogu MOZeK
-  oficiální SVG ČÚZK (značka byla shodná).
+  souboru ŽXML kreslil objekty JVF jen barvou obsahové části, viewer je
+  přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
+  (`usesDialectStyle`).
 - **Plot jako plná čára s příčkami** (jako mapa ČÚZK) — vzor Katalogu
   „0,15 10,0" se kreslil doslova jako řídké tečky. Teď plná čára 0,18 mm
   s krátkými příčkami po 10 mm v mapě, legendě i panelu vrstev; ve 3D

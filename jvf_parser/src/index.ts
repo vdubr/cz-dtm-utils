@@ -38,7 +38,7 @@ export {
   resolveRotationDeg,
   usesDialectStyle,
 } from './styles/resolve.js';
-export type { Appearance, AttrRule, ObjectStyle, StyleTable } from './styles/types.js';
+export type { Appearance, AttrRule, CaseRule, ObjectStyle, StyleTable } from './styles/types.js';
 
 // Katalog kartografických symbolů DTM ČR (ČÚZK) — vzhled čistého JVF DTM
 // podle typu geometrie a hodnot atributů (viewer i export do CAD).

@@ -15,7 +15,8 @@ výchozí User-Agent (HTTP 403), stahujte prohlížečem nebo `curl -A 'Mozilla/
 |---|---|
 | `xsd/` | XSD šablony ŽXML 1.5.1.6 (`zxml_1_5_1_6_V23` ze zipu SŽ) — `common/` (vč. `atributy_sz.xsd`), `objekty/` (372 objektů JVF), `objekty_sz/` (141 objektů SŽ), `index/index_data.xsd` (kořen pro validaci), `ext/` (GML) |
 | `spec/` | Definice kontrol IS DTMŽ (`DTMZ_kontroly_20261123.xlsx`) a release notes LDM |
-| `mozek/`, `knihovny/` | Znaky SŽ vektorizované z fotokatalogu MOZeK — viz `knihovny/README.md` |
+| `sld/` | Symbologie SŽ — styly SLD z exportu LDM DTMŽ, normalizované značky — viz `sld/README.md` |
+| `ldm/` | Výtah z LDM DTMŽ (objekty, atributy a kódy hodnot LDM ↔ ŽXML) |
 
 Do repa **nejsou** převzaty soubory ze zipu `SZ/` (SQLite export IS DTMŽ,
 Oracle DMP, `SZ_LDM_1.5.0.2_V23.xlsx`, ~50 MB) — LDM xlsx je vstupem

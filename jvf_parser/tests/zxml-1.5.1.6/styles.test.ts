@@ -1,23 +1,31 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import type { ZaznamObjektu } from 'jvf-dtm-types';
 import { ZXML_STYLES } from '../../src/zxml-1.5.1.6/generated/styles.js';
 import { ZXML_STYLES as ZXML_STYLES_1421 } from '../../src/zxml-1.4.2.1/generated/styles.js';
-import { usesDialectStyle } from '../../src/index.js';
+import { resolveAppearance, resolveRepresentativeAppearance, usesDialectStyle } from '../../src/index.js';
 
 const SYMBOL_DIR = resolve(import.meta.dirname, '../../../jvf_viewer/public/symboly/zxml');
 
-/**
- * Regrese symbologie ŽXML (scripts/zxml/build-zxml-styles.py): značky
- * vektorizované z fotokatalogu MOZeK, vzory linií změřené z jeho vzorků,
- * pravidla podle číselníků LDM DTMŽ 1.5.0.2.
- */
-describe('ZXML_STYLES — symbologie ŽXML (fotokatalog MOZeK)', () => {
-  const entries = Object.entries(ZXML_STYLES);
+const zaznam = (attributes: Record<string, string>) => ({ attributes }) as unknown as ZaznamObjektu;
+const ot = (codeBase: string, codeSuffix: string) => ({ codeBase, codeSuffix });
 
-  it('pokrývá objekty LDM s klíčem <codeBase>-<suffix>', () => {
-    expect(entries.length).toBeGreaterThan(500);
-    expect(entries.every(([k]) => /^\d{10}-\d{2}$/.test(k))).toBe(true);
+/**
+ * Regrese symbologie ŽXML (scripts/zxml/build-zxml-styles.py): styly SLD
+ * objektů SŽ z exportu LDM DTMŽ 1.5.0.2 (ISTEM), pravidla podle číselníků.
+ */
+describe('ZXML_STYLES — symbologie ŽXML (styly SLD SŽ)', () => {
+  const entries = Object.entries(ZXML_STYLES);
+  const apps = entries.flatMap(([, s]) => [
+    s.base,
+    ...(s.rules ?? []).flatMap((r) => Object.values(r.values)),
+    ...(s.cases ?? []).map((c) => c.app),
+  ]);
+
+  it('pokrývá jen objekty SŽ (999…) s klíčem <codeBase>-<suffix>', () => {
+    expect(entries.length).toBeGreaterThan(130);
+    expect(entries.every(([k]) => /^999\d{7}-0[123]$/.test(k))).toBe(true);
     expect(entries.every(([, s]) => /^#[0-9a-f]{6}$/.test(s.base.color ?? ''))).toBe(true);
   });
 
@@ -25,63 +33,65 @@ describe('ZXML_STYLES — symbologie ŽXML (fotokatalog MOZeK)', () => {
     expect(ZXML_STYLES_1421).toEqual(ZXML_STYLES);
   });
 
-  it('každá použitá značka má černou variantu SVG ve vieweru', () => {
-    const symbols = new Set<string>();
-    for (const [, s] of entries) {
-      if (s.base.symbol) symbols.add(s.base.symbol);
-      for (const r of s.rules ?? []) {
-        for (const v of Object.values(r.values)) if (v.symbol) symbols.add(v.symbol);
-      }
-    }
-    expect(symbols.size).toBeGreaterThan(100);
-    for (const sym of symbols) {
-      expect(sym).toMatch(/^sz-[0-9a-f]{8}$/);
-      expect(existsSync(resolve(SYMBOL_DIR, `${sym}_000000.svg`)), sym).toBe(true);
+  it('každá značka má SVG ve vieweru v barvě svého vzhledu', () => {
+    const withSymbol = apps.filter((a) => a.symbol);
+    expect(new Set(withSymbol.map((a) => a.symbol)).size).toBeGreaterThan(200);
+    for (const a of withSymbol) {
+      expect(a.symbol).toMatch(/^sz-[0-9a-f]{8}$/);
+      const file = `${a.symbol}_${a.color!.slice(1)}.svg`;
+      expect(existsSync(resolve(SYMBOL_DIR, file)), file).toBe(true);
     }
   });
 
-  it('všechna čárkování mají sudý počet prvků a kladné délky', () => {
-    const patterns = entries.flatMap(([, s]) => [
-      s.base.dashMm,
-      ...(s.rules ?? []).flatMap((r) => Object.values(r.values).map((v) => v.dashMm)),
-    ]);
-    for (const p of patterns.filter((p): p is number[] => !!p)) {
+  it('všechna čárkování a příčky mají sudý počet prvků a kladné délky', () => {
+    for (const p of apps.flatMap((a) => [a.dashMm, a.ticksMm]).filter((p): p is number[] => !!p)) {
       expect(p.length % 2).toBe(0);
       expect(p.every((v) => v > 0)).toBe(true);
     }
   });
 
-  it('trasa drátovodu (SŽ-ZDT): čárkování podle TypDratovodu, barva ZDT', () => {
+  it('trasa drátovodu (SŽ-ZDT): barva a čárkování podle TypDratovodu ze SLD', () => {
     const s = ZXML_STYLES['9990000150-02'];
-    expect(s?.base.color).toBe('#0070c0');
+    expect(s?.base.color).toBe('#d200d2');
     const rule = s?.rules?.find((r) => r.attr === 'TypDratovodu');
-    // „ve žlabu" (100694): čárka – tečka (13,4 / 2,3 / 0,9 / 2,3 mm)
-    expect(rule?.values['100694']?.dashMm).toEqual([13.4, 2.3, 0.9, 2.3]);
+    expect(rule?.values['100694']?.dashMm).toEqual([5, 1, 0.5, 1]);
     expect(rule?.values['100693']?.dashMm?.length).toBe(8);
   });
 
-  it('objekty JVF se značkou shodnou s Katalogem ČÚZK nemají značku MOZeK', () => {
-    for (const key of ['0100000084-01', '0100000154-01', '0100000177-04', '0100000191-01', '0100000139-01']) {
-      const s = ZXML_STYLES[key]!;
-      expect(s.base.symbol, key).toBeUndefined();
-      expect(s.rules, key).toBeUndefined();
-    }
-  });
-
-  it('usesDialectStyle: objekty SŽ a JVF s vlastní značkou dialektem, ostatní JVF Katalogem', () => {
+  it('úhelník: příčky (ticksMm) a barva podle typu', () => {
     const v = 'zxml-1.5.1.6';
-    const ot = (codeBase: string, codeSuffix: string) => ({ codeBase, codeSuffix });
-    expect(usesDialectStyle(v, ot('9990000487', '01'))).toBe(true); // návěstidlo SŽ
-    expect(usesDialectStyle(v, ot('0100000218', '01'))).toBe(true); // podrobný bod — SŽ kreslí jinak
-    expect(usesDialectStyle(v, ot('0100000019', '03'))).toBe(false); // obvod dráhy — jen barva
-    expect(usesDialectStyle(v, ot('0100000177', '04'))).toBe(false); // komín — značka shodná s ČÚZK
-    expect(usesDialectStyle('1.5.0.2', ot('0100000218', '01'))).toBe(false); // čisté JVF
+    const app = resolveAppearance(ZXML_STYLES, ot('9990000456', '02'), zaznam({ TypUhelniku: '100161' }));
+    expect(app?.ticksMm).toEqual([0.3, 10]);
+    expect(app?.color).toBe('#ffb3ff');
+    expect(usesDialectStyle(v, ot('9990000456', '02'))).toBe(true);
   });
 
-  it('návěstidlo tabulka (SŽ-ZDD): symbol podle TypNavestidlaTabulka a natočení', () => {
-    const s = ZXML_STYLES['9990000487-01'];
-    expect(s?.base.rotationAttr).toBe('Natoceni');
-    const rule = s?.rules?.find((r) => r.attr === 'TypNavestidlaTabulka');
-    expect(Object.keys(rule?.values ?? {}).length).toBeGreaterThan(30);
+  it('zařízení sítě EK SŽ: značka podle kombinace využití × typu (cases)', () => {
+    const s = ZXML_STYLES['9990000585-01']!;
+    expect(s.cases!.length).toBeGreaterThan(100);
+    const c = s.cases![0]!;
+    const app = resolveAppearance(ZXML_STYLES, ot('9990000585', '01'), zaznam(c.when));
+    expect(app?.symbol).toBe(c.app.symbol);
+    expect(app?.rotationAttr).toBe('Natoceni');
+    // Jen jedna z hodnot nestačí.
+    const [attr, val] = Object.entries(c.when)[0]!;
+    expect(resolveAppearance(ZXML_STYLES, ot('9990000585', '01'), zaznam({ [attr]: val }))?.symbol).toBeUndefined();
+    expect(resolveRepresentativeAppearance(ZXML_STYLES, ot('9990000585', '01'))?.symbol).toMatch(/^sz-/);
+  });
+
+  it('usesDialectStyle: objekty SŽ dialektem, objekty JVF Katalogem DTM ČR', () => {
+    const v = 'zxml-1.5.1.6';
+    expect(usesDialectStyle(v, ot('9990000487', '01'))).toBe(true); // návěstidlo SŽ
+    expect(usesDialectStyle(v, ot('0100000218', '01'))).toBe(false); // podrobný bod
+    expect(usesDialectStyle(v, ot('0100000019', '03'))).toBe(false); // obvod dráhy
+    expect(usesDialectStyle('1.5.0.2', ot('9990000487', '01'))).toBe(false); // čisté JVF
+  });
+
+  it('návěstidlo tabulka (SŽ-ZDD): barevná značka podle TypNavestidlaTabulka s natočením', () => {
+    const rule = ZXML_STYLES['9990000487-01']?.rules?.find((r) => r.attr === 'TypNavestidlaTabulka');
+    const values = Object.values(rule?.values ?? {});
+    expect(values.length).toBeGreaterThan(30);
+    expect(values.every((a) => a.symbol && a.rotationAttr === 'Natoceni')).toBe(true);
+    expect(new Set(values.map((a) => a.color)).size).toBeGreaterThan(1);
   });
 });

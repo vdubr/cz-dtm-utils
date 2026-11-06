@@ -7,9 +7,8 @@
  * **verze projektu** (WeakMap nad `ObjektovyTyp` — stejné instance tečou do
  * 2D vrstev, 3D scény i panelů).
  *
- * UDM pokrývá všechny objekty DTM i nad rámec DTM. ŽXML (fotokatalog MOZeK)
- * má vlastní vzhled hlavně u objektů SŽ (`999…`); objekty JVF bez vlastní
- * značky / čárkování se kreslí dál symbologií ČÚZK.
+ * UDM pokrývá všechny objekty DTM i nad rámec DTM. ŽXML (styly SLD SŽ) má
+ * vzhled jen u objektů SŽ (`999…`); objekty JVF se kreslí symbologií ČÚZK.
  */
 import {
   dialectOf,
@@ -41,8 +40,8 @@ export function markDialectObjekty(objekty: readonly ObjektovyTyp[], version: st
   const styles = getStyleTable(version);
   if (!dialect || !styles) return;
   for (const ot of objekty) {
-    // ŽXML: objekty JVF bez vlastní značky zůstávají v symbologii ČÚZK
-    // (sdílené pravidlo s exportem do CAD — `usesDialectStyle`).
+    // ŽXML: objekty JVF zůstávají v symbologii ČÚZK (sdílené pravidlo
+    // s exportem do CAD — `usesDialectStyle`).
     if (!usesDialectStyle(version, ot)) continue;
     bindings.set(ot, { symbolDir: dialect.id, styles });
   }

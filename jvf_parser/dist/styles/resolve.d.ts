@@ -9,9 +9,8 @@ export declare function getObjectStyle(styles: StyleTable, ot: CodeKey): ObjectS
  * Kreslí se objektový typ souboru dané verze vzhledem dialektu (jinak
  * Katalogem DTM ČR)? Jediné rozhodnutí pro viewer i export do CAD.
  *
- * UDM pokrývá všechny objekty. ŽXML (fotokatalog MOZeK) má vlastní vzhled
- * hlavně u objektů SŽ (`999…`); objekty JVF bez vlastní značky / čárkování
- * (jen barva obsahové části) se kreslí oficiálním vzhledem Katalogu ČÚZK.
+ * UDM pokrývá všechny objekty. ŽXML (styly SLD SŽ) jen objekty SŽ (`999…`)
+ * — objekty JVF kreslí ISTEM stejně jako Katalog ČÚZK.
  */
 export declare function usesDialectStyle(version: string, ot: CodeKey): boolean;
 /**

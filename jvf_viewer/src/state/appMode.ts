@@ -5,7 +5,7 @@
  *   - `udm` — Univerzální datový model ČKZ: symbologie UDM, ukázky UDM,
  *     Export do CAD,
  *   - `jzm` — Jednotná železniční mapa: data DTMŽ Správy železnic ve
- *     formátu ŽXML, symbologie SŽ (fotokatalog MOZeK), Export do CAD.
+ *     formátu ŽXML, symbologie SŽ (styly SLD z LDM DTMŽ), Export do CAD.
  *
  * Každý režim je samostatný nástroj na vlastní adrese — `/` (JVF), `/udm`,
  * `/jzm` — s vlastním názvem a barevným schématem (app-themes.css). Do jiného

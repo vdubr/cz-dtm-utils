@@ -1,322 +1,455 @@
 #!/usr/bin/env python3
 """
-Generátor symbologie ŽXML (DTMŽ, Správa železnic) z fotokatalogu MOZeK.
+Generátor symbologie ŽXML (DTMŽ, Správa železnic) z oficiálních stylů SLD.
 
-Vstupy (vše v repozitáři, generují je ostatní skripty v scripts/zxml/):
-  - jvf_parser/docs/zxml-1.5.1.6/mozek/ldm-objects.csv   objekty LDM (klíče stylů)
-  - jvf_parser/docs/zxml-1.5.1.6/mozek/attribute-map.csv atributy/hodnoty LDM ↔ ŽXML
-  - jvf_parser/docs/zxml-1.5.1.6/mozek/manifest.json     značky a jejich použití
-  - jvf_parser/docs/zxml-1.5.1.6/knihovny/SVG/<id>.svg   vektorizované bodové značky
-  - jvf_parser/docs/zxml-1.5.1.6/knihovny/line-patterns.json  vzory linií
-  - scripts/zxml/colors.json                              barvy dle obsahové části
+Vstupy (v repozitáři):
+  - jvf_parser/docs/zxml-1.5.1.6/sld/sz-styles.json  styly SLD objektů SŽ z exportu
+    LDM (`istem_export_LDM_*.sqlite`, výtah `scripts/zxml/extract-sld.py`)
+  - jvf_parser/docs/zxml-1.5.1.6/ldm/attribute-map.csv  kódy hodnot LDM ↔ ŽXML
+  - jvf_parser/docs/zxml-1.5.1.6/ldm/ldm-objects.csv    objekty LDM (SŽ bez SLD)
 
 Výstupy:
   - jvf_parser/src/zxml-1.5.1.6/generated/styles.ts a (shodný)
-    jvf_parser/src/zxml-1.4.2.1/generated/styles.ts — ZXML_STYLES:
-    `<codeBase>-<suffix>` → {base, rules[{attr: XML element, values{kód ŽXML: vzhled}}]}
-  - jvf_viewer/public/symboly/zxml/<id>_<barva>.svg — značky přebarvené barvou
-    objektu (a černé `_000000`)
+    jvf_parser/src/zxml-1.4.2.1/generated/styles.ts — ZXML_STYLES jen pro objekty
+    SŽ (`999…`); objekty JVF kreslí viewer i CAD Katalogem DTM ČR (ISTEM je
+    kreslí stejnými značkami a barvami)
+  - jvf_parser/docs/zxml-1.5.1.6/sld/SVG/<id>.svg — značky normalizované pro CAD
+    (jen <path>, transformace rozpuštěné, width/height v 0,01 mm papíru)
+  - jvf_viewer/public/symboly/zxml/<id>_<barva>.svg — tytéž značky pro viewer
 
-Pravidla přiřazení (viz manifest.uses):
-  - značka u objektu → base, u hodnoty číselníku → pravidlo atributu,
-  - bodová značka → `symbol`, vzorek linie → `dashMm` (+ `widthMm` 0,5 u tlustých),
-  - vzorek linie u definičního bodu (-04) nebo obvodu (-05) → sourozenecká
-    plocha (-03), pokud ta pro stejný kontext vlastní nemá,
-  - vzorek linie u bodu (-01) a bodová značka u linie (-02) se nepoužijí,
-  - více značek pro stejný kontext → první (varianta 0); ostatní jen v manifestu,
-  - atribut `Natoceni` v LDM → `rotationAttr: 'Natoceni'`,
-  - kód atributu z fotokatalogu (ŽXML 1.4.2.1) se hledá v LDM 1.5.0.2; když se
-    změnil, dohledá se atribut podle kódu hodnoty číselníku.
+Převod SLD → `ObjectStyle`:
+  - pravidla pro podrobné měřítko (`TARGET_SCALE`; když žádné nepokrývá, ta
+    s nejmenším MinScaleDenominator),
+  - pravidlo bez filtru → `base`; filtr s jednou rovností → `rules`
+    (atribut = XML element, hodnota = kód v ŽXML); složený filtr (And, Or,
+    NotEqualTo) → `cases` (první shoda),
+  - LineSymbolizer → barva, tloušťka, čárkování (mm papíru jako Katalog DTM ČR);
+    druhá čára se vzorem příček (plot, úhelník) → `ticksMm`; souběžné čáry
+    (PerpendicularOffset), značky v linii (GraphicStroke) a značky na koncích
+    linie se nepřebírají,
+  - PointSymbolizer → značka (inline SVG nebo WellKnownName), výška
+    `Size / SIZE_PER_MM` mm, natočení `fixedRotation(<atribut>)` → `rotationAttr`,
+  - PolygonSymbolizer → výplň a obrys; TextSymbolizer se nepřebírá.
+Barva vzhledu se značkou = převažující barva značky (SVG nese vlastní barvy).
 
-Spuštění z rootu repa:
+Spuštění z rootu repa (Python s balíkem svgelements):
     python3 scripts/zxml/build-zxml-styles.py
 """
+import hashlib
+import io
 import json
+import math
 import re
 import shutil
 import sys
+import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
+from itertools import product
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from zxml_common import (ATTR_MAP, LDM_OBJECTS, LINE_PATTERNS, MANIFEST, ROOT, SCRIPTS,  # noqa: E402
-                         SVG_DIR, load_json, read_csv)
+from svgelements import SVG, Path as SvgPath, Shape
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from zxml_common import ATTR_MAP, DOCS, LDM_OBJECTS, ROOT, read_csv  # noqa: E402
+
+SLD_JSON = DOCS / 'sld' / 'sz-styles.json'
+OUT_SVG_DOCS = DOCS / 'sld' / 'SVG'
+OUT_SVG = ROOT / 'jvf_viewer/public/symboly/zxml'
 OUT_TS = [ROOT / 'jvf_parser/src/zxml-1.5.1.6/generated/styles.ts',
           ROOT / 'jvf_parser/src/zxml-1.4.2.1/generated/styles.ts']
-OUT_SVG = ROOT / 'jvf_viewer/public/symboly/zxml'
-SYMBOLOGY_TS = ROOT / 'jvf_viewer/src/map/symbology.ts'
-COLORS = SCRIPTS / 'colors.json'
 BLACK = '#000000'
 BASE_WIDTH = 0.25
-# Objekty JVF, jejichž značka ve fotokatalogu MOZeK je jen kopií oficiální
-# značky Katalogu DTM ČR (porovnáno vizuálně 2026-11-06) — vektorizace z PNG
-# se pro ně nepoužije, kreslí se oficiálním SVG ČÚZK (viz `usesDialectStyle`).
-# Objekty, které SŽ kreslí jinak (podrobný bod, výškový bod, zařízení sítí…),
-# si značku MOZeK ponechávají.
-PREFER_KATALOG = {
-    '0100000084': 'studna na veřejném prostranství',
-    '0100000139': 'jiné zařízení staveb TI',
-    '0100000154': 'drobná sakrální stavba',
-    '0100000177': 'komín',
-    '0100000191': 'vrt',
-}
+# Měřítko, pro které se vybírají pravidla SLD (podrobné zobrazení vieweru).
+TARGET_SCALE = 400
+# `Size` značky v SLD je zobrazovací velikost portálu, ne mm: u objektů JVF
+# odpovídá značkám Katalogu DTM ČR v poměru ~1,53 (medián 48 párů, např.
+# Size 4 ↔ 2,62 mm) — výška značky v mm papíru = Size / SIZE_PER_MM.
+SIZE_PER_MM = 1.53
+# Vzor příček (shodně s Katalogem, katalog/resolve.ts isTickPattern).
+MAX_TICK_MM = 0.5
+
+stats: Counter = Counter()
 
 
 def warn(msg: str) -> None:
     print(f'  WARN: {msg}', file=sys.stderr)
 
 
-def load_colors() -> dict:
-    """colors.json; části JVF obnovit z FALLBACK_COLORS vieweru (je-li k dispozici)."""
-    cfg = load_json(COLORS)
-    src = SYMBOLOGY_TS.read_text(encoding='utf-8') if SYMBOLOGY_TS.exists() else ''
-    m = re.search(r'FALLBACK_COLORS[^=]*=\s*\{(.*?)\n\};', src, re.S)
-    if m:
-        fb = dict(re.findall(r'^\s*(\w+)\s*:\s*[\'"](#[0-9a-fA-F]{6})[\'"]', m.group(1), re.M))
-        changed = False
-        for part in cfg['jvfParts']:
-            if part in fb and cfg['byObsahovaCast'].get(part) != fb[part].lower():
-                cfg['byObsahovaCast'][part] = fb[part].lower()
-                changed = True
-        if changed:
-            COLORS.write_text(json.dumps(cfg, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
-            print('  colors.json: barvy částí JVF obnoveny z FALLBACK_COLORS')
+def local(tag: str) -> str:
+    return tag.split('}')[-1]
+
+
+def child(el, name: str):
+    return next((c for c in el if local(c.tag) == name), None)
+
+
+def children(el, name: str) -> list:
+    return [c for c in el if local(c.tag) == name]
+
+
+def svg_params(el) -> dict[str, str]:
+    """SvgParameter / CssParameter elementu Stroke / Fill."""
+    if el is None:
+        return {}
+    return {p.get('name'): (p.text or '').strip() for p in el
+            if local(p.tag) in ('SvgParameter', 'CssParameter')}
+
+
+def norm_hex(c: str | None) -> str | None:
+    c = (c or '').strip().lower()
+    if re.fullmatch(r'#[0-9a-f]{3}', c):
+        c = '#' + ''.join(ch * 2 for ch in c[1:])
+    return c if re.fullmatch(r'#[0-9a-f]{6}', c) else None
+
+
+def nums(s: str) -> list[float]:
+    return [float(v) for v in re.split(r'[\s,]+', s.strip()) if v]
+
+
+def is_ticks(dash: list[float] | None) -> bool:
+    if not dash or len(dash) < 2:
+        return False
+    return max(dash[0::2]) < MAX_TICK_MM and min(dash[1::2]) >= 10 * MAX_TICK_MM
+
+
+# --- filtry -------------------------------------------------------------------------
+
+
+def parse_filter(el) -> list[list[tuple[str, str, str]]] | None:
+    """Filtr SLD → disjunkce konjunkcí [(atribut KOD, 'eq'|'ne', hodnota)], None = nepodporovaný."""
+    tag = local(el.tag)
+    if tag in ('PropertyIsEqualTo', 'PropertyIsNotEqualTo'):
+        prop, lit = child(el, 'PropertyName'), child(el, 'Literal')
+        if prop is None or lit is None:
+            return None
+        op = 'eq' if tag == 'PropertyIsEqualTo' else 'ne'
+        return [[((prop.text or '').strip(), op, (lit.text or '').strip())]]
+    if tag in ('And', 'Or'):
+        parts = [parse_filter(c) for c in el]
+        if any(p is None for p in parts):
+            return None
+        if tag == 'Or':
+            return [conj for p in parts for conj in p]
+        return [sum(combo, []) for combo in product(*parts)]
+    return None
+
+
+# --- značky -------------------------------------------------------------------------
+
+
+def fmt(v: float, dec: int) -> str:
+    s = f'{v:.{dec}f}'.rstrip('0').rstrip('.')
+    return '0' if s in ('-0', '') else s
+
+
+def paint(c) -> str | None:
+    """Barva svgelements → '#rrggbb', None = žádná / průhledná."""
+    if c is None or c.value is None or c.alpha == 0:
+        return None
+    return c.hexrgb.lower()
+
+
+def normalize_svg(svg_text: str) -> tuple[str, float, float, Counter] | None:
+    """Inline SVG → (tělo z <path> v souřadnicích viewBoxu od 0, šířka, výška, barvy)."""
+    root = ET.fromstring(svg_text)
+    vb = root.get('viewBox')
+    if vb:
+        x0, y0, vw, vh = nums(vb)
     else:
-        warn('FALLBACK_COLORS v jvf_viewer/src/map/symbology.ts nenalezeno — barvy JVF z colors.json')
-    return cfg
+        x0, y0 = 0.0, 0.0
+        vw = float(re.sub(r'[a-z%]+$', '', root.get('width', '0')))
+        vh = float(re.sub(r'[a-z%]+$', '', root.get('height', '0')))
+    if vw <= 0 or vh <= 0:
+        return None
+    # Rámec = viewBox v uživatelských jednotkách (bez přepočtu na px), počátek 0.
+    root.set('viewBox', f'{x0} {y0} {vw} {vh}')
+    root.set('width', str(vw))
+    root.set('height', str(vh))
+    root.attrib.pop('preserveAspectRatio', None)
+    doc = SVG.parse(io.StringIO(ET.tostring(root, encoding='unicode')), reify=True)
+    dec = max(1, 4 - math.floor(math.log10(max(vw, vh))))
+    colors: Counter = Counter()
+    out = []
+    for el in doc.elements():
+        if not isinstance(el, Shape):
+            continue
+        path = SvgPath(el)
+        path.reify()
+        if len(path) == 0:
+            continue
+        fill, stroke = paint(el.fill), paint(el.stroke)
+        if not fill and not stroke:
+            continue
+        d = re.sub(r'-?\d+(?:\.\d+)?(?:e-?\d+)?', lambda m: fmt(float(m.group(0)), dec), path.d())
+        attrs = [f'd="{d}"', f'fill="{fill or "none"}"']
+        if stroke:
+            sw = getattr(el, 'implicit_stroke_width', None) or el.stroke_width or 1.0
+            attrs += [f'stroke="{stroke}"', f'stroke-width="{fmt(sw, dec + 1)}"',
+                      'stroke-linecap="round"', 'stroke-linejoin="round"']
+        out.append(f'<path {" ".join(attrs)}/>')
+        for c in (fill, stroke):
+            if c and c != '#ffffff':
+                colors[c] += 1
+    if not out:
+        return None
+    return ''.join(out), vw, vh, colors
 
 
-def color_for(cfg: dict, part: str) -> str:
-    part = cfg['aliases'].get(part, part)
-    return cfg['byObsahovaCast'].get(part, cfg['default']).lower()
+MARK_SHAPES = {
+    'circle': 'M95 50A45 45 0 1 1 5 50A45 45 0 1 1 95 50Z',
+    'square': 'M5 5L95 5L95 95L5 95Z',
+    'triangle': 'M50 5L95 92L5 92Z',
+}
+
+
+def mark_svg(mark) -> tuple[str, float, float, Counter]:
+    """WellKnownName (circle, square, triangle) → tělo SVG ve viewBoxu 100×100."""
+    wkn_el = child(mark, 'WellKnownName')
+    wkn = (wkn_el.text or '').strip().lower() if wkn_el is not None else 'square'
+    if wkn not in MARK_SHAPES:
+        warn(f'WellKnownName {wkn} → čtverec')
+        wkn = 'square'
+    fill = norm_hex(svg_params(child(mark, 'Fill')).get('fill', '#808080')) if child(mark, 'Fill') is not None else None
+    sp = svg_params(child(mark, 'Stroke'))
+    stroke = norm_hex(sp.get('stroke', BLACK)) if child(mark, 'Stroke') is not None else None
+    attrs = [f'd="{MARK_SHAPES[wkn]}"', f'fill="{fill or "none"}"']
+    if stroke:
+        attrs += [f'stroke="{stroke}"', 'stroke-width="6"']
+    colors = Counter(c for c in (fill, stroke) if c and c != '#ffffff')
+    return f'<path {" ".join(attrs)}/>', 100.0, 100.0, colors
+
+
+symbols: dict[str, str] = {}   # id → normalizované SVG (rozměry v 0,01 mm)
+
+
+def symbol_of(graphic) -> tuple[str, str] | None:
+    """Graphic → (id značky, převažující barva)."""
+    size_el = child(graphic, 'Size')
+    try:
+        size = float(size_el.text) if size_el is not None else 6.0
+    except (TypeError, ValueError):
+        warn(f'Size „{size_el.text}" není číslo — 6')
+        size = 6.0
+    body = None
+    eg, mark = child(graphic, 'ExternalGraphic'), child(graphic, 'Mark')
+    if eg is not None:
+        inline = child(eg, 'InlineContent')
+        svg_el = next((c for c in inline if local(c.tag) == 'svg'), None) if inline is not None else None
+        if svg_el is None:
+            stats['externalGraphicBezSvg'] += 1
+            return None
+        body = normalize_svg(ET.tostring(svg_el, encoding='unicode'))
+    elif mark is not None:
+        body = mark_svg(mark)
+        stats['mark'] += 1
+    if body is None:
+        stats['prázdnáZnačka'] += 1
+        return None
+    paths, vw, vh, colors = body
+    h = size / SIZE_PER_MM * 100
+    w = h * vw / vh
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(w, 1)}" height="{fmt(h, 1)}" '
+           f'viewBox="0 0 {fmt(vw, 4)} {fmt(vh, 4)}">{paths}</svg>\n')
+    sid = 'sz-' + hashlib.sha1(svg.encode()).hexdigest()[:8]
+    symbols[sid] = svg
+    return sid, (colors.most_common(1)[0][0] if colors else BLACK)
+
+
+# --- symbolizéry → vzhled -----------------------------------------------------------
+
+
+def stroke_app(stroke) -> dict:
+    p = svg_params(stroke)
+    app: dict = {}
+    c = norm_hex(p.get('stroke'))
+    if c:
+        app['color'] = c
+    if p.get('stroke-width'):
+        app['widthMm'] = round(float(p['stroke-width']), 3)
+    if p.get('stroke-dasharray'):
+        dash = [round(v, 3) for v in nums(p['stroke-dasharray'])]
+        if len(dash) % 2:
+            dash = dash * 2
+        app['dashMm'] = dash
+    return app
+
+
+def rule_app(rule, key: str, attrs: dict) -> dict:
+    """Symbolizéry jednoho pravidla → Appearance."""
+    geom = key.split('-')[1]
+    app: dict = {}
+    main = None
+    for ls in children(rule, 'LineSymbolizer'):
+        if child(ls, 'PerpendicularOffset') is not None:
+            stats['souběžnáČára'] += 1
+            continue
+        stroke = child(ls, 'Stroke')
+        if stroke is None:
+            continue
+        if child(stroke, 'GraphicStroke') is not None:
+            stats['graphicStroke'] += 1
+            continue
+        a = stroke_app(stroke)
+        if main is None and not is_ticks(a.get('dashMm')):
+            main = a
+        elif is_ticks(a.get('dashMm')) and 'ticksMm' not in app:
+            app['ticksMm'] = a['dashMm']
+        else:
+            stats['dalšíČára'] += 1
+    if main:
+        app.update(main)
+    for ps in children(rule, 'PolygonSymbolizer'):
+        fill = svg_params(child(ps, 'Fill'))
+        fc = norm_hex(fill.get('fill'))
+        if fc and float(fill.get('fill-opacity') or 1) > 0.15:
+            app['fill'] = fc
+        for k, v in stroke_app(child(ps, 'Stroke')).items() if child(ps, 'Stroke') is not None else []:
+            app.setdefault(k, v)
+    for ps in children(rule, 'PointSymbolizer'):
+        if child(ps, 'Geometry') is not None:
+            stats['značkaNaKoncíchLinie'] += 1
+            continue
+        if geom == '02':
+            stats['bodováZnačkaNaLinii'] += 1
+            continue
+        graphic = child(ps, 'Graphic')
+        sym = symbol_of(graphic) if graphic is not None else None
+        if not sym:
+            continue
+        if 'symbol' in app:
+            stats['dalšíZnačka'] += 1
+            continue
+        app['symbol'], app['color'] = sym
+        rot = child(graphic, 'Rotation')
+        prop = rot.find('.//PropertyName') if rot is not None else None
+        if prop is not None and (prop.text or '').strip() in attrs:
+            app['rotationAttr'] = attrs[prop.text.strip()]['xmlLeaf']
+    if children(rule, 'TextSymbolizer'):
+        stats['text'] += 1
+    return app
+
+
+def scale_range(rule) -> tuple[float, float]:
+    mn, mx = child(rule, 'MinScaleDenominator'), child(rule, 'MaxScaleDenominator')
+    return (float(mn.text) if mn is not None else 0.0, float(mx.text) if mx is not None else math.inf)
 
 
 def main() -> None:
-    cfg = load_colors()
-    objects = {f'{o["codeBase"]}-{o["suffix"]}': o for o in read_csv(LDM_OBJECTS)}
-    amap = read_csv(ATTR_MAP)
-    manifest = load_json(MANIFEST)
-    patterns = load_json(LINE_PATTERNS)
+    data = json.loads(SLD_JSON.read_text(encoding='utf-8'))
+    attrs = data['attributes']
+    # (atribut KOD, kód hodnoty LDM) → kód hodnoty v ŽXML
+    value_xml = {(r['attrCode'], r['valueCode']): r['valueXml'] for r in read_csv(ATTR_MAP) if r['valueCode']}
 
-    by_obj: dict[str, list[dict]] = defaultdict(list)
-    for r in amap:
-        by_obj[f'{r["codeBase"]}-{r["suffix"]}'].append(r)
-
-    def resolve_value(src: str, tgt: str, attr_code: str, value_code: str):
-        """(XML element, kód hodnoty v ŽXML) nebo (None, důvod)."""
-        rows = by_obj.get(src, [])
-        attr_rows = [r for r in rows if r['attrCode'] == attr_code]
-        if not attr_rows:
-            attr_rows = [r for r in rows if r['valueCode'] == value_code]
-            if attr_rows:
-                stats['attrByValue'] += 1
-        if not attr_rows:
-            return None, f'atribut {attr_code} ani hodnota {value_code} v LDM objektu {src} není'
-        leaf = attr_rows[0]['xmlLeaf']
-        trows = by_obj.get(tgt, [])
-        hit = [r for r in trows if r['xmlLeaf'] == leaf and r['valueCode'] == value_code]
-        if not hit:
-            hit = [r for r in trows if r['valueCode'] == value_code]
-        if not hit:
-            src_hit = [r for r in attr_rows if r['valueCode'] == value_code]
-            if src_hit and any(r['xmlLeaf'] == leaf for r in trows):
-                hit = src_hit
-        if not hit:
-            return None, f'hodnota {value_code} atributu {leaf} v LDM objektu {tgt} není'
-        return hit[0]['xmlLeaf'], hit[0]['valueXml']
-
-    stats: Counter = Counter()
-    # (cíl, kontext) → [(priorita, varianta, strana, symbol, vzhled)]
-    assign: dict[tuple, list] = defaultdict(list)
-    for sid, sym in manifest['symbols'].items():
-        if not sym['png'] or 'photoLike' in sym['flags']:
-            stats['photoLike'] += len(sym['uses'])
-            continue
-        if sym['kind'] == 'point':
-            if not sym.get('svg'):
-                warn(f'{sid}: chybí SVG (spusťte vectorize.py)')
-                continue
-            app = {'symbol': sid}
-        else:
-            lp = patterns.get(sid)
-            if lp is None:
-                warn(f'{sid}: chybí vzor linie (spusťte extract-line-patterns.py)')
-                continue
-            app = {}
-            if lp['dashMm']:
-                app['dashMm'] = lp['dashMm']
-            if lp['widthMm'] != BASE_WIDTH:
-                app['widthMm'] = lp['widthMm']
-        for u in sym['uses']:
-            src = f'{u["codeBase"]}-{u["suffix"]}'
-            tgt, prio = src, 0
-            if sym['kind'] == 'line':
-                if u['suffix'] == '01':
-                    stats['lineOnPoint'] += 1
-                    continue
-                if u['suffix'] in ('04', '05'):
-                    tgt, prio = f'{u["codeBase"]}-03', 1
-            elif u['suffix'] == '02':
-                stats['pointOnLine'] += 1
-                continue
-            elif u['suffix'] == '05':
-                stats['pointOnObvod'] += 1
-                continue
-            if tgt not in objects:
-                warn(f'{sid} str. {u["page"]}: objekt {tgt} ({u["objectName"]}) v LDM 1.5.0.2 není')
-                stats['unknownObject'] += 1
-                continue
-            if u['context'] == 'value':
-                leaf, val = resolve_value(src, tgt, u['attrCode'], u['valueCode'])
-                if leaf is None:
-                    warn(f'{sid} str. {u["page"]}: {val} ({u["attrName"]} = {u["valueName"]})')
-                    stats['unmappedValue'] += 1
-                    continue
-                ctx = (leaf, val)
-            else:
-                ctx = None
-            if not app:
-                stats['solidNoop'] += 1
-                if ctx is None:
-                    continue
-            assign[(tgt, sym['kind'], ctx)].append((prio, u['variant'], u['page'], sid, app))
+    def cond(prop: str, val: str) -> tuple[str, str] | None:
+        a = attrs.get(prop)
+        if not a or not a['xmlLeaf']:
+            return None
+        return a['xmlLeaf'], value_xml.get((prop, val), val)
 
     styles: dict[str, dict] = {}
-    natoceni = {f'{r["codeBase"]}-{r["suffix"]}' for r in amap if r['xmlLeaf'] == 'Natoceni'}
-    for key in sorted(objects):
-        o = objects[key]
-        base = {'color': color_for(cfg, o['obsahovaCast']), 'widthMm': BASE_WIDTH}
-        if key in natoceni:
-            base['rotationAttr'] = 'Natoceni'
-        styles[key] = {'base': base}
-    for (tgt, kind, ctx), cands in sorted(assign.items(), key=lambda kv: str(kv[0])):
-        cands.sort(key=lambda c: c[:3])
-        best_prio = cands[0][0]
-        if best_prio == 1 and any(k[0] == tgt and k[1] == kind and k[2] == ctx and v[0][0] == 0
-                                  for k, v in assign.items()):
-            continue
-        prio, _var, _page, sid, app = cands[0]
-        if prio:
-            stats['reassignedTo03'] += 1
-        if len({c[3] for c in cands}) > 1:
-            stats['variantsDropped'] += len({c[3] for c in cands}) - 1
-        st = styles[tgt]
-        if ctx is None:
-            st['base'].update(app)
-        else:
-            leaf, val = ctx
-            rules = st.setdefault('rules', {})
-            if app:
-                rules.setdefault(leaf, {})[val] = dict(app)
+    for key, obj in data['objects'].items():
+        rules = ET.fromstring(obj['sld']).findall('.//Rule')
+        chosen = [r for r in rules if scale_range(r)[0] <= TARGET_SCALE < scale_range(r)[1]]
+        if not chosen and rules:
+            lo = min(scale_range(r)[0] for r in rules)
+            chosen = [r for r in rules if scale_range(r)[0] == lo]
+            stats['pravidlaMimoMěřítko'] += 1
+        base: dict = {}
+        by_attr: dict[str, dict[str, dict]] = defaultdict(dict)
+        cases: list[dict] = []
+        for rule in chosen:
+            app = rule_app(rule, key, attrs)
+            if not app:
+                continue
+            flt = child(rule, 'Filter')
+            if flt is None or child(rule, 'ElseFilter') is not None:
+                for k, v in app.items():
+                    base.setdefault(k, v)
+                continue
+            dnf = parse_filter(next(iter(flt)))
+            if dnf is None:
+                warn(f'{key}: nepodporovaný filtr {ET.tostring(flt, encoding="unicode")[:120]}')
+                stats['nepodporovanýFiltr'] += 1
+                continue
+            for conj in dnf:
+                when: dict[str, str] = {}
+                unless: dict[str, str] = {}
+                resolved = [cond(prop, val) for prop, _op, val in conj]
+                if any(c is None for c in resolved):
+                    warn(f'{key}: filtr na neznámý atribut {conj}')
+                    stats['neznámýAtribut'] += 1
+                    continue
+                for (_prop, op, _val), (leaf, val) in zip(conj, resolved):
+                    (when if op == 'eq' else unless)[leaf] = val
+                if len(when) == 1 and not unless:
+                    (a, v), = when.items()
+                    by_attr[a].setdefault(v, app)
+                else:
+                    case: dict = {'when': when}
+                    if unless:
+                        case['unless'] = unless
+                    case['app'] = app
+                    cases.append(case)
+        if not base and (by_attr or cases):
+            # Vzhled bez filtru chybí → základ z první položky (legenda, hladina v CAD).
+            first = next(iter(next(iter(by_attr.values())).values())) if by_attr else cases[0]['app']
+            base = {k: v for k, v in first.items() if k in ('color', 'widthMm', 'dashMm', 'fill')}
+        base.setdefault('color', BLACK)
+        base.setdefault('widthMm', BASE_WIDTH)
+        style: dict = {'base': base}
+        if by_attr:
+            style['rules'] = [{'attr': a, 'values': dict(sorted(v.items(), key=lambda kv: (len(kv[0]), kv[0])))}
+                              for a, v in sorted(by_attr.items())]
+        if cases:
+            style['cases'] = cases
+        styles[key] = style
 
-    # pravidla do výsledného tvaru + kontroly
-    urc = {(f'{r["codeBase"]}-{r["suffix"]}', r['xmlLeaf']) for r in amap if r['urcujiciSymbol'] == '1'}
-    ldm_values: dict[tuple[str, str], set[str]] = defaultdict(set)
-    for r in amap:
-        if r['valueXml']:
-            ldm_values[(f'{r["codeBase"]}-{r["suffix"]}', r['xmlLeaf'])].add(r['valueXml'])
-    not_urc = []
-    for key, st in styles.items():
-        rules = st.pop('rules', None)
-        if rules:
-            # Pravidlo podle atributu, který LDM nemá jako určující symbol (např.
-            # umístění návěstidla), koliduje s pravidlem určujícího atributu téže
-            # složky vzhledu → vynechat (zůstane jen v manifestu).
-            urc_aspects = {asp for a, v in rules.items() if (key, a) in urc
-                           for app in v.values() for asp in app}
-            for a in [a for a in rules if (key, a) not in urc]:
-                if {asp for app in rules[a].values() for asp in app} & urc_aspects:
-                    warn(f'{key}: pravidlo podle {a} (není URCUJICI_SYMBOL) vynecháno — koliduje '
-                         f's určujícím atributem')
-                    stats['droppedNonUrcRule'] += 1
-                    del rules[a]
-            # Všechny (nebo aspoň 3) hodnoty číselníku se stejným vzhledem → vzhled
-            # na atributu nezávisí → základní vzhled.
-            for a in list(rules):
-                apps = list(rules[a].values())
-                same = all(app == apps[0] for app in apps)
-                covers = set(rules[a]) >= ldm_values.get((key, a), {None}) or len(apps) >= 3
-                if (same and covers and len(rules) == 1
-                        and not set(apps[0]) & set(st['base']) - {'widthMm'}):
-                    st['base'].update(apps[0])
-                    stats['promotedToBase'] += 1
-                    del rules[a]
-        if rules:
-            st['rules'] = [{'attr': a, 'values': dict(sorted(v.items(), key=lambda kv: (len(kv[0]), kv[0])))}
-                           for a, v in sorted(rules.items())]
-            for a in rules:
-                if (key, a) not in urc:
-                    not_urc.append(f'{key}:{a}')
-            if 'dashMm' in st['base'] and any('dashMm' not in v for r in st['rules'] for v in r['values'].values()):
-                warn(f'{key}: základní vzhled čárkovaný, některá hodnota plná — pravidlo plnou čáru nevyjádří')
-    # Shodné značky s Katalogem ČÚZK → bez značky MOZeK (kreslí se oficiální SVG).
-    for key, st in styles.items():
-        if key.split('-')[0] not in PREFER_KATALOG:
-            continue
-        st['base'].pop('symbol', None)
-        for r in st.get('rules', []):
-            for v in r['values'].values():
-                v.pop('symbol', None)
-            r['values'] = {k: v for k, v in r['values'].items() if v}
-        st['rules'] = [r for r in st.get('rules', []) if r['values']]
-        if not st['rules']:
-            del st['rules']
-        stats['preferKatalog'] += 1
-    with_rules = {k for k, s in styles.items() if 'rules' in s}
-    urc_objects = {k for k, a in urc if a != 'Natoceni'}
-    urc_without = sorted(urc_objects - with_rules - {k for k, s in styles.items()
-                                                     if 'symbol' in s['base'] or 'dashMm' in s['base']})
-    if not_urc:
-        warn(f'pravidla podle atributů, které LDM nemá jako URCUJICI_SYMBOL: {not_urc}')
+    # Objekty SŽ z LDM bez SLD — černá čára.
+    for o in read_csv(LDM_OBJECTS):
+        key = f'{o["codeBase"]}-{o["suffix"]}'
+        if o['codeBase'].startswith('999') and key not in styles:
+            styles[key] = {'base': {'color': BLACK, 'widthMm': BASE_WIDTH}}
+            stats['bezSLD'] += 1
 
-    # Kombinace značka × barva, které se mohou v mapě objevit (barva objektu + černá).
-    combos: set[tuple[str, str]] = set()
+    # --- SVG ------------------------------------------------------------------------
+    used: set[tuple[str, str]] = set()
     for st in styles.values():
-        apps = [st['base']] + [a for r in st.get('rules', []) for a in r['values'].values()]
-        for app in apps:
-            if 'symbol' in app:
-                combos.update({(app['symbol'], st['base']['color']), (app['symbol'], BLACK)})
+        apps = [st['base']] + [a for r in st.get('rules', []) for a in r['values'].values()] \
+            + [c['app'] for c in st.get('cases', [])]
+        used.update((a['symbol'], a['color']) for a in apps if 'symbol' in a)
+    for d in (OUT_SVG, OUT_SVG_DOCS):
+        if d.exists():
+            shutil.rmtree(d)
+        d.mkdir(parents=True)
+    for sid in sorted({s for s, _ in used}):
+        (OUT_SVG_DOCS / f'{sid}.svg').write_text(symbols[sid], encoding='utf-8')
+    for sid, color in sorted(used):
+        (OUT_SVG / f'{sid}_{color[1:]}.svg').write_text(symbols[sid], encoding='utf-8')
 
-    # --- SVG pro viewer ----------------------------------------------------------
-    if OUT_SVG.exists():
-        shutil.rmtree(OUT_SVG)
-    OUT_SVG.mkdir(parents=True)
-    for sid, c in sorted(combos):
-        svg = (SVG_DIR / f'{sid}.svg').read_text(encoding='utf-8')
-        svg = re.sub(r'#000000\b', c, svg, flags=re.I)
-        (OUT_SVG / f'{sid}_{c[1:].lower()}.svg').write_text(svg, encoding='utf-8')
-
-    # --- TS ------------------------------------------------------------------------
+    # --- TS ---------------------------------------------------------------------------
     lines = [
         '// Generováno skriptem scripts/zxml/build-zxml-styles.py — NEEDITOVAT ručně.',
-        f'// Zdroj: fotokatalog MOZeK (SŽ M20/MP014, {manifest.get("source", "MOZeK_fotokatalog_20250601.pdf")}),',
-        '// LDM DTMŽ 1.5.0.2 V23 (SZ_LDM_1.5.0.2_V23.xlsx); značky vektorizované z obrázků fotokatalogu',
-        '// (jvf_parser/docs/zxml-1.5.1.6/knihovny), barvy dle obsahové části (scripts/zxml/colors.json).',
-        '// Klíč `<codeBase>-<suffix>` (01 Bod, 02 Linie, 03 Plocha, 04 Definiční bod); pravidla podle',
-        '// XML elementu v AtributyObjektu a kódu hodnoty číselníku v ŽXML.',
+        f'// Zdroj: styly SLD objektů SŽ z exportu LDM DTMŽ ({data["source"]},',
+        '// jvf_parser/docs/zxml-1.5.1.6/sld). Jen objekty SŽ (`999…`) — objekty JVF se kreslí',
+        '// Katalogem DTM ČR. Klíč `<codeBase>-<suffix>` (01 Bod, 02 Linie, 03 Plocha); pravidla',
+        '// podle XML elementu v AtributyObjektu a kódu hodnoty číselníku v ŽXML.',
         '',
         "import type { ObjectStyle } from '../../styles/types.js';",
         '',
         'export const ZXML_STYLES: Record<string, ObjectStyle> = {',
     ]
-    for key, entry in styles.items():
-        lines.append(f'  {json.dumps(key)}: {json.dumps(entry, ensure_ascii=False, separators=(",", ":"))},')
+    for key in sorted(styles):
+        lines.append(f'  {json.dumps(key)}: {json.dumps(styles[key], ensure_ascii=False, separators=(",", ":"))},')
     lines += ['};', '']
     for out in OUT_TS:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text('\n'.join(lines), encoding='utf-8')
 
     n_rules = sum(len(s.get('rules', [])) for s in styles.values())
-    n_values = sum(len(r['values']) for s in styles.values() for r in s.get('rules', []))
-    used_symbols = {sid for sid, _ in combos}
-    print(f'{len(styles)} objektů, {len(with_rules)} s pravidly ({n_rules} atributů, {n_values} hodnot), '
-          f'se symbolem v base {sum("symbol" in s["base"] for s in styles.values())}, '
-          f's čárkováním v base {sum("dashMm" in s["base"] for s in styles.values())}, '
-          f'Natoceni {len(natoceni & set(styles))}')
-    print(f'{len(used_symbols)} použitých bodových značek, {len(combos)} SVG → {OUT_SVG.relative_to(ROOT)}')
+    n_cases = sum(len(s.get('cases', [])) for s in styles.values())
+    print(f'{len(styles)} objektů SŽ, {n_rules} pravidel podle atributu, {n_cases} složených pravidel, '
+          f'{len({s for s, _ in used})} značek ({len(used)} SVG → {OUT_SVG.relative_to(ROOT)})')
     print(f'statistika: {dict(sorted(stats.items()))}')
-    print(f'objekty s určujícím atributem (LDM) bez značky z fotokatalogu: {len(urc_without)}')
     print('→ ' + ', '.join(str(p.relative_to(ROOT)) for p in OUT_TS))
 
 

@@ -2,8 +2,9 @@
 """
 Mapa atributů a hodnot číselníků z LDM DTMŽ (SZ_LDM_1.5.0.2_V23.xlsx, list `export`).
 
-Fotokatalog MOZeK odkazuje na atributy a hodnoty číselníků jejich interními kódy
-IS DTMŽ (`Atribut 100182: Typ koleje`, `100147: staniční a traťová`). Instance
+Styly SLD (export LDM) odkazují na atributy a hodnoty číselníků jejich interními
+kódy IS DTMŽ (`PropertyName` 100447 = řádek atributu objektu, `Literal` 100159 =
+kód hodnoty). Instance
 ŽXML ale nesou název XML elementu (`TypKoleje`) a kód hodnoty dle XSD. Tato
 mapa propojuje obojí:
 
@@ -15,7 +16,7 @@ mapa propojuje obojí:
   xmlLeaf       poslední článek XML_ELEMENT_NAME (název elementu v AtributyObjektu)
   xmlPath       XML_ELEMENT_NAME
   urcujiciSymbol URCUJICI_SYMBOL (1 = atribut určuje symbol dle LDM)
-  valueCode     HODNOTA_CISELNIKU_KOD (interní kód hodnoty — ten uvádí fotokatalog)
+  valueCode     HODNOTA_CISELNIKU_KOD (interní kód hodnoty — ten uvádí SLD)
   valueXml      kód hodnoty v ŽXML: HODNOTA_CISELNIK_KOD_XSD_CUSTOMER (ověřeno proti
                 enumeracím common/atributy*.xsd ŽXML 1.5.1.6 — SŽ rozšíření JVF
                 číselníků mají v ŽXML vlastní kód, např. 100346, zatímco
@@ -23,7 +24,7 @@ mapa propojuje obojí:
                 jinak HODNOTA_CISELNIK_KOD_XSD_JVF, jinak HODNOTA_CISELNIKU_KOD
   valueName     HODNOTA_CISELNIK_NAZEV
 
-Druhý výstup mozek/ldm-objects.csv je seznam všech objektů LDM (kód, název,
+Druhý výstup ldm/ldm-objects.csv je seznam všech objektů LDM (kód, název,
 původ JVF/SŽ, obsahová část dle TYP_OBJEKTU) — základ klíčů ZXML_STYLES.
 
 Do mapy jdou atributy s číselníkem (kromě společných `/Spolecne…` atributů, pokud

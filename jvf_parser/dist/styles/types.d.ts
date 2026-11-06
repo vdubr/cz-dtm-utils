@@ -16,17 +16,30 @@ export interface Appearance {
     symbol?: string;
     /** Atribut s natočením symbolu ve stupních (např. `Natoceni`). */
     rotationAttr?: string;
-    /** Výplň plochy (`#rrggbb`) — jen Katalog DTM ČR; UDM a ŽXML plochy nevyplňují. */
+    /** Výplň plochy (`#rrggbb`) — Katalog DTM ČR a ŽXML (SLD); UDM plochy nevyplňuje. */
     fill?: string;
+    /** Příčky na plné čáře [tloušťka, rozestup, …] v mm papíru (plot, úhelník). */
+    ticksMm?: number[];
 }
 /** Vzhled podle hodnoty atributu (číselníku): `values[kód] → vzhled`. */
 export interface AttrRule {
     attr: string;
     values: Record<string, Appearance>;
 }
+/**
+ * Vzhled podle kombinace hodnot více atributů (složený filtr SLD ŽXML):
+ * platí, když záznam má všechny hodnoty `when` a žádnou z `unless`.
+ */
+export interface CaseRule {
+    when: Record<string, string>;
+    unless?: Record<string, string>;
+    app: Appearance;
+}
 export interface ObjectStyle {
     base: Appearance;
     rules?: AttrRule[];
+    /** Složená pravidla — použije se první vyhovující (po `rules`). */
+    cases?: CaseRule[];
 }
 /** Styly objektů dialektu, klíč `<code_base>-<code_suffix>`. */
 export type StyleTable = Readonly<Record<string, ObjectStyle>>;

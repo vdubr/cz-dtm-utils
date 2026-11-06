@@ -256,19 +256,20 @@ function buildKatalogResolvedStyle(look: KatalogLook, obsahovaCast: string): Res
 }
 
 /**
- * ResolvedStyle ze vzhledu dialektu (UDM, ŽXML). Dialekty neřeší vzhled
- * ploch (jen obvod) → výplň je jen průsvitný nádech barvy objektu; symbol
- * bodu je SVG přebarvené barvou objektu / položky číselníku.
+ * ResolvedStyle ze vzhledu dialektu (UDM, ŽXML). Plocha bez výplně (UDM)
+ * dostane jen průsvitný nádech barvy objektu; symbol bodu je SVG v barvě
+ * objektu / položky číselníku.
  */
 function buildDialectResolvedStyle(look: DialectLook): ResolvedStyle {
   const app = look.appearance;
   const color = app.color ?? '#000000';
   return {
-    fillColor: color + '1a',
+    fillColor: app.fill ?? color + '1a',
     strokeColor: color,
     strokeWidthPx: mmToPx(app.widthMm ?? 0.25),
     lineDashMm: app.dashMm,
     pointSvg: look.symbolPath,
+    ...(app.ticksMm ? { lineTicksMm: app.ticksMm } : {}),
     ...(look.rotationDeg ? { pointRotationDeg: look.rotationDeg } : {}),
   };
 }

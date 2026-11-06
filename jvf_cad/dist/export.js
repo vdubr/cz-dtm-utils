@@ -1,7 +1,7 @@
 /**
  * Export JVF DTM a dialektů do DXF ve vzhledu datového modelu: čisté JVF DTM
  * → Katalog kartografických symbolů DTM ČR (ČÚZK, stejně jako viewer),
- * UDM → vzhled UDM (knihovna ČKZ), ŽXML → symbologie SŽ (fotokatalog MOZeK).
+ * UDM → vzhled UDM (knihovna ČKZ), ŽXML → symbologie SŽ (styly SLD z LDM DTMŽ).
  *
  * - hladina = obsahová část + objektový typ (`ZPS_HraniceBudovy`, mazané
  *   záznamy `…_DEL`), barva / tloušťka / typ čáry hladiny = vzhled objektu;

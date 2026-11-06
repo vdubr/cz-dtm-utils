@@ -7,7 +7,7 @@ import { UDM_STYLES } from '../udm-2.1.1/generated/styles.js';
 import { ZXML_STYLES } from '../zxml-1.5.1.6/generated/styles.js';
 /**
  * Tabulky stylů podle dialektu. Kódy objektů ŽXML jsou v 1.4.2.1 i 1.5.1.6
- * stejné, sdílí se tedy jedna tabulka (katalog MOZeK je k 1.4.2.1).
+ * stejné, sdílí se tedy jedna tabulka (styly SLD z LDM 1.5.0.2).
  */
 const STYLES_BY_DIALECT = {
     udm: UDM_STYLES,
@@ -22,25 +22,16 @@ export function getStyleTable(version) {
 export function getObjectStyle(styles, ot) {
     return styles[`${ot.codeBase}-${ot.codeSuffix}`];
 }
-/** Má styl vlastní vzhled (značka, čárkování, pravidla) — ne jen barvu obsahové části? */
-function hasOwnLook(style) {
-    return Boolean(style.base.symbol || style.base.dashMm || style.rules?.length);
-}
 /**
  * Kreslí se objektový typ souboru dané verze vzhledem dialektu (jinak
  * Katalogem DTM ČR)? Jediné rozhodnutí pro viewer i export do CAD.
  *
- * UDM pokrývá všechny objekty. ŽXML (fotokatalog MOZeK) má vlastní vzhled
- * hlavně u objektů SŽ (`999…`); objekty JVF bez vlastní značky / čárkování
- * (jen barva obsahové části) se kreslí oficiálním vzhledem Katalogu ČÚZK.
+ * UDM pokrývá všechny objekty. ŽXML (styly SLD SŽ) jen objekty SŽ (`999…`)
+ * — objekty JVF kreslí ISTEM stejně jako Katalog ČÚZK.
  */
 export function usesDialectStyle(version, ot) {
-    const d = dialectOf(version);
-    const styles = d ? STYLES_BY_DIALECT[d.id] : undefined;
-    const style = styles ? getObjectStyle(styles, ot) : undefined;
-    if (!style)
-        return false;
-    return !(d.id === 'zxml' && !ot.codeBase.startsWith('999') && !hasOwnLook(style));
+    const styles = getStyleTable(version);
+    return Boolean(styles && getObjectStyle(styles, ot));
 }
 /**
  * Vzhled záznamu: základní vzhled objektu + složky z pravidel podle hodnot
@@ -60,7 +51,18 @@ export function resolveAppearance(styles, ot, zaznam) {
             Object.assign(app, rule.values[String(raw)]);
         }
     }
+    const hit = zaznam && style.cases?.find((c) => caseMatches(c, zaznam));
+    if (hit)
+        Object.assign(app, hit.app);
     return app;
+}
+function caseMatches(c, zaznam) {
+    const value = (attr) => {
+        const raw = zaznam.attributes?.[attr];
+        return raw === undefined || raw === null ? undefined : String(raw);
+    };
+    return (Object.entries(c.when).every(([attr, v]) => value(attr) === v) &&
+        !Object.entries(c.unless ?? {}).some(([attr, v]) => value(attr) === v));
 }
 /**
  * Reprezentativní vzhled (legenda, panel vrstev, hladina v CAD): složky,
@@ -71,12 +73,14 @@ export function resolveRepresentativeAppearance(styles, ot) {
     if (!style)
         return undefined;
     const app = { ...style.base };
-    for (const rule of style.rules ?? []) {
-        for (const value of Object.values(rule.values)) {
-            for (const [k, v] of Object.entries(value)) {
-                if (app[k] === undefined)
-                    app[k] = v;
-            }
+    const items = [
+        ...(style.rules ?? []).flatMap((rule) => Object.values(rule.values)),
+        ...(style.cases ?? []).map((c) => c.app),
+    ];
+    for (const value of items) {
+        for (const [k, v] of Object.entries(value)) {
+            if (app[k] === undefined)
+                app[k] = v;
         }
     }
     return app;

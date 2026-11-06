@@ -255,7 +255,8 @@ const INFO_CONTENT_HTML = `
       jako v mapě: hladiny podle objektových typů (barva, tloušťka, typ
       čáry), značky jako bloky (JVF podle Katalogu DTM ČR — značky
       kartografického balíčku ČÚZK v jejich barvě, UDM z knihovny ČKZ, ŽXML
-      znaky SŽ natočené podle atributu <code>Natoceni</code>), u JVF plochy
+      znaky SŽ ze stylů SLD v jejich barvě, natočené podle atributu
+      <code>Natoceni</code>), u JVF plochy
       vyplněné barvou Katalogu (lze vypnout), popisy a názvy jako texty
       (výšky dle UDM pro 1:500) a atributy objektů v XDATA „UDM" (v AutoCADu
       příkaz <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy
@@ -429,13 +430,13 @@ const INFO_CONTENT_HTML = `
     <strong>SKLEP</strong> (data ze starších dokumentací). Atributy SŽ
     (správce, zdroj dat, typy zařízení…) mají české popisky číselníků;
     staničení objektů (<code>StaniceniData</code>, verze 1.5.x) parser čte
-    také. Objekty SŽ se kreslí <strong>znaky SŽ</strong> zpětně
-    vektorizovanými z obrázků fotokatalogu <em>MOZeK</em> (předpis SŽ
-    M20/MP014) — jednotná výška znaku 3 mm při 1:500, natočení podle
-    atributu <code>Natoceni</code>; barvy podle obsahové části (katalog
-    je černobílý). Objekty JVF bez vlastní značky SŽ (a ty, jejichž značka
-    v MOZeK je jen kopií značky ČÚZK — studna, komín, vrt…) se kreslí
-    oficiální symbologií ČÚZK, ve viewru i v exportu do CAD. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
+    také. Objekty SŽ se kreslí <strong>oficiální symbologií SŽ</strong> —
+    styly SLD z exportu datového modelu DTMŽ (portál ISTEM): barvy (ZDD
+    žlutá, ZDT fialová a modrá…), čárkování a příčky čar, vektorové značky
+    podle hodnot číselníků (i jejich kombinací, např. využití × typ
+    zařízení EK) natočené podle atributu <code>Natoceni</code>. Objekty JVF
+    se v JŽM kreslí Katalogem DTM ČR (ISTEM pro ně používá tytéž značky
+    ČÚZK), ve vieweru i v exportu do CAD. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
     verzi JVF (objekty SŽ do párů nevstupují). Ukázky ŽXML jsou v režimu JŽM
     v nabídce vedle tlačítka „Nahrát soubor" (oficiální ukázka SŽ a
     schematické nádraží v Řevnicích se smyšlenými daty).

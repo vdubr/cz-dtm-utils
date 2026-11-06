@@ -6,7 +6,7 @@ export type { ParserDialect } from './dialects/registry.js';
 export { parseStaniceniData } from './dialects/zxml.js';
 export { parseUdm, detectUdmVersionString } from './udm-2.1.1/parser.js';
 export { getStyleTable, getObjectStyle, resolveAppearance, resolveRepresentativeAppearance, resolveRotationDeg, usesDialectStyle, } from './styles/resolve.js';
-export type { Appearance, AttrRule, ObjectStyle, StyleTable } from './styles/types.js';
+export type { Appearance, AttrRule, CaseRule, ObjectStyle, StyleTable } from './styles/types.js';
 export { SYMBOLOGY as KATALOG_SYMBOLOGY, FALLBACK_COLORS as KATALOG_FALLBACK_COLORS, DEFAULT_COLOR as KATALOG_DEFAULT_COLOR, } from './katalog/symbology.js';
 export type { ObjectSymbology, SymbolVariant } from './katalog/symbology.js';
 export { VARIANT_ATTR as KATALOG_VARIANT_ATTR } from './katalog/variantAttrMap.js';

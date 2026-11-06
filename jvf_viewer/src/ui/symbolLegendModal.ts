@@ -1,6 +1,6 @@
 /**
  * Legenda znaků — všechny symboly dialektu aktivní verze (UDM: knihovna
- * znaků ČKZ, ŽXML: znaky SŽ vektorizované z fotokatalogu MOZeK) po objektech
+ * znaků ČKZ, ŽXML: znaky SŽ ze stylů SLD datového modelu DTMŽ) po objektech
  * a hodnotách číselníků. Znaky lze stáhnout jako SVG v balíku (ZIP) se
  * seznamem `znaky.csv`.
  *
@@ -69,6 +69,16 @@ export function collectSymbols(version: string): SymbolEntry[] {
         const label = labelForAttribute(rule.attr, value, version);
         push(code, merged, { attr: rule.attr, value, ...(label ? { valueLabel: label } : {}) });
       }
+    }
+    // Složená pravidla (ŽXML: kombinace hodnot více atributů) — popisky spojené „ · ".
+    for (const c of style.cases ?? []) {
+      const when = Object.entries(c.when);
+      const labels = when.map(([attr, value]) => labelForAttribute(attr, value, version) ?? value);
+      push(code, { ...style.base, ...c.app }, {
+        attr: when.map(([attr]) => attr).join(' + '),
+        value: when.map(([, value]) => value).join(' + '),
+        valueLabel: labels.join(' · '),
+      });
     }
   }
   out.sort(

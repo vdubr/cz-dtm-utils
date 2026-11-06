@@ -21,14 +21,14 @@ import { DTM_CAD_SYMBOLS } from './generated/symbols-dtm.js';
 export { UDM_CAD_SYMBOLS, ZXML_CAD_SYMBOLS, DTM_CAD_SYMBOLS };
 /**
  * Všechny symboly pro bloky CAD podle id symbolu — UDM (`AAAA-B[-CCC]`),
- * ŽXML (`sz-…`, vektorizované z fotokatalogu MOZeK) a Katalog DTM ČR
+ * ŽXML (`sz-…`, styly SLD Správy železnic) a Katalog DTM ČR
  * (`dtm-<soubor SVG>`). Id se nepřekrývají.
  */
 export declare const CAD_SYMBOLS: Readonly<Record<string, CadSymbolPrimitive[]>>;
 /**
  * Vlastní barva symbolu (`#rrggbb`), nebo `undefined` = barva objektu.
- * Značky Katalogu DTM ČR mají barvu danou v SVG (viewer je kreslí beze
- * změny), UDM a ŽXML se barví barvou objektu / položky číselníku.
+ * Značky Katalogu DTM ČR a ŽXML (SLD) mají barvu danou v SVG (viewer je
+ * kreslí beze změny), UDM se barví barvou objektu / položky číselníku.
  */
 export declare function symbolColorFor(symbol: string): string | undefined;
 /** Název bloku pro id symbolu (`UDM_…`, ŽXML `SZ_…`, Katalog DTM ČR `DTM_…`). */
