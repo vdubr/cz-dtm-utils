@@ -16,6 +16,8 @@ Výstupy:
   - jvf_parser/docs/zxml-1.5.1.6/sld/SVG/<id>.svg — značky normalizované pro CAD
     (jen <path>, transformace rozpuštěné, width/height v 0,01 mm papíru)
   - jvf_viewer/public/symboly/zxml/<id>_<barva>.svg — tytéž značky pro viewer
+    (rámec souměrný kolem vkládacího bodu) a nahled/<id>_<barva>.svg — náhled
+    oříznutý na kresbu (legenda znaků, panely)
 
 Převod SLD → `ObjectStyle`:
   - pravidla pro podrobné měřítko (`TARGET_SCALE`; když žádné nepokrývá, ta
@@ -149,8 +151,12 @@ def paint(c) -> str | None:
     return c.hexrgb.lower()
 
 
-def normalize_svg(svg_text: str) -> tuple[str, float, float, Counter] | None:
-    """Inline SVG → (tělo z <path> v souřadnicích viewBoxu od 0, šířka, výška, barvy)."""
+Box = tuple[float, float, float, float]
+
+
+def normalize_svg(svg_text: str) -> tuple[str, float, float, Counter, Box] | None:
+    """Inline SVG → (tělo z <path> v souřadnicích viewBoxu od 0, šířka, výška, barvy,
+    obálka kresby i s tahy [x0, y0, x1, y1])."""
     root = ET.fromstring(svg_text)
     vb = root.get('viewBox')
     if vb:
@@ -170,6 +176,7 @@ def normalize_svg(svg_text: str) -> tuple[str, float, float, Counter] | None:
     dec = max(1, 4 - math.floor(math.log10(max(vw, vh))))
     colors: Counter = Counter()
     out = []
+    box = [math.inf, math.inf, -math.inf, -math.inf]
     for el in doc.elements():
         if not isinstance(el, Shape):
             continue
@@ -187,12 +194,20 @@ def normalize_svg(svg_text: str) -> tuple[str, float, float, Counter] | None:
             attrs += [f'stroke="{stroke}"', f'stroke-width="{fmt(sw, dec + 1)}"',
                       'stroke-linecap="round"', 'stroke-linejoin="round"']
         out.append(f'<path {" ".join(attrs)}/>')
+        # Bílé prvky (masky, neviditelné rámečky — i mimo viewBox, kde je
+        # zdroj ořízne) do obálky kresby nepatří.
+        visible = {c for c in (fill, stroke) if c and c != '#ffffff'}
+        bb = el.bbox(with_stroke=bool(stroke)) if visible else None
+        if bb:
+            box = [min(box[0], bb[0]), min(box[1], bb[1]), max(box[2], bb[2]), max(box[3], bb[3])]
         for c in (fill, stroke):
             if c and c != '#ffffff':
                 colors[c] += 1
     if not out:
         return None
-    return ''.join(out), vw, vh, colors
+    if box[0] > box[2]:
+        box = [0.0, 0.0, vw, vh]
+    return ''.join(out), vw, vh, colors, (box[0], box[1], box[2], box[3])
 
 
 MARK_SHAPES = {
@@ -202,7 +217,7 @@ MARK_SHAPES = {
 }
 
 
-def mark_svg(mark) -> tuple[str, float, float, Counter]:
+def mark_svg(mark) -> tuple[str, float, float, Counter, Box]:
     """WellKnownName (circle, square, triangle) → tělo SVG ve viewBoxu 100×100."""
     wkn_el = child(mark, 'WellKnownName')
     wkn = (wkn_el.text or '').strip().lower() if wkn_el is not None else 'square'
@@ -216,10 +231,11 @@ def mark_svg(mark) -> tuple[str, float, float, Counter]:
     if stroke:
         attrs += [f'stroke="{stroke}"', 'stroke-width="6"']
     colors = Counter(c for c in (fill, stroke) if c and c != '#ffffff')
-    return f'<path {" ".join(attrs)}/>', 100.0, 100.0, colors
+    return f'<path {" ".join(attrs)}/>', 100.0, 100.0, colors, (2.0, 2.0, 98.0, 98.0)
 
 
 symbols: dict[str, str] = {}   # id → normalizované SVG (rozměry v 0,01 mm)
+previews: dict[str, str] = {}  # id → náhled oříznutý na kresbu
 
 
 def symbol_of(graphic) -> tuple[str, str] | None:
@@ -245,13 +261,25 @@ def symbol_of(graphic) -> tuple[str, str] | None:
     if body is None:
         stats['prázdnáZnačka'] += 1
         return None
-    paths, vw, vh, colors = body
-    h = size / SIZE_PER_MM * 100
-    w = h * vw / vh
-    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(w, 1)}" height="{fmt(h, 1)}" '
-           f'viewBox="0 0 {fmt(vw, 4)} {fmt(vh, 4)}">{paths}</svg>\n')
+    paths, vw, vh, colors, (bx0, by0, bx1, by1) = body
+    # Rámec: viewBox SLD (vkládací bod = jeho střed), souměrně rozšířený o kresbu,
+    # která přesahuje (tahy na okraji viewBoxu by se jinak ořízly napůl).
+    cx, cy = vw / 2, vh / 2
+    hw = max(cx, cx - bx0, bx1 - cx)
+    hh = max(cy, cy - by0, by1 - cy)
+    k = size / SIZE_PER_MM * 100 / vh   # jednotek 0,01 mm na jednotku viewBoxu
+    dec = max(1, 4 - math.floor(math.log10(max(vw, vh))))
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(2 * hw * k, 1)}" height="{fmt(2 * hh * k, 1)}" '
+           f'viewBox="{fmt(cx - hw, dec)} {fmt(cy - hh, dec)} {fmt(2 * hw, dec)} {fmt(2 * hh, dec)}">{paths}</svg>\n')
+    # Náhled (legenda, panely) oříznutý na kresbu — značky SŽ s dokresleným
+    # stožárem mají kresbu jen v horní polovině rámce kolem vkládacího bodu.
+    pad = 0.04 * max(bx1 - bx0, by1 - by0)
+    pw, ph = bx1 - bx0 + 2 * pad, by1 - by0 + 2 * pad
+    preview = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(pw * k, 1)}" height="{fmt(ph * k, 1)}" '
+               f'viewBox="{fmt(bx0 - pad, dec)} {fmt(by0 - pad, dec)} {fmt(pw, dec)} {fmt(ph, dec)}">{paths}</svg>\n')
     sid = 'sz-' + hashlib.sha1(svg.encode()).hexdigest()[:8]
     symbols[sid] = svg
+    previews[sid] = preview
     return sid, (colors.most_common(1)[0][0] if colors else BLACK)
 
 
@@ -423,8 +451,10 @@ def main() -> None:
         d.mkdir(parents=True)
     for sid in sorted({s for s, _ in used}):
         (OUT_SVG_DOCS / f'{sid}.svg').write_text(symbols[sid], encoding='utf-8')
+    (OUT_SVG / 'nahled').mkdir()
     for sid, color in sorted(used):
         (OUT_SVG / f'{sid}_{color[1:]}.svg').write_text(symbols[sid], encoding='utf-8')
+        (OUT_SVG / 'nahled' / f'{sid}_{color[1:]}.svg').write_text(previews[sid], encoding='utf-8')
 
     # --- TS ---------------------------------------------------------------------------
     lines = [

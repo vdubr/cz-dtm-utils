@@ -17,6 +17,7 @@ import {
 } from 'jvf-parser';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { createZip, type ZipEntry } from '../util/zip.js';
+import { symbolPreviewUrl } from './symbolSwatch.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
@@ -161,7 +162,7 @@ function render(body: HTMLElement, entries: readonly SymbolEntry[], filter: stri
     card.className = 'symbol-legend-item';
     card.title = `${e.elementName} · kód ${e.code}${e.attr ? ` · ${e.attr}=${e.value}` : ''} · znak ${e.symbol}`;
     const img = document.createElement('img');
-    img.src = SVG_BASE + e.path;
+    img.src = symbolPreviewUrl(e.path);
     img.alt = e.symbol;
     img.loading = 'lazy';
     const cap = document.createElement('figcaption');

@@ -11,6 +11,15 @@ import { loadLineSymbol, partStrokePx } from '../map/lineSymbolShapes.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
+/**
+ * URL značky pro náhled (legenda, panely): značky SŽ (`zxml/`) mají náhled
+ * oříznutý na kresbu (`zxml/nahled/`) — rámec mapy je souměrný kolem
+ * vkládacího bodu a u značek se stožárem by kresba zabrala jen polovinu.
+ */
+export function symbolPreviewUrl(path: string): string {
+  return SVG_BASE + path.replace(/^zxml\//, 'zxml/nahled/');
+}
+
 /** Konceptuální typ náhledu. */
 export type SwatchKind = 'point' | 'line' | 'polygon';
 
@@ -32,7 +41,7 @@ export function buildStyleSwatch(s: ResolvedStyle, kind: SwatchKind): HTMLElemen
   if (kind === 'point') {
     if (s.pointSvg) {
       const img = document.createElement('img');
-      img.src = SVG_BASE + s.pointSvg;
+      img.src = symbolPreviewUrl(s.pointSvg);
       img.width = 16;
       img.height = 16;
       img.className = 'layer-symbol-img';
@@ -230,7 +239,7 @@ export function buildGeometryIcon(
   if (kind === 'point') {
     if (s.pointSvg) {
       svg.appendChild(svgEl('image', {
-        href: SVG_BASE + s.pointSvg,
+        href: symbolPreviewUrl(s.pointSvg),
         x: String(ICON_W / 2 - pointSize / 2),
         y: String(ICON_H / 2 - pointSize / 2),
         width: String(pointSize),
