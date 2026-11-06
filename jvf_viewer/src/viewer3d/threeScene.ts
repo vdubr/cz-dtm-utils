@@ -3,7 +3,8 @@ import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import type { ObjektovyTyp, Geometry } from 'jvf-parser';
-import { resolveStyleForZaznam } from '../map/jvfLayers.js';
+import { resolveStyleForZaznam, type ResolvedStyle } from '../map/jvfLayers.js';
+import { addLineSymbols3d, countLineSymbols3d, lineSymbolDash3d } from './lineSymbols3d.js';
 import {
   isShowZapis,
   shouldHighlightZapis,
@@ -563,6 +564,30 @@ function getOrCreateMaterial<T extends THREE.Material>(
   return mat;
 }
 
+/**
+ * Linie ve 3D: u linií se značkou (Katalog — blesk vedení, třída silnice, …)
+ * čárkování v metrech a značky do mezer (viewer3d/lineSymbols3d), jinak plná
+ * čára. Materiály sdílené podle barvy a vzoru.
+ */
+function buildLine3d(
+  pts: number[],
+  s: ResolvedStyle,
+  color: THREE.Color,
+  materialCache: Map<string, THREE.Material>,
+): THREE.Line {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  const dash = lineSymbolDash3d(s);
+  const mat = dash
+    ? getOrCreateMaterial(materialCache, `dashed:${color.getHex()}:${dash.dash}:${dash.gap}`, () =>
+        new THREE.LineDashedMaterial({ color, dashSize: dash.dash, gapSize: dash.gap }))
+    : getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }));
+  const line = new THREE.Line(g, mat);
+  if (dash) line.computeLineDistances();
+  if (s.lineSymbolSvg) addLineSymbols3d(line, s, pts);
+  return line;
+}
+
 // Add all data objects to the scene for given objekty, cx/cy/cz centroid, zExaggeration.
 // `spriteObjects` je výstupní pole — každý vytvořený SVG sprite se do něj přidá,
 // aby `updateSpriteVisibility` nemusela procházet celou scénu (viz jeho komentář).
@@ -675,14 +700,7 @@ function buildSceneObjects(
                 cy - (geom.data.coordinates[i + 1] ?? 0)
               );
             }
-            if (pts.length >= 6) {
-              const g = new THREE.BufferGeometry();
-              g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-              const mat = shareableMaterial
-                ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
-                : new THREE.LineBasicMaterial({ color });
-              obj = new THREE.Line(g, mat);
-            }
+            if (pts.length >= 6) obj = buildLine3d(pts, s, color, materialCache);
             break;
           }
           case 'Polygon': {
@@ -718,12 +736,7 @@ function buildSceneObjects(
                 );
               }
               if (pts.length >= 6) {
-                const g = new THREE.BufferGeometry();
-                g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-                const curveMat = shareableMaterial
-                  ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
-                  : new THREE.LineBasicMaterial({ color });
-                const lineObj = new THREE.Line(g, curveMat);
+                const lineObj = buildLine3d(pts, s, color, materialCache);
                 lineObj.userData[DATA_TAG] = key;
                 lineObj.userData[LAYER_KEY_TAG] = layerVisKey;
                 lineObj.userData['jvfObjectId'] = objectId;
@@ -1762,6 +1775,11 @@ export function zoomToThreeExtent(
  * Animovaný zoom 3D kamery na bounding box objektu. Nastavuje orbit.center
  * do středu bboxu a upravuje radius dle velikosti.
  */
+/** Počet značek v liniích ve 3D scéně (0 bez scény) — ladění, e2e. */
+export function getLineSymbol3dCount(): number {
+  return state ? countLineSymbols3d(state.scene) : 0;
+}
+
 export function zoomToThreeFeature(elementName: string, objectId: string): void {
   if (!state) return;
   const objs = findSceneObjects(elementName, objectId);

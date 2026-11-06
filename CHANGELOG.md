@@ -15,7 +15,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   prvků (SVG z kartografického balíčku ČÚZK) a ve 2D mapě do mezer čárkování
   — natočenou podle linie, v nativní velikosti Katalogu (1 jednotka SVG =
   0,01 mm), texty tříd silnic hlavou nahoru; při oddálení se nečitelné
-  značky vynechají. 3D a export do CAD zatím jen čárkování.
+  značky vynechají. Ve 3D scéně stejně: linie čárkovaná v metrech, značka
+  ve vodorovné rovině v mezeře, vektorově (čára stejně tenká jako linie
+  v každé vzdálenosti). Export do CAD zatím jen čárkování.
 
 - **Tři nástroje na jedné doméně: JVF (`/`), UDM (`/udm`), JŽM (`/jzm`)**
   — každý s vlastním názvem v hlavičce (JVF / UDM / JŽM Prohlížeč),

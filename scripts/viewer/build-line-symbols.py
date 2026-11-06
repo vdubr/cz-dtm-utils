@@ -57,10 +57,14 @@ def path_points(d: str) -> list[tuple[float, float]]:
     return pts
 
 
-def metrics(svg: str) -> tuple[float, float, float]:
-    """Poměr stran, úroveň čáry a tloušťka vystupující čáry (obojí / výška)."""
+def metrics(svg: str) -> tuple[float, float, float, float]:
+    """Poměr stran, úroveň čáry, tloušťka vystupující čáry (obojí / výška) a šířka."""
     vb = re.search(r'viewBox="([^"]+)"', svg)
     _, _, w, h = (float(v) for v in vb.group(1).split())
+    return (*_line(svg, w, h), w)
+
+
+def _line(svg: str, w: float, h: float) -> tuple[float, float, float]:
     pts: list[tuple[float, float, float]] = []  # x, y, tloušťka tahu
     for tag in re.findall(r'<path\b[^>]*>', svg):
         if 'stroke=' in tag and 'fill="none"' in tag:
@@ -83,18 +87,22 @@ def metrics(svg: str) -> tuple[float, float, float]:
 def main() -> None:
     rows = []
     for f in sorted(SYMBOLY.glob('*_l_*.svg')):
-        aspect, baseline, stroke = metrics(f.read_text(encoding='utf-8'))
-        rows.append(f"  '{f.name}': {{ aspect: {aspect:.3f}, baseline: {baseline:.3f}, stroke: {stroke:.3f} }},")
+        aspect, baseline, stroke, width = metrics(f.read_text(encoding='utf-8'))
+        rows.append(
+            f"  '{f.name}': {{ aspect: {aspect:.3f}, baseline: {baseline:.3f}, stroke: {stroke:.3f}, width: {width:g} }},"
+        )
     OUT.write_text(
         '// Generováno skriptem scripts/viewer/build-line-symbols.py — neupravovat ručně.\n'
         '//\n'
         '// Značky vložené do linií (Katalog DTM ČR, *_l_*.svg): poměr stran (šířka /\n'
         '// výška), úroveň čáry, na kterou značka navazuje (0 = horní okraj, 1 = dolní),\n'
-        '// a tloušťka této čáry vůči výšce značky (0 = značka bez vlastní čáry).\n\n'
+        '// tloušťka této čáry vůči výšce značky (0 = značka bez vlastní čáry) a šířka\n'
+        '// v jednotkách SVG (1 jednotka = 0,01 mm papíru — nativní velikost značky).\n\n'
         'export interface LineSymbolMetrics {\n'
         '  aspect: number;\n'
         '  baseline: number;\n'
         '  stroke: number;\n'
+        '  width: number;\n'
         '}\n\n'
         'export const LINE_SYMBOLS: Readonly<Record<string, LineSymbolMetrics>> = {\n'
         + '\n'.join(rows)

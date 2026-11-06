@@ -73,7 +73,7 @@ function parse(file: string, text: string): LineSymbolShape | null {
     file,
     viewBox: vb as [number, number, number, number],
     parts,
-    metrics: LINE_SYMBOLS[file] ?? { aspect: vb[2]! / vb[3]!, baseline: 0.5, stroke: 0 },
+    metrics: LINE_SYMBOLS[file] ?? { aspect: vb[2]! / vb[3]!, baseline: 0.5, stroke: 0, width: vb[2]! },
   };
 }
 

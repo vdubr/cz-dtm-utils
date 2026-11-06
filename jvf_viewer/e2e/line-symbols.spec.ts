@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { loadSample } from './helpers';
 
 /**
  * Značky vložené do linií v 2D mapě (Katalog DTM ČR — blesk elektrického
@@ -21,4 +22,14 @@ test('značky v liniích: kreslí se v čitelném měřítku, při oddálení ne
 
   // Snímek mřížky k ruční kontrole (příloha výsledku testu).
   await testInfo.attach('line-symbols.png', { body: await page.locator('#grid').screenshot(), contentType: 'image/png' });
+});
+
+test('značky v liniích ve 3D: trasa elektrické sítě má značky v mezerách', async ({ page }) => {
+  await page.goto('/');
+  await loadSample(page, 'ukazka_KI.xml');
+  await page.locator('#btn-3d').click();
+  await expect(page.locator('#three-canvas')).toBeVisible();
+  // Trasa ~250 m, vzor 18 + 3,5 m → značka v každé mezeře (11).
+  await expect.poll(() => page.evaluate(() =>
+    (window as unknown as { __jvfDebug: { lineSymbols3d: () => number } }).__jvfDebug.lineSymbols3d())).toBeGreaterThan(5);
 });
