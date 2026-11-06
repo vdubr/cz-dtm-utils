@@ -331,19 +331,22 @@ test.describe('Načtení JVF souboru', () => {
     await expect(page.locator('.layer-item', { hasText: 'osa pozemní komunikace' })).toBeVisible();
     await expect(page.locator('#toggle-highlight-zapis')).toBeChecked();
     const look = await page.evaluate(() => {
-      type St = { getStroke(): { getColor(): string } | null } | null;
+      type St1 = { getStroke(): { getColor(): string } | null };
+      type St = St1 | St1[] | null;
       type L = {
         objektovyTyp: { elementName: string };
         olLayer: { getSource(): { getFeatures(): unknown[] }; getStyleFunction(): (f: unknown, r: number) => St };
         haloLayer: { getStyleFunction(): (f: unknown, r: number) => St };
       };
+      // Linie se značkou (třída silnice) má styl [čára, značky] — tah je v prvním.
+      const stroke = (s: St): string | undefined => (Array.isArray(s) ? s[0] : s)?.getStroke()?.getColor();
       const l = (window as unknown as { __jvfDebug: { getJvfLayers(): L[] } }).__jvfDebug
         .getJvfLayers()
         .find((x) => x.objektovyTyp.elementName === 'OsaPozemniKomunikace')!;
       const f = l.olLayer.getSource().getFeatures()[0];
       return {
-        map: l.olLayer.getStyleFunction()(f, 1)?.getStroke()?.getColor(),
-        halo: l.haloLayer.getStyleFunction()(f, 1)?.getStroke()?.getColor(),
+        map: stroke(l.olLayer.getStyleFunction()(f, 1)),
+        halo: stroke(l.haloLayer.getStyleFunction()(f, 1)),
       };
     });
     // Prvek ve stylu Katalogu (černá osa jako v legendě), změna = zelený lem.
