@@ -127,17 +127,22 @@ function geometryVariant(sym: ObjectSymbology, geom: KatalogGeom): SymbolVariant
   return sym.variants?.find((v) => isGeometryVariant(v) && norm(v.attrValue).startsWith(word));
 }
 
+/** Varianta Katalogu pro hodnotu atributu záznamu (`VARIANT_ATTR`), nebo `undefined`. */
+function attrHit(sym: ObjectSymbology, zaznam: AttrSource | undefined): SymbolVariant | undefined {
+  const map = VARIANT_ATTR[sym.code];
+  if (!map || !sym.variants?.length || !zaznam?.attributes) return undefined;
+  const raw = zaznam.attributes[map.attrName];
+  if (raw === undefined || raw === null) return undefined;
+  const idx = map.valueToVariantIndex[String(raw)];
+  return idx !== undefined ? sym.variants[idx] : undefined;
+}
+
 /** Varianty se stejnou hodnotou atributu jako varianta z `VARIANT_ATTR`. */
 function attrCandidates(sym: ObjectSymbology, zaznam: AttrSource | undefined): SymbolVariant[] {
-  const map = VARIANT_ATTR[sym.code];
-  if (!map || !sym.variants?.length || !zaznam?.attributes) return [];
-  const raw = zaznam.attributes[map.attrName];
-  if (raw === undefined || raw === null) return [];
-  const idx = map.valueToVariantIndex[String(raw)];
-  const hit = idx !== undefined ? sym.variants[idx] : undefined;
+  const hit = attrHit(sym, zaznam);
   if (!hit) return [];
   const label = norm(hit.attrValue);
-  return sym.variants.filter((v) => v.attrKey === hit.attrKey && norm(v.attrValue) === label);
+  return sym.variants!.filter((v) => v.attrKey === hit.attrKey && norm(v.attrValue) === label);
 }
 
 interface Merged {
@@ -256,8 +261,8 @@ export function resolveKatalogRepresentativeLook(ot: CodeKey): KatalogLook | und
  */
 export function resolveKatalogVariantValue(ot: CodeKey, zaznam: AttrSource): string | undefined {
   const sym = SYMBOLOGY[ot.codeBase];
-  if (!sym) return undefined;
-  return attrCandidates(sym, zaznam)[0]?.attrValue;
+  const hit = sym && attrHit(sym, zaznam);
+  return hit && !isGeometryVariant(hit) ? hit.attrValue : undefined;
 }
 
 /** Vzhled jedné hodnoty atributu (dlaždice legendy). */
@@ -277,24 +282,29 @@ export function resolveKatalogVariantLooks(ot: CodeKey): KatalogVariantLook[] {
   const sym = SYMBOLOGY[ot.codeBase];
   const map = VARIANT_ATTR[ot.codeBase];
   if (!sym?.variants?.length || !map) return [];
-  const geom = katalogGeomOf(ot.codeSuffix);
-  const geomVar = geometryVariant(sym, geom);
-  const rep = resolveKatalogRepresentativeLook(ot);
 
-  // Hodnoty dosažitelné z číselníku (index varianty → popisek), v pořadí Katalogu.
-  const reachable = [...new Set(Object.values(map.valueToVariantIndex))].sort((a, b) => a - b);
+  // Hodnoty číselníku v pořadí variant Katalogu; vzhled stejným resolverem
+  // jako záznam v mapě (resolveKatalogLook) — legenda je s mapou shodná.
+  const entries = Object.entries(map.valueToVariantIndex).sort((a, b) => a[1] - b[1]);
   const out: KatalogVariantLook[] = [];
   const seen = new Set<string>();
-  for (const idx of reachable) {
+  for (const [raw, idx] of entries) {
     const hit = sym.variants[idx];
     if (!hit || isGeometryVariant(hit)) continue;
     const label = norm(hit.attrValue);
     if (seen.has(label)) continue;
     seen.add(label);
-    const cands = sym.variants.filter((v) => v.attrKey === hit.attrKey && norm(v.attrValue) === label);
-    let look = compose(sym, geom, geomVar, pickVariant(cands, geom));
-    if (!look.color && !look.fill && rep) look = { ...rep, ...look };
-    out.push({ value: hit.attrValue, look });
+    out.push({ value: hit.attrValue, look: resolveKatalogLook(ot, { attributes: { [map.attrName]: raw } })! });
   }
-  return new Set(out.map((o) => JSON.stringify(o.look))).size > 1 ? out : [];
+  return out.some((o) => !sameLook(o.look, out[0]!.look)) ? out : [];
+}
+
+function sameLook(a: KatalogLook, b: KatalogLook): boolean {
+  return (
+    a.color === b.color &&
+    a.fill === b.fill &&
+    a.widthMm === b.widthMm &&
+    a.svg === b.svg &&
+    a.dashMm?.join() === b.dashMm?.join()
+  );
 }

@@ -1,4 +1,4 @@
-import type { JvfVectorLayer } from '../map/jvfLayers.js';
+import type { DataStyle, JvfVectorLayer } from '../map/jvfLayers.js';
 import { LAYER_COLORS, resolveDataStyle } from '../map/jvfLayers.js';
 import { resolveLayerKey } from '../state/projects.js';
 import {
@@ -11,18 +11,8 @@ import { contentPartTitle } from '../state/contentParts.js';
 import { appModeDef, getAppMode } from '../state/appMode.js';
 import { buildStyleSwatch, swatchKindForObjektovyTyp } from './symbolSwatch.js';
 
-/**
- * Symbol řádku vrstvy — společný náhled se stejným stylem jako legenda
- * a Přehled prvků (`buildStyleSwatch` nad `resolveRepresentativeStyle`).
- */
-function buildSymbolEl(layer: JvfVectorLayer): HTMLElement {
-  const ot = layer.objektovyTyp;
-  return buildStyleSwatch(resolveDataStyle(ot).style, swatchKindForObjektovyTyp(ot));
-}
-
 /** Tooltip s použitými variantami značky („nástěnná konzola 3×, …"). */
-function variantsNote(layer: JvfVectorLayer): string {
-  const { variants } = resolveDataStyle(layer.objektovyTyp);
+function variantsNote({ variants }: DataStyle): string {
   return variants.length > 0 ? `\nZnačka podle typu: ${variants.map((v) => `${v.value} ${v.count}×`).join(', ')}` : '';
 }
 
@@ -103,9 +93,12 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
       const layerKey = resolveLayerKey(layer.objektovyTyp);
       item.className = 'layer-item active';
       item.dataset['layerKey'] = layerKey;
-      item.title = `Kliknutím zapnout/vypnout vrstvu „${layer.objektovyTyp.nazev || layer.objektovyTyp.elementName}“${variantsNote(layer)}`;
+      // Symbol řádku — stejný náhled jako Přehled prvků (`buildStyleSwatch`
+      // nad `resolveDataStyle`: u variant podle atributu nejčastější v datech).
+      const dataStyle = resolveDataStyle(layer.objektovyTyp);
+      item.title = `Kliknutím zapnout/vypnout vrstvu „${layer.objektovyTyp.nazev || layer.objektovyTyp.elementName}“${variantsNote(dataStyle)}`;
 
-      const symbolEl = buildSymbolEl(layer);
+      const symbolEl = buildStyleSwatch(dataStyle.style, swatchKindForObjektovyTyp(layer.objektovyTyp));
 
       const leftEl = document.createElement('div');
       leftEl.className = 'layer-item-left';

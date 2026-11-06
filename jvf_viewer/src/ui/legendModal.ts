@@ -5,7 +5,13 @@
 import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
-import { LAYER_COLORS, resolveRepresentativeStyle, resolveVariantStyles, type VariantStyle } from '../map/jvfLayers.js';
+import {
+  LAYER_COLORS,
+  resolveRepresentativeStyle,
+  resolveVariantStyles,
+  type ResolvedStyle,
+  type VariantStyle,
+} from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
 import { compareContentParts } from '../state/contentParts.js';
 import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
@@ -64,20 +70,15 @@ function isDefBod(meta: EntityMeta): boolean {
  * (značka `*_db.svg` nebo tečka) drobně jako v mapě; definiční bod s vlastní
  * značkou plochy (hřbitov, komín, …) v plné velikosti.
  */
-function buildLegendIcon(meta: EntityMeta): SVGSVGElement {
-  const style = resolveRepresentativeStyle(entityMetaToObjektovyTyp(meta));
+function buildLegendIcon(meta: EntityMeta, style: ResolvedStyle): SVGSVGElement {
   const genericDefBod = isDefBod(meta) && (!style.pointSvg || /_db\.svg$/.test(style.pointSvg));
   return buildGeometryIcon(style, swatchKindFor(meta), genericDefBod ? 14 : 32);
 }
 
-/** Varianty vzhledu entity podle hodnoty atributu (prázdné = jeden vzhled). */
-function legendVariants(meta: EntityMeta): VariantStyle[] {
-  return resolveVariantStyles(entityMetaToObjektovyTyp(meta));
-}
-
-/** Položka legendy: entita a varianty, které se mají ukázat jako dlaždice. */
+/** Položka legendy: entita a varianty vzhledu, které se ukážou jako dlaždice. */
 interface LegendEntry {
   meta: EntityMeta;
+  ot: ObjektovyTyp;
   variants: VariantStyle[];
 }
 
@@ -110,7 +111,8 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
   const filterLower = filter.trim().toLowerCase();
   const filtered: LegendEntry[] = [];
   for (const m of Object.values(getEntityCatalog(getActiveVersion()))) {
-    const variants = legendVariants(m);
+    const ot = entityMetaToObjektovyTyp(m);
+    const variants = resolveVariantStyles(ot);
     const metaHit =
       !filterLower ||
       m.nazev.toLowerCase().includes(filterLower) ||
@@ -119,11 +121,11 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
       m.kategorieObjektu.toLowerCase().includes(filterLower) ||
       m.skupinaObjektu.toLowerCase().includes(filterLower);
     if (metaHit) {
-      filtered.push({ meta: m, variants });
+      filtered.push({ meta: m, ot, variants });
       continue;
     }
     const hits = variants.filter((v) => v.value.toLowerCase().includes(filterLower));
-    if (hits.length > 0) filtered.push({ meta: m, variants: hits });
+    if (hits.length > 0) filtered.push({ meta: m, ot, variants: hits });
   }
 
   if (filtered.length === 0) {
@@ -177,22 +179,22 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
       const grid = document.createElement('div');
       grid.className = 'legend-grid';
 
-      for (const { meta, variants } of items) {
+      for (const { meta, ot, variants } of items) {
         // Objekt se vzhledem podle atributu = dlaždice pro každou hodnotu.
-        const tiles: { variant?: string; icon: SVGSVGElement }[] = variants.length > 0
-          ? variants.map((v) => ({ variant: v.value, icon: buildGeometryIcon(v.style, swatchKindFor(meta), 32) }))
-          : [{ icon: buildLegendIcon(meta) }];
-        for (const { variant, icon } of tiles) {
+        const tiles: { variant?: string; style: ResolvedStyle }[] = variants.length > 0
+          ? variants.map((v) => ({ variant: v.value, style: v.style }))
+          : [{ style: resolveRepresentativeStyle(ot) }];
+        const name = meta.nazev || meta.elementName;
+        for (const { variant, style } of tiles) {
           const tile = document.createElement('div');
           tile.className = 'legend-item legend-tile';
-          const name = meta.nazev || meta.elementName;
           tile.title = [name, variant, meta.skupinaObjektu, `${meta.elementName} · kód ${meta.codeBase}`]
             .filter(Boolean)
             .join('\n');
 
           const preview = document.createElement('div');
           preview.className = 'legend-swatch legend-tile-preview';
-          preview.appendChild(icon);
+          preview.appendChild(buildLegendIcon(meta, style));
 
           const info = document.createElement('div');
           info.className = 'legend-item-info';

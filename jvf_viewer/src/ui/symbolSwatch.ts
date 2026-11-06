@@ -1,7 +1,8 @@
 /**
  * Malý náhled symbolu objektového typu (bod / linie / plocha) — společný
  * pro legendu DTM a hlavičky kategorií v Přehledu prvků, aby vypadaly
- * stejně. Vzhled podle reprezentativního stylu (`resolveRepresentativeStyle`).
+ * stejně. Vzhled podle stylu načtených dat (`resolveDataStyle`), legenda
+ * velkou ikonou geometrie (`buildGeometryIcon`).
  */
 import type { ObjektovyTyp } from 'jvf-parser';
 import { resolveDataStyle, type ResolvedStyle } from '../map/jvfLayers.js';

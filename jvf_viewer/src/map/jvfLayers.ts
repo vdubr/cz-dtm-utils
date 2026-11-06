@@ -11,7 +11,7 @@ import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import { extend, createEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
-import type Map from 'ol/Map.js';
+import type OlMap from 'ol/Map.js';
 import type { ObjektovyTyp, ZaznamObjektu, Geometry, GmlPolygon } from 'jvf-parser';
 import {
   KATALOG_DEFAULT_COLOR as DEFAULT_COLOR,
@@ -24,6 +24,7 @@ import {
   type KatalogLook,
 } from 'jvf-parser';
 import {
+  isDialectStyled,
   resolveDialectLook,
   resolveDialectRepresentativeLook,
   type DialectLook,
@@ -239,12 +240,20 @@ export interface VariantStyle {
  * vzhledem a u dialektů (UDM, ŽXML mají vlastní symbologii).
  */
 export function resolveVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
-  if (resolveDialectRepresentativeLook(ot)) return [];
-  return resolveKatalogVariantLooks(ot).map((v) => ({
-    value: v.value,
-    style: buildKatalogResolvedStyle(v.look, ot.obsahovaCast),
-  }));
+  if (isDialectStyled(ot)) return [];
+  // Katalog je statický — styly variant stačí spočítat jednou na kód.
+  const key = `${ot.codeBase}-${ot.codeSuffix}-${ot.obsahovaCast}`;
+  let styles = variantStyleCache.get(key);
+  if (!styles) {
+    styles = resolveKatalogVariantLooks(ot).map((v) => ({
+      value: v.value,
+      style: buildKatalogResolvedStyle(v.look, ot.obsahovaCast),
+    }));
+    variantStyleCache.set(key, styles);
+  }
+  return styles;
 }
+const variantStyleCache = new Map<string, VariantStyle[]>();
 
 /** Styl podle načtených dat a počty hodnot atributu, podle kterých se vzhled liší. */
 export interface DataStyle {
@@ -260,22 +269,37 @@ export interface DataStyle {
  * Katalogu, kterou kreslí legenda bez dat. Jinak reprezentativní styl.
  */
 export function resolveDataStyle(ot: ObjektovyTyp): DataStyle {
-  const representative = { style: resolveRepresentativeStyle(ot), variants: [] };
-  if (ot.zaznamy.length === 0 || resolveDialectRepresentativeLook(ot)) return representative;
-  const counts = new globalThis.Map<string, { count: number; first: ZaznamObjektu }>();
-  for (const z of ot.zaznamy) {
-    const value = resolveKatalogVariantValue(ot, z);
-    if (value === undefined) continue;
-    const entry = counts.get(value);
-    if (entry) entry.count++;
-    else counts.set(value, { count: 1, first: z });
+  // Záznamy se po načtení nemění — panel vrstev i Přehled prvků (překreslují
+  // se často) sdílí jeden výpočet na objektový typ.
+  let ds = dataStyleCache.get(ot);
+  if (!ds) {
+    ds = computeDataStyle(ot);
+    dataStyleCache.set(ot, ds);
   }
-  if (counts.size === 0) return representative;
-  const sorted = [...counts.entries()].sort((a, b) => b[1].count - a[1].count);
-  return {
-    style: resolveStyleForZaznam(ot, sorted[0]![1].first),
-    variants: sorted.map(([value, { count }]) => ({ value, count })),
-  };
+  return ds;
+}
+const dataStyleCache = new WeakMap<ObjektovyTyp, DataStyle>();
+
+function computeDataStyle(ot: ObjektovyTyp): DataStyle {
+  // Jen objekty, které mají v Katalogu víc vzhledů (jako dlaždice legendy).
+  if (ot.zaznamy.length > 0 && resolveVariantStyles(ot).length > 0) {
+    const counts = new Map<string, { count: number; first: ZaznamObjektu }>();
+    for (const z of ot.zaznamy) {
+      const value = resolveKatalogVariantValue(ot, z);
+      if (value === undefined) continue;
+      const entry = counts.get(value);
+      if (entry) entry.count++;
+      else counts.set(value, { count: 1, first: z });
+    }
+    if (counts.size > 0) {
+      const sorted = [...counts.entries()].sort((a, b) => b[1].count - a[1].count);
+      return {
+        style: resolveStyleForZaznam(ot, sorted[0]![1].first),
+        variants: sorted.map(([value, { count }]) => ({ value, count })),
+      };
+    }
+  }
+  return { style: resolveRepresentativeStyle(ot), variants: [] };
 }
 
 /**
@@ -564,7 +588,7 @@ export function isJvfHaloLayer(layer: { get(key: string): unknown }): boolean {
   return layer.get(HALO_LAYER_PROP) === true;
 }
 
-export function addJvfLayersToMap(map: Map, layers: JvfVectorLayer[]): void {
+export function addJvfLayersToMap(map: OlMap, layers: JvfVectorLayer[]): void {
   for (const { olLayer, haloLayer } of layers) {
     haloLayer.setZIndex(JVF_HALO_Z_INDEX);
     map.addLayer(haloLayer);
@@ -573,7 +597,7 @@ export function addJvfLayersToMap(map: Map, layers: JvfVectorLayer[]): void {
   }
 }
 
-export function removeJvfLayersFromMap(map: Map, layers: JvfVectorLayer[]): void {
+export function removeJvfLayersFromMap(map: OlMap, layers: JvfVectorLayer[]): void {
   for (const { olLayer, haloLayer } of layers) {
     map.removeLayer(haloLayer);
     map.removeLayer(olLayer);
