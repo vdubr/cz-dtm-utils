@@ -54,8 +54,10 @@ export {
   parseKatalogLineStyle,
   resolveKatalogLook,
   resolveKatalogRepresentativeLook,
+  resolveKatalogVariantLooks,
+  resolveKatalogVariantValue,
 } from './katalog/resolve.js';
-export type { KatalogGeom, KatalogLook } from './katalog/resolve.js';
+export type { KatalogGeom, KatalogLook, KatalogVariantLook } from './katalog/resolve.js';
 export {
   katalogSymbolId,
   resolveKatalogAppearance,

@@ -215,4 +215,50 @@ export function resolveKatalogRepresentativeLook(ot) {
     const rep = attrVars.find((v) => isPointVariant(v) === wantsPoint(geom)) ?? attrVars[0];
     return rep ? compose(sym, geom, geomVar, rep) : look;
 }
+/**
+ * Hodnota atributu, podle které má záznam v Katalogu vlastní vzhled
+ * (např. „nástěnná konzola" u podpěrného zařízení), nebo `undefined`, když
+ * vzhled objektu na atributu nezávisí nebo záznam hodnotu nemá. Panel vrstev
+ * podle ní volí značku podle skutečných dat.
+ */
+export function resolveKatalogVariantValue(ot, zaznam) {
+    const sym = SYMBOLOGY[ot.codeBase];
+    if (!sym)
+        return undefined;
+    return attrCandidates(sym, zaznam)[0]?.attrValue;
+}
+/**
+ * Vzhledy objektu podle hodnoty atributu pro jeho geometrii — jedna položka
+ * na hodnotu, v pořadí Katalogu. Jen hodnoty, které mapa umí rozlišit
+ * (`VARIANT_ATTR`), a jen když se vzhledy liší; jinak prázdné pole
+ * (objekt má jeden vzhled — legenda ukáže reprezentativní).
+ */
+export function resolveKatalogVariantLooks(ot) {
+    const sym = SYMBOLOGY[ot.codeBase];
+    const map = VARIANT_ATTR[ot.codeBase];
+    if (!sym?.variants?.length || !map)
+        return [];
+    const geom = katalogGeomOf(ot.codeSuffix);
+    const geomVar = geometryVariant(sym, geom);
+    const rep = resolveKatalogRepresentativeLook(ot);
+    // Hodnoty dosažitelné z číselníku (index varianty → popisek), v pořadí Katalogu.
+    const reachable = [...new Set(Object.values(map.valueToVariantIndex))].sort((a, b) => a - b);
+    const out = [];
+    const seen = new Set();
+    for (const idx of reachable) {
+        const hit = sym.variants[idx];
+        if (!hit || isGeometryVariant(hit))
+            continue;
+        const label = norm(hit.attrValue);
+        if (seen.has(label))
+            continue;
+        seen.add(label);
+        const cands = sym.variants.filter((v) => v.attrKey === hit.attrKey && norm(v.attrValue) === label);
+        let look = compose(sym, geom, geomVar, pickVariant(cands, geom));
+        if (!look.color && !look.fill && rep)
+            look = { ...rep, ...look };
+        out.push({ value: hit.attrValue, look });
+    }
+    return new Set(out.map((o) => JSON.stringify(o.look))).size > 1 ? out : [];
+}
 //# sourceMappingURL=resolve.js.map

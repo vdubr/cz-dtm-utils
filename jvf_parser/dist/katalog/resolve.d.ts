@@ -72,5 +72,25 @@ export declare function resolveKatalogLook(ot: CodeKey, zaznam?: AttrSource): Ka
  * atributu vhodné pro geometrii (typicky trasy sítí podle druhu).
  */
 export declare function resolveKatalogRepresentativeLook(ot: CodeKey): KatalogLook | undefined;
+/**
+ * Hodnota atributu, podle které má záznam v Katalogu vlastní vzhled
+ * (např. „nástěnná konzola" u podpěrného zařízení), nebo `undefined`, když
+ * vzhled objektu na atributu nezávisí nebo záznam hodnotu nemá. Panel vrstev
+ * podle ní volí značku podle skutečných dat.
+ */
+export declare function resolveKatalogVariantValue(ot: CodeKey, zaznam: AttrSource): string | undefined;
+/** Vzhled jedné hodnoty atributu (dlaždice legendy). */
+export interface KatalogVariantLook {
+    /** Hodnota atributu z Katalogu („stožár příhradový", „NN", …). */
+    value: string;
+    look: KatalogLook;
+}
+/**
+ * Vzhledy objektu podle hodnoty atributu pro jeho geometrii — jedna položka
+ * na hodnotu, v pořadí Katalogu. Jen hodnoty, které mapa umí rozlišit
+ * (`VARIANT_ATTR`), a jen když se vzhledy liší; jinak prázdné pole
+ * (objekt má jeden vzhled — legenda ukáže reprezentativní).
+ */
+export declare function resolveKatalogVariantLooks(ot: CodeKey): KatalogVariantLook[];
 export {};
 //# sourceMappingURL=resolve.d.ts.map

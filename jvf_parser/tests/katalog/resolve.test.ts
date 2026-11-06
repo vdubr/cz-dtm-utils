@@ -9,6 +9,8 @@ import {
   resolveKatalogAppearance,
   resolveKatalogLook,
   resolveKatalogRepresentativeLook,
+  resolveKatalogVariantLooks,
+  resolveKatalogVariantValue,
 } from '../../src/index.js';
 import { ENTITY_CATALOG } from '../../src/1.4.3/generated/entities.js';
 
@@ -150,6 +152,40 @@ describe('resolveKatalogLook — podle hodnoty atributu', () => {
       symbol: 'dtm-ZPS_b_218_podr_bod_zps',
     });
     expect(resolveKatalogAppearance(ot('0100000211', '03'))).toEqual({ color: '#d3e0bc', fill: '#d3e0bc' });
+  });
+});
+
+describe('Varianty vzhledu podle atributu (legenda, panel vrstev)', () => {
+  it('podpěrné zařízení: dlaždice pro každý typ, se značkou jako v mapě', () => {
+    const vars = resolveKatalogVariantLooks(ot('0100000095', '01'));
+    expect(vars.map((v) => v.value)).toContain('nástěnná konzola');
+    expect(vars.map((v) => v.value)).toContain('sloup trakčního vedení');
+    const konzola = vars.find((v) => v.value === 'nástěnná konzola')!;
+    // Stejný vzhled jako záznam s TypPodpernehoZarizeni=5 v mapě.
+    expect(konzola.look).toEqual(resolveKatalogLook(ot('0100000095', '01'), attrs({ TypPodpernehoZarizeni: '5' })));
+  });
+
+  it('hodnota varianty záznamu', () => {
+    expect(resolveKatalogVariantValue(ot('0100000095', '01'), attrs({ TypPodpernehoZarizeni: '5' }))).toBe('nástěnná konzola');
+    expect(resolveKatalogVariantValue(ot('0100000095', '01'), attrs({}))).toBeUndefined();
+  });
+
+  it('objekt bez variant podle atributu nemá dlaždice variant', () => {
+    expect(resolveKatalogVariantLooks(ot('0100000218', '01'))).toEqual([]);
+  });
+
+  it('každá varianta legendy odpovídá vzhledu některého záznamu v mapě', () => {
+    const chybi: string[] = [];
+    for (const e of Object.values(ENTITY_CATALOG)) {
+      const map = KATALOG_VARIANT_ATTR[e.codeBase];
+      if (!map) continue;
+      const mapLooks = Object.keys(map.valueToVariantIndex).map((v) =>
+        JSON.stringify(resolveKatalogLook(e, attrs({ [map.attrName]: v }))));
+      for (const v of resolveKatalogVariantLooks(e)) {
+        if (!mapLooks.includes(JSON.stringify(v.look))) chybi.push(`${e.elementName}: ${v.value}`);
+      }
+    }
+    expect(chybi).toEqual([]);
   });
 });
 
