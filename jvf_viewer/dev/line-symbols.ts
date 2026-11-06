@@ -28,6 +28,7 @@ const CASES: Case[] = [
   { label: 'silnice I. třídy', codeBase: '0100000004', obsahovaCast: 'DI', attributes: { KategoriePozemniKomunikace: '3' } },
   { label: 'MK II. třídy', codeBase: '0100000004', obsahovaCast: 'DI', attributes: { KategoriePozemniKomunikace: '7' } },
   { label: 'zábradlí', codeBase: '0100000199', obsahovaCast: 'ZPS', attributes: {} },
+  { label: 'plot', codeBase: '0100000162', obsahovaCast: 'ZPS', attributes: {} },
 ];
 
 /** Rozlišení mapy (m/px); měřítko obrazovky ≈ rozlišení / 0,00028 m. */

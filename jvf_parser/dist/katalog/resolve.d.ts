@@ -37,6 +37,13 @@ export interface KatalogLook {
      * silnice „D I", …); kreslí se do mezer čárkování. Jen linie.
      */
     lineSvg?: string;
+    /**
+     * Příčky na plné čáře [tloušťka příčky, rozestup] v mm — vzor Katalogu
+     * s drobnou čárkou a velkou mezerou (plot „0,15 10,0"). Linie je plná
+     * (`dashMm` chybí), příčky jsou druhý, širší čárkovaný tah přes ni (jako
+     * kreslí ČÚZK). Jen linie.
+     */
+    ticksMm?: number[];
 }
 interface CodeKey {
     codeBase: string;

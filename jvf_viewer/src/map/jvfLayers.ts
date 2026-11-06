@@ -167,6 +167,34 @@ export interface ResolvedStyle {
   pointRotationDeg?: number;
   /** Značka vložená do linie (`*_l_*.svg`, Katalog) — mapa, legenda a náhledy. */
   lineSymbolSvg?: string;
+  /** Příčky na plné čáře [tloušťka, rozestup] v mm papíru (plot). */
+  lineTicksMm?: number[];
+}
+
+/** Příčka je oproti linii širší tah (jako ČÚZK: ~2,5× tloušťka čáry, nejméně 3 px). */
+export function tickWidthPx(lineWidthPx: number): number {
+  return Math.max(3, lineWidthPx * 2.5);
+}
+/** Hustší příčky nekreslit (px mezi příčkami) — při oddálení by splynuly s čarou. */
+const MIN_TICK_GAP_PX = 6;
+
+/** Příčky na plné čáře (plot): širší čárkovaný tah přes linii, nebo `null`. */
+function createTickStyle(s: ResolvedStyle, resolution: number): Style | null {
+  if (!s.lineTicksMm) return null;
+  // Příčka je tenká (1 px), ne krátký úsek čáry (min. 2 px u čárkování).
+  const px = s.lineTicksMm.map((mm, i) => (i % 2 === 0 ? 1 : (mm * MM_TO_MAP_METERS) / resolution));
+  if (Math.min(...px.filter((_, i) => i % 2 === 1)) < MIN_TICK_GAP_PX) return null;
+  // Příčka na začátku linie by splynula s koncem — posun o půl rozestupu.
+  const offset = -(px[1] ?? 0) / 2;
+  return new Style({
+    stroke: new Stroke({
+      color: s.strokeColor,
+      width: tickWidthPx(s.strokeWidthPx),
+      lineDash: px,
+      lineDashOffset: offset,
+      lineCap: 'butt',
+    }),
+  });
 }
 
 /** Nejmenší mezera čárkování (mm papíru), do které se značka kreslí; menší = tečkování. */
@@ -222,6 +250,7 @@ function buildKatalogResolvedStyle(look: KatalogLook, obsahovaCast: string): Res
     strokeWidthPx: look.widthMm != null ? mmToPx(look.widthMm) : 1.5,
     ...(look.dashMm ? { lineDashMm: look.dashMm } : {}),
     ...(look.lineSvg ? { lineSymbolSvg: look.lineSvg } : {}),
+    ...(look.ticksMm ? { lineTicksMm: look.ticksMm } : {}),
     ...(look.svg ? { pointSvg: look.svg } : {}),
   };
 }
@@ -404,9 +433,10 @@ function createStyleForGeom(
           lineDash: dashPx,
         }),
       });
-      // Značka vložená do linie (blesk vedení, třída silnice, …) nad čarou.
-      const symbols = s.lineSymbolSvg ? createLineSymbolStyle(s, resolution) : null;
-      return symbols ? [line, symbols] : line;
+      // Značka vložená do linie (blesk vedení, třída silnice, …) nad čarou,
+      // příčky plotu přes čáru.
+      const extra = s.lineSymbolSvg ? createLineSymbolStyle(s, resolution) : createTickStyle(s, resolution);
+      return extra ? [line, extra] : line;
     }
     case 'Polygon':
       return new Style({

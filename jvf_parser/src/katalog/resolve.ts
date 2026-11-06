@@ -40,6 +40,13 @@ export interface KatalogLook {
    * silnice „D I", …); kreslí se do mezer čárkování. Jen linie.
    */
   lineSvg?: string;
+  /**
+   * Příčky na plné čáře [tloušťka příčky, rozestup] v mm — vzor Katalogu
+   * s drobnou čárkou a velkou mezerou (plot „0,15 10,0"). Linie je plná
+   * (`dashMm` chybí), příčky jsou druhý, širší čárkovaný tah přes ni (jako
+   * kreslí ČÚZK). Jen linie.
+   */
+  ticksMm?: number[];
 }
 
 interface CodeKey {
@@ -181,6 +188,17 @@ function pointSvgOf(file: string | undefined): string | undefined {
   return file && svgKind(file) !== 'l' ? file : undefined;
 }
 
+/** Nejdelší čárka vzoru (mm), která je ještě příčkou, ne úsekem přerušované čáry. */
+const MAX_TICK_MM = 0.5;
+
+/** Vzor příček (plot „0,15 10,0"): všechny čárky drobné, mezery výrazně delší. */
+function isTickPattern(dash: number[] | undefined): dash is number[] {
+  if (!dash || dash.length < 2) return false;
+  const dashes = dash.filter((_, i) => i % 2 === 0);
+  const gaps = dash.filter((_, i) => i % 2 === 1);
+  return Math.max(...dashes) < MAX_TICK_MM && Math.min(...gaps) >= 10 * MAX_TICK_MM;
+}
+
 function lineSvgOf(file: string | undefined): string | undefined {
   return file && svgKind(file) === 'l' ? file : undefined;
 }
@@ -205,7 +223,9 @@ function compose(
   } else if (geom === 'linie') {
     look.color = m.strokeColor ?? m.fillColor;
     look.widthMm = m.strokeWidth;
-    look.dashMm = dash;
+    // Plot: příčky na plné čáře, ne přerušovaná čára z teček.
+    if (isTickPattern(dash)) look.ticksMm = dash;
+    else look.dashMm = dash;
     // Varianta podle atributu nese celý vzhled linie včetně značky — značka
     // základu (u osy PK „D I" = dálnice I. třídy) platí jen bez varianty.
     look.lineSvg = attrVar
@@ -320,6 +340,7 @@ function sameLook(a: KatalogLook, b: KatalogLook): boolean {
     a.widthMm === b.widthMm &&
     a.svg === b.svg &&
     a.lineSvg === b.lineSvg &&
+    a.ticksMm?.join() === b.ticksMm?.join() &&
     a.dashMm?.join() === b.dashMm?.join()
   );
 }

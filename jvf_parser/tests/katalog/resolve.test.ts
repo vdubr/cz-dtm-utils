@@ -156,6 +156,21 @@ describe('resolveKatalogLook — podle hodnoty atributu', () => {
   });
 });
 
+describe('Příčky na plné čáře (plot)', () => {
+  it('plot = plná čára s příčkami 0,15 mm po 10 mm, ne tečkovaná čára', () => {
+    const plot = resolveKatalogLook(ot('0100000162', '02'));
+    expect(plot?.dashMm).toBeUndefined();
+    expect(plot?.ticksMm).toEqual([0.15, 10]);
+    expect(plot?.widthMm).toBe(0.18);
+  });
+
+  it('běžné čárkování zůstává přerušovanou čarou', () => {
+    const el = resolveKatalogLook(ot('0100000098', '02'), attrs({ MaximalniNapetovaHladina: '1' }));
+    expect(el?.dashMm).toEqual([36, 7]);
+    expect(el?.ticksMm).toBeUndefined();
+  });
+});
+
 describe('Značka vložená do linie (*_l_*.svg)', () => {
   it('trasa elektrické sítě NN nese blesk, VN dvojitou šipku', () => {
     const el = (v: string) => resolveKatalogLook(ot('0100000098', '02'), attrs({ MaximalniNapetovaHladina: v }));

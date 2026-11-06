@@ -221,6 +221,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   objekty ZPSUDM a H3D.
 
 ### Opraveno
+- **Plot jako plná čára s příčkami** (jako mapa ČÚZK) — vzor Katalogu
+  „0,15 10,0" se kreslil doslova jako řídké tečky. Teď plná čára 0,18 mm
+  s krátkými příčkami po 10 mm v mapě, legendě i panelu vrstev; ve 3D
+  a exportu do CAD plná čára.
 - **Legenda a panel vrstev u objektů se značkou podle atributu** — legenda
   ukazovala jen první variantu Katalogu (podpěrné zařízení vždy jako
   „stožár příhradový"), takže neodpovídala mapě a varianty jako „nástěnná

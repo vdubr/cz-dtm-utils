@@ -5,7 +5,7 @@
  * velkou ikonou geometrie (`buildGeometryIcon`).
  */
 import type { ObjektovyTyp } from 'jvf-parser';
-import { resolveDataStyle, type ResolvedStyle } from '../map/jvfLayers.js';
+import { resolveDataStyle, tickWidthPx, type ResolvedStyle } from '../map/jvfLayers.js';
 import { LINE_SYMBOLS } from '../map/lineSymbols.generated.js';
 import { loadLineSymbol, partStrokePx } from '../map/lineSymbolShapes.js';
 
@@ -60,6 +60,13 @@ export function buildStyleSwatch(s: ResolvedStyle, kind: SwatchKind): HTMLElemen
   if (s.lineSymbolSvg) {
     const svg = svgEl('svg', { width: '24', height: '16', viewBox: '0 0 24 16', class: 'layer-symbol-line-svg' });
     svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, 1.25, 24, 8, 12, 10, 2));
+    return svg as unknown as HTMLElement;
+  }
+
+  // Plot — plná čára s příčkami.
+  if (s.lineTicksMm) {
+    const svg = svgEl('svg', { width: '24', height: '16', viewBox: '0 0 24 16', class: 'layer-symbol-line-svg' });
+    svg.append(...lineWithTicks('M0 8 H24', stroke, 1.5, 7));
     return svg as unknown as HTMLElement;
   }
 
@@ -179,6 +186,23 @@ function lineWithSymbol(
   return [segment(0, left - gap), symbol, segment(left + w + gap, width)];
 }
 
+/**
+ * Plná čára s příčkami (plot): základní tah a přes něj širší tah
+ * s krátkými čárkami v rozestupu `gapPx` (jako mapa, viz `createTickStyle`).
+ */
+function lineWithTicks(d: string, stroke: string, strokeWidth: number, gapPx: number): SVGElement[] {
+  const base = { d, fill: 'none', stroke, 'stroke-linejoin': 'round' };
+  return [
+    svgEl('path', { ...base, 'stroke-width': strokeWidth.toFixed(1) }),
+    svgEl('path', {
+      ...base,
+      'stroke-width': tickWidthPx(strokeWidth).toFixed(1),
+      'stroke-dasharray': `1.2 ${gapPx}`,
+      'stroke-dashoffset': String(-gapPx / 2),
+    }),
+  ];
+}
+
 /** Rozměr ikony geometrie (viewBox) — dlaždice legendy DTM. */
 const ICON_W = 96;
 const ICON_H = 56;
@@ -250,6 +274,10 @@ export function buildGeometryIcon(
   if (s.lineSymbolSvg) {
     // Rovná linie se značkou v mezeře uprostřed (jako mapa ČÚZK).
     svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, width, ICON_W, ICON_H / 2, 46, 20, 6));
+    return svg;
+  }
+  if (s.lineTicksMm) {
+    svg.append(...lineWithTicks('M8 44 L32 18 L58 38 L88 12', stroke, width, 9));
     return svg;
   }
   const line = svgEl('path', {
