@@ -225,6 +225,26 @@ export function setup3dToggle(
     if (is3dActive) switchTo2d(olMap, mapContainer, threeCanvas);
   });
 
+  // Přiblížení „+ | −" nad mapou: ve 2D o jeden stupeň mapy, ve 3D kamera
+  // (stejně jako + / − v navigaci 3D).
+  for (const [id, dir] of [['btn-zoom-in', 'in'], ['btn-zoom-out', 'out']] as const) {
+    const zoomBtn = document.getElementById(id);
+    let flashTimer: ReturnType<typeof setTimeout> | undefined;
+    zoomBtn?.addEventListener('click', () => {
+      // Krátké probliknutí aktivní barvou jako potvrzení kliku.
+      zoomBtn.classList.add('is-flash');
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => zoomBtn.classList.remove('is-flash'), 250);
+      if (is3dActive) {
+        zoom3d(dir);
+        return;
+      }
+      const view = olMap.getView();
+      const zoom = view.getZoom();
+      if (zoom !== undefined) view.animate({ zoom: zoom + (dir === 'in' ? 1 : -1), duration: 200 });
+    });
+  }
+
   // Collapse/expand bottom toolbars
   const toolbarsEl = document.getElementById('bottom-toolbars');
   const toggleBtn = document.getElementById('bottom-toolbars-toggle');

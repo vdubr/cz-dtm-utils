@@ -163,7 +163,8 @@ const INFO_CONTENT_HTML = `
     </li>
     <li>
       <strong>3D pohled</strong> — přepínač <em>2D | 3D</em> vpravo nahoře
-      nad mapou. Vizualizace Z-souřadnic geometrií. Procházení
+      nad mapou (vedle tlačítek přiblížení <em>+ | −</em>, která platí pro
+      2D mapu i 3D scénu). Vizualizace Z-souřadnic geometrií. Procházení
       scénou klávesami <code>W</code>/<code>A</code>/<code>S</code>/<code>D</code>
       nebo šipkami, výškové posouvání (<code>Q</code>/<code>E</code>),
       přiblížení/oddálení (<code>+</code> / <code>−</code>) a reset pohledu

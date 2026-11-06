@@ -103,7 +103,10 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
 
       const leftEl = document.createElement('div');
       leftEl.className = 'layer-item-left';
-      leftEl.appendChild(symbolEl);
+      const symbolBox = document.createElement('span');
+      symbolBox.className = 'layer-symbol-box';
+      symbolBox.appendChild(symbolEl);
+      leftEl.appendChild(symbolBox);
 
       const infoEl = document.createElement('div');
       infoEl.className = 'layer-item-info';
