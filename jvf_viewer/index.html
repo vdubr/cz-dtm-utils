@@ -258,15 +258,15 @@
           </div>
         </div>
         </div>
-        <!-- Přiblížení „+ | −" a přepínač 2D / 3D vpravo nahoře nad mapou (ui/toggle3d.ts). -->
+        <!-- Přepínač 2D / 3D a přiblížení „+ | −" vpravo nahoře nad mapou (ui/toggle3d.ts). -->
         <div class="map-top-right">
-          <div class="basemap-bar zoom-switch" role="group" aria-label="Přiblížení">
-            <button id="btn-zoom-in" class="basemap-bar-btn" type="button" title="Přiblížit" aria-label="Přiblížit"><span class="material-symbols-outlined" aria-hidden="true">add</span></button>
-            <button id="btn-zoom-out" class="basemap-bar-btn" type="button" title="Oddálit" aria-label="Oddálit"><span class="material-symbols-outlined" aria-hidden="true">remove</span></button>
-          </div>
           <div class="basemap-bar view-switch" role="group" aria-label="Pohled">
             <button id="btn-view-2d" class="basemap-bar-btn active" type="button" aria-pressed="true" title="2D mapa">2D</button>
             <button id="btn-3d" class="basemap-bar-btn" type="button" aria-pressed="false" title="3D pohled (výšky geometrií, terén)">3D</button>
+          </div>
+          <div class="basemap-bar zoom-switch" role="group" aria-label="Přiblížení">
+            <button id="btn-zoom-in" class="basemap-bar-btn" type="button" title="Přiblížit" aria-label="Přiblížit"><span class="material-symbols-outlined" aria-hidden="true">add</span></button>
+            <button id="btn-zoom-out" class="basemap-bar-btn" type="button" title="Oddálit" aria-label="Oddálit"><span class="material-symbols-outlined" aria-hidden="true">remove</span></button>
           </div>
         </div>
         <canvas id="three-canvas" style="display:none"></canvas>

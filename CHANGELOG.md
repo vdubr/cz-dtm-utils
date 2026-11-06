@@ -124,7 +124,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
-- **Přiblížení „+ | −" nad mapou** vlevo od přepínače 2D | 3D (2D mapa
+- **Jednotné zaoblení 10 px** (token `--app-radius`) pro tlačítka, lišty
+  a karty nad mapou, modály i karty v seznamech; ikonová tlačítka zůstávají
+  kruhová.
+- **Přiblížení „+ | −" nad mapou** vpravo od přepínače 2D | 3D (2D mapa
   i 3D scéna); hover tlačítek nad mapou vyplní celou polovinu lišty jako
   na mapy.cz. Řádky vrstev výkresu s hoverem přes celou šířku panelu,
   ikona stylu svisle uprostřed.
