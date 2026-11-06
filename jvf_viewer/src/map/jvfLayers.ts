@@ -163,6 +163,8 @@ export interface ResolvedStyle {
   pointSvg?: string;
   /** Natočení symbolu bodu ve stupních (proti směru hodinových ručiček, jako v CAD). */
   pointRotationDeg?: number;
+  /** Značka vložená do linie (`*_l_*.svg`, Katalog) — legenda a náhledy. */
+  lineSymbolSvg?: string;
 }
 
 /**
@@ -179,6 +181,7 @@ function buildKatalogResolvedStyle(look: KatalogLook, obsahovaCast: string): Res
     strokeColor: stroke,
     strokeWidthPx: look.widthMm != null ? mmToPx(look.widthMm) : 1.5,
     ...(look.dashMm ? { lineDashMm: look.dashMm } : {}),
+    ...(look.lineSvg ? { lineSymbolSvg: look.lineSvg } : {}),
     ...(look.svg ? { pointSvg: look.svg } : {}),
   };
 }

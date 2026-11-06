@@ -8,6 +8,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ## [Unreleased]
 
 ### Přidáno
+- **Značky v liniích v legendě a náhledech** — linie, které Katalog DTM ČR
+  prokládá značkou (blesk elektrického vedení NN / VN / VVN / ZVN, třídy
+  silnic „D II", „S I", „MK II", plynovod, vodovod, kanalizace, teplovod,
+  produktovod, zábradlí…), ji ukazují v legendě, panelu vrstev i Přehledu
+  prvků (SVG z kartografického balíčku ČÚZK). Vykreslení v mapě následuje.
 
 - **Tři nástroje na jedné doméně: JVF (`/`), UDM (`/udm`), JŽM (`/jzm`)**
   — každý s vlastním názvem v hlavičce (JVF / UDM / JŽM Prohlížeč),

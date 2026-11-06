@@ -53,8 +53,15 @@ export function buildStyleSwatch(s: ResolvedStyle, kind: SwatchKind): HTMLElemen
     return span;
   }
 
-  // Linie — s čárkováním jako SVG, jinak prostý pruh.
+  // Linie se značkou (Katalog *_l_*.svg): úsek čáry, značka, úsek čáry.
   const stroke = opaque(s.strokeColor);
+  if (s.lineSymbolSvg) {
+    const svg = svgEl('svg', { width: '24', height: '16', viewBox: '0 0 24 16', class: 'layer-symbol-line-svg' });
+    svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, 2, 24, 8, 14, 12));
+    return svg as unknown as HTMLElement;
+  }
+
+  // Linie — s čárkováním jako SVG, jinak prostý pruh.
   if (s.lineDashMm && s.lineDashMm.length >= 2) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '24');
@@ -104,6 +111,36 @@ function luminance(color: string): number {
   if (!m) return 0;
   const [r, g, b] = [m[1]!, m[2]!, m[3]!].map((h) => parseInt(h, 16) / 255);
   return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+
+/**
+ * Rovná linie se značkou v mezeře uprostřed (jak ji kreslí Katalog DTM ČR):
+ * úsek čáry, značka (`symbolW` × `symbolH`, poměr stran zachovaný), úsek čáry.
+ */
+function lineWithSymbol(
+  file: string,
+  stroke: string,
+  strokeWidth: number,
+  width: number,
+  y: number,
+  symbolW: number,
+  symbolH: number,
+): SVGElement[] {
+  const gapStart = (width - symbolW) / 2;
+  const segment = (x1: number, x2: number): SVGElement =>
+    svgEl('line', { x1: String(x1), y1: String(y), x2: String(x2), y2: String(y), stroke, 'stroke-width': String(strokeWidth) });
+  return [
+    segment(0, gapStart),
+    svgEl('image', {
+      href: SVG_BASE + file,
+      x: String(gapStart),
+      y: String(y - symbolH / 2),
+      width: String(symbolW),
+      height: String(symbolH),
+      preserveAspectRatio: 'xMidYMid meet',
+    }),
+    segment(gapStart + symbolW, width),
+  ];
 }
 
 /** Rozměr ikony geometrie (viewBox) — dlaždice legendy DTM. */
@@ -174,6 +211,11 @@ export function buildGeometryIcon(
   }
 
   const width = Math.min(6, Math.max(1.5, s.strokeWidthPx * 1.4));
+  if (s.lineSymbolSvg) {
+    // Rovná linie se značkou v mezeře uprostřed (jako mapa ČÚZK).
+    svg.append(...lineWithSymbol(s.lineSymbolSvg, stroke, width, ICON_W, ICON_H / 2, 34, 22));
+    return svg;
+  }
   const line = svgEl('path', {
     d: 'M8 44 L32 18 L58 38 L88 12',
     fill: 'none',

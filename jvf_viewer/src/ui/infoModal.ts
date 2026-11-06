@@ -204,7 +204,10 @@ const INFO_CONTENT_HTML = `
       lomená linie, plocha s výplní a obrysem) v barvách, tloušťce
       a čárkování podle <em>Katalogu kartografických symbolů DTM ČR</em>,
       pod ním název a typ geometrie (bod, definiční bod, linie, plocha)
-      s kódem. Objekty, jejichž značka závisí na atributu (podpěrné zařízení
+      s kódem. Linie se značkou v čáře (blesk elektrického vedení, třída
+      silnice „S I", značky plynovodu, vodovodu, kanalizace, teplovodu…)
+      ukazují tuto značku v náhledu legendy, panelu vrstev i Přehledu
+      prvků (v mapě zatím jen čárkování). Objekty, jejichž značka závisí na atributu (podpěrné zařízení
       podle typu, trasy sítí podle napětí, …), mají dlaždici pro každou
       hodnotu — hledání najde i ji (např. „konzola"). Panel vrstev
       a Přehled prvků ukazují značku nejčastější hodnoty v načtených datech
