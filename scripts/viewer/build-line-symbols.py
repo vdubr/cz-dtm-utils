@@ -3,6 +3,9 @@
 Geometrie značek vložených do linií (Katalog DTM ČR, `*_l_*.svg`) pro náhledy
 ve vieweru: poměr stran a úroveň čáry, na kterou má značka navazovat.
 
+Tloušťka vystupující čáry slouží k tomu, aby úseky linie vedle značky měly
+stejnou tloušťku jako čára ve značce.
+
 Úroveň čáry = y bodu s největším x mezi tahy (stroke) — tam čára opouští
 značku vpravo (blesk elektrického vedení na 106/187, zub plynovodu nahoře
 na 6/162, šipka vodovodu uprostřed). Značky bez tahu (text „S I", puntík
@@ -54,38 +57,44 @@ def path_points(d: str) -> list[tuple[float, float]]:
     return pts
 
 
-def metrics(svg: str) -> tuple[float, float]:
+def metrics(svg: str) -> tuple[float, float, float]:
+    """Poměr stran, úroveň čáry a tloušťka vystupující čáry (obojí / výška)."""
     vb = re.search(r'viewBox="([^"]+)"', svg)
     _, _, w, h = (float(v) for v in vb.group(1).split())
-    pts: list[tuple[float, float]] = []
+    pts: list[tuple[float, float, float]] = []  # x, y, tloušťka tahu
     for tag in re.findall(r'<path\b[^>]*>', svg):
         if 'stroke=' in tag and 'fill="none"' in tag:
             d = re.search(r'\sd="([^"]+)"', tag)
+            sw = re.search(r'stroke-width="([\d.]+)"', tag)
             if d:
-                pts += path_points(d.group(1))
+                width = float(sw.group(1)) if sw else 1.0
+                pts += [(x, y, width) for x, y in path_points(d.group(1))]
     if not pts:
-        return w / h, 0.5
+        return w / h, 0.5, 0.0
     right = max(p[0] for p in pts)
-    ends = {round(p[1], 1) for p in pts if right - p[0] < 1}
+    ends = [p for p in pts if right - p[0] < 1]
     # Víc čar končících vpravo (dvojitá linie kanálu, kolejiště, obdélník
     # potrubní pošty) = vzor celé čáry, ne značka v mezeře → střed.
-    baseline = next(iter(ends)) / h if len(ends) == 1 else 0.5
-    return w / h, baseline
+    if len({round(p[1], 1) for p in ends}) != 1:
+        return w / h, 0.5, max(p[2] for p in ends) / h
+    return w / h, ends[0][1] / h, max(p[2] for p in ends) / h
 
 
 def main() -> None:
     rows = []
     for f in sorted(SYMBOLY.glob('*_l_*.svg')):
-        aspect, baseline = metrics(f.read_text(encoding='utf-8'))
-        rows.append(f"  '{f.name}': {{ aspect: {aspect:.3f}, baseline: {baseline:.3f} }},")
+        aspect, baseline, stroke = metrics(f.read_text(encoding='utf-8'))
+        rows.append(f"  '{f.name}': {{ aspect: {aspect:.3f}, baseline: {baseline:.3f}, stroke: {stroke:.3f} }},")
     OUT.write_text(
         '// Generováno skriptem scripts/viewer/build-line-symbols.py — neupravovat ručně.\n'
         '//\n'
         '// Značky vložené do linií (Katalog DTM ČR, *_l_*.svg): poměr stran (šířka /\n'
-        '// výška) a úroveň čáry, na kterou značka navazuje (0 = horní okraj, 1 = dolní).\n\n'
+        '// výška), úroveň čáry, na kterou značka navazuje (0 = horní okraj, 1 = dolní),\n'
+        '// a tloušťka této čáry vůči výšce značky (0 = značka bez vlastní čáry).\n\n'
         'export interface LineSymbolMetrics {\n'
         '  aspect: number;\n'
         '  baseline: number;\n'
+        '  stroke: number;\n'
         '}\n\n'
         'export const LINE_SYMBOLS: Readonly<Record<string, LineSymbolMetrics>> = {\n'
         + '\n'.join(rows)
