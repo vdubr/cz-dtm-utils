@@ -6,7 +6,8 @@
  */
 import type { ObjektovyTyp } from 'jvf-parser';
 import { resolveDataStyle, type ResolvedStyle } from '../map/jvfLayers.js';
-import { LINE_SYMBOLS } from './lineSymbols.generated.js';
+import { LINE_SYMBOLS } from '../map/lineSymbols.generated.js';
+import { loadLineSymbol, partStrokePx } from '../map/lineSymbolShapes.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
@@ -114,45 +115,31 @@ function luminance(color: string): number {
   return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
 }
 
-/** Obsah SVG značek (načtený jednou, sdílený všemi náhledy). */
-const symbolDocs = new Map<string, Promise<SVGSVGElement | null>>();
-
-function loadSymbol(file: string): Promise<SVGSVGElement | null> {
-  let doc = symbolDocs.get(file);
-  if (!doc) {
-    doc = fetch(SVG_BASE + file)
-      .then((r) => (r.ok ? r.text() : ''))
-      .then((text) => {
-        const root = new DOMParser().parseFromString(text, 'image/svg+xml').documentElement;
-        return root instanceof SVGSVGElement ? root : null;
-      })
-      .catch(() => null);
-    symbolDocs.set(file, doc);
-  }
-  return doc;
-}
-
 /**
- * Vloží obsah značky do vnořeného `<svg>` (místo `<image>`, aby šla řídit
- * tloušťka tahů): tahy mají pevnou tloušťku v px — hlavní čára značky
- * `mainPx`, ostatní v poměru z Katalogu (tlustá čára VVTL, ZVN, stoky zůstane
- * tlustší). Tloušťka tak nezávisí na zmenšení značky a sedí s linií vedle.
+ * Vloží tvar značky (map/lineSymbolShapes — sdílený s mapou) do vnořeného
+ * `<svg>` (místo `<image>`, aby šla řídit tloušťka tahů): hlavní čára značky
+ * má `mainPx`, ostatní tahy poměr z Katalogu (tlustá čára VVTL, ZVN, stoky).
+ * Tloušťka tak nezávisí na zmenšení značky a sedí s linií vedle.
  */
-function mountSymbol(target: SVGSVGElement, file: string, mainRatio: number, mainPx: number): void {
-  void loadSymbol(file).then((src) => {
-    if (!src) return;
-    const vbH = src.viewBox.baseVal.height || 1;
-    const mainUnits = mainRatio * vbH;
-    target.setAttribute('viewBox', src.getAttribute('viewBox') ?? '');
-    for (const child of Array.from(src.children)) {
-      const el = child.cloneNode(true) as SVGElement;
-      for (const p of [el, ...Array.from(el.querySelectorAll<SVGElement>('[stroke-width]'))]) {
-        const sw = parseFloat(p.getAttribute('stroke-width') ?? '');
-        if (!Number.isFinite(sw) || mainUnits <= 0) continue;
-        p.setAttribute('vector-effect', 'non-scaling-stroke');
-        p.setAttribute('stroke-width', ((sw / mainUnits) * mainPx).toFixed(2));
-      }
-      target.appendChild(el);
+function mountSymbol(target: SVGSVGElement, file: string, mainPx: number, heightPx: number): void {
+  void loadLineSymbol(file).then((shape) => {
+    if (!shape) return;
+    target.setAttribute('viewBox', shape.viewBox.join(' '));
+    const pxPerUnit = heightPx / shape.viewBox[3];
+    for (const part of shape.parts) {
+      target.appendChild(svgEl('path', {
+        d: part.d,
+        fill: part.fill ?? 'none',
+        ...(part.stroke
+          ? {
+              stroke: part.stroke,
+              'stroke-width': partStrokePx(shape, part, mainPx, pxPerUnit).toFixed(2),
+              'stroke-linecap': part.lineCap,
+              'stroke-linejoin': part.lineJoin,
+              'vector-effect': 'non-scaling-stroke',
+            }
+          : {}),
+      }));
     }
   });
 }
@@ -175,7 +162,7 @@ function lineWithSymbol(
   maxH: number,
   gap: number,
 ): SVGElement[] {
-  const { aspect, baseline, stroke: symbolStroke } = LINE_SYMBOLS[file] ?? { aspect: 1, baseline: 0.5, stroke: 0 };
+  const { aspect, baseline } = LINE_SYMBOLS[file] ?? { aspect: 1, baseline: 0.5 };
   const h = Math.min(maxH, maxW / aspect);
   const w = h * aspect;
   const left = (width - w) / 2;
@@ -188,7 +175,7 @@ function lineWithSymbol(
     height: String(h),
     overflow: 'visible',
   });
-  mountSymbol(symbol, file, symbolStroke, strokeWidth);
+  mountSymbol(symbol, file, strokeWidth, h);
   return [segment(0, left - gap), symbol, segment(left + w + gap, width)];
 }
 

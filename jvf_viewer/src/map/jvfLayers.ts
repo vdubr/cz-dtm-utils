@@ -36,6 +36,8 @@ import {
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
 import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
+import { getLineSymbol, loadLineSymbol } from './lineSymbolShapes.js';
+import { drawLineSymbols } from './lineSymbolRenderer.js';
 import {
   isContentPartVisible,
   isLevelVisible,
@@ -163,8 +165,46 @@ export interface ResolvedStyle {
   pointSvg?: string;
   /** Natočení symbolu bodu ve stupních (proti směru hodinových ručiček, jako v CAD). */
   pointRotationDeg?: number;
-  /** Značka vložená do linie (`*_l_*.svg`, Katalog) — legenda a náhledy. */
+  /** Značka vložená do linie (`*_l_*.svg`, Katalog) — mapa, legenda a náhledy. */
   lineSymbolSvg?: string;
+}
+
+/** Nejmenší mezera čárkování (mm papíru), do které se značka kreslí; menší = tečkování. */
+const LINE_SYMBOL_MIN_GAP_MM = 4;
+/** Rozestup značek na linii bez čárkování (zábradlí, lanové dráhy), mm papíru. */
+const LINE_SYMBOL_INTERVAL_MM = 20;
+/**
+ * Užší značku nekreslit (px obrazovky) — při oddálení by byla nečitelná;
+ * mezery čárkování zůstanou prázdné (jako mapa ČÚZK v menším měřítku).
+ */
+const LINE_SYMBOL_MIN_WIDTH_PX = 12;
+
+/**
+ * Styl značek vložených do linie (vlastní renderer — map/lineSymbolRenderer):
+ * do mezer čárkování, nebo v pravidelném rozestupu. `null`, dokud se SVG
+ * značky nenačte (vrstvu pak překreslí `buildJvfLayers`).
+ */
+function createLineSymbolStyle(s: ResolvedStyle, resolution: number): Style | null {
+  const shape = s.lineSymbolSvg ? getLineSymbol(s.lineSymbolSvg) : undefined;
+  if (!shape) return null;
+  const toPx = (mm: number): number => (mm * MM_TO_MAP_METERS) / resolution;
+  // Nativní velikost značky (1 SVG jednotka = 0,01 mm papíru, jako body).
+  const widthPx = (shape.viewBox[2] * SVG_PX_TO_METERS) / resolution;
+  const maxGapMm = s.lineDashMm ? Math.max(...s.lineDashMm.filter((_, i) => i % 2 === 1)) : 0;
+  const dashPx = s.lineDashMm && maxGapMm >= LINE_SYMBOL_MIN_GAP_MM ? dashMmToPx(s.lineDashMm, resolution) : undefined;
+  return new Style({
+    renderer: (coords, state) => {
+      const pr = state.pixelRatio;
+      drawLineSymbols(state.context, coords as number[][], {
+        shape,
+        linePx: s.strokeWidthPx * pr,
+        ...(dashPx ? { dashPx: dashPx.map((v) => v * pr) } : {}),
+        intervalPx: toPx(LINE_SYMBOL_INTERVAL_MM) * pr,
+        widthPx: widthPx * pr,
+        minWidthPx: LINE_SYMBOL_MIN_WIDTH_PX * pr,
+      });
+    },
+  });
 }
 
 /**
@@ -328,7 +368,7 @@ function createStyleForGeom(
   geomType: Geometry['type'],
   s: ResolvedStyle,
   resolution: number,
-): Style {
+): Style | Style[] {
   const dashPx = s.lineDashMm ? dashMmToPx(s.lineDashMm, resolution) : undefined;
   switch (geomType) {
     case 'Point': {
@@ -356,14 +396,18 @@ function createStyleForGeom(
       });
     }
     case 'LineString':
-    case 'MultiCurve':
-      return new Style({
+    case 'MultiCurve': {
+      const line = new Style({
         stroke: new Stroke({
           color: s.strokeColor,
           width: s.strokeWidthPx,
           lineDash: dashPx,
         }),
       });
+      // Značka vložená do linie (blesk vedení, třída silnice, …) nad čarou.
+      const symbols = s.lineSymbolSvg ? createLineSymbolStyle(s, resolution) : null;
+      return symbols ? [line, symbols] : line;
+    }
     case 'Polygon':
       return new Style({
         fill: new Fill({ color: s.fillColor }),
@@ -569,6 +613,16 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
       },
     });
     olLayer.on('change', () => haloLayer.changed());
+
+    // Značky vložené do linií se kreslí z tvarů SVG — po načtení překreslit.
+    const lineSymbolFiles = new Set<string>();
+    for (const f of features) {
+      const file = (f.get('jvfResolvedStyle') as ResolvedStyle | undefined)?.lineSymbolSvg;
+      if (file) lineSymbolFiles.add(file);
+    }
+    if (lineSymbolFiles.size > 0) {
+      void Promise.all([...lineSymbolFiles].map(loadLineSymbol)).then(() => olLayer.changed());
+    }
     olLayer.on('change:visible', () => haloLayer.setVisible(olLayer.getVisible()));
 
     olLayer.set('jvfNazev', ot.nazev);

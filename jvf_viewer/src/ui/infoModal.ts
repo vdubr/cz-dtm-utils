@@ -207,7 +207,10 @@ const INFO_CONTENT_HTML = `
       s kódem. Linie se značkou v čáře (blesk elektrického vedení, třída
       silnice „S I", značky plynovodu, vodovodu, kanalizace, teplovodu…)
       ukazují tuto značku v náhledu legendy, panelu vrstev i Přehledu
-      prvků (v mapě zatím jen čárkování). Objekty, jejichž značka závisí na atributu (podpěrné zařízení
+      prvků a ve 2D mapě ji kreslí do mezer čárkování (natočenou podle
+      linie, v nativní velikosti Katalogu; při oddálení, kdy by byla
+      nečitelná, zůstanou mezery prázdné). 3D scéna a export do CAD
+      kreslí zatím jen čárkování. Objekty, jejichž značka závisí na atributu (podpěrné zařízení
       podle typu, trasy sítí podle napětí, …), mají dlaždici pro každou
       hodnotu — hledání najde i ji (např. „konzola"). Panel vrstev
       a Přehled prvků ukazují značku nejčastější hodnoty v načtených datech

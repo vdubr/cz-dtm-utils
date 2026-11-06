@@ -12,7 +12,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   prokládá značkou (blesk elektrického vedení NN / VN / VVN / ZVN, třídy
   silnic „D II", „S I", „MK II", plynovod, vodovod, kanalizace, teplovod,
   produktovod, zábradlí…), ji ukazují v legendě, panelu vrstev i Přehledu
-  prvků (SVG z kartografického balíčku ČÚZK). Vykreslení v mapě následuje.
+  prvků (SVG z kartografického balíčku ČÚZK) a ve 2D mapě do mezer čárkování
+  — natočenou podle linie, v nativní velikosti Katalogu (1 jednotka SVG =
+  0,01 mm), texty tříd silnic hlavou nahoru; při oddálení se nečitelné
+  značky vynechají. 3D a export do CAD zatím jen čárkování.
 
 - **Tři nástroje na jedné doméně: JVF (`/`), UDM (`/udm`), JŽM (`/jzm`)**
   — každý s vlastním názvem v hlavičce (JVF / UDM / JŽM Prohlížeč),

@@ -14,14 +14,14 @@ zábradlí, vyplněné tvary) a vzory s víc čarami končícími vpravo sedí n
 
 Spuštění (z kořene repozitáře):
     python3 scripts/viewer/build-line-symbols.py
-→ jvf_viewer/src/ui/lineSymbols.generated.ts
+→ jvf_viewer/src/map/lineSymbols.generated.ts
 """
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SYMBOLY = ROOT / 'jvf_viewer' / 'public' / 'symboly'
-OUT = ROOT / 'jvf_viewer' / 'src' / 'ui' / 'lineSymbols.generated.ts'
+OUT = ROOT / 'jvf_viewer' / 'src' / 'map' / 'lineSymbols.generated.ts'
 
 NUM = re.compile(r'-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?')
 CMD = re.compile(r'([MmLlHhVvAaZz])([^MmLlHhVvAaZz]*)')
