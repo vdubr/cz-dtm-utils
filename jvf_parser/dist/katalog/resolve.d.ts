@@ -32,6 +32,11 @@ export interface KatalogLook {
     dashMm?: number[];
     /** Soubor SVG značky (kartografický balíček ČÚZK) — jen body a definiční body. */
     svg?: string;
+    /**
+     * Značka vložená do linie (`*_l_*.svg` — blesk elektrického vedení, třída
+     * silnice „D I", …); kreslí se do mezer čárkování. Jen linie.
+     */
+    lineSvg?: string;
 }
 interface CodeKey {
     codeBase: string;

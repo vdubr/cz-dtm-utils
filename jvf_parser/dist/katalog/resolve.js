@@ -143,6 +143,9 @@ function isLight(hex) {
 function pointSvgOf(file) {
     return file && svgKind(file) !== 'l' ? file : undefined;
 }
+function lineSvgOf(file) {
+    return file && svgKind(file) === 'l' ? file : undefined;
+}
 function compose(sym, geom, geomVar, attrVar) {
     const m = merge(sym, geomVar, attrVar);
     const look = {};
@@ -159,6 +162,11 @@ function compose(sym, geom, geomVar, attrVar) {
         look.color = m.strokeColor ?? m.fillColor;
         look.widthMm = m.strokeWidth;
         look.dashMm = dash;
+        // Varianta podle atributu nese celý vzhled linie včetně značky — značka
+        // základu (u osy PK „D I" = dálnice I. třídy) platí jen bez varianty.
+        look.lineSvg = attrVar
+            ? lineSvgOf(attrVar.lineSvg)
+            : (lineSvgOf(geomVar?.lineSvg) ?? lineSvgOf(sym.lineSvg));
     }
     else if (m.strokeColor) {
         look.color = m.strokeColor;
@@ -263,6 +271,7 @@ function sameLook(a, b) {
         a.fill === b.fill &&
         a.widthMm === b.widthMm &&
         a.svg === b.svg &&
+        a.lineSvg === b.lineSvg &&
         a.dashMm?.join() === b.dashMm?.join());
 }
 //# sourceMappingURL=resolve.js.map

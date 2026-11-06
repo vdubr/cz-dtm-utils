@@ -117,6 +117,7 @@ describe('resolveKatalogLook — podle hodnoty atributu', () => {
       color: '#005ce6',
       widthMm: 0.35,
       dashMm: [36, 8],
+      lineSvg: 'TI_l_113_voda_trasa_priv_rad.svg',
     });
   });
 
@@ -152,6 +153,26 @@ describe('resolveKatalogLook — podle hodnoty atributu', () => {
       symbol: 'dtm-ZPS_b_218_podr_bod_zps',
     });
     expect(resolveKatalogAppearance(ot('0100000211', '03'))).toEqual({ color: '#d3e0bc', fill: '#d3e0bc' });
+  });
+});
+
+describe('Značka vložená do linie (*_l_*.svg)', () => {
+  it('trasa elektrické sítě NN nese blesk, VN dvojitou šipku', () => {
+    const el = (v: string) => resolveKatalogLook(ot('0100000098', '02'), attrs({ MaximalniNapetovaHladina: v }));
+    expect(el('1')?.lineSvg).toBe('TI_l_098_el_ved_trasa_nn.svg');
+    expect(el('2')?.lineSvg).toBe('TI_l_098_el_ved_trasa_vn.svg');
+  });
+
+  it('varianta bez značky nepřebírá značku základu (místní komunikace IV. třídy není „D I")', () => {
+    const osa = (v: string) => resolveKatalogLook(ot('0100000004', '02'), attrs({ KategoriePozemniKomunikace: v }))?.lineSvg;
+    expect(osa('3')).toBe('DI_l_004_siln_dopr_osa_poz_kom_s1.svg');
+    expect(osa('9')).toBeUndefined();
+    expect(osa('99')).toBeUndefined();
+  });
+
+  it('značka linie u základu objektu (zábradlí) a jen u linií', () => {
+    expect(resolveKatalogLook(ot('0100000199', '02'))?.lineSvg).toBe('ZPS_l_199_prisl_st_zabradli.svg');
+    expect(resolveKatalogLook(ot('0100000218', '01'))?.lineSvg).toBeUndefined();
   });
 });
 

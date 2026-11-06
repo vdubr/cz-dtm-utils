@@ -35,6 +35,11 @@ export interface KatalogLook {
   dashMm?: number[];
   /** Soubor SVG značky (kartografický balíček ČÚZK) — jen body a definiční body. */
   svg?: string;
+  /**
+   * Značka vložená do linie (`*_l_*.svg` — blesk elektrického vedení, třída
+   * silnice „D I", …); kreslí se do mezer čárkování. Jen linie.
+   */
+  lineSvg?: string;
 }
 
 interface CodeKey {
@@ -176,6 +181,10 @@ function pointSvgOf(file: string | undefined): string | undefined {
   return file && svgKind(file) !== 'l' ? file : undefined;
 }
 
+function lineSvgOf(file: string | undefined): string | undefined {
+  return file && svgKind(file) === 'l' ? file : undefined;
+}
+
 function compose(
   sym: ObjectSymbology,
   geom: KatalogGeom,
@@ -197,6 +206,11 @@ function compose(
     look.color = m.strokeColor ?? m.fillColor;
     look.widthMm = m.strokeWidth;
     look.dashMm = dash;
+    // Varianta podle atributu nese celý vzhled linie včetně značky — značka
+    // základu (u osy PK „D I" = dálnice I. třídy) platí jen bez varianty.
+    look.lineSvg = attrVar
+      ? lineSvgOf(attrVar.lineSvg)
+      : (lineSvgOf(geomVar?.lineSvg) ?? lineSvgOf(sym.lineSvg));
   } else if (m.strokeColor) {
     look.color = m.strokeColor;
     look.fill = m.fillColor;
@@ -305,6 +319,7 @@ function sameLook(a: KatalogLook, b: KatalogLook): boolean {
     a.fill === b.fill &&
     a.widthMm === b.widthMm &&
     a.svg === b.svg &&
+    a.lineSvg === b.lineSvg &&
     a.dashMm?.join() === b.dashMm?.join()
   );
 }
