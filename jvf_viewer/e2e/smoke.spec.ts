@@ -1824,3 +1824,40 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('#basemap-opacity')).toBeEnabled();
   });
 });
+
+test.describe('Připomínky 2026-11-06', () => {
+  test('stejný soubor podruhé: upozornění, projekt se nepřidá', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.setInputFiles('#file-input', fixturePath('ukazka_ZPS.xml'));
+    await expect(page.locator('#confirm-modal-title')).toHaveText('Soubor už je načtený');
+    await page.locator('#confirm-modal-footer button', { hasText: 'Rozumím' }).click();
+    await expect(page.locator('.project-item')).toHaveCount(1);
+  });
+
+  test('další soubor: dotaz Přidat / Nahradit', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.setInputFiles('#file-input', fixturePath('ukazka_DI.xml'));
+    await expect(page.locator('#confirm-modal-title')).toHaveText('Přidat, nebo nahradit?');
+    await page.locator('#confirm-modal-footer button', { hasText: 'Přidat' }).click();
+    await expect(page.locator('.project-item')).toHaveCount(2);
+
+    await page.setInputFiles('#file-input', fixturePath('ukazka_KI.xml'));
+    await page.locator('#confirm-modal-footer button', { hasText: 'Nahradit' }).click();
+    await expect(page.locator('.project-item')).toHaveCount(1);
+    await expect(page.locator('.project-item .project-name')).toContainText('ukazka_KI.xml');
+  });
+
+  test('vrstvy: hledání zúží seznam, hlavička části s celým názvem', async ({ page }) => {
+    await loadSample(page, 'ukazka_DI.xml');
+    await expect(page.locator('.layer-group-header').first()).toContainText('Dopravní infrastruktura');
+    const items = page.locator('#jvf-layers-list .layer-item:visible');
+    const total = await items.count();
+    await page.locator('#layer-search').fill('osa pozemni');
+    await expect(items).not.toHaveCount(total);
+    await expect(items.first()).toContainText(/osa pozemní komunikace/i);
+    await page.locator('#layer-search').fill('xyzneexistuje');
+    await expect(page.locator('.layer-search-empty')).toBeVisible();
+    await page.locator('#layer-search').fill('');
+    await expect(items).toHaveCount(total);
+  });
+});

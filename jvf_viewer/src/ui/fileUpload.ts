@@ -11,6 +11,7 @@ import { getActiveVersion, setActiveVersion } from '../state/activeVersion.js';
 import { showConfirm } from './confirmModal.js';
 import { ensureAppModeForFile } from './appModeSwitch.js';
 import { getAppMode } from '../state/appMode.js';
+import { clearProjects, getProjects } from '../state/projects.js';
 import { sizeBucket, track } from '../analytics.js';
 
 /**
@@ -72,6 +73,36 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+/** Přidat soubor k načteným projektům, nebo jimi nahradit všechny načtené. */
+export type AddMode = 'add' | 'replace';
+
+/**
+ * Před načtením souboru / ukázky: soubor se stejným názvem už je načtený →
+ * upozornit a nenačíst (`null`); jsou-li načtené jiné projekty a režim není
+ * daný (`preset`), zeptat se „Přidat / Nahradit" (zavření = `null`).
+ */
+async function chooseAddMode(name: string, preset: AddMode | undefined): Promise<AddMode | null> {
+  const projects = getProjects();
+  if (projects.some((p) => p.nazev === name)) {
+    await showConfirm({
+      title: 'Soubor už je načtený',
+      bodyHtml: `<p>Soubor <strong>${escapeHtml(name)}</strong> je v aplikaci už načtený — znovu se nepřidá.</p>`,
+      buttons: [{ label: 'Rozumím', variant: 'primary' }],
+    });
+    return null;
+  }
+  if (preset || projects.length === 0) return preset ?? 'add';
+  const loaded = projects.length === 1
+    ? `je načtený projekt <strong>${escapeHtml(projects[0]!.nazev)}</strong>`
+    : `je načteno ${projects.length} projektů`;
+  const choice = await showConfirm({
+    title: 'Přidat, nebo nahradit?',
+    bodyHtml: `<p>V aplikaci ${loaded}. Přidat soubor <strong>${escapeHtml(name)}</strong> jako další projekt, nebo jím načtená data nahradit?</p>`,
+    buttons: [{ label: 'Nahradit' }, { label: 'Přidat', variant: 'primary' }],
+  });
+  return choice === 'Přidat' ? 'add' : choice === 'Nahradit' ? 'replace' : null;
+}
+
 /** Callback po úspěšném parsování — dostává i název souboru (nový projekt). */
 export type JvfLoadCallback = (data: JvfDtm, fileName: string) => void;
 
@@ -82,17 +113,21 @@ export type JvfErrorProtocolCallback = (proto: ErrorProtocol, fileName: string) 
  * Načte lokální soubor (z file inputu nebo drag & drop) a zpracuje ho
  * parserem — jediný sdílený kód-path pro oba způsoby načtení. Vrací
  * Promise, aby šlo více souborů (multi-výběr / multi-drop) zpracovat
- * sekvenčně bez závodění o loading overlay.
+ * sekvenčně bez závodění o loading overlay. `mode` = přidat / nahradit bez
+ * dotazu (další soubory dávky); výsledek je použitý režim, nebo `null`
+ * (soubor se nenačetl).
  */
 export function loadJvfFile(
   file: File,
   onLoad: JvfLoadCallback,
-  onErrorProtocol?: JvfErrorProtocolCallback
-): Promise<void> {
+  onErrorProtocol?: JvfErrorProtocolCallback,
+  mode?: AddMode,
+): Promise<AddMode | null> {
   const loadingOverlay = document.getElementById('loading-overlay') as HTMLDivElement;
   loadingOverlay.style.display = 'flex';
 
-  return new Promise<void>((resolve) => {
+  return new Promise<AddMode | null>((resolve) => {
+    let used: AddMode | null = null;
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
@@ -102,12 +137,17 @@ export function loadJvfFile(
           onErrorProtocol(parseErrorProtocol(xml), file.name);
           return;
         }
+        const chosen = await chooseAddMode(file.name, mode);
+        if (!chosen) return;
         const data = parseJvfDtm(xml);
         // Soubor jiného režimu (UDM v JVF a naopak) → nabídnout přepnutí.
         if (!(await ensureAppModeForFile(data, file.name))) return;
         const ok = await validateFileVersion(data, file.name);
         if (!ok) return;
+        // Nahradit až po úspěšném načtení — chybný soubor data nesmaže.
+        if (chosen === 'replace') clearProjects();
         onLoad(data, file.name);
+        used = chosen;
         // Bez názvu souboru — jen režim, verze a hrubá velikost.
         track('file_load', { mode: getAppMode(), version: data.verze, size: sizeBucket(file.size) });
       } catch (err) {
@@ -115,14 +155,14 @@ export function loadJvfFile(
         alert(`Soubor „${file.name}“ se nepodařilo načíst. Zkontrolujte, že jde o platný JVF DTM soubor.`);
       } finally {
         loadingOverlay.style.display = 'none';
-        resolve();
+        resolve(used);
       }
     };
 
     reader.onerror = () => {
       loadingOverlay.style.display = 'none';
       alert('Chyba při čtení souboru.');
-      resolve();
+      resolve(null);
     };
 
     reader.readAsText(file, 'UTF-8');
@@ -149,13 +189,15 @@ export function setupFileUpload(
   });
 
   fileInput.addEventListener('change', async () => {
-    // Multi-výběr: každý soubor se přidá jako samostatný projekt.
+    // Multi-výběr: každý soubor se přidá jako samostatný projekt (dotaz
+    // přidat / nahradit jen u prvního, další se přidají).
     // Sekvenčně — loading overlay a případné modaly se nesmí překrývat.
     const files = Array.from(fileInput.files ?? []);
     // Reset hned, aby šel stejný soubor vybrat znovu
     fileInput.value = '';
+    let mode: AddMode | undefined;
     for (const file of files) {
-      await loadJvfFile(file, onLoad, onErrorProtocol);
+      if (await loadJvfFile(file, onLoad, onErrorProtocol, mode)) mode = 'add';
     }
   });
 
@@ -227,10 +269,13 @@ async function loadSample(
       onErrorProtocol(parseErrorProtocol(xml), name);
       return;
     }
+    const chosen = await chooseAddMode(name, undefined);
+    if (!chosen) return;
     const data = parseJvfDtm(xml);
     if (!(await ensureAppModeForFile(data, name))) return;
     const ok = await validateFileVersion(data, name);
     if (!ok) return;
+    if (chosen === 'replace') clearProjects();
     onLoad(data, name);
     track('sample_load', { sample: name, mode: getAppMode() });
   } catch (err) {

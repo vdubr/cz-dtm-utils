@@ -8,6 +8,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ## [Unreleased]
 
 ### Přidáno
+- **Hledání ve vrstvách výkresu** — pole „Hledat vrstvu" zúží seznam podle
+  názvu, elementu nebo kódu objektu (bez diakritiky); viditelnost v mapě
+  nemění.
+- **Přidat, nebo nahradit projekt** — jsou-li načtená data, nahrání souboru
+  nebo ukázky se zeptá, zda ho přidat jako další projekt, nebo jím data
+  nahradit; stejný soubor se podruhé nepřidá (upozornění).
 - **Značky v liniích v legendě a náhledech** — linie, které Katalog DTM ČR
   prokládá značkou (blesk elektrického vedení NN / VN / VVN / ZVN, třídy
   silnic „D II", „S I", „MK II", plynovod, vodovod, kanalizace, teplovod,
@@ -148,6 +154,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Panel vrstev kompaktnější** (nižší řádky, u ŽXML je vidět víc vrstev)
+  a hlavičky obsahových částí s celým názvem („DI Dopravní infrastruktura")
+  v panelu i Legendě DTM.
+- **Přehled prvků** — hlavičky skupin jako ploché řádky bez rámečku
+  a zaoblení (jako panel vrstev).
+- **Legendy** — stálá výška modálu (při hledání bez výsledků se nezmenší)
+  a viditelný posuvník.
+- **Tmavý motiv** — tlačítka nad mapou světlejší s obrysem, vidět i na
+  černém podkladu.
 - **Jednotné zaoblení 10 px** (token `--app-radius`) pro tlačítka, lišty
   a karty nad mapou, modály i karty v seznamech; ikonová tlačítka zůstávají
   kruhová.

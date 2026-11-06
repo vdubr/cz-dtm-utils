@@ -39,9 +39,11 @@ const INFO_CONTENT_HTML = `
     </li>
     <li>
       <strong>Více projektů naráz</strong> — každý načtený soubor se přidá
-      jako samostatný <em>projekt</em> (další výběr souboru nebo drag &amp;
-      drop načtená data <em>nenahrazuje</em>, ale přidává — až do
-      8 projektů). Hodí se pro navazující projekty, které chcete vidět
+      jako samostatný <em>projekt</em> (až 8 projektů). Jsou-li už nějaká
+      data načtená, aplikace se zeptá, zda soubor <strong>přidat</strong>
+      k nim, nebo jím data <strong>nahradit</strong> (u výběru více souborů
+      jen jednou); soubor, který už je načtený, se podruhé nepřidá
+      (upozornění). Hodí se pro navazující projekty, které chcete vidět
       společně v jedné mapě. Levý panel zobrazuje sekci
       <em>Projekty</em> se seznamem souborů (barevná tečka, počet záznamů)
       a ikonou popelnice pro odebrání (po potvrzení v dialogu); odebráním posledního projektu se viewer
@@ -215,7 +217,9 @@ const INFO_CONTENT_HTML = `
       podle typu, trasy sítí podle napětí, …), mají dlaždici pro každou
       hodnotu — hledání najde i ji (např. „konzola"). Panel vrstev
       a Přehled prvků ukazují značku nejčastější hodnoty v načtených datech
-      (výčet v tooltipu řádku vrstvy). Barva náhledu
+      (výčet v tooltipu řádku vrstvy); vrstvy jsou seskupené podle obsahové
+      části s celým názvem (např. „DI Dopravní infrastruktura") a pole
+      <em>Hledat vrstvu</em> zúží seznam podle názvu nebo kódu. Barva náhledu
       odpovídá tomu, jak se prvek vykreslí v mapě — i u sítí, které barvu
       nesou až ve variantách (elektro červená, plyn zelená, voda modrá,
       kanalizace hnědá, teplovod oranžová), takže legenda i vrstvový panel

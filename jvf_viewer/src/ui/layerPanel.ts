@@ -40,6 +40,44 @@ function syncLayerPanel(): void {
   });
 }
 
+/** Text pro hledání bez rozlišení velikosti písmen a diakritiky. */
+function normalizeSearch(s: string): string {
+  return s.toLocaleLowerCase('cs').normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
+/**
+ * Filtr seznamu vrstev podle pole „Hledat vrstvu" — jen zúží seznam
+ * (viditelnost vrstev v mapě nemění); skupina bez shody se skryje.
+ */
+function applyLayerSearch(): void {
+  const container = document.getElementById('jvf-layers-list');
+  const input = document.getElementById('layer-search') as HTMLInputElement | null;
+  if (!container || !input) return;
+  const q = normalizeSearch(input.value.trim());
+  let shown = 0;
+  container.querySelectorAll<HTMLElement>('.layer-group').forEach((group) => {
+    let groupShown = 0;
+    group.querySelectorAll<HTMLElement>('.layer-item').forEach((item) => {
+      const match = !q || (item.dataset['search'] ?? '').includes(q);
+      item.hidden = !match;
+      if (match) groupShown++;
+    });
+    group.hidden = groupShown === 0;
+    shown += groupShown;
+  });
+  let empty = container.querySelector<HTMLElement>('.layer-search-empty');
+  if (shown === 0 && q) {
+    if (!empty) {
+      empty = document.createElement('p');
+      empty.className = 'empty-hint layer-search-empty';
+      empty.textContent = 'Žádná vrstva neodpovídá hledání.';
+      container.appendChild(empty);
+    }
+  } else {
+    empty?.remove();
+  }
+}
+
 let subscribed = false;
 
 export function renderLayerPanel(layers: JvfVectorLayer[]): void {
@@ -47,9 +85,12 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
     subscribed = true;
     subscribeLayerVisibility(syncLayerPanel);
     subscribeFeatureFilter(syncLayerPanel);
+    document.getElementById('layer-search')?.addEventListener('input', applyLayerSearch);
   }
   const container = document.getElementById('jvf-layers-list')!;
   container.innerHTML = '';
+  const search = document.getElementById('layer-search') as HTMLInputElement | null;
+  if (search) search.hidden = layers.length === 0;
 
   // Bez dat vodotisk „Přetáhněte data ve formátu …" uprostřed panelu;
   // ikona je tlačítko nahrání (data-upload-trigger → ui/fileUpload.ts).
@@ -84,7 +125,11 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
     const groupName = document.createElement('span');
     groupName.className = 'layer-group-name part-underline';
     groupName.style.setProperty('--part-color', LAYER_COLORS[obsahovaCast] ?? '#90a4ae');
-    groupName.textContent = obsahovaCast;
+    // Zkratka + celý název části („DI · Dopravní infrastruktura").
+    const partTitle = document.createElement('span');
+    partTitle.className = 'part-title';
+    partTitle.textContent = contentPartTitle(obsahovaCast);
+    groupName.append(obsahovaCast, partTitle);
     groupHeader.appendChild(groupName);
     groupEl.appendChild(groupHeader);
 
@@ -93,6 +138,10 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
       const layerKey = resolveLayerKey(layer.objektovyTyp);
       item.className = 'layer-item active';
       item.dataset['layerKey'] = layerKey;
+      const ot = layer.objektovyTyp;
+      item.dataset['search'] = normalizeSearch(
+        [ot.nazev, ot.elementName, `${ot.codeBase}${ot.codeSuffix}`, ot.skupinaObjektu, ot.kategorieObjektu, obsahovaCast, contentPartTitle(obsahovaCast)].join(' '),
+      );
       // Symbol řádku — stejný náhled jako Přehled prvků (`buildStyleSwatch`
       // nad `resolveDataStyle`: u variant podle atributu nejčastější v datech).
       const dataStyle = resolveDataStyle(layer.objektovyTyp);
@@ -114,7 +163,7 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
       nameEl.textContent = layer.objektovyTyp.nazev || layer.objektovyTyp.elementName;
       const metaEl = document.createElement('span');
       metaEl.className = 'layer-meta';
-      metaEl.textContent = `${layer.objektovyTyp.skupinaObjektu || layer.objektovyTyp.kategorieObjektu} · ${obsahovaCast}`;
+      metaEl.textContent = layer.objektovyTyp.skupinaObjektu || layer.objektovyTyp.kategorieObjektu;
       infoEl.appendChild(nameEl);
       infoEl.appendChild(metaEl);
       leftEl.appendChild(infoEl);
@@ -136,4 +185,5 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
     container.appendChild(groupEl);
   }
   syncLayerPanel();
+  applyLayerSearch();
 }

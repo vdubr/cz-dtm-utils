@@ -1,5 +1,6 @@
 import {
   loadJvfFile,
+  type AddMode,
   type JvfLoadCallback,
   type JvfErrorProtocolCallback,
 } from './fileUpload.js';
@@ -71,6 +72,8 @@ export function setupDragAndDrop(
     // Každý přetažený soubor = nový projekt. Sekvenčně (await), aby se
     // loading overlay a případné modaly (nesoulad verze) nepřekrývaly.
     void (async () => {
+      // Dotaz přidat / nahradit jen u prvního souboru, další se přidají.
+      let mode: AddMode | undefined;
       for (const file of files) {
         if (!isXmlFile(file)) {
           alert(
@@ -79,7 +82,7 @@ export function setupDragAndDrop(
           );
           continue;
         }
-        await loadJvfFile(file, onLoad, onErrorProtocol);
+        if (await loadJvfFile(file, onLoad, onErrorProtocol, mode)) mode = 'add';
       }
     })();
   });

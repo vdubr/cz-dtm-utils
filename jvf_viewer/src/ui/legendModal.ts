@@ -13,7 +13,7 @@ import {
   type VariantStyle,
 } from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
-import { compareContentParts } from '../state/contentParts.js';
+import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
 import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
 
 /**
@@ -158,7 +158,7 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     groupHeader.className = 'legend-cast-header';
     const color = LAYER_COLORS[cast] ?? '#90a4ae';
     groupHeader.innerHTML = `
-      <span class="legend-cast-name part-underline" style="--part-color:${color}">${cast}</span>
+      <span class="legend-cast-name part-underline" style="--part-color:${color}">${cast}<span class="part-title">${contentPartTitle(cast)}</span></span>
       <span class="legend-cast-count">${total} ${pluralTypes(total)}</span>
     `;
     groupEl.appendChild(groupHeader);

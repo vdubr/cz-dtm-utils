@@ -400,6 +400,14 @@ html, body {
   cursor: pointer;
 }
 .basemap-bar-btn .material-symbols-outlined { font-size: 20px; }
+/* Tmavý motiv: plovoucí ovládání nad mapou musí být vidět i na černém
+   podkladu („Prázdná" je v tmavém motivu černá) — světlejší plocha a obrys. */
+:root[data-theme='dark'] .basemap-bar,
+:root[data-theme='dark'] .basemap-card,
+:root[data-theme='dark'] .map-tools .measure-btn {
+  background: var(--md-sys-color-surface-container-high);
+  box-shadow: 0 0 0 1px var(--md-sys-color-outline-variant), var(--md-sys-elevation-2, 0 2px 8px rgba(0, 0, 0, 0.5));
+}
 .basemap-bar-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
 .basemap-bar-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
 .basemap-bar-menu { color: var(--md-sys-color-primary); }
@@ -524,6 +532,32 @@ html, body {
   letter-spacing: 0.06em;
   color: var(--md-sys-color-on-surface);
 }
+/* Hledání ve vrstvách výkresu (pod záhlavím sekce, styl jako hledání v legendách). */
+.layer-search {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
+  font: 400 13px/18px var(--md-sys-typescale-font);
+}
+.layer-search:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: -1px; }
+.layer-search[hidden],
+.layer-item[hidden],
+.layer-group[hidden] { display: none; }
+.layer-search-empty { padding: 12px 20px; }
+/* Celý název obsahové části za zkratkou („DI · Dopravní infrastruktura"). */
+.part-title {
+  margin-left: 6px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--md-sys-color-on-surface-variant);
+}
 /* Seznam vrstev od kraje ke kraji panelu (přes jeho vnitřní okraj 12 px) —
    hover řádku na celou šířku, bez zaoblení; obsah zůstává odsazený. */
 #jvf-layers-list { margin: 0 -12px; }
@@ -532,10 +566,11 @@ html, body {
 /* Náhled stylu v pevném rámečku — text všech řádků začíná stejně. */
 .layer-symbol-box { flex: 0 0 24px; width: 24px; display: flex; align-items: center; justify-content: center; }
 #jvf-layers-list .layer-group-header { padding: 0 20px 0 16px; }
+/* Kompaktní řádek (u ŽXML jsou desítky vrstev) — název a skupina pod sebou. */
 .layer-item {
-  min-height: 48px;
+  min-height: 36px;
   margin: 0;
-  padding: 4px 24px 4px 20px;
+  padding: 2px 24px 2px 20px;
   gap: 12px;
   border-radius: 0;
 }
@@ -543,12 +578,12 @@ html, body {
 /* Ikona stylu svisle na střed řádku (název + popisek). */
 .layer-item-left { gap: 12px; align-items: center; }
 .layer-name {
-  font: 400 14px/20px var(--md-sys-typescale-font);
+  font: 400 13px/18px var(--md-sys-typescale-font);
   letter-spacing: 0.25px;
   color: var(--md-sys-color-on-surface);
 }
 .layer-meta {
-  font: 400 12px/16px var(--md-sys-typescale-font);
+  font: 400 11px/14px var(--md-sys-typescale-font);
   letter-spacing: 0.4px;
   color: var(--md-sys-color-on-surface-variant);
 }
@@ -798,6 +833,25 @@ html, body {
   letter-spacing: 0.25px;
 }
 .modal-dialog .modal-body h3 { font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
+/* Legendy: stálá výška (při hledání bez výsledků se modál nezmenší)
+   a viditelný posuvník — tenký šedý se na pozadí modálu ztrácel. */
+#legend-modal .modal-dialog,
+#symbol-legend-modal .modal-dialog { height: min(85vh, 900px); }
+/* Firefox (bez ::-webkit-scrollbar); v Chrome by standardní vlastnosti
+   přebily vlastní posuvník a na macOS by se schovával. */
+@supports not selector(::-webkit-scrollbar) {
+  #legend-modal .modal-body,
+  #symbol-legend-modal .modal-body { scrollbar-color: var(--md-sys-color-outline) transparent; }
+}
+#legend-modal .modal-body::-webkit-scrollbar,
+#symbol-legend-modal .modal-body::-webkit-scrollbar { width: 12px; }
+#legend-modal .modal-body::-webkit-scrollbar-thumb,
+#symbol-legend-modal .modal-body::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline);
+  border: 3px solid transparent;
+  border-radius: 6px;
+  background-clip: padding-box;
+}
 .modal-dialog .modal-body code { font-family: var(--md-sys-typescale-mono); }
 .modal-footer {
   gap: 8px;
@@ -1060,17 +1114,20 @@ html, body {
 
 /* Přehled prvků — hlavička kategorie ve stylu položky legendy DTM
    (náhled symbolu, název, skupina · část · element), oko skrývá kategorii. */
+/* Hlavička skupiny jako plochý řádek přes celou šířku (jako panel vrstev),
+   bez rámečku a zaoblení — skupiny odděluje jen dělicí čára. */
 .feature-group-header.legend-item {
-  margin: 0 8px 4px;
-  min-height: 52px;
-  padding: 6px 4px 6px 8px;
+  margin: 0;
+  min-height: 44px;
+  padding: 4px 8px 4px 16px;
   gap: 10px;
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: var(--app-radius);
+  border: none;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 0;
   background: var(--md-sys-color-surface-container-low);
   font-weight: 400;
 }
-.feature-group-header.legend-item:first-child { margin-top: 4px; }
+.feature-group-header.legend-item:first-child { margin-top: 0; }
 .feature-group-header.legend-item:hover {
   background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, var(--md-sys-color-surface-container-low));
 }
