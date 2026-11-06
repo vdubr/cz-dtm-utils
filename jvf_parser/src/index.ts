@@ -36,6 +36,7 @@ export {
   resolveAppearance,
   resolveRepresentativeAppearance,
   resolveRotationDeg,
+  usesDialectStyle,
 } from './styles/resolve.js';
 export type { Appearance, AttrRule, ObjectStyle, StyleTable } from './styles/types.js';
 

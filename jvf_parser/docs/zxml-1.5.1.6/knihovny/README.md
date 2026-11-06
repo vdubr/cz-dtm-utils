@@ -110,6 +110,32 @@ python3 -m unittest scripts/zxml/test_vectorize.py
 Kroky od `vectorize.py` dál pracují jen s daty v repozitáři (manifest, PNG),
 PDF ani xlsx nepotřebují.
 
+## Jak získat zdroje při aktualizaci
+
+Web Správy železnic **blokuje automatické stahování**: `curl`/WebFetch bez
+prohlížečového User-Agenta vrací 403 nebo „Request Rejected", rozšíření
+Claude in Chrome má doménu `spravazeleznic.cz` zablokovanou politikou
+organizace. Ochranu neobcházet — soubory **stáhne člověk ručně v běžném
+prohlížeči** a uloží je do repozitáře (velké zdroje mimo git, viz níže).
+
+| Co | Kde (stránka SŽ) | K čemu |
+|---|---|---|
+| `Datovy_model_DTMZ_<verze>.zip` (XSD ŽXML, `SZ_LDM_*.xlsx`) | [Datový model DTMŽ](https://www.spravazeleznic.cz/stavby-zakazky/podklady-pro-zhotovitele/digitalne-technicka-mapa-zeleznice-technicke-standardy/datovy-model-dtmz) | XSD → `../xsd`, LDM xlsx → `scripts/zxml/ldm-attributes.py` |
+| `MOZeK_fotokatalog_<datum>.pdf` (~240 MB) | [Modelový objektový železniční katalog](https://www.spravazeleznic.cz/stavby-zakazky/podklady-pro-zhotovitele/digitalne-technicka-mapa-zeleznice-technicke-standardy/modelovy-objektovy-zeleznicni-katalog) | obrázky značek → `extract-mozek-symbols.py` |
+| `SZ_Předpis_M20_MP006.zip` | [SŽG – dokumenty pro externí firmy](https://www.spravazeleznic.cz/o-nas/organizacni-struktura/organizacni-jednotky/szg/dokumenty-ke-stazeni/externi) | pravděpodobně knihovna buněk / šablony DGN (MicroStation) — **přesný vektorový zdroj značek**; zatím neověřeno |
+| Knihovna značek zabezpečovací techniky ZABCELL (příloha TNŽ 34 5542) | [přímý odkaz](https://www.spravazeleznic.cz/documents/50004227/142705238/Knihovna+zna%C4%8Dek+zabezpe%C4%8Dovac%C3%AD+techniky+ZABCELL/f37c6ed5-0daf-469c-82eb-fd25aaa3e23c) | buňky MicroStation (návěstidla, zabezpečovací zařízení) |
+| Technický standard tvorby dat | [Tvorba a aktualizace dat DTMŽ](https://www.spravazeleznic.cz/stavby-zakazky/podklady-pro-zhotovitele/digitalne-technicka-mapa-zeleznice-technicke-standardy/tvorba-a-aktualizace-dat-dtmz) | pravidla dat, kontroly |
+
+Kontrolu nových verzí datového modelu dělá `npm run check:upstream`
+(i týdenní GitHub Action) — při nové verzi stáhnout balíky ručně podle tabulky.
+
+**Buňky DGN místo vektorizace z PNG:** pokud balík M20/MP006 (nebo ZABCELL)
+obsahuje knihovnu buněk (`.cel`/`.dgn`), převést ji na DXF (ODA File
+Converter; DGN v8 neumí otevřené nástroje číst) a z DXF skriptem přes
+`ezdxf` na SVG — přesné vektory místo obrysů trasovaných z rastru. Objekty
+JVF, jejichž značka v MOZeK je jen kopií Katalogu ČÚZK, se kreslí oficiálním
+SVG ČÚZK (`PREFER_KATALOG` v `scripts/zxml/build-zxml-styles.py`).
+
 ## Licence
 
 Obrázky značek, jejich vektorizace a výtah z LDM jsou **odvozeny z materiálů

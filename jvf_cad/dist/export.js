@@ -15,7 +15,7 @@
  *
  * Souřadnice beze změny (EPSG:5514, metry), měřítko symbolů a textů 1:500.
  */
-import { getStyleTable, labelForAttribute, resolveAppearance, resolveKatalogAppearance, resolveKatalogRepresentativeAppearance, resolveRepresentativeAppearance, } from 'jvf-parser';
+import { getStyleTable, usesDialectStyle, labelForAttribute, resolveAppearance, resolveKatalogAppearance, resolveKatalogRepresentativeAppearance, resolveRepresentativeAppearance, } from 'jvf-parser';
 import { DxfDocument } from './dxf/document.js';
 import { CAD_SYMBOLS, blockNameFor, symbolColorFor } from './symbols.js';
 import { textHeightFor, isTextObject } from './text.js';
@@ -87,9 +87,11 @@ export function exportDxf(dtm, options = {}) {
     const doc = new DxfDocument(version);
     const fillAreas = options.fillAreas ?? true;
     // Dialekt (nebo zadaná tabulka) → jeho styly, čisté JVF DTM → Katalog DTM ČR.
+    // ŽXML: objekty JVF bez vlastního vzhledu Katalogem — stejně jako viewer.
     const styles = options.styles ?? getStyleTable(dtm.verze);
-    const representative = (ot) => styles ? resolveRepresentativeAppearance(styles, ot) : resolveKatalogRepresentativeAppearance(ot);
-    const appearance = (ot, zaznam) => styles ? resolveAppearance(styles, ot, zaznam) : resolveKatalogAppearance(ot, zaznam);
+    const dialectFor = (ot) => Boolean(styles) && (options.styles !== undefined || usesDialectStyle(dtm.verze, ot));
+    const representative = (ot) => dialectFor(ot) ? resolveRepresentativeAppearance(styles, ot) : resolveKatalogRepresentativeAppearance(ot);
+    const appearance = (ot, zaznam) => dialectFor(ot) ? resolveAppearance(styles, ot, zaznam) : resolveKatalogAppearance(ot, zaznam);
     let entities = 0;
     let skipped = 0;
     const ensureLinetype = (dashMm) => {

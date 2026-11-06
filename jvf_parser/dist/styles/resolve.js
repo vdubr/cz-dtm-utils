@@ -22,6 +22,26 @@ export function getStyleTable(version) {
 export function getObjectStyle(styles, ot) {
     return styles[`${ot.codeBase}-${ot.codeSuffix}`];
 }
+/** Má styl vlastní vzhled (značka, čárkování, pravidla) — ne jen barvu obsahové části? */
+function hasOwnLook(style) {
+    return Boolean(style.base.symbol || style.base.dashMm || style.rules?.length);
+}
+/**
+ * Kreslí se objektový typ souboru dané verze vzhledem dialektu (jinak
+ * Katalogem DTM ČR)? Jediné rozhodnutí pro viewer i export do CAD.
+ *
+ * UDM pokrývá všechny objekty. ŽXML (fotokatalog MOZeK) má vlastní vzhled
+ * hlavně u objektů SŽ (`999…`); objekty JVF bez vlastní značky / čárkování
+ * (jen barva obsahové části) se kreslí oficiálním vzhledem Katalogu ČÚZK.
+ */
+export function usesDialectStyle(version, ot) {
+    const d = dialectOf(version);
+    const styles = d ? STYLES_BY_DIALECT[d.id] : undefined;
+    const style = styles ? getObjectStyle(styles, ot) : undefined;
+    if (!style)
+        return false;
+    return !(d.id === 'zxml' && !ot.codeBase.startsWith('999') && !hasOwnLook(style));
+}
 /**
  * Vzhled záznamu: základní vzhled objektu + složky z pravidel podle hodnot
  * atributů (číselníků). Bez záznamu jen základní vzhled. `undefined` pokud

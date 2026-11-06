@@ -6,6 +6,15 @@ export declare function getStyleTable(version: string): StyleTable | undefined;
 /** Styl objektového typu (klíč `<code_base>-<suffix>`), nebo `undefined`. */
 export declare function getObjectStyle(styles: StyleTable, ot: CodeKey): ObjectStyle | undefined;
 /**
+ * Kreslí se objektový typ souboru dané verze vzhledem dialektu (jinak
+ * Katalogem DTM ČR)? Jediné rozhodnutí pro viewer i export do CAD.
+ *
+ * UDM pokrývá všechny objekty. ŽXML (fotokatalog MOZeK) má vlastní vzhled
+ * hlavně u objektů SŽ (`999…`); objekty JVF bez vlastní značky / čárkování
+ * (jen barva obsahové části) se kreslí oficiálním vzhledem Katalogu ČÚZK.
+ */
+export declare function usesDialectStyle(version: string, ot: CodeKey): boolean;
+/**
  * Vzhled záznamu: základní vzhled objektu + složky z pravidel podle hodnot
  * atributů (číselníků). Bez záznamu jen základní vzhled. `undefined` pokud
  * objekt v tabulce není.

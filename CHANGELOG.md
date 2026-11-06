@@ -221,6 +221,12 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   objekty ZPSUDM a H3D.
 
 ### Opraveno
+- **JŽM: objekty JVF podle Katalogu ČÚZK i v exportu do CAD** — DXF ze
+  souboru ŽXML kreslil objekty JVF bez vlastní značky SŽ jen barvou obsahové
+  části, viewer je přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
+  (`usesDialectStyle`). Studna, drobná sakrální stavba, komín, vrt a jiné
+  zařízení staveb TI mají místo značky vektorizované z fotokatalogu MOZeK
+  oficiální SVG ČÚZK (značka byla shodná).
 - **Plot jako plná čára s příčkami** (jako mapa ČÚZK) — vzor Katalogu
   „0,15 10,0" se kreslil doslova jako řídké tečky. Teď plná čára 0,18 mm
   s krátkými příčkami po 10 mm v mapě, legendě i panelu vrstev; ve 3D

@@ -17,6 +17,7 @@
  */
 import {
   getStyleTable,
+  usesDialectStyle,
   labelForAttribute,
   resolveAppearance,
   resolveKatalogAppearance,
@@ -127,11 +128,14 @@ export function exportDxf(dtm: JvfDtm, options: ExportDxfOptions = {}): ExportDx
   const doc = new DxfDocument(version);
   const fillAreas = options.fillAreas ?? true;
   // Dialekt (nebo zadaná tabulka) → jeho styly, čisté JVF DTM → Katalog DTM ČR.
+  // ŽXML: objekty JVF bez vlastního vzhledu Katalogem — stejně jako viewer.
   const styles = options.styles ?? getStyleTable(dtm.verze);
+  const dialectFor = (ot: ObjektovyTyp): boolean =>
+    Boolean(styles) && (options.styles !== undefined || usesDialectStyle(dtm.verze, ot));
   const representative = (ot: ObjektovyTyp): Appearance | undefined =>
-    styles ? resolveRepresentativeAppearance(styles, ot) : resolveKatalogRepresentativeAppearance(ot);
+    dialectFor(ot) ? resolveRepresentativeAppearance(styles!, ot) : resolveKatalogRepresentativeAppearance(ot);
   const appearance = (ot: ObjektovyTyp, zaznam: ZaznamObjektu): Appearance | undefined =>
-    styles ? resolveAppearance(styles, ot, zaznam) : resolveKatalogAppearance(ot, zaznam);
+    dialectFor(ot) ? resolveAppearance(styles!, ot, zaznam) : resolveKatalogAppearance(ot, zaznam);
   let entities = 0;
   let skipped = 0;
 

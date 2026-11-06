@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ZXML_STYLES } from '../../src/zxml-1.5.1.6/generated/styles.js';
 import { ZXML_STYLES as ZXML_STYLES_1421 } from '../../src/zxml-1.4.2.1/generated/styles.js';
+import { usesDialectStyle } from '../../src/index.js';
 
 const SYMBOL_DIR = resolve(import.meta.dirname, '../../../jvf_viewer/public/symboly/zxml');
 
@@ -57,6 +58,24 @@ describe('ZXML_STYLES — symbologie ŽXML (fotokatalog MOZeK)', () => {
     // „ve žlabu" (100694): čárka – tečka (13,4 / 2,3 / 0,9 / 2,3 mm)
     expect(rule?.values['100694']?.dashMm).toEqual([13.4, 2.3, 0.9, 2.3]);
     expect(rule?.values['100693']?.dashMm?.length).toBe(8);
+  });
+
+  it('objekty JVF se značkou shodnou s Katalogem ČÚZK nemají značku MOZeK', () => {
+    for (const key of ['0100000084-01', '0100000154-01', '0100000177-04', '0100000191-01', '0100000139-01']) {
+      const s = ZXML_STYLES[key]!;
+      expect(s.base.symbol, key).toBeUndefined();
+      expect(s.rules, key).toBeUndefined();
+    }
+  });
+
+  it('usesDialectStyle: objekty SŽ a JVF s vlastní značkou dialektem, ostatní JVF Katalogem', () => {
+    const v = 'zxml-1.5.1.6';
+    const ot = (codeBase: string, codeSuffix: string) => ({ codeBase, codeSuffix });
+    expect(usesDialectStyle(v, ot('9990000487', '01'))).toBe(true); // návěstidlo SŽ
+    expect(usesDialectStyle(v, ot('0100000218', '01'))).toBe(true); // podrobný bod — SŽ kreslí jinak
+    expect(usesDialectStyle(v, ot('0100000019', '03'))).toBe(false); // obvod dráhy — jen barva
+    expect(usesDialectStyle(v, ot('0100000177', '04'))).toBe(false); // komín — značka shodná s ČÚZK
+    expect(usesDialectStyle('1.5.0.2', ot('0100000218', '01'))).toBe(false); // čisté JVF
   });
 
   it('návěstidlo tabulka (SŽ-ZDD): symbol podle TypNavestidlaTabulka a natočení', () => {

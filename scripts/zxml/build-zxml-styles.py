@@ -49,6 +49,18 @@ SYMBOLOGY_TS = ROOT / 'jvf_viewer/src/map/symbology.ts'
 COLORS = SCRIPTS / 'colors.json'
 BLACK = '#000000'
 BASE_WIDTH = 0.25
+# Objekty JVF, jejichž značka ve fotokatalogu MOZeK je jen kopií oficiální
+# značky Katalogu DTM ČR (porovnáno vizuálně 2026-11-06) — vektorizace z PNG
+# se pro ně nepoužije, kreslí se oficiálním SVG ČÚZK (viz `usesDialectStyle`).
+# Objekty, které SŽ kreslí jinak (podrobný bod, výškový bod, zařízení sítí…),
+# si značku MOZeK ponechávají.
+PREFER_KATALOG = {
+    '0100000084': 'studna na veřejném prostranství',
+    '0100000139': 'jiné zařízení staveb TI',
+    '0100000154': 'drobná sakrální stavba',
+    '0100000177': 'komín',
+    '0100000191': 'vrt',
+}
 
 
 def warn(msg: str) -> None:
@@ -238,6 +250,19 @@ def main() -> None:
                     not_urc.append(f'{key}:{a}')
             if 'dashMm' in st['base'] and any('dashMm' not in v for r in st['rules'] for v in r['values'].values()):
                 warn(f'{key}: základní vzhled čárkovaný, některá hodnota plná — pravidlo plnou čáru nevyjádří')
+    # Shodné značky s Katalogem ČÚZK → bez značky MOZeK (kreslí se oficiální SVG).
+    for key, st in styles.items():
+        if key.split('-')[0] not in PREFER_KATALOG:
+            continue
+        st['base'].pop('symbol', None)
+        for r in st.get('rules', []):
+            for v in r['values'].values():
+                v.pop('symbol', None)
+            r['values'] = {k: v for k, v in r['values'].items() if v}
+        st['rules'] = [r for r in st.get('rules', []) if r['values']]
+        if not st['rules']:
+            del st['rules']
+        stats['preferKatalog'] += 1
     with_rules = {k for k, s in styles.items() if 'rules' in s}
     urc_objects = {k for k, a in urc if a != 'Natoceni'}
     urc_without = sorted(urc_objects - with_rules - {k for k, s in styles.items()

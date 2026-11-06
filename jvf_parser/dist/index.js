@@ -12,7 +12,7 @@ export { parseStaniceniData } from './dialects/zxml.js';
 export { parseUdm, detectUdmVersionString } from './udm-2.1.1/parser.js';
 // Vzhled objektů dialektů (barvy, tloušťky, vzory linií, symboly, natočení)
 // — viewer i export do CAD.
-export { getStyleTable, getObjectStyle, resolveAppearance, resolveRepresentativeAppearance, resolveRotationDeg, } from './styles/resolve.js';
+export { getStyleTable, getObjectStyle, resolveAppearance, resolveRepresentativeAppearance, resolveRotationDeg, usesDialectStyle, } from './styles/resolve.js';
 // Katalog kartografických symbolů DTM ČR (ČÚZK) — vzhled čistého JVF DTM
 // podle typu geometrie a hodnot atributů (viewer i export do CAD).
 export { SYMBOLOGY as KATALOG_SYMBOLOGY, FALLBACK_COLORS as KATALOG_FALLBACK_COLORS, DEFAULT_COLOR as KATALOG_DEFAULT_COLOR, } from './katalog/symbology.js';

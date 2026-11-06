@@ -13,14 +13,13 @@
  */
 import {
   dialectOf,
-  getObjectStyle,
   getStyleTable,
   resolveAppearance,
   resolveRepresentativeAppearance,
   resolveRotationDeg,
+  usesDialectStyle,
   type Appearance,
   type ObjektovyTyp,
-  type ObjectStyle,
   type StyleTable,
   type ZaznamObjektu,
 } from 'jvf-parser';
@@ -33,11 +32,6 @@ interface DialectBinding {
 
 const bindings = new WeakMap<ObjektovyTyp, DialectBinding>();
 
-/** Má styl vlastní vzhled (symbol, čárkování, pravidla) — ne jen barvu? */
-function hasOwnLook(style: ObjectStyle): boolean {
-  return Boolean(style.base.symbol || style.base.dashMm || style.rules?.length);
-}
-
 /**
  * Označit objektové typy projektu dané verze — kreslit symbologií dialektu.
  * U čistého JVF DTM nic nedělá.
@@ -47,10 +41,9 @@ export function markDialectObjekty(objekty: readonly ObjektovyTyp[], version: st
   const styles = getStyleTable(version);
   if (!dialect || !styles) return;
   for (const ot of objekty) {
-    const style = getObjectStyle(styles, ot);
-    if (!style) continue;
-    // ŽXML: objekty JVF bez vlastní značky zůstávají v symbologii ČÚZK.
-    if (dialect.id === 'zxml' && !ot.codeBase.startsWith('999') && !hasOwnLook(style)) continue;
+    // ŽXML: objekty JVF bez vlastní značky zůstávají v symbologii ČÚZK
+    // (sdílené pravidlo s exportem do CAD — `usesDialectStyle`).
+    if (!usesDialectStyle(version, ot)) continue;
     bindings.set(ot, { symbolDir: dialect.id, styles });
   }
 }

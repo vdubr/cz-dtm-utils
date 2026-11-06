@@ -433,8 +433,9 @@ const INFO_CONTENT_HTML = `
     vektorizovanými z obrázků fotokatalogu <em>MOZeK</em> (předpis SŽ
     M20/MP014) — jednotná výška znaku 3 mm při 1:500, natočení podle
     atributu <code>Natoceni</code>; barvy podle obsahové části (katalog
-    je černobílý). Objekty JVF bez vlastní značky SŽ zůstávají v symbologii
-    ČÚZK. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
+    je černobílý). Objekty JVF bez vlastní značky SŽ (a ty, jejichž značka
+    v MOZeK je jen kopií značky ČÚZK — studna, komín, vrt…) se kreslí
+    oficiální symbologií ČÚZK, ve viewru i v exportu do CAD. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
     verzi JVF (objekty SŽ do párů nevstupují). Ukázky ŽXML jsou v režimu JŽM
     v nabídce vedle tlačítka „Nahrát soubor" (oficiální ukázka SŽ a
     schematické nádraží v Řevnicích se smyšlenými daty).

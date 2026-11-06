@@ -153,6 +153,13 @@ describe('exportDxf — čisté JVF DTM ve vzhledu Katalogu DTM ČR', () => {
     },
   );
 
+  it('ŽXML: objekt JVF bez vlastního vzhledu SŽ má vzhled Katalogu (jako viewer)', () => {
+    const p = pairs(exportDxf(loadJvf('jvf_parser/samples/zxml-1.5.1.6/zxml_nadrazi.xml')).dxf);
+    const layer = records(p, 'TABLES').find((r) => r[0]![1] === 'LAYER' && value(r, '2')?.endsWith('ObvodDrahy'))!;
+    // Barva Katalogu DTM ČR (#646464), ne barva obsahové části ŽXML (#ffeb3b).
+    expect(value(layer, '420')).toBe(String(0x646464));
+  });
+
   it('podrobný bod ZPS: blok značky Katalogu v barvě SVG', () => {
     const p = pairs(exportDxf(loadJvf('jvf_parser/samples/1.4.3/ukazka_ZPS.xml')).dxf);
     const bod = records(p, 'ENTITIES').find((e) => value(e, '8') === 'ZPS_PodrobnyBodZPS')!;
