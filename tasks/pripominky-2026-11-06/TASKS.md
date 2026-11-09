@@ -50,7 +50,9 @@ Stav: ✅ hotovo (připraveno 2026-11-06 na `feat/redesign-m3`) · ⬜ TODO ·
   - **Hotovo (2026-11-09):** dle schválení uživatele přepínače (ne chipy):
     „Změny v souboru" — Nové / Editované / Mazané (tečka + počet, filtr) +
     „Obarvit změny" (jen styl, tečky barevné jen při obarvení); jediný typ
-    záznamů → přepínače typů skryté. Umístění beze změny (pod vrstvami).
+    záznamů → přepínače typů skryté. Následně (2026-11-09) přesunuto na
+    mapové tlačítko „Změny" (ikona tužky) s kartou jako DTM / Katastr:
+    přepínač Obarvit (styl) v záhlaví, zaškrtávátka typů (filtr) aktivní vždy.
 - [ ] **T8 — Průhlednost terénu ve 3D** (P10).
   - Ovládání: rozbalovací šipka u „Terén" s posuvníkem „Sytost terénu"
     (jako karta podkladu); `setTerrainOpacity` nastaví `opacity` +

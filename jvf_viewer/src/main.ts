@@ -211,7 +211,7 @@ setupSymbolLegendModal();
 
 // Posuvníky M3: výplň aktivní části dráhy (Chrome / Safari).
 setupM3Sliders();
-// Blok „Změny v souboru" (přepínače Nové / Editované / Mazané) — zobrazí se
+// Tlačítko „Změny" nad mapou (obarvení + filtr Nové / Editované / Mazané) — zobrazí se
 // jen pro JVF obsahující záznamy se `ZapisObjektu` ∈ {i, u, d} (changeset
 // nebo nově vytvořený soubor).
 setupChangesetToggle(() => currentJvfLayers);

@@ -155,12 +155,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
-- **Změny v souboru — srozumitelnější přepínače** — blok „Změny v souboru"
-  má přepínače **Nové / Editované / Mazané** s barevnou tečkou a počtem
-  záznamů (filtr: záznamy typu zobrazí / skryjí) a samostatný přepínač
-  **Obarvit změny** (jen vzhled: barevný lem pod prvkem; bez něj jsou tečky
-  šedé). Jsou-li všechny záznamy stejného typu (např. vše nové), přepínače
-  typů se neukazují — vypnutím by zmizel celý výkres.
+- **Změny v souboru jako tlačítko „Změny" nad mapou** (tužka, vedle DTM
+  a Katastru, jen pro data se změnami) místo čtyř přepínačů v panelu
+  vrstev. V kartě přepínač **Obarvit změny** mění jen vzhled (barevný lem
+  pod prvkem) a zaškrtávátka **Nové / Editované / Mazané** s barevnou
+  tečkou a počtem záznamů filtrují — i bez obarvení (pak jsou tečky šedé).
+  Jsou-li všechny záznamy stejného typu (např. vše nové), filtr typů se
+  neukazuje — vypnutím by zmizel celý výkres.
 - **Posuvníky sytosti ve stylu Material 3** — dráha vlevo od palce
   v barvě motivu, vpravo světlá s tečkou na konci (podklad, překryvy).
 - **Panel vrstev kompaktnější** (nižší řádky, u ŽXML je vidět víc vrstev)

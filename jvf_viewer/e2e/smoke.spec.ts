@@ -360,6 +360,7 @@ test.describe('Načtení JVF souboru', () => {
     );
     expect(['#000000', 'rgb(0, 0, 0)']).toContain(swatchColor);
     // Bez zvýraznění lem zmizí, styl prvku zůstává.
+    await page.locator('#btn-changes-menu').click();
     await page.locator('#toggle-highlight-zapis').uncheck({ force: true });
     const haloOff = await page.evaluate(() => {
       type L = { objektovyTyp: { elementName: string }; olLayer: { getSource(): { getFeatures(): unknown[] } }; haloLayer: { getStyleFunction(): (f: unknown, r: number) => unknown } };
@@ -1881,10 +1882,18 @@ test.describe('Připomínky 2026-11-06', () => {
     await expect(items).toHaveCount(total);
   });
 
-  test('změny v souboru: přepínače s počty skryjí / zobrazí typ, tečky barevné jen při obarvení', async ({ page }) => {
+  test('tlačítko Změny: zaškrtávátka s počty filtrují typ i bez obarvení, tečky barevné jen při obarvení', async ({ page }) => {
     // test_klik_bez_id: 2 nové (i) + 2 editované (u).
     await loadSample(page, 'test_klik_bez_id.xml');
-    await expect(page.locator('#changeset-options-section .changeset-heading')).toHaveText('Změny v souboru');
+    // Tlačítko „Změny" (tužka) nad mapou otevře kartu; bez obarvení i s ním
+    // zaškrtávátka typů filtrují.
+    const btn = page.locator('#btn-changes-menu');
+    await expect(btn).toBeVisible();
+    await expect(btn).toContainText('Změny');
+    await expect(btn.locator('.material-symbols-outlined')).toHaveText('edit');
+    await btn.click();
+    await expect(page.locator('#changes-card')).toBeVisible();
+    await expect(page.locator('#changeset-hint')).toContainText('filtrují');
     const nove = page.locator('#toggle-show-inserted');
     await expect(nove).toBeChecked();
     await expect(page.locator('#row-show-inserted .changeset-count')).toHaveText('2');
@@ -1911,10 +1920,14 @@ test.describe('Připomínky 2026-11-06', () => {
     await expect(dot).not.toHaveCSS('background-color', 'rgb(45, 164, 78)');
   });
 
-  test('změny v souboru: vše nové → bez přepínačů typů, jen obarvení', async ({ page }) => {
+  test('změny v souboru: vše nové → bez filtru typů, jen obarvení', async ({ page }) => {
+    await expect(page.locator('#changes-control')).toBeHidden();
     await loadSample(page, 'ukazka_DI.xml');
-    await expect(page.locator('#changeset-options-section')).toBeVisible();
+    await page.locator('#btn-changes-menu').click();
+    await expect(page.locator('#changes-card')).toBeVisible();
     await expect(page.locator('#changeset-rows')).toBeHidden();
     await expect(page.locator('#toggle-highlight-zapis')).toBeChecked();
+    await expect(page.locator('#changeset-hint')).toContainText('Všechny záznamy jsou nové (7)');
+    await expect(page.locator('#btn-changes-menu')).toHaveClass(/is-on/);
   });
 });

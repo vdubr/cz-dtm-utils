@@ -152,34 +152,6 @@
               <span>Přetáhněte data ve formátu <span data-app-format>JVF</span></span>
             </div>
           </div>
-          <div id="changeset-options-section" class="three-options-footer changeset-section" style="display:none">
-            <div class="changeset-heading">Změny v souboru</div>
-            <div id="changeset-rows">
-              <label class="toggle-row changeset-row" id="row-show-inserted" data-zapis="i" title="Zobrazit / skrýt nové záznamy (ZapisObjektu = i, do DTM se teprve vloží)">
-                <input type="checkbox" class="m3-switch" id="toggle-show-inserted" />
-                <span class="changeset-dot" aria-hidden="true"></span>
-                <span>Nové</span>
-                <span class="changeset-count"></span>
-              </label>
-              <label class="toggle-row changeset-row" id="row-show-updated" data-zapis="u" title="Zobrazit / skrýt editované záznamy (ZapisObjektu = u)">
-                <input type="checkbox" class="m3-switch" id="toggle-show-updated" />
-                <span class="changeset-dot" aria-hidden="true"></span>
-                <span>Editované</span>
-                <span class="changeset-count"></span>
-              </label>
-              <label class="toggle-row changeset-row" id="row-show-deleted" data-zapis="d" title="Zobrazit / skrýt mazané záznamy (ZapisObjektu = d, z DTM se odstraní)">
-                <input type="checkbox" class="m3-switch" id="toggle-show-deleted" />
-                <span class="changeset-dot" aria-hidden="true"></span>
-                <span>Mazané</span>
-                <span class="changeset-count"></span>
-              </label>
-            </div>
-            <label class="toggle-row" id="row-highlight-zapis" title="Pod změněné prvky přidat lem barvy změny: zelená nové, oranžová editované, červená mazané. Prvek sám zůstává ve svém znaku.">
-              <input type="checkbox" class="m3-switch" id="toggle-highlight-zapis" />
-              <span>Obarvit změny</span>
-            </label>
-            <p class="changeset-hint"><strong>Nové / Editované / Mazané</strong> filtrují — záznamy typu zobrazí / skryjí. <strong>Obarvit změny</strong> mění jen vzhled — pod prvek přidá lem barvy změny, nic neskryje.</p>
-          </div>
           <div id="three-options-section" class="three-options-footer" style="display:none">
             <label class="toggle-row" title="Renderovat bodové objekty jako SVG ikony (stejné jako 2D) místo jednoduchých puntíků">
               <input type="checkbox" class="m3-switch" id="toggle-svg-symbols" />
@@ -258,6 +230,44 @@
           </div>
           <div id="kn-card" class="basemap-card" role="dialog" aria-label="Katastr nemovitostí" hidden>
             <div class="overlay-section" id="overlay-kn"></div>
+          </div>
+        </div>
+        <!-- Změny v souboru (ZapisObjektu i / u / d) — jen pro data se změnami
+             (ui/changesetToggle.ts): přepínač Obarvit = styl, zaškrtávátka typů = filtr. -->
+        <div id="changes-control" class="map-control" hidden>
+          <div class="basemap-bar" role="group" aria-label="Změny v souboru">
+            <button id="btn-changes-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="changes-card" title="Změny v souboru — nové / editované / mazané záznamy: obarvení a filtr">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span><span>Změny</span>
+            </button>
+          </div>
+          <div id="changes-card" class="basemap-card" role="dialog" aria-label="Změny v souboru" hidden>
+            <div id="changeset-options-section" class="overlay-section changeset-section">
+              <label class="toggle-row overlay-toggle" id="row-highlight-zapis" title="Pod změněné prvky přidat lem barvy změny: zelená nové, oranžová editované, červená mazané. Prvek sám zůstává ve svém znaku, nic se neskryje.">
+                <span class="panel-section-title overlay-title">Obarvit změny</span>
+                <input type="checkbox" class="m3-switch" id="toggle-highlight-zapis" />
+              </label>
+              <div id="changeset-rows" class="overlay-sublayers overlay-sublayers--flat">
+              <label class="overlay-check-row changeset-row" id="row-show-inserted" data-zapis="i" title="Zobrazit / skrýt nové záznamy (ZapisObjektu = i, do DTM se teprve vloží)">
+                <input type="checkbox" class="m3-checkbox" id="toggle-show-inserted" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Nové</span>
+                <span class="overlay-count changeset-count"></span>
+              </label>
+              <label class="overlay-check-row changeset-row" id="row-show-updated" data-zapis="u" title="Zobrazit / skrýt editované záznamy (ZapisObjektu = u)">
+                <input type="checkbox" class="m3-checkbox" id="toggle-show-updated" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Editované</span>
+                <span class="overlay-count changeset-count"></span>
+              </label>
+              <label class="overlay-check-row changeset-row" id="row-show-deleted" data-zapis="d" title="Zobrazit / skrýt mazané záznamy (ZapisObjektu = d, z DTM se odstraní)">
+                <input type="checkbox" class="m3-checkbox" id="toggle-show-deleted" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Mazané</span>
+                <span class="overlay-count changeset-count"></span>
+              </label>
+              </div>
+              <p class="overlay-note changeset-hint" id="changeset-hint"></p>
+            </div>
           </div>
         </div>
         <!-- Terén ČÚZK DMR5G — jen ve 3D (ui/toggle3d.ts). -->
