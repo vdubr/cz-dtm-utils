@@ -203,21 +203,25 @@ export function setupSymbolLegendModal(): void {
   }
 
   let entries: SymbolEntry[] | null = null;
+  const close = (): void => {
+    modal.style.display = 'none';
+  };
+  // Změna verze / režimu: legenda patří jen k dialektu, ve kterém se otevřela.
   onActiveVersionChange(() => {
     entries = null;
+    close();
   });
 
   const open = (): void => {
     const version = getActiveVersion();
+    // Čisté JVF nemá vlastní znaky — jeho znaky ukazuje Legenda DTM.
+    if (!getStyleTable(version)) return;
     entries ??= collectSymbols(version);
     title.textContent = `Legenda znaků — ${formatVersionLabel(version)}`;
     dl.disabled = entries.length === 0;
     dl.textContent = `Stáhnout SVG (ZIP, ${entries.length})`;
     render(body, entries, search?.value ?? '');
     modal.style.display = 'flex';
-  };
-  const close = (): void => {
-    modal.style.display = 'none';
   };
 
   btn.addEventListener('click', open);

@@ -155,6 +155,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   typy odpovídají XSD (`npm run check:generated`).
 
 ### Změněno
+- **Posuvníky sytosti ve stylu Material 3** — dráha vlevo od palce
+  v barvě motivu, vpravo světlá s tečkou na konci (podklad, překryvy).
 - **Panel vrstev kompaktnější** (nižší řádky, u ŽXML je vidět víc vrstev)
   a hlavičky obsahových částí s celým názvem („DI Dopravní infrastruktura")
   v panelu i Legendě DTM.
@@ -251,6 +253,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   objekty ZPSUDM a H3D.
 
 ### Opraveno
+- **Legenda znaků jen v UDM a JŽM** — při přepnutí nástroje nebo verze se
+  zavře a v režimu JVF se neotevře (JVF má jednu legendu, Legendu DTM).
 - **3D: SVG ikony bodů nemizí při přiblížení** — ikona se skrývala podle
   vzdálenosti kamery od středu otáčení (nad 150 m) a nic ji nenahradilo;
   teď se podle skutečné velikosti na obrazovce střídá ikona a puntík

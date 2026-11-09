@@ -84,7 +84,7 @@ Náročnost: 🟢 lehké (CSS / jedno místo), 🟡 střední (víc souborů, te
   **Přidat / Nahradit** (křížek = zrušit), u dávky souborů jen jednou;
   nahrazení až po úspěšném načtení nového souboru.
 
-### P8 — Styl plotu v mapě (ZPS) 🟡 (otázka)
+### P8 — Styl plotu v mapě (ZPS) ✅ uzavřeno (uživatel 2026-11-09: „plot je ok")
 > styl pro plot v mapě je blbě (zps)
 
 - Zjištění: plot (0100000162) kreslí Katalog jako plnou čáru 0,18 mm

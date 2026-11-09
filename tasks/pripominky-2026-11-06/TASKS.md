@@ -70,7 +70,6 @@ Stav: ✅ hotovo (připraveno 2026-11-06 na `feat/redesign-m3`) · ⬜ TODO ·
 
 ## Čeká na upřesnění (❓)
 
-- **P8** styl plotu v ZPS — co přesně nesedí (snímek vs. mapa ČÚZK)?
 - **P17** číselníky — popisky jsou u všech hodnot JVF / UDM / ŽXML; co chybí?
 - **P20** tisk — výřez mapy (PNG / PDF), mapový list v měřítku s legendou,
   nebo tabulka Přehledu prvků?

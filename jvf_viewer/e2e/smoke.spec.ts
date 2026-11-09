@@ -525,6 +525,17 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     expect(dxf).toMatch(/SZ_[0-9a-f]{8}/);
   });
 
+  test('Legenda znaků se po přepnutí do JVF zavře a v JVF neotevře', async ({ page }) => {
+    await switchMode(page, 'jzm');
+    await page.locator('#btn-symbol-legend').click();
+    await expect(page.locator('#symbol-legend-modal')).toBeVisible();
+    await page.locator('#symbol-legend-modal-close').click();
+    await switchMode(page, 'jvf');
+    await expect(page.locator('#btn-symbol-legend')).toBeHidden();
+    await page.locator('#btn-symbol-legend').evaluate((el) => (el as HTMLButtonElement).click());
+    await expect(page.locator('#symbol-legend-modal')).toBeHidden();
+  });
+
   test('Legenda znaků JŽM stáhne SVG v balíku ZIP', async ({ page }) => {
     await switchMode(page, 'jzm');
     await page.locator('#btn-symbol-legend').click();
