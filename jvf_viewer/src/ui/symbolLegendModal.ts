@@ -18,6 +18,7 @@ import {
 } from 'jvf-parser';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { createZip, type ZipEntry } from '../util/zip.js';
+import { attachSearchClear } from './searchField.js';
 import { symbolPreviewUrl } from './symbolSwatch.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
@@ -227,6 +228,7 @@ export function setupSymbolLegendModal(): void {
   document.addEventListener('keydown', (ev) => {
     if (ev.key === 'Escape' && modal.style.display !== 'none') close();
   });
+  if (search) attachSearchClear(search);
   search?.addEventListener('input', () => render(body, entries ?? [], search.value));
   dl.addEventListener('click', () => {
     void (async () => {

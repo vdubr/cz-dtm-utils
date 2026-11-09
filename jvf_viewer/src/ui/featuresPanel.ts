@@ -11,6 +11,7 @@ import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import { scrollIntoViewFast } from '../util/scroll.js';
 import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
 import { isLayerVisible, subscribeLayerVisibility, toggleLayerVisible } from '../state/layerVisibility.js';
+import { attachSearchClear } from './searchField.js';
 import { buildLegendSwatchFor } from './symbolSwatch.js';
 import {
   LEVEL_NONE,
@@ -808,6 +809,7 @@ export function initFeaturesPanel(
   });
 
   // Search
+  attachSearchClear(searchInput);
   searchInput.addEventListener('input', () => {
     currentSearch = searchInput.value.trim();
     renderRows();

@@ -10,7 +10,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ### Přidáno
 - **Hledání ve vrstvách výkresu** — pole „Hledat vrstvu" zúží seznam podle
   názvu, elementu nebo kódu objektu (bez diakritiky); viditelnost v mapě
-  nemění.
+  nemění. Všechna pole hledání (vrstvy, legendy, Přehled prvků) vypadají
+  stejně a mají křížek pro vymazání, vidět vždy, když je pole vyplněné.
 - **Přidat, nebo nahradit projekt** — jsou-li načtená data, nahrání souboru
   nebo ukázky se zeptá, zda ho přidat jako další projekt, nebo jím data
   nahradit; stejný soubor se podruhé nepřidá (upozornění).

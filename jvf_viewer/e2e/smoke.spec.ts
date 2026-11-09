@@ -1857,7 +1857,14 @@ test.describe('Připomínky 2026-11-06', () => {
     await expect(items.first()).toContainText(/osa pozemní komunikace/i);
     await page.locator('#layer-search').fill('xyzneexistuje');
     await expect(page.locator('.layer-search-empty')).toBeVisible();
-    await page.locator('#layer-search').fill('');
+    // Křížek je vidět i bez hoveru a fokusu; klik hledání vymaže.
+    const clear = page.locator('#layer-search + .search-clear');
+    await page.locator('#layer-search').blur();
+    await page.mouse.move(0, 0);
+    await expect(clear).toBeVisible();
+    await clear.click();
+    await expect(page.locator('#layer-search')).toHaveValue('');
+    await expect(clear).toBeHidden();
     await expect(items).toHaveCount(total);
   });
 });

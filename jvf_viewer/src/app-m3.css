@@ -532,21 +532,9 @@ html, body {
   letter-spacing: 0.06em;
   color: var(--md-sys-color-on-surface);
 }
-/* Hledání ve vrstvách výkresu (pod záhlavím sekce, styl jako hledání v legendách). */
-.layer-search {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  margin: 0 0 8px;
-  padding: 6px 12px;
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: var(--app-radius);
-  background: var(--md-sys-color-surface-container-lowest);
-  color: var(--md-sys-color-on-surface);
-  font: 400 13px/18px var(--md-sys-typescale-font);
-}
-.layer-search:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: -1px; }
-.layer-search[hidden],
+/* Hledání ve vrstvách výkresu — stejné pole jako v legendách (.legend-search),
+   jen přes celou šířku panelu. */
+#layer-panel .search-field { margin: 0 0 8px; }
 .layer-item[hidden],
 .layer-group[hidden] { display: none; }
 .layer-search-empty { padding: 12px 20px; }
@@ -762,7 +750,34 @@ html, body {
 .features-search:focus,
 .legend-search:focus { outline: 2px solid var(--md-sys-color-primary); border-color: transparent; }
 /* V dialogu (plocha surface-container-high) je pole o stupeň výraznější. */
-.modal-dialog .legend-search { background: var(--md-sys-color-surface-container-highest); flex: 1 1 200px; min-width: 0; }
+.modal-dialog .legend-search { background: var(--md-sys-color-surface-container-highest); }
+.modal-dialog .search-field { flex: 1 1 200px; min-width: 0; }
+/* Pole hledání s křížkem (ui/searchField.ts) — vrstvy, legendy, Přehled prvků.
+   Křížek je vidět vždy, když pole není prázdné. */
+.search-field { position: relative; display: block; }
+.search-field[hidden] { display: none; }
+.search-field > input { display: block; width: 100%; box-sizing: border-box; margin: 0; padding-right: 44px; }
+.search-clear {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.search-clear:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
+.search-clear:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
+.search-clear .material-symbols-outlined { font-size: 20px; }
+.search-field > input:placeholder-shown + .search-clear { display: none; }
 
 /* Skupiny a řádky nálezů / prvků = list. */
 .error-group-header,

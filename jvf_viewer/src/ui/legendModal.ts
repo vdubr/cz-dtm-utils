@@ -14,6 +14,7 @@ import {
 } from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
 import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
+import { attachSearchClear } from './searchField.js';
 import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
 
 /**
@@ -263,6 +264,7 @@ export function setupLegendModal(): void {
 
   // Inkrementální filtrování (debounce by tu bylo overkill — 358 položek).
   if (search) {
+    attachSearchClear(search);
     search.addEventListener('input', () => {
       renderLegendContent(body, search.value);
     });

@@ -9,6 +9,7 @@ import {
 import { isContentPartVisible, subscribeFeatureFilter } from '../state/featureFilter.js';
 import { contentPartTitle } from '../state/contentParts.js';
 import { appModeDef, getAppMode } from '../state/appMode.js';
+import { attachSearchClear } from './searchField.js';
 import { buildStyleSwatch, swatchKindForObjektovyTyp } from './symbolSwatch.js';
 
 /** Tooltip s použitými variantami značky („nástěnná konzola 3×, …"). */
@@ -85,12 +86,18 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
     subscribed = true;
     subscribeLayerVisibility(syncLayerPanel);
     subscribeFeatureFilter(syncLayerPanel);
-    document.getElementById('layer-search')?.addEventListener('input', applyLayerSearch);
+    const input = document.getElementById('layer-search') as HTMLInputElement | null;
+    if (input) {
+      // Pole skryté přes obal (s křížkem), viz níže.
+      input.hidden = false;
+      attachSearchClear(input);
+      input.addEventListener('input', applyLayerSearch);
+    }
   }
   const container = document.getElementById('jvf-layers-list')!;
   container.innerHTML = '';
-  const search = document.getElementById('layer-search') as HTMLInputElement | null;
-  if (search) search.hidden = layers.length === 0;
+  const searchField = document.getElementById('layer-search')?.closest<HTMLElement>('.search-field');
+  if (searchField) searchField.hidden = layers.length === 0;
 
   // Bez dat vodotisk „Přetáhněte data ve formátu …" uprostřed panelu;
   // ikona je tlačítko nahrání (data-upload-trigger → ui/fileUpload.ts).
