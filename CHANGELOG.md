@@ -165,8 +165,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   neukazuje — vypnutím by zmizel celý výkres.
 - **Posuvníky sytosti ve stylu Material 3** — dráha vlevo od palce
   v barvě motivu, vpravo světlá s tečkou na konci (podklad, překryvy);
-  tečka je za koncem dráhy palce, vidět i na 100 %, a posuvník při
-  stahování překryvu neposkakuje.
+  tečka je za koncem dráhy palce, vidět i na 100 %. Stahování překryvu
+  DTM / katastru ukazuje kolečko v tlačítku nad mapou (jako u podkladu),
+  ne vedle posuvníku.
 - **Filtr obsahových částí v Přehledu prvků s výběrem více částí** — klik
   na část ji přidá k výběru / odebere (např. ZPS + DIUDM), „Vše" výběr
   zruší; souhrn ukazuje vybrané části a počty „z celkem".

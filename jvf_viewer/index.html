@@ -220,9 +220,11 @@
           <div class="basemap-bar" role="group" aria-label="Překryvné vrstvy">
             <button id="btn-dtm-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="dtm-card" title="DTM ČR — překryv Digitální technické mapy ČR (ČÚZK), výběr vrstev a sytost">
               <span class="material-symbols-outlined" aria-hidden="true">polyline</span><span>DTM</span>
+              <span id="dtm-spinner" class="terrain-spinner" hidden></span>
             </button>
             <button id="btn-kn-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="kn-card" title="Katastr nemovitostí — překryv ČÚZK, výběr vrstev a sytost">
               <span class="material-symbols-outlined" aria-hidden="true">grid_on</span><span>Katastr</span>
+              <span id="kn-spinner" class="terrain-spinner" hidden></span>
             </button>
           </div>
           <div id="dtm-card" class="basemap-card" role="dialog" aria-label="DTM ČR" hidden>

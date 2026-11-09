@@ -483,8 +483,6 @@ html, body {
 .basemap-opacity-row { gap: 12px; padding: 12px 4px 4px; }
 /* Ikona sytosti u překryvů DTM / katastru (ui/overlayPanel.ts). */
 .basemap-opacity-icon { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
-/* Spinner překryvu vedle posuvníku: místo trvale, nečinný jen neviditelný. */
-.overlay-spinner.is-idle { visibility: hidden; animation: none; }
 /* Posuvník sytosti podkladu = .m3-slider s menším palcem a tlumenější dráhou. */
 #basemap-opacity { flex: 1; --m3-slider-thumb: 16px; --m3-slider-inactive: var(--md-sys-color-outline-variant); }
 /* Bez podkladu (volba „Prázdná") nemá sytost smysl — vypnutý stav M3. */

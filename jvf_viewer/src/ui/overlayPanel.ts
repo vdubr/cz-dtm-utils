@@ -117,7 +117,6 @@ export function setupOverlayPanel(state: OverlayState): void {
       <div class="basemap-opacity-row">
         <span class="material-symbols-outlined basemap-opacity-icon" title="Sytost překryvu">opacity</span>
         <input type="range" class="m3-slider" id="${def.id}-opacity" min="0" max="100" value="100" title="Sytost překryvu (2D i 3D)" />
-        <span id="${def.id}-spinner" class="terrain-spinner overlay-spinner is-idle" aria-hidden="true"></span>
       </div>
       <div class="overlay-actions">
         <button type="button" class="overlay-action-btn" data-overlay-all="1">Vybrat vše</button>
@@ -146,10 +145,11 @@ export function setupOverlayPanel(state: OverlayState): void {
 }
 
 /**
- * Spinner stahování překryvu (volá map/overlayLayers.ts). Místo má vedle
- * posuvníku trvale (jen se zneviditelní) — jinak by se posuvník při každém
- * stahování zkrátil a tečka na konci dráhy poskočila.
+ * Spinner stahování překryvu (volá map/overlayLayers.ts) — v tlačítku
+ * překryvu nad mapou (jako u „Podkladové mapy"), ne vedle posuvníku sytosti,
+ * kde by problikával jako ikona a posouval dráhu.
  */
 export function setOverlayLoading(id: string, loading: boolean): void {
-  document.getElementById(`${id}-spinner`)?.classList.toggle('is-idle', !loading);
+  const spinner = document.getElementById(`${id}-spinner`);
+  if (spinner) spinner.hidden = !loading;
 }
