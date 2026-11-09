@@ -850,7 +850,7 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('.feature-row.active')).toBeVisible();
   });
 
-  test('filtr obsahových částí nabízí části z dat (UDM: ZPSUDM, DIUDM, OST) a filtruje', async ({ page }) => {
+  test('filtr obsahových částí nabízí části z dat (UDM: ZPSUDM, DIUDM, OST), lze vybrat více', async ({ page }) => {
     await page.goto('/udm');
     await page.setInputFiles('#file-input', fixturePath('UDM_ukazka-1.xml'));
     await expect(page.locator('#btn-features')).toBeEnabled({ timeout: 30_000 });
@@ -868,9 +868,15 @@ test.describe('Modály a ovládání', () => {
     await expect(groups.first()).toBeVisible();
     expect(await groups.count()).toBe(await page.locator('.feature-group-header.part-DIUDM').count());
 
+    // Další část se k výběru přidá (výběr více částí), ne že by DIUDM nahradila.
     await page.locator('.features-filter-btn[data-filter="ZPS"]').click();
-    await expect(page.locator('#features-summary')).toContainText('642 z 821 záznamů');
+    await expect(page.locator('.features-filter-btn.active')).toHaveText(['ZPS', 'DIUDM']);
+    await expect(page.locator('#features-summary')).toContainText('ZPS + DIUDM');
+    await expect(page.locator('#features-summary')).toContainText('655 z 821 záznamů');
     await expect(page.locator('.feature-group-header.part-ZPSUDM')).toHaveCount(0);
+    // Opětovný klik část z výběru odebere.
+    await page.locator('.features-filter-btn[data-filter="DIUDM"]').click();
+    await expect(page.locator('#features-summary')).toContainText('642 z 821 záznamů');
 
     await page.locator('.features-filter-btn[data-filter="all"]').click();
     await expect(page.locator('#features-summary')).toHaveText('30 typů, 821 záznamů');

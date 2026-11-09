@@ -52,8 +52,8 @@ const hiddenLevels = new Set<LevelKey>();
 /** Skryté projekty (id projektu). Prázdná množina = dimenze neaktivní. */
 const hiddenProjects = new Set<string>();
 
-/** Zobrazená obsahová část; `null` = všechny (dimenze neaktivní). */
-let contentPart: string | null = null;
+/** Zobrazené obsahové části (lze jich vybrat více); prázdná = všechny (dimenze neaktivní). */
+const contentParts = new Set<string>();
 
 const listeners = new Set<FeatureFilterListener>();
 
@@ -127,22 +127,24 @@ export function setProjectVisible(key: string, visible: boolean): void {
   if (changed) notify();
 }
 
-/** Vybraná obsahová část (`null` = všechny). */
-export function getContentPartFilter(): string | null {
-  return contentPart;
+/** Vybrané obsahové části (prázdná množina = všechny). */
+export function getContentPartFilter(): ReadonlySet<string> {
+  return contentParts;
 }
 
-/** Vybrat obsahovou část (`null` = všechny). Notifikuje jen při změně. */
-export function setContentPartFilter(part: string | null): void {
-  if (part === contentPart) return;
-  contentPart = part;
+/** Vybrat obsahové části (prázdný seznam = všechny). Notifikuje jen při změně. */
+export function setContentPartFilter(parts: readonly string[]): void {
+  const next = new Set(parts);
+  if (next.size === contentParts.size && [...next].every((p) => contentParts.has(p))) return;
+  contentParts.clear();
+  for (const p of next) contentParts.add(p);
   notify();
 }
 
 /** Je obsahová část viditelná? Prvek bez části se nikdy neskrývá. */
 export function isContentPartVisible(part: string | null | undefined): boolean {
-  if (contentPart === null || part == null) return true;
-  return part === contentPart;
+  if (contentParts.size === 0 || part == null) return true;
+  return contentParts.has(part);
 }
 
 /**
@@ -160,7 +162,7 @@ export function matchesFeatureFilter(zaznam: ZaznamObjektu): boolean {
 
 /** Je filtr aktivní (aspoň jedna hodnota skrytá)? */
 export function isFeatureFilterActive(): boolean {
-  return hiddenLevels.size > 0 || hiddenProjects.size > 0 || contentPart !== null;
+  return hiddenLevels.size > 0 || hiddenProjects.size > 0 || contentParts.size > 0;
 }
 
 /**
@@ -169,10 +171,10 @@ export function isFeatureFilterActive(): boolean {
  * nemá nová data ovlivňovat.
  */
 export function resetFeatureFilter(): void {
-  if (hiddenLevels.size === 0 && hiddenProjects.size === 0 && contentPart === null) return;
+  if (hiddenLevels.size === 0 && hiddenProjects.size === 0 && contentParts.size === 0) return;
   hiddenLevels.clear();
   hiddenProjects.clear();
-  contentPart = null;
+  contentParts.clear();
   notify();
 }
 

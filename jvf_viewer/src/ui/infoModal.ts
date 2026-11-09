@@ -291,8 +291,9 @@ const INFO_CONTENT_HTML = `
       Části skryté filtrem obsahové části se ztlumí i v panelu vrstev. Lze
       filtrovat podle obsahové části — nabízí se ty, které v datech jsou
       (JVF: ZPS / TI / DI / GAD / OPL, UDM navíc ZPSUDM / DIUDM / OST,
-      ŽXML ZDT / ZDD / H3D / ODSZ / SKLEP), souhrn pak ukazuje počty ve
-      filtru — a hledat v názvu, <code>elementName</code> nebo ID. Řádek
+      ŽXML ZDT / ZDD / H3D / ODSZ / SKLEP); lze jich zaškrtnout více
+      (klik část přidá / odebere, „Vše" výběr zruší), souhrn pak ukazuje
+      vybrané části a počty ve filtru — a hledat v názvu, <code>elementName</code> nebo ID. Řádek
       <em>Úroveň</em> ukazuje <em>úrovně umístění</em> přítomné v datech
       (LEVEL −3 až +3 z atributů <code>UrovenUmisteniObjektu*</code>, případně
       „bez úrovně") s přepínatelnými chipy — odškrtnuté úrovně se skryjí.

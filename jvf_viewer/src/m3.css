@@ -492,26 +492,31 @@ input[type='radio'].m3-radio {
 /* Dráha M3: aktivní část (primary) vlevo od palce, neaktivní vpravo s tečkou
    na konci (stop indicator). Výplň v Chrome / Safari z --m3-slider-fill
    (podíl 0–1, nastavuje ui/m3Slider.ts) — ke středu palce. Velikost palce
-   --m3-slider-thumb (menší posuvník přepíše jen ji). */
+   --m3-slider-thumb (menší posuvník přepíše jen ji).
+   Tečka je za koncem dráhy palce (v pravém odsazení prvku, --m3-slider-end),
+   takže ji palec nezakryje ani na 100 %. */
 input[type='range'].m3-slider {
   --m3-slider-fill: 1;
   --m3-slider-thumb: 20px;
+  --m3-slider-end: 10px;
   --m3-slider-inactive: var(--md-sys-color-secondary-container);
-  --m3-slider-stop: radial-gradient(circle 2px at calc(100% - 2px) 50%, var(--md-sys-color-primary) 99%, transparent 100%);
   -webkit-appearance: none;
   appearance: none;
+  box-sizing: border-box;
   width: 100%;
   height: 20px;
   margin: 0;
-  background: transparent;
+  padding: 0 var(--m3-slider-end) 0 0;
+  background:
+    radial-gradient(circle 2px at calc(100% - 2px) 50%, var(--md-sys-color-primary) 99%, transparent 100%),
+    linear-gradient(var(--m3-slider-inactive), var(--m3-slider-inactive)) right center / var(--m3-slider-end) 4px no-repeat;
   cursor: pointer;
   accent-color: var(--md-sys-color-primary);
 }
 input[type='range'].m3-slider::-webkit-slider-runnable-track {
   height: 4px;
-  border-radius: 2px;
+  border-radius: 2px 0 0 2px; /* vpravo navazuje úsek k tečce */
   background:
-    var(--m3-slider-stop),
     linear-gradient(
       to right,
       var(--md-sys-color-primary) calc(var(--m3-slider-thumb) / 2 + (100% - var(--m3-slider-thumb)) * var(--m3-slider-fill)),
@@ -529,8 +534,8 @@ input[type='range'].m3-slider::-webkit-slider-thumb {
 }
 input[type='range'].m3-slider::-moz-range-track {
   height: 4px;
-  border-radius: 2px;
-  background: var(--m3-slider-stop), var(--m3-slider-inactive);
+  border-radius: 2px 0 0 2px;
+  background: var(--m3-slider-inactive);
 }
 input[type='range'].m3-slider::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
 input[type='range'].m3-slider::-moz-range-thumb {

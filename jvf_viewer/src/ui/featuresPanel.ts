@@ -207,14 +207,14 @@ function renderSummary(): void {
   const typy = (n: number): string => (n === 1 ? 'typ' : n > 1 && n < 5 ? 'typy' : 'typů');
   const zaznamu = (n: number): string => (n === 1 ? 'záznam' : n > 1 && n < 5 ? 'záznamy' : 'záznamů');
   const currentFilter = getContentPartFilter();
-  if (currentFilter === null) {
+  if (currentFilter.size === 0) {
     summaryEl.textContent = `${totalTypes} ${typy(totalTypes)}, ${totalRecords} ${zaznamu(totalRecords)}`;
   } else {
     // Aktivní filtr obsahové části → počty ve filtru „z celkem".
     const shown = currentObjekty.filter(matchesFilter);
     const shownRecords = shown.reduce((sum, ot) => sum + ot.zaznamy.length, 0);
     summaryEl.textContent =
-      `${currentFilter}: ${shown.length} z ${totalTypes} ${typy(totalTypes)}, ` +
+      `${[...currentFilter].sort(compareContentParts).join(' + ')}: ${shown.length} z ${totalTypes} ${typy(totalTypes)}, ` +
       `${shownRecords} z ${totalRecords} ${zaznamu(totalRecords)}`;
   }
   summaryEl.className = 'features-summary summary-ok';
@@ -604,12 +604,21 @@ function renderRowsContent(): void {
 
 // ── Filter / search ───────────────────────────────────────────────────────────
 /**
- * Nastaví filtr obsahové části. Je to dimenze společného filtru prvků
+ * Klik na tlačítko filtru obsahových částí: „Vše" výběr zruší, část se
+ * přidá do výběru / odebere z něj (lze jich zaškrtnout více). Výběr všech
+ * částí = „Vše". Je to dimenze společného filtru prvků
  * (`state/featureFilter.ts`) — změna se přes posluchače promítne do
  * tlačítek, souhrnu, tabulky, 2D mapy i 3D scény.
  */
-function setFilter(filter: ContentFilter): void {
-  setContentPartFilter(filter === 'all' ? null : filter);
+function setFilter(filter: ContentFilter, parts: readonly string[]): void {
+  if (filter === 'all') {
+    setContentPartFilter([]);
+    return;
+  }
+  const next = new Set(getContentPartFilter());
+  if (next.has(filter)) next.delete(filter);
+  else next.add(filter);
+  setContentPartFilter(next.size === parts.length ? [] : [...next]);
 }
 
 /**
@@ -617,7 +626,7 @@ function setFilter(filter: ContentFilter): void {
  * které v datech jsou (JVF: ZPS/TI/DI/…, UDM navíc ZPSUDM/DIUDM/OST, ŽXML
  * ZDT/ZDD/H3D/ODSZ/SKLEP), v pořadí `CONTENT_PART_ORDER`. Řada je vidět
  * vždy, když jsou data (i s jedinou částí — jednotné ovládání ve všech
- * režimech). Zmizí-li vybraná část z dat, filtr se vrátí na „Vše".
+ * režimech). Části, které z dat zmizely, z výběru vypadnou.
  */
 function renderContentFilterChips(): void {
   const counts = new Map<string, number>();
@@ -627,18 +636,21 @@ function renderContentFilterChips(): void {
   }
   const parts = [...counts.keys()].sort(compareContentParts);
   const selected = getContentPartFilter();
-  if (selected !== null && !counts.has(selected)) {
-    setContentPartFilter(null); // posluchač tlačítka překreslí znovu
+  const kept = [...selected].filter((p) => counts.has(p));
+  if (kept.length !== selected.size) {
+    setContentPartFilter(kept); // posluchač tlačítka překreslí znovu
     return;
   }
-  const currentFilter: ContentFilter = selected ?? 'all';
+  const isActive = (filter: ContentFilter): boolean =>
+    filter === 'all' ? selected.size === 0 : selected.has(filter);
 
   filtersEl.innerHTML = '';
   filtersEl.style.display = parts.length === 0 ? 'none' : '';
   const addChip = (filter: ContentFilter, label: string, title: string): void => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = `features-filter-btn${currentFilter === filter ? ' active' : ''}`;
+    btn.className = `features-filter-btn${isActive(filter) ? ' active' : ''}`;
+    btn.setAttribute('aria-pressed', String(isActive(filter)));
     btn.dataset['filter'] = filter;
     if (filter === 'all') {
       btn.textContent = label;
@@ -651,7 +663,7 @@ function renderContentFilterChips(): void {
       btn.appendChild(name);
     }
     btn.title = title;
-    btn.addEventListener('click', () => setFilter(filter));
+    btn.addEventListener('click', () => setFilter(filter, parts));
     filtersEl.appendChild(btn);
   };
   addChip('all', 'Vše', 'Zobrazit všechny obsahové části');
@@ -737,7 +749,7 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
   if (found) {
     const { ot, z } = found;
     if (!matchesFilter(ot)) {
-      setFilter('all');
+      setContentPartFilter([]);
       needsRender = true;
     }
     if (currentSearch) {
