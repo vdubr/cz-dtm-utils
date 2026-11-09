@@ -604,6 +604,35 @@ html, body {
 .toggle-row input.m3-switch { order: 3; margin-left: auto; width: 52px; height: 32px; }
 .three-options-footer { padding: 8px 0; border-top: 1px solid var(--md-sys-color-outline-variant); }
 
+/* Změny v souboru: přepínače Nové / Editované / Mazané (skrýt / zobrazit)
+   s tečkou a počtem + „Obarvit změny". Barvy teček = barvy lemu změny
+   (ZAPIS_HIGHLIGHT_COLORS v map/jvfLayers.ts), bez obarvení šedé. */
+.changeset-heading {
+  padding: 8px 4px 0;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+#changeset-rows[hidden], .changeset-row[hidden] { display: none; }
+.changeset-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--md-sys-color-outline); }
+.changeset-section:not(.highlight-off) .changeset-row[data-zapis='i'] .changeset-dot { background: #2da44e; }
+.changeset-section:not(.highlight-off) .changeset-row[data-zapis='u'] .changeset-dot { background: #bf8700; }
+.changeset-section:not(.highlight-off) .changeset-row[data-zapis='d'] .changeset-dot { background: #e02020; }
+.changeset-count {
+  order: 2;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.changeset-row input.m3-switch { margin-left: 0; }
+.changeset-hint {
+  margin: 0;
+  padding: 0 4px 4px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 /* Projekty = list. */
 /* Projekty jako vrstvy výkresu: hover od kraje ke kraji panelu, bez zaoblení. */
 #projects-list { margin: 0 -12px; }

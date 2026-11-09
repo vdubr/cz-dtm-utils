@@ -152,23 +152,33 @@
               <span>Přetáhněte data ve formátu <span data-app-format>JVF</span></span>
             </div>
           </div>
-          <div id="changeset-options-section" class="three-options-footer" style="display:none">
-            <label class="toggle-row" id="row-highlight-zapis" title="Přebarvit nové / editované / mazané záznamy barvou typu změny. Vypnuto = záznamy se kreslí vlastní symbologií (u souborů UDM a ŽXML výchozí).">
+          <div id="changeset-options-section" class="three-options-footer changeset-section" style="display:none">
+            <div class="changeset-heading">Změny v souboru</div>
+            <div id="changeset-rows">
+              <label class="toggle-row changeset-row" id="row-show-inserted" data-zapis="i" title="Zobrazit / skrýt nové záznamy (ZapisObjektu = i, do DTM se teprve vloží)">
+                <input type="checkbox" class="m3-switch" id="toggle-show-inserted" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Nové</span>
+                <span class="changeset-count"></span>
+              </label>
+              <label class="toggle-row changeset-row" id="row-show-updated" data-zapis="u" title="Zobrazit / skrýt editované záznamy (ZapisObjektu = u)">
+                <input type="checkbox" class="m3-switch" id="toggle-show-updated" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Editované</span>
+                <span class="changeset-count"></span>
+              </label>
+              <label class="toggle-row changeset-row" id="row-show-deleted" data-zapis="d" title="Zobrazit / skrýt mazané záznamy (ZapisObjektu = d, z DTM se odstraní)">
+                <input type="checkbox" class="m3-switch" id="toggle-show-deleted" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Mazané</span>
+                <span class="changeset-count"></span>
+              </label>
+            </div>
+            <label class="toggle-row" id="row-highlight-zapis" title="Pod změněné prvky přidat lem barvy změny: zelená nové, oranžová editované, červená mazané. Prvek sám zůstává ve svém znaku.">
               <input type="checkbox" class="m3-switch" id="toggle-highlight-zapis" />
-              <span>Zvýraznit změny barvou</span>
+              <span>Obarvit změny</span>
             </label>
-            <label class="toggle-row" id="row-show-inserted" style="display:none" title="Zobrazit objekty se ZapisObjektu='i' (nové záznamy, teprve se budou do DTM vkládat) zeleně">
-              <input type="checkbox" class="m3-switch" id="toggle-show-inserted" />
-              <span>Zobrazit nové (zeleně)</span>
-            </label>
-            <label class="toggle-row" id="row-show-updated" style="display:none" title="Zobrazit objekty se ZapisObjektu='u' (editované záznamy) oranžově">
-              <input type="checkbox" class="m3-switch" id="toggle-show-updated" />
-              <span>Zobrazit editované (oranžově)</span>
-            </label>
-            <label class="toggle-row" id="row-show-deleted" style="display:none" title="Zobrazit objekty se ZapisObjektu='d' (změnové věty — záznamy ke smazání) sytě červeně">
-              <input type="checkbox" class="m3-switch" id="toggle-show-deleted" />
-              <span>Zobrazit mazané (červeně)</span>
-            </label>
+            <p class="changeset-hint"><strong>Nové / Editované / Mazané</strong> filtrují — záznamy typu zobrazí / skryjí. <strong>Obarvit změny</strong> mění jen vzhled — pod prvek přidá lem barvy změny, nic neskryje.</p>
           </div>
           <div id="three-options-section" class="three-options-footer" style="display:none">
             <label class="toggle-row" title="Renderovat bodové objekty jako SVG ikony (stejné jako 2D) místo jednoduchých puntíků">

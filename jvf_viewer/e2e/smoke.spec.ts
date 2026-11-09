@@ -247,8 +247,10 @@ test.describe('Načtení JVF souboru', () => {
     }
     // UDM = data geodeta celá jako nová → zvýraznění změn barvou je vypnuté
     // (kreslí se vlastní symbologií), nové záznamy zůstávají viditelné.
+    // udm_minimal má nové, editované i mazané → přepínače typů s počty.
     await expect(page.locator('#toggle-highlight-zapis')).not.toBeChecked();
     await expect(page.locator('#toggle-show-inserted')).toBeChecked();
+    await expect(page.locator('#row-show-deleted .changeset-count')).toHaveText('1');
   });
 
   test('Export do CAD v režimu JVF stáhne DXF ve vzhledu Katalogu DTM ČR', async ({ page }) => {
@@ -1877,5 +1879,42 @@ test.describe('Připomínky 2026-11-06', () => {
     await expect(page.locator('#layer-search')).toHaveValue('');
     await expect(clear).toBeHidden();
     await expect(items).toHaveCount(total);
+  });
+
+  test('změny v souboru: přepínače s počty skryjí / zobrazí typ, tečky barevné jen při obarvení', async ({ page }) => {
+    // test_klik_bez_id: 2 nové (i) + 2 editované (u).
+    await loadSample(page, 'test_klik_bez_id.xml');
+    await expect(page.locator('#changeset-options-section .changeset-heading')).toHaveText('Změny v souboru');
+    const nove = page.locator('#toggle-show-inserted');
+    await expect(nove).toBeChecked();
+    await expect(page.locator('#row-show-inserted .changeset-count')).toHaveText('2');
+    await expect(page.locator('#row-show-updated .changeset-count')).toHaveText('2');
+    await expect(page.locator('#row-show-deleted')).toBeHidden();
+    const shown = () =>
+      page.evaluate(() => {
+        type L = { olLayer: { getSource(): { getFeatures(): unknown[] }; getStyleFunction(): (f: unknown, r: number) => unknown } };
+        let n = 0;
+        for (const l of (window as unknown as { __jvfDebug: { getJvfLayers(): L[] } }).__jvfDebug.getJvfLayers())
+          for (const f of l.olLayer.getSource().getFeatures()) if (l.olLayer.getStyleFunction()(f, 1)) n++;
+        return n;
+      });
+    const all = await shown();
+    await nove.uncheck({ force: true });
+    expect(await shown()).toBeLessThan(all);
+    await nove.check({ force: true });
+    expect(await shown()).toBe(all);
+    // Tečka v barvě změny jen při zapnutém obarvení, jinak šedá.
+    const dot = page.locator('#row-show-inserted .changeset-dot');
+    await page.locator('#toggle-highlight-zapis').check({ force: true });
+    await expect(dot).toHaveCSS('background-color', 'rgb(45, 164, 78)');
+    await page.locator('#toggle-highlight-zapis').uncheck({ force: true });
+    await expect(dot).not.toHaveCSS('background-color', 'rgb(45, 164, 78)');
+  });
+
+  test('změny v souboru: vše nové → bez přepínačů typů, jen obarvení', async ({ page }) => {
+    await loadSample(page, 'ukazka_DI.xml');
+    await expect(page.locator('#changeset-options-section')).toBeVisible();
+    await expect(page.locator('#changeset-rows')).toBeHidden();
+    await expect(page.locator('#toggle-highlight-zapis')).toBeChecked();
   });
 });

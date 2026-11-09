@@ -40,13 +40,17 @@ Stav: ✅ hotovo (připraveno 2026-11-06 na `feat/redesign-m3`) · ⬜ TODO ·
     + pro dialekty `rules` / `cases`) a počty záznamů.
   - Akceptace: podpěrné zařízení s více typy ukáže všechny; Escape / klik
     mimo zavře.
-- [ ] **T7 — Změny v datech: méně přepínačů, jasné popisky** (P12, P13;
+- [x] **T7 — Změny v datech: méně přepínačů, jasné popisky** (P12, P13;
   navazuje na #6 D).
   - Místo 4 přepínačů blok „Změny v datech": chipy **Nové n · Editované n ·
     Mazané n** (skrýt / zobrazit, barva = barva změny) + přepínač
     „Obarvit podle změny" s nápovědou; umístění nad seznamem vrstev nebo
     v Přehledu prvků (potvrdit).
   - Akceptace: e2e changesetu (zobrazení / skrytí typů) beze změny chování.
+  - **Hotovo (2026-11-09):** dle schválení uživatele přepínače (ne chipy):
+    „Změny v souboru" — Nové / Editované / Mazané (tečka + počet, filtr) +
+    „Obarvit změny" (jen styl, tečky barevné jen při obarvení); jediný typ
+    záznamů → přepínače typů skryté. Umístění beze změny (pod vrstvami).
 - [ ] **T8 — Průhlednost terénu ve 3D** (P10).
   - Ovládání: rozbalovací šipka u „Terén" s posuvníkem „Sytost terénu"
     (jako karta podkladu); `setTerrainOpacity` nastaví `opacity` +

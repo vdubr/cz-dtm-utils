@@ -236,22 +236,22 @@ const INFO_CONTENT_HTML = `
       </em>
     </li>
     <li>
-      <strong>Barevné rozlišení změn (nové / editované / mazané)</strong> —
-      přepínače pod seznamem vrstev, které se objeví jen pro typy
-      <code>ZapisObjektu</code> obsažené v nahraném souboru:
-      <strong>nové</strong> (<code>i</code>) zeleně,
-      <strong>editované</strong> (<code>u</code>) oranžově,
-      <strong>mazané</strong> (<code>d</code>) sytě červeně. Po zaškrtnutí
-      dostane geometrie daného typu ve 2D i 3D průsvitný lem příslušné
-      barvy — prvek sám zůstává ve svém stylu (stejném jako v legendě), takže
-      rovnou vidíte, co přijetím dávky do DTM přibude, změní se nebo zmizí.
-      Po odškrtnutí se záznamy daného typu skryjí. Default je vše zaškrtnuto.
-      Funguje i pro nově vytvořené JVF soubory DI/TI, jejichž prvky ještě
-      nemají přidělená DTM ID. Přepínač <strong>Zvýraznit změny
-      barvou</strong> lemy vypne — záznamy zůstanou viditelné jen ve vlastní
-      symbologii. U souborů <strong>UDM</strong> a
-      <strong>ŽXML</strong> (data geodeta celá jako nová) je zvýraznění ve
-      výchozím stavu vypnuté.
+      <strong>Změny v souboru (nové / editované / mazané)</strong> — blok
+      pod seznamem vrstev pro soubory se záznamy
+      <code>ZapisObjektu</code> <code>i</code> / <code>u</code> /
+      <code>d</code> (změnové věty i nově vytvořené soubory DI/TI, jejichž
+      prvky ještě nemají DTM ID). Přepínače <strong>Nové</strong> ·
+      <strong>Editované</strong> · <strong>Mazané</strong> (s počtem
+      záznamů) záznamy daného typu <strong>skryjí / zobrazí</strong>;
+      přepínač je jen pro typ obsažený v datech a chybí úplně, když jsou
+      všechny záznamy stejného typu (skrytí by jen vyprázdnilo mapu).
+      Přepínač <strong>Obarvit změny</strong> přidá pod změněné prvky ve 2D i 3D průsvitný lem —
+      nové zeleně, editované oranžově, mazané sytě červeně (stejná barva je
+      u tečky před typem, bez obarvení je tečka šedá); prvek sám
+      zůstává ve svém znaku (jako v legendě), takže rovnou vidíte, co přijetím
+      dávky do DTM přibude, změní se nebo zmizí. U čistého JVF je obarvení
+      ve výchozím stavu zapnuté, u souborů <strong>UDM</strong> a
+      <strong>ŽXML</strong> (data geodeta celá jako nová) vypnuté.
     </li>
     <li>
       <strong>Export do CAD</strong> (ve všech režimech — JVF, UDM i JŽM)
@@ -296,7 +296,7 @@ const INFO_CONTENT_HTML = `
       (LEVEL −3 až +3 z atributů <code>UrovenUmisteniObjektu*</code>, případně
       „bez úrovně") s přepínatelnými chipy — odškrtnuté úrovně se skryjí.
       Filtr obsahové části i úrovní platí pro tabulku i pro 2D a 3D mapu
-      (kombinuje se s viditelností vrstev a changeset přepínači) a resetuje
+      (kombinuje se s viditelností vrstev a přepínači Změn v souboru) a resetuje
       se při načtení nového souboru.
       Klik na záznam zoomuje
       mapu (2D i 3D) a rozbalí tabulku všech atributů včetně
