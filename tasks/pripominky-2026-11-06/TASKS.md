@@ -26,7 +26,7 @@ Stav: ✅ hotovo (připraveno 2026-11-06 na `feat/redesign-m3`) · ⬜ TODO ·
 
 ## TODO
 
-- [ ] **T5 — Legenda dialektu se všemi geometriemi** (P2, P3) — závisí na ❓ P2.
+- [ ] **T5 — Jedna legenda pro všechny aplikace, se všemi geometriemi** (P2, P3) — rozhodnuto 2026-11-09 („1 typ").
   - Legenda znaků → legenda stylů UDM / ŽXML: dlaždice `buildGeometryIcon`
     pro body, linie (čárkování, souběžné čáry, značky podél linie) i plochy,
     varianty podle `rules` / `cases` s popisky číselníků.
@@ -70,14 +70,12 @@ Stav: ✅ hotovo (připraveno 2026-11-06 na `feat/redesign-m3`) · ⬜ TODO ·
 
 ## Čeká na upřesnění (❓)
 
-- **P2** sloučit Legendu DTM a Legendu znaků do jedné (návrh), nebo jen
-  sjednotit ikony a umístění?
 - **P8** styl plotu v ZPS — co přesně nesedí (snímek vs. mapa ČÚZK)?
 - **P17** číselníky — popisky jsou u všech hodnot JVF / UDM / ŽXML; co chybí?
 - **P20** tisk — výřez mapy (PNG / PDF), mapový list v měřítku s legendou,
   nebo tabulka Přehledu prvků?
 
 ## Poznámky pro /make-tasks
-- Úkoly T5–T12 jsou nezávislé (T5 až po odpovědi na P2, T10 po P14).
+- Úkoly T5–T12 jsou nezávislé (T10 až po upřesnění P14).
 - Každá změna UI: info modal (`ui/infoModal.ts`), `CHANGELOG.md`
   [Unreleased], snímky Playwrightem ve světlém i tmavém motivu, e2e.

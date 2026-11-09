@@ -21,7 +21,7 @@ Náročnost: 🟢 lehké (CSS / jedno místo), 🟡 střední (víc souborů, te
   filtr podle názvu, elementu a kódu bez diakritiky; prázdné kategorie skrýt;
   filtr jen zužuje seznam, viditelnost vrstev v mapě nemění.
 
-### P2 — Konzistentní otevírání legend 🟡 (otázka)
+### P2 — Konzistentní otevírání legend 🟡 (rozhodnuto: jedna legenda → T5)
 > konzistentně otevírat legendy u aplikací vs u vrstev
 
 - Zjištění: dvě tlačítka v záhlaví vrstev — „Legenda DTM" (`#btn-legend`,
@@ -34,8 +34,9 @@ Náročnost: 🟢 lehké (CSS / jedno místo), 🟡 střední (víc souborů, te
   jednotný vzhled dlaždic (geometrie bod / linie / plocha, varianty podle
   číselníků), stažení SVG (ZIP) jako akce v legendě dialektu. Souvisí s P3
   a P15.
-- Otázka: sloučit obě legendy do jedné (návrh), nebo jen sjednotit ikony
-  a umístění?
+- **Rozhodnutí uživatele (2026-11-09): „1 typ"** — jedna legenda místo
+  Legendy DTM a Legendy znaků, stejná ve všech aplikacích (JVF / UDM / JŽM),
+  obsah podle režimu. Realizace v T5.
 
 ### P3 — „UDM a ŽXML jsou v aplikaci jen bodové prvky" 🟡
 > udm a žxml jsou prý v aplikaci jen bodové prvky
