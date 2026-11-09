@@ -14,7 +14,7 @@ import {
 } from '../map/jvfLayers.js';
 import { markDialectObjekty } from '../map/dialectStyle.js';
 import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
-import { attachSearchClear } from './searchField.js';
+import { attachSearchClear, matchesSearch, normalizeSearch } from './searchField.js';
 import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
 
 /**
@@ -109,23 +109,18 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
   // skupinaObjektu. Verzně-vědomé — pro 1.5.0.1 obsahuje i PSPI a nové typy.
   // Hledá se i v hodnotách variant („sloup" najde sloupy podpěrného
   // zařízení) — pak se ukážou jen odpovídající varianty.
-  const filterLower = filter.trim().toLowerCase();
+  const q = normalizeSearch(filter.trim());
   const filtered: LegendEntry[] = [];
   for (const m of Object.values(getEntityCatalog(getActiveVersion()))) {
     const ot = entityMetaToObjektovyTyp(m);
     const variants = resolveVariantStyles(ot);
     const metaHit =
-      !filterLower ||
-      m.nazev.toLowerCase().includes(filterLower) ||
-      m.elementName.toLowerCase().includes(filterLower) ||
-      m.codeBase.includes(filterLower) ||
-      m.kategorieObjektu.toLowerCase().includes(filterLower) ||
-      m.skupinaObjektu.toLowerCase().includes(filterLower);
+      !q || matchesSearch(q, m.nazev, m.elementName, m.codeBase, m.kategorieObjektu, m.skupinaObjektu);
     if (metaHit) {
       filtered.push({ meta: m, ot, variants });
       continue;
     }
-    const hits = variants.filter((v) => v.value.toLowerCase().includes(filterLower));
+    const hits = variants.filter((v) => matchesSearch(q, v.value));
     if (hits.length > 0) filtered.push({ meta: m, ot, variants: hits });
   }
 

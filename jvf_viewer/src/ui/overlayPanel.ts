@@ -8,7 +8,7 @@
 import type { OverlayService } from '../map/overlayCatalog.js';
 import type { OverlayState } from '../state/overlays.js';
 import { track } from '../analytics.js';
-import { syncSliderFill } from './m3Slider.js';
+import { setSliderValue } from './m3Slider.js';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
@@ -85,8 +85,7 @@ function sync(state: OverlayState, section: HTMLElement): void {
   if (toggle) toggle.checked = on;
   if (body) body.hidden = !on;
   if (opacity) {
-    opacity.value = String(Math.round(state.getOpacity() * 100));
-    syncSliderFill(opacity);
+    setSliderValue(opacity, Math.round(state.getOpacity() * 100));
   }
   for (const svc of state.def.services) {
     const n = state.getSelection(svc.id).length;

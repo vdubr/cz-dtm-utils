@@ -483,30 +483,8 @@ html, body {
 .basemap-opacity-row { gap: 12px; padding: 12px 4px 4px; }
 /* Ikona sytosti u překryvů DTM / katastru (ui/overlayPanel.ts). */
 .basemap-opacity-icon { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
-#basemap-opacity { flex: 1; height: 20px; background: transparent; --m3-slider-inactive: var(--md-sys-color-outline-variant); }
-#basemap-opacity::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 2px;
-  background:
-    var(--m3-slider-stop),
-    linear-gradient(
-      to right,
-      var(--md-sys-color-primary) calc(8px + (100% - 16px) * var(--m3-slider-fill)),
-      var(--m3-slider-inactive) calc(8px + (100% - 16px) * var(--m3-slider-fill))
-    );
-}
-#basemap-opacity::-webkit-slider-thumb {
-  width: 16px;
-  height: 16px;
-  margin-top: -6px;
-  border-radius: 50%;
-  background: var(--md-sys-color-primary);
-  border: none;
-  box-shadow: none;
-}
-#basemap-opacity::-moz-range-track { height: 4px; border-radius: 2px; background: var(--m3-slider-stop), var(--m3-slider-inactive); }
-#basemap-opacity::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
-#basemap-opacity::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--md-sys-color-primary); border: none; }
+/* Posuvník sytosti podkladu = .m3-slider s menším palcem a tlumenější dráhou. */
+#basemap-opacity { flex: 1; --m3-slider-thumb: 16px; --m3-slider-inactive: var(--md-sys-color-outline-variant); }
 /* Bez podkladu (volba „Prázdná") nemá sytost smysl — vypnutý stav M3. */
 #basemap-opacity:disabled { opacity: 0.38; cursor: default; }
 
@@ -541,8 +519,6 @@ html, body {
 /* Hledání ve vrstvách výkresu — stejné pole jako v legendách (.legend-search),
    jen přes celou šířku panelu. */
 #layer-panel .search-field { margin: 0 0 8px; }
-.layer-item[hidden],
-.layer-group[hidden] { display: none; }
 .layer-search-empty { padding: 12px 20px; }
 /* Celý název obsahové části za zkratkou („DI · Dopravní infrastruktura"). */
 .part-title {
@@ -606,14 +582,11 @@ html, body {
 
 /* Změny v souboru — karta nad mapou (tlačítko „Změny"): přepínač Obarvit
    změny (styl) + zaškrtávátka Nové / Editované / Mazané (filtr, aktivní
-   vždy). Barvy teček = barvy lemu změny (ZAPIS_HIGHLIGHT_COLORS
-   v map/jvfLayers.ts), bez obarvení šedé. */
-#changeset-rows[hidden], .changeset-row[hidden] { display: none; }
+   vždy). Barva tečky --zapis-color = barva lemu změny (nastavuje
+   ui/changesetToggle.ts ze ZAPIS_HIGHLIGHT_COLORS), bez obarvení šedá. */
 .changeset-row { min-height: 36px; }
 .changeset-dot { width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; flex: none; background: var(--md-sys-color-outline); }
-.changeset-section:not(.highlight-off) .changeset-row[data-zapis='i'] .changeset-dot { background: #2da44e; }
-.changeset-section:not(.highlight-off) .changeset-row[data-zapis='u'] .changeset-dot { background: #bf8700; }
-.changeset-section:not(.highlight-off) .changeset-row[data-zapis='d'] .changeset-dot { background: #e02020; }
+.changeset-section:not(.highlight-off) .changeset-dot { background: var(--zapis-color); }
 .changeset-row .changeset-count { margin-left: auto; }
 
 /* Projekty = list. */
@@ -773,7 +746,6 @@ html, body {
 /* Pole hledání s křížkem (ui/searchField.ts) — vrstvy, legendy, Přehled prvků.
    Křížek je vidět vždy, když pole není prázdné. */
 .search-field { position: relative; display: block; }
-.search-field[hidden] { display: none; }
 .search-field > input { display: block; width: 100%; box-sizing: border-box; margin: 0; padding-right: 44px; }
 .search-clear {
   position: absolute;

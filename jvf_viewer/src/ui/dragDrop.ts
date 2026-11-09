@@ -1,6 +1,5 @@
 import {
-  loadJvfFile,
-  type AddMode,
+  loadJvfFiles,
   type JvfLoadCallback,
   type JvfErrorProtocolCallback,
 } from './fileUpload.js';
@@ -10,10 +9,9 @@ import {
  *
  * Při přetahování souboru nad oknem se zobrazí overlay s rámečkem a výzvou;
  * po upuštění se soubory předají stejnému kód-path jako file input
- * (`loadJvfFile`), takže platí stejná validace verze i chybové stavy.
- * Drop **přidává** soubory jako další projekty k již načteným
- * (do limitu `MAX_PROJECTS`) — nenahrazuje je. Více souborů naráz se
- * zpracuje sekvenčně.
+ * (`loadJvfFiles`), takže platí stejná validace verze, dotaz přidat /
+ * nahradit (u prvního souboru) i chybové stavy. Více souborů naráz se
+ * zpracuje sekvenčně, každý jako samostatný projekt.
  */
 export function setupDragAndDrop(
   onLoad: JvfLoadCallback,
@@ -69,22 +67,15 @@ export function setupDragAndDrop(
     const files = Array.from(e.dataTransfer?.files ?? []);
     if (files.length === 0) return;
 
-    // Každý přetažený soubor = nový projekt. Sekvenčně (await), aby se
-    // loading overlay a případné modaly (nesoulad verze) nepřekrývaly.
-    void (async () => {
-      // Dotaz přidat / nahradit jen u prvního souboru, další se přidají.
-      let mode: AddMode | undefined;
-      for (const file of files) {
-        if (!isXmlFile(file)) {
-          alert(
-            `Soubor „${file.name}" nevypadá jako JVF XML — očekává se ` +
-            `přípona .xml nebo .jvf.`
-          );
-          continue;
-        }
-        if (await loadJvfFile(file, onLoad, onErrorProtocol, mode)) mode = 'add';
-      }
-    })();
+    // Soubory bez přípony JVF XML se jen ohlásí, ostatní načte loadJvfFiles.
+    for (const file of files) {
+      if (isXmlFile(file)) continue;
+      alert(
+        `Soubor „${file.name}" nevypadá jako JVF XML — očekává se ` +
+        `přípona .xml nebo .jvf.`
+      );
+    }
+    void loadJvfFiles(files.filter(isXmlFile), onLoad, onErrorProtocol);
   });
 }
 

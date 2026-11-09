@@ -4,12 +4,13 @@ import {
   setShowZapis,
   isHighlightZapis,
   setHighlightZapis,
+  setChangesetFlags,
   subscribeChangesetToggle,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
-import type { JvfVectorLayer } from '../map/jvfLayers.js';
+import { ZAPIS_HIGHLIGHT_COLORS, type JvfVectorLayer } from '../map/jvfLayers.js';
 import { applyChangesetHighlight } from '../viewer3d/threeScene.js';
-import { setupMapCard } from './mapCard.js';
+import { closeMapCard, setupMapCard } from './mapCard.js';
 
 /**
  * Tlačítko „Změny" nad mapou (jako DTM / Katastr) s kartou „Změny v souboru":
@@ -22,10 +23,10 @@ import { setupMapCard } from './mapCard.js';
  * obsahují aspoň jeden záznam se `ZapisObjektu` ∈ {i, u, d} — typicky
  * changeset, ale i nově vytvořené soubory DI/TI (kompletní zápis se samými
  * `i` záznamy bez DTM ID). Zaškrtávátko je jen pro typ, který se
- * v datech vyskytuje; zaškrtávátka typů se neukazují vůbec, když jsou všechny záznamy
- * stejného typu (skrytí by jen vyprázdnilo mapu — to umí oko u projektu).
+ * v datech vyskytuje; zaškrtávátka typů se neukazují vůbec, když jsou všechny
+ * záznamy stejného typu (skrytí by jen vyprázdnilo mapu — to umí oko u projektu).
  *
- * Při změně kteréhokoli flagu modul:
+ * Při změně flagů modul:
  *   1. zavolá `layer.changed()` na všech 2D OL vrstvách → style fn se
  *      přepočítá a záznamy daného typu se skryjí / zobrazí, lem se přidá / zmizí,
  *   2. zavolá `applyChangesetHighlight()` na 3D scéně.
@@ -34,42 +35,7 @@ import { setupMapCard } from './mapCard.js';
  * uživatel typicky chce hned vidět, co dávka do DTM přidá / změní / odebere.
  */
 
-/** Typ zápisu → id checkboxu a id řádku v index.html. */
-const TOGGLE_UI: Record<ChangesetZapisType, { checkboxId: string; rowId: string }> = {
-  i: { checkboxId: 'toggle-show-inserted', rowId: 'row-show-inserted' },
-  u: { checkboxId: 'toggle-show-updated', rowId: 'row-show-updated' },
-  d: { checkboxId: 'toggle-show-deleted', rowId: 'row-show-deleted' },
-};
-
 const CHANGESET_TYPES: ChangesetZapisType[] = ['i', 'u', 'd'];
-
-let layersGetter: () => JvfVectorLayer[] = () => [];
-let unsubscribe: (() => void) | null = null;
-
-function getCheckbox(type: ChangesetZapisType): HTMLInputElement | null {
-  return document.getElementById(TOGGLE_UI[type].checkboxId) as HTMLInputElement | null;
-}
-
-function getHighlightCheckbox(): HTMLInputElement | null {
-  return document.getElementById('toggle-highlight-zapis') as HTMLInputElement | null;
-}
-
-/** Barevné tečky u typů jen při zapnutém obarvení — jinak by slibovaly barvu, kterou mapa nekreslí. */
-function syncHighlightClass(on: boolean): void {
-  document.getElementById('changeset-options-section')?.classList.toggle('highlight-off', !on);
-}
-
-/**
- * Typy obsažené v načtených datech (z `updateChangesetToggleVisibility`) —
- * filtr je aktivní, když je některý z nich skrytý.
- */
-let presentTypes: ChangesetZapisType[] = [];
-
-/** Tlačítko „Změny" má aktivní barvu při obarvení nebo aktivním filtru. */
-function syncButton(): void {
-  const filtered = presentTypes.some((t) => !isShowZapis(t));
-  document.getElementById('btn-changes-menu')?.classList.toggle('is-on', isHighlightZapis() || filtered);
-}
 
 /** „Všechny záznamy jsou …" — jediný typ změny v datech. */
 const ONLY_LABEL: Record<ChangesetZapisType, string> = {
@@ -77,6 +43,39 @@ const ONLY_LABEL: Record<ChangesetZapisType, string> = {
   u: 'editované',
   d: 'mazané',
 };
+
+let layersGetter: () => JvfVectorLayer[] = () => [];
+let unsubscribe: (() => void) | null = null;
+
+/** Řádek typu v kartě (`data-zapis`) a jeho zaškrtávátko. */
+function getRow(type: ChangesetZapisType): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`.changeset-row[data-zapis="${type}"]`);
+}
+function getCheckbox(type: ChangesetZapisType): HTMLInputElement | null {
+  return getRow(type)?.querySelector<HTMLInputElement>('input') ?? null;
+}
+function getHighlightCheckbox(): HTMLInputElement | null {
+  return document.getElementById('toggle-highlight-zapis') as HTMLInputElement | null;
+}
+
+/**
+ * Promítne stav do karty a tlačítka: zaškrtávátka, šedé tečky bez obarvení
+ * (jinak by slibovaly barvu, kterou mapa nekreslí) a aktivní barva tlačítka
+ * při obarvení nebo filtru (skrytý typ, který v datech je).
+ */
+function syncUi(): void {
+  const highlight = isHighlightZapis();
+  const highlightCheckbox = getHighlightCheckbox();
+  if (highlightCheckbox) highlightCheckbox.checked = highlight;
+  document.getElementById('changeset-options-section')?.classList.toggle('highlight-off', !highlight);
+  let filtered = false;
+  for (const type of CHANGESET_TYPES) {
+    const checkbox = getCheckbox(type);
+    if (checkbox) checkbox.checked = isShowZapis(type);
+    if (getRow(type)?.hidden === false && !isShowZapis(type)) filtered = true;
+  }
+  document.getElementById('btn-changes-menu')?.classList.toggle('is-on', highlight || filtered);
+}
 
 /**
  * Inicializace UI a wiring na state. Volat jednou při startu aplikace.
@@ -86,47 +85,36 @@ export function setupChangesetToggle(getLayers: () => JvfVectorLayer[]): void {
   setupMapCard('btn-changes-menu', 'changes-card');
 
   for (const type of CHANGESET_TYPES) {
+    // Barva tečky = barva lemu změny v mapě (jediný zdroj ZAPIS_HIGHLIGHT_COLORS).
+    getRow(type)?.style.setProperty('--zapis-color', ZAPIS_HIGHLIGHT_COLORS[type].stroke);
     const checkbox = getCheckbox(type);
-    if (!checkbox) continue;
-    checkbox.checked = isShowZapis(type);
-    checkbox.addEventListener('change', () => {
-      setShowZapis(type, checkbox.checked);
-    });
+    checkbox?.addEventListener('change', () => setShowZapis(type, checkbox.checked));
   }
-
   const highlightCheckbox = getHighlightCheckbox();
-  if (highlightCheckbox) {
-    highlightCheckbox.checked = isHighlightZapis();
-    highlightCheckbox.addEventListener('change', () => {
-      setHighlightZapis(highlightCheckbox.checked);
-    });
-  }
-  syncHighlightClass(isHighlightZapis());
+  highlightCheckbox?.addEventListener('change', () => setHighlightZapis(highlightCheckbox.checked));
 
-  // Listener: refresh 2D + 3D při každé změně kteréhokoli flagu
+  // Listener: UI + refresh 2D + 3D při každé změně flagů
   if (unsubscribe) unsubscribe();
-  unsubscribe = subscribeChangesetToggle((type, value) => {
-    // Sync zpět do UI (i pro změnu flagu mimo ovládací prvek)
-    const checkbox = type === 'highlight' ? getHighlightCheckbox() : getCheckbox(type);
-    if (checkbox && checkbox.checked !== value) checkbox.checked = value;
-    if (type === 'highlight') syncHighlightClass(value);
-    syncButton();
+  unsubscribe = subscribeChangesetToggle(() => {
+    syncUi();
     refreshAllLayers();
     applyChangesetHighlight();
   });
+  syncUi();
 }
 
 /**
  * Vyhodnotit, které typy `ZapisObjektu` (i/u/d) načtené JVF soubory
  * obsahují (**sjednocení přes všechny projekty**), a podle toho zobrazit /
- * skrýt blok i jednotlivé přepínače s počty. Volat po každé změně načtených dat
- * (přidání / odebrání projektu); prázdné pole = žádná data.
+ * skrýt tlačítko i jednotlivá zaškrtávátka s počty. Volat po každé změně
+ * načtených dat (přidání / odebrání projektu); prázdné pole = žádná data.
  *
  * Default chování:
- *  - aspoň jeden záznam i/u/d → blok viditelný, přítomné typy zobrazené,
+ *  - aspoň jeden záznam i/u/d → tlačítko viditelné, přítomné typy zobrazené,
  *  - typ v datech chybí → řádek skrytý a flag resetovaný na `false`,
  *    aby nezůstal aktivní z předchozích dat,
- *  - jediná skupina záznamů (např. vše nové) → přepínače typů skryté, zbude obarvení.
+ *  - jediná skupina záznamů (např. vše nové) → zaškrtávátka typů skrytá,
+ *    zbude obarvení.
  */
 export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
   const control = document.getElementById('changes-control');
@@ -153,27 +141,15 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
     }
     if (hasChangeset && !dialectOf(dtm.verze)) highlightDefault = true;
   }
-  setHighlightZapis(highlightDefault);
-  const highlightCheckbox = getHighlightCheckbox();
-  if (highlightCheckbox) highlightCheckbox.checked = highlightDefault;
-  syncHighlightClass(highlightDefault);
 
   const present = CHANGESET_TYPES.filter((t) => counts[t] > 0);
-  presentTypes = present;
   for (const type of CHANGESET_TYPES) {
-    const shown = counts[type] > 0;
-    // Default ON pro nový soubor — uživatel hned vidí, co se mění;
-    // chybějící typ se resetuje, aby nezůstal aktivní pro další soubor.
-    setShowZapis(type, shown);
-    const checkbox = getCheckbox(type);
-    if (checkbox) checkbox.checked = shown;
-    const row = document.getElementById(TOGGLE_UI[type].rowId);
+    const row = getRow(type);
     if (!row) continue;
-    row.hidden = !shown;
+    row.hidden = counts[type] === 0;
     const count = row.querySelector('.changeset-count');
     if (count) count.textContent = counts[type].toLocaleString('cs-CZ');
   }
-
   const single = present.length + (hasUnchanged ? 1 : 0) < 2;
   const rows = document.getElementById('changeset-rows');
   if (rows) rows.hidden = single;
@@ -187,12 +163,15 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
         : `Zaškrtávátka filtrují — záznamy typu zobrazí / skryjí. ${style}`;
   }
   control.hidden = present.length === 0;
-  if (control.hidden) {
-    const card = document.getElementById('changes-card');
-    if (card) card.hidden = true;
-    document.getElementById('btn-changes-menu')?.setAttribute('aria-expanded', 'false');
-  }
-  syncButton();
+  if (control.hidden) closeMapCard('changes-card');
+
+  // Default ON pro přítomné typy, chybějící typ se resetuje, aby nezůstal
+  // aktivní pro další soubor — jedním voláním (jeden přepočet vrstev).
+  setChangesetFlags({
+    highlight: highlightDefault,
+    show: { i: counts.i > 0, u: counts.u > 0, d: counts.d > 0 },
+  });
+  syncUi();
 }
 
 /**

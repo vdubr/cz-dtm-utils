@@ -11,7 +11,7 @@ import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import { scrollIntoViewFast } from '../util/scroll.js';
 import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
 import { isLayerVisible, subscribeLayerVisibility, toggleLayerVisible } from '../state/layerVisibility.js';
-import { attachSearchClear } from './searchField.js';
+import { attachSearchClear, matchesSearch as matchesQuery, normalizeSearch } from './searchField.js';
 import { buildLegendSwatchFor } from './symbolSwatch.js';
 import {
   LEVEL_NONE,
@@ -91,12 +91,7 @@ function matchesFilter(ot: ObjektovyTyp): boolean {
 
 function matchesSearch(ot: ObjektovyTyp, z: ZaznamObjektu): boolean {
   if (!currentSearch) return true;
-  const q = currentSearch.toLowerCase();
-  if (ot.nazev.toLowerCase().includes(q)) return true;
-  if (ot.elementName.toLowerCase().includes(q)) return true;
-  const id = z.commonAttributes?.id ?? '';
-  if (id.toLowerCase().includes(q)) return true;
-  return false;
+  return matchesQuery(normalizeSearch(currentSearch), ot.nazev, ot.elementName, z.commonAttributes?.id);
 }
 
 // ── Filtr úrovní umístění (LEVEL) ─────────────────────────────────────────────

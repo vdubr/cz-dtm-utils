@@ -4,8 +4,8 @@
  * a hodnotách číselníků. Znaky lze stáhnout jako SVG v balíku (ZIP) se
  * seznamem `znaky.csv`.
  *
- * Tlačítko je v panelu vrstev vedle „Legendy DTM" a je vidět jen v režimech
- * dialektů (`data-mode="udm jzm"`).
+ * Tlačítko je v panelu vrstev vedle „Legendy DTM" a je vidět jen pro verzi
+ * dialektu s vlastními znaky (`getStyleTable`) — čisté JVF má jednu legendu.
  */
 import {
   dialectOf,
@@ -18,7 +18,7 @@ import {
 } from 'jvf-parser';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { createZip, type ZipEntry } from '../util/zip.js';
-import { attachSearchClear } from './searchField.js';
+import { attachSearchClear, matchesSearch, normalizeSearch } from './searchField.js';
 import { symbolPreviewUrl } from './symbolSwatch.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
@@ -150,12 +150,9 @@ function download(bytes: Uint8Array<ArrayBuffer>, fileName: string): void {
 }
 
 function render(body: HTMLElement, entries: readonly SymbolEntry[], filter: string): void {
-  const q = filter.trim().toLocaleLowerCase('cs');
+  const q = normalizeSearch(filter.trim());
   const shown = q
-    ? entries.filter((e) =>
-        [e.objectName, e.elementName, e.code, e.valueLabel, e.value, e.symbol]
-          .some((s) => s?.toLocaleLowerCase('cs').includes(q))
-      )
+    ? entries.filter((e) => matchesSearch(q, e.objectName, e.elementName, e.code, e.valueLabel, e.value, e.symbol))
     : entries;
   body.replaceChildren();
   if (shown.length === 0) {
@@ -206,16 +203,20 @@ export function setupSymbolLegendModal(): void {
   const close = (): void => {
     modal.style.display = 'none';
   };
+  // Tlačítko i obsah podle téže podmínky — verze s vlastními znaky dialektu.
+  const syncButton = (): void => {
+    btn.hidden = !getStyleTable(getActiveVersion());
+  };
+  syncButton();
   // Změna verze / režimu: legenda patří jen k dialektu, ve kterém se otevřela.
   onActiveVersionChange(() => {
     entries = null;
     close();
+    syncButton();
   });
 
   const open = (): void => {
     const version = getActiveVersion();
-    // Čisté JVF nemá vlastní znaky — jeho znaky ukazuje Legenda DTM.
-    if (!getStyleTable(version)) return;
     entries ??= collectSymbols(version);
     title.textContent = `Legenda znaků — ${formatVersionLabel(version)}`;
     dl.disabled = entries.length === 0;

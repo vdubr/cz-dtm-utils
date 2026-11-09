@@ -528,14 +528,14 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     expect(dxf).toMatch(/SZ_[0-9a-f]{8}/);
   });
 
-  test('Legenda znaků se po přepnutí do JVF zavře a v JVF neotevře', async ({ page }) => {
+  test('Legenda znaků: po přepnutí do JVF je modal zavřený a tlačítko skryté', async ({ page }) => {
     await switchMode(page, 'jzm');
     await page.locator('#btn-symbol-legend').click();
     await expect(page.locator('#symbol-legend-modal')).toBeVisible();
     await page.locator('#symbol-legend-modal-close').click();
     await switchMode(page, 'jvf');
+    // Tlačítko se řídí verzí (čisté JVF nemá vlastní znaky), modal je zavřený.
     await expect(page.locator('#btn-symbol-legend')).toBeHidden();
-    await page.locator('#btn-symbol-legend').evaluate((el) => (el as HTMLButtonElement).click());
     await expect(page.locator('#symbol-legend-modal')).toBeHidden();
   });
 
@@ -1899,19 +1899,16 @@ test.describe('Připomínky 2026-11-06', () => {
     await expect(page.locator('#row-show-inserted .changeset-count')).toHaveText('2');
     await expect(page.locator('#row-show-updated .changeset-count')).toHaveText('2');
     await expect(page.locator('#row-show-deleted')).toBeHidden();
-    const shown = () =>
-      page.evaluate(() => {
-        type L = { olLayer: { getSource(): { getFeatures(): unknown[] }; getStyleFunction(): (f: unknown, r: number) => unknown } };
-        let n = 0;
-        for (const l of (window as unknown as { __jvfDebug: { getJvfLayers(): L[] } }).__jvfDebug.getJvfLayers())
-          for (const f of l.olLayer.getSource().getFeatures()) if (l.olLayer.getStyleFunction()(f, 1)) n++;
-        return n;
-      });
-    const all = await shown();
+    // Filtr skryje jen nové (i), editované (u) se kreslí dál — i bez obarvení.
+    await page.locator('#toggle-highlight-zapis').uncheck({ force: true });
+    const before = await drawnBy(page, 'jvfZapisObjektu');
+    expect(before['i']).toBeGreaterThan(0);
     await nove.uncheck({ force: true });
-    expect(await shown()).toBeLessThan(all);
+    const after = await drawnBy(page, 'jvfZapisObjektu');
+    expect(after['i']).toBeUndefined();
+    expect(after['u']).toBe(before['u']);
     await nove.check({ force: true });
-    expect(await shown()).toBe(all);
+    expect(await drawnBy(page, 'jvfZapisObjektu')).toEqual(before);
     // Tečka v barvě změny jen při zapnutém obarvení, jinak šedá.
     const dot = page.locator('#row-show-inserted .changeset-dot');
     await page.locator('#toggle-highlight-zapis').check({ force: true });

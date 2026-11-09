@@ -13,6 +13,10 @@
  * drawer, side sheet, menu, dialog, search, badge, divider, small FAB.
  */
 
+/* Atribut `hidden` skrývá vždy — i prvky s vlastním `display` (flex, …),
+   jinak by každá komponenta potřebovala vlastní pravidlo `.x[hidden]`. */
+[hidden] { display: none !important; }
+
 /* ------------------------------------------------------------------ */
 /* Tokeny                                                              */
 /* ------------------------------------------------------------------ */
@@ -487,9 +491,11 @@ input[type='radio'].m3-radio {
 
 /* Dráha M3: aktivní část (primary) vlevo od palce, neaktivní vpravo s tečkou
    na konci (stop indicator). Výplň v Chrome / Safari z --m3-slider-fill
-   (podíl 0–1, nastavuje ui/m3Slider.ts) — ke středu palce (10 px od kraje). */
+   (podíl 0–1, nastavuje ui/m3Slider.ts) — ke středu palce. Velikost palce
+   --m3-slider-thumb (menší posuvník přepíše jen ji). */
 input[type='range'].m3-slider {
   --m3-slider-fill: 1;
+  --m3-slider-thumb: 20px;
   --m3-slider-inactive: var(--md-sys-color-secondary-container);
   --m3-slider-stop: radial-gradient(circle 2px at calc(100% - 2px) 50%, var(--md-sys-color-primary) 99%, transparent 100%);
   -webkit-appearance: none;
@@ -508,15 +514,15 @@ input[type='range'].m3-slider::-webkit-slider-runnable-track {
     var(--m3-slider-stop),
     linear-gradient(
       to right,
-      var(--md-sys-color-primary) calc(10px + (100% - 20px) * var(--m3-slider-fill)),
-      var(--m3-slider-inactive) calc(10px + (100% - 20px) * var(--m3-slider-fill))
+      var(--md-sys-color-primary) calc(var(--m3-slider-thumb) / 2 + (100% - var(--m3-slider-thumb)) * var(--m3-slider-fill)),
+      var(--m3-slider-inactive) calc(var(--m3-slider-thumb) / 2 + (100% - var(--m3-slider-thumb)) * var(--m3-slider-fill))
     );
 }
 input[type='range'].m3-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  margin-top: -8px;
+  width: var(--m3-slider-thumb);
+  height: var(--m3-slider-thumb);
+  margin-top: calc((4px - var(--m3-slider-thumb)) / 2);
   border-radius: 50%;
   background: var(--md-sys-color-primary);
   border: none;
@@ -528,8 +534,8 @@ input[type='range'].m3-slider::-moz-range-track {
 }
 input[type='range'].m3-slider::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
 input[type='range'].m3-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: var(--m3-slider-thumb);
+  height: var(--m3-slider-thumb);
   border-radius: 50%;
   background: var(--md-sys-color-primary);
   border: none;

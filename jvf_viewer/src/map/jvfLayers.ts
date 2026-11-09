@@ -589,7 +589,7 @@ export interface JvfVectorLayer {
 
 /**
  * Kreslí se prvek JVF vrstvy? Filtr prvků (úroveň umístění, projekt,
- * obsahová část) a changeset přepínač „Zobrazit nové / editované / mazané".
+ * obsahová část) a filtr typů změn (karta „Změny": Nové / Editované / Mazané).
  * Jediné místo rozhodnutí — používá ho style funkce vrstev i přichytávání
  * při měření (map/measure.ts), aby se neměřilo ke skrytým prvkům.
  * Viditelnost celé vrstvy (panel vrstev) sem nepatří — tu nese vrstva.

@@ -110,6 +110,36 @@ export type JvfLoadCallback = (data: JvfDtm, fileName: string) => void;
 export type JvfErrorProtocolCallback = (proto: ErrorProtocol, fileName: string) => void;
 
 /**
+ * Zpracuje načtené XML — jediný postup pro lokální soubor i ukázku:
+ * protokol chyb → report; jinak přidat / nahradit, parser, režim aplikace,
+ * verze a teprve pak (u „Nahradit") smazání načtených dat. Vrací použitý
+ * režim, nebo `null` (data se nenačetla). Výjimky parseru propouští volajícímu.
+ */
+async function ingestXml(
+  xml: string,
+  name: string,
+  mode: AddMode | undefined,
+  onLoad: JvfLoadCallback,
+  onErrorProtocol?: JvfErrorProtocolCallback,
+): Promise<{ mode: AddMode; data: JvfDtm } | null> {
+  // Protokol chyb (ServisJVFDTM) není mapová data — zobraz jako report.
+  if (onErrorProtocol && isErrorProtocolXml(xml)) {
+    onErrorProtocol(parseErrorProtocol(xml), name);
+    return null;
+  }
+  const chosen = await chooseAddMode(name, mode);
+  if (!chosen) return null;
+  const data = parseJvfDtm(xml);
+  // Soubor jiného režimu (UDM v JVF a naopak) → nabídnout přepnutí.
+  if (!(await ensureAppModeForFile(data, name))) return null;
+  if (!(await validateFileVersion(data, name))) return null;
+  // Nahradit až po úspěšném načtení — chybný soubor data nesmaže.
+  if (chosen === 'replace') clearProjects();
+  onLoad(data, name);
+  return { mode: chosen, data };
+}
+
+/**
  * Načte lokální soubor (z file inputu nebo drag & drop) a zpracuje ho
  * parserem — jediný sdílený kód-path pro oba způsoby načtení. Vrací
  * Promise, aby šlo více souborů (multi-výběr / multi-drop) zpracovat
@@ -131,25 +161,11 @@ export function loadJvfFile(
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const xml = e.target?.result as string;
-        // Protokol chyb (ServisJVFDTM) není mapová data — zobraz jako report.
-        if (onErrorProtocol && isErrorProtocolXml(xml)) {
-          onErrorProtocol(parseErrorProtocol(xml), file.name);
-          return;
-        }
-        const chosen = await chooseAddMode(file.name, mode);
-        if (!chosen) return;
-        const data = parseJvfDtm(xml);
-        // Soubor jiného režimu (UDM v JVF a naopak) → nabídnout přepnutí.
-        if (!(await ensureAppModeForFile(data, file.name))) return;
-        const ok = await validateFileVersion(data, file.name);
-        if (!ok) return;
-        // Nahradit až po úspěšném načtení — chybný soubor data nesmaže.
-        if (chosen === 'replace') clearProjects();
-        onLoad(data, file.name);
-        used = chosen;
+        const res = await ingestXml(e.target?.result as string, file.name, mode, onLoad, onErrorProtocol);
+        if (!res) return;
+        used = res.mode;
         // Bez názvu souboru — jen režim, verze a hrubá velikost.
-        track('file_load', { mode: getAppMode(), version: data.verze, size: sizeBucket(file.size) });
+        track('file_load', { mode: getAppMode(), version: res.data.verze, size: sizeBucket(file.size) });
       } catch (err) {
         console.error('Failed to parse JVF file:', err);
         alert(`Soubor „${file.name}“ se nepodařilo načíst. Zkontrolujte, že jde o platný JVF DTM soubor.`);
@@ -167,6 +183,22 @@ export function loadJvfFile(
 
     reader.readAsText(file, 'UTF-8');
   });
+}
+
+/**
+ * Načte více souborů jako samostatné projekty (multi-výběr, multi-drop):
+ * dotaz přidat / nahradit jen u prvního načteného, další se přidají.
+ * Sekvenčně — loading overlay a případné modaly se nesmí překrývat.
+ */
+export async function loadJvfFiles(
+  files: readonly File[],
+  onLoad: JvfLoadCallback,
+  onErrorProtocol?: JvfErrorProtocolCallback,
+): Promise<void> {
+  let mode: AddMode | undefined;
+  for (const file of files) {
+    if (await loadJvfFile(file, onLoad, onErrorProtocol, mode)) mode = 'add';
+  }
 }
 
 export function setupFileUpload(
@@ -189,16 +221,10 @@ export function setupFileUpload(
   });
 
   fileInput.addEventListener('change', async () => {
-    // Multi-výběr: každý soubor se přidá jako samostatný projekt (dotaz
-    // přidat / nahradit jen u prvního, další se přidají).
-    // Sekvenčně — loading overlay a případné modaly se nesmí překrývat.
     const files = Array.from(fileInput.files ?? []);
     // Reset hned, aby šel stejný soubor vybrat znovu
     fileInput.value = '';
-    let mode: AddMode | undefined;
-    for (const file of files) {
-      if (await loadJvfFile(file, onLoad, onErrorProtocol, mode)) mode = 'add';
-    }
+    await loadJvfFiles(files, onLoad, onErrorProtocol);
   });
 
   // Dropdown s ukázkovými soubory (fixtures) — fetchne XML ze statického
@@ -264,20 +290,9 @@ async function loadSample(
     if (!resp.ok) {
       throw new Error(`HTTP ${resp.status} — soubor nenalezen`);
     }
-    const xml = await resp.text();
-    if (onErrorProtocol && isErrorProtocolXml(xml)) {
-      onErrorProtocol(parseErrorProtocol(xml), name);
-      return;
+    if (await ingestXml(await resp.text(), name, undefined, onLoad, onErrorProtocol)) {
+      track('sample_load', { sample: name, mode: getAppMode() });
     }
-    const chosen = await chooseAddMode(name, undefined);
-    if (!chosen) return;
-    const data = parseJvfDtm(xml);
-    if (!(await ensureAppModeForFile(data, name))) return;
-    const ok = await validateFileVersion(data, name);
-    if (!ok) return;
-    if (chosen === 'replace') clearProjects();
-    onLoad(data, name);
-    track('sample_load', { sample: name, mode: getAppMode() });
   } catch (err) {
     console.error('Failed to load sample:', err);
     alert(`Ukázkový soubor „${name}“ se nepodařilo načíst.`);

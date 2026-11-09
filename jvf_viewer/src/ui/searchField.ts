@@ -9,6 +9,9 @@ export function attachSearchClear(input: HTMLInputElement): void {
   if (input.parentElement?.classList.contains('search-field')) return;
   const wrap = document.createElement('span');
   wrap.className = 'search-field';
+  // Pole skryté v HTML skrývá dál obal (i s křížkem) — viditelnost pak řídí obal.
+  wrap.hidden = input.hidden;
+  input.hidden = false;
   input.replaceWith(wrap);
   wrap.append(input);
 
@@ -24,4 +27,14 @@ export function attachSearchClear(input: HTMLInputElement): void {
     input.focus();
   });
   wrap.append(clear);
+}
+
+/** Text pro hledání bez rozlišení velikosti písmen a diakritiky. */
+export function normalizeSearch(s: string): string {
+  return s.toLocaleLowerCase('cs').normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
+/** Obsahuje některý z textů hledaný výraz (`query` už normalizovaný přes `normalizeSearch`)? */
+export function matchesSearch(query: string, ...texts: (string | undefined)[]): boolean {
+  return texts.some((t) => t !== undefined && normalizeSearch(t).includes(query));
 }

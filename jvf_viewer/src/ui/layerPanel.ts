@@ -9,7 +9,7 @@ import {
 import { isContentPartVisible, subscribeFeatureFilter } from '../state/featureFilter.js';
 import { contentPartTitle } from '../state/contentParts.js';
 import { appModeDef, getAppMode } from '../state/appMode.js';
-import { attachSearchClear } from './searchField.js';
+import { attachSearchClear, normalizeSearch } from './searchField.js';
 import { buildStyleSwatch, swatchKindForObjektovyTyp } from './symbolSwatch.js';
 
 /** Tooltip s použitými variantami značky („nástěnná konzola 3×, …"). */
@@ -39,11 +39,6 @@ function syncLayerPanel(): void {
       ? ''
       : `${contentPartTitle(part)} je skrytá filtrem obsahové části v Přehledu prvků`;
   });
-}
-
-/** Text pro hledání bez rozlišení velikosti písmen a diakritiky. */
-function normalizeSearch(s: string): string {
-  return s.toLocaleLowerCase('cs').normalize('NFD').replace(/\p{Diacritic}/gu, '');
 }
 
 /**
@@ -88,8 +83,6 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
     subscribeFeatureFilter(syncLayerPanel);
     const input = document.getElementById('layer-search') as HTMLInputElement | null;
     if (input) {
-      // Pole skryté přes obal (s křížkem), viz níže.
-      input.hidden = false;
       attachSearchClear(input);
       input.addEventListener('input', applyLayerSearch);
     }

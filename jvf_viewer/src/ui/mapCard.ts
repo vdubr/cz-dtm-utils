@@ -5,6 +5,11 @@
  */
 const closers = new Map<string, () => void>();
 
+/** Zavře kartu `cardId` (je-li otevřená) — např. když její tlačítko zmizí. */
+export function closeMapCard(cardId: string): void {
+  closers.get(cardId)?.();
+}
+
 /** Naváže tlačítko `buttonId` na kartu `cardId`. */
 export function setupMapCard(buttonId: string, cardId: string): void {
   const button = document.getElementById(buttonId) as HTMLButtonElement | null;

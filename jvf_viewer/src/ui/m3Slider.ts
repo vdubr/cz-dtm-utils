@@ -5,12 +5,18 @@
  * Chrome / Safari z CSS proměnné `--m3-slider-fill` (podíl 0–1, viz m3.css).
  */
 
-/** Přepočítá výplň posuvníku podle hodnoty — volat i po nastavení hodnoty z kódu. */
-export function syncSliderFill(input: HTMLInputElement): void {
+/** Přepočítá výplň posuvníku podle hodnoty. */
+function syncSliderFill(input: HTMLInputElement): void {
   const min = Number(input.min || 0);
   const max = Number(input.max || 100);
   const ratio = max > min ? (Number(input.value) - min) / (max - min) : 0;
   input.style.setProperty('--m3-slider-fill', String(Math.min(1, Math.max(0, ratio))));
+}
+
+/** Nastaví hodnotu posuvníku z kódu i s výplní dráhy (programové `value =` událost `input` nevyvolá). */
+export function setSliderValue(input: HTMLInputElement, value: number): void {
+  input.value = String(value);
+  syncSliderFill(input);
 }
 
 /** Výplň všech posuvníků — při posunu (delegovaně, i u dynamicky vložených) a hned u stávajících. */

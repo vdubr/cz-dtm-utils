@@ -25,13 +25,10 @@
 export type ChangesetZapisType = 'i' | 'u' | 'd';
 
 /**
- * Posluchač změny flagu — `type` je typ zápisu (viditelnost), nebo
- * `'highlight'` pro přepínač „zvýraznit změny barvou".
+ * Posluchač změny kteréhokoli flagu (viditelnost typu nebo „Obarvit změny");
+ * aktuální stav si čte přes `isShowZapis` / `isHighlightZapis`.
  */
-export type ChangesetToggleListener = (
-  type: ChangesetZapisType | 'highlight',
-  value: boolean,
-) => void;
+export type ChangesetToggleListener = () => void;
 
 const flags: Record<ChangesetZapisType, boolean> = {
   i: false,
@@ -40,10 +37,10 @@ const flags: Record<ChangesetZapisType, boolean> = {
 };
 
 /**
- * Zvýraznit viditelné changeset záznamy barvou typu změny (zelená/oranžová/
- * červená). Vypnuto → záznamy zůstanou viditelné (dle `flags`), ale kreslí se
- * vlastní symbologií — typicky u UDM, kde jsou všechna data nová (`i`) a
- * zelené přebarvení by skrylo vzhled objektů.
+ * „Obarvit změny" — pod viditelné changeset záznamy kreslit lem barvy typu
+ * změny (zelená/oranžová/červená); jen styl, viditelnost řídí `flags`.
+ * Vypnuto → záznamy se kreslí jen vlastní symbologií — typicky u UDM, kde
+ * jsou všechna data nová (`i`) a zelený lem by přebil vzhled objektů.
  */
 let highlight = true;
 
@@ -59,11 +56,7 @@ export function isShowZapis(type: ChangesetZapisType): boolean {
 }
 
 export function setShowZapis(type: ChangesetZapisType, value: boolean): void {
-  if (flags[type] === value) return;
-  flags[type] = value;
-  for (const listener of listeners) {
-    listener(type, value);
-  }
+  setChangesetFlags({ show: { [type]: value } });
 }
 
 export function isHighlightZapis(): boolean {
@@ -71,11 +64,29 @@ export function isHighlightZapis(): boolean {
 }
 
 export function setHighlightZapis(value: boolean): void {
-  if (highlight === value) return;
-  highlight = value;
-  for (const listener of listeners) {
-    listener('highlight', value);
+  setChangesetFlags({ highlight: value });
+}
+
+/**
+ * Nastaví více flagů najednou a posluchače zavolá **jednou** (jen při změně)
+ * — po načtení dat se tak 2D vrstvy a 3D scéna přepočítají jen jednou.
+ */
+export function setChangesetFlags(next: {
+  highlight?: boolean;
+  show?: Partial<Record<ChangesetZapisType, boolean>>;
+}): void {
+  let changed = false;
+  if (next.highlight !== undefined && next.highlight !== highlight) {
+    highlight = next.highlight;
+    changed = true;
   }
+  for (const [type, value] of Object.entries(next.show ?? {}) as [ChangesetZapisType, boolean][]) {
+    if (flags[type] === value) continue;
+    flags[type] = value;
+    changed = true;
+  }
+  if (!changed) return;
+  for (const listener of listeners) listener();
 }
 
 /** Kreslit záznam daného typu zápisu zvýrazňovací barvou? (viditelný + highlight) */
