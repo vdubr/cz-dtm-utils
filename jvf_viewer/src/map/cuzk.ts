@@ -4,6 +4,7 @@ import TileGrid from 'ol/tilegrid/TileGrid.js';
 import Map from 'ol/Map.js';
 import { track } from '../analytics.js';
 import { setupMapCard } from '../ui/mapCard.js';
+import { syncSliderFill } from '../ui/m3Slider.js';
 import {
   getBasemapChoice,
   setBasemapChoice,
@@ -146,6 +147,7 @@ export function setupBaseLayerSwitcher(
 
   if (opacitySlider) {
     opacitySlider.value = String(Math.round(getBasemapChoiceOpacity() * 100));
+    syncSliderFill(opacitySlider);
     opacitySlider.addEventListener('input', () => {
       setBasemapChoiceOpacity(Number(opacitySlider.value) / 100);
     });

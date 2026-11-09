@@ -51,6 +51,7 @@ import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
 import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
 import { showErrorProtocol } from './ui/errorProtocolModal.js';
+import { setupM3Sliders } from './ui/m3Slider.js';
 import {
   setupChangesetToggle,
   updateChangesetToggleVisibility,
@@ -211,6 +212,8 @@ setupSymbolLegendModal();
 // Wiring checkboxů „Zobrazit nové / editované / mazané" — sekce se zobrazí
 // jen pro JVF obsahující záznamy se `ZapisObjektu` ∈ {i, u, d} (changeset
 // nebo nově vytvořený soubor).
+// Posuvníky M3: výplň aktivní části dráhy (Chrome / Safari).
+setupM3Sliders();
 setupChangesetToggle(() => currentJvfLayers);
 
 // Režim aplikace (JVF / UDM / JŽM): verze pro legendu a číselníky podle

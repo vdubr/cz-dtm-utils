@@ -483,11 +483,17 @@ html, body {
 .basemap-opacity-row { gap: 12px; padding: 12px 4px 4px; }
 /* Ikona sytosti u překryvů DTM / katastru (ui/overlayPanel.ts). */
 .basemap-opacity-icon { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
-#basemap-opacity { flex: 1; height: 20px; background: transparent; }
+#basemap-opacity { flex: 1; height: 20px; background: transparent; --m3-slider-inactive: var(--md-sys-color-outline-variant); }
 #basemap-opacity::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--md-sys-color-outline-variant);
+  background:
+    var(--m3-slider-stop),
+    linear-gradient(
+      to right,
+      var(--md-sys-color-primary) calc(8px + (100% - 16px) * var(--m3-slider-fill)),
+      var(--m3-slider-inactive) calc(8px + (100% - 16px) * var(--m3-slider-fill))
+    );
 }
 #basemap-opacity::-webkit-slider-thumb {
   width: 16px;
@@ -498,7 +504,7 @@ html, body {
   border: none;
   box-shadow: none;
 }
-#basemap-opacity::-moz-range-track { height: 4px; border-radius: 2px; background: var(--md-sys-color-outline-variant); }
+#basemap-opacity::-moz-range-track { height: 4px; border-radius: 2px; background: var(--m3-slider-stop), var(--m3-slider-inactive); }
 #basemap-opacity::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
 #basemap-opacity::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--md-sys-color-primary); border: none; }
 /* Bez podkladu (volba „Prázdná") nemá sytost smysl — vypnutý stav M3. */

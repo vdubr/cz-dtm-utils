@@ -485,7 +485,13 @@ input[type='radio'].m3-radio {
   flex-shrink: 0;
 }
 
+/* Dráha M3: aktivní část (primary) vlevo od palce, neaktivní vpravo s tečkou
+   na konci (stop indicator). Výplň v Chrome / Safari z --m3-slider-fill
+   (podíl 0–1, nastavuje ui/m3Slider.ts) — ke středu palce (10 px od kraje). */
 input[type='range'].m3-slider {
+  --m3-slider-fill: 1;
+  --m3-slider-inactive: var(--md-sys-color-secondary-container);
+  --m3-slider-stop: radial-gradient(circle 2px at calc(100% - 2px) 50%, var(--md-sys-color-primary) 99%, transparent 100%);
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
@@ -498,7 +504,13 @@ input[type='range'].m3-slider {
 input[type='range'].m3-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--md-sys-color-secondary-container);
+  background:
+    var(--m3-slider-stop),
+    linear-gradient(
+      to right,
+      var(--md-sys-color-primary) calc(10px + (100% - 20px) * var(--m3-slider-fill)),
+      var(--m3-slider-inactive) calc(10px + (100% - 20px) * var(--m3-slider-fill))
+    );
 }
 input[type='range'].m3-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -512,7 +524,7 @@ input[type='range'].m3-slider::-webkit-slider-thumb {
 input[type='range'].m3-slider::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: var(--md-sys-color-secondary-container);
+  background: var(--m3-slider-stop), var(--m3-slider-inactive);
 }
 input[type='range'].m3-slider::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
 input[type='range'].m3-slider::-moz-range-thumb {
