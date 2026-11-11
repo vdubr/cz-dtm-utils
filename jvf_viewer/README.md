@@ -160,7 +160,7 @@ The `api/dmr5g.ts` Edge function lives at the **repository root**, not under
 
 ## License
 
-[MIT](../LICENSE) © 2026 Vojtěch Dubrovský
+Proprietární — všechna práva vyhrazena. © 2026 Vojtěch Dubrovský, viz [LICENSE](../LICENSE).
 
 ČÚZK basemaps, the DMR5G terrain dataset and the official Symbol Catalog
 are property of the Czech Office for Surveying, Mapping and Cadastre (ČÚZK).

@@ -240,4 +240,4 @@ All tests run against the fixture JVF files shipped with `jvf-parser/samples`.
 
 ## License
 
-[MIT](../LICENSE) © 2026 Vojtěch Dubrovský
+Proprietární — všechna práva vyhrazena. © 2026 Vojtěch Dubrovský, viz [LICENSE](../LICENSE).

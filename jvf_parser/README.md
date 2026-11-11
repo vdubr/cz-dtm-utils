@@ -177,4 +177,4 @@ The generated catalog mirrors the XSD filename convention
 
 ## License
 
-[MIT](../LICENSE) © 2026 Vojtěch Dubrovský
+Proprietární — všechna práva vyhrazena. © 2026 Vojtěch Dubrovský, viz [LICENSE](../LICENSE).

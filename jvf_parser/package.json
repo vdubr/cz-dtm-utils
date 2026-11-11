@@ -1,8 +1,9 @@
 {
   "name": "jvf-parser",
-  "version": "2026.8.25",
+  "version": "2026.11.11",
   "description": "TypeScript parser for JVF DTM (Jednotný Výměnný Formát - Digital Technical Map) format",
-  "license": "MIT",
+  "license": "UNLICENSED",
+  "private": true,
   "author": "Vojtěch Dubrovský",
   "repository": {
     "type": "git",

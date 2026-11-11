@@ -98,4 +98,4 @@ There is no test suite — types are validated through the consumers
 
 ## License
 
-[MIT](../LICENSE) © 2026 Vojtěch Dubrovský
+Proprietární — všechna práva vyhrazena. © 2026 Vojtěch Dubrovský, viz [LICENSE](../LICENSE).

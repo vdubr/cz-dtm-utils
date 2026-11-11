@@ -7,26 +7,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 
 ## [Unreleased]
 
-### Přidáno
-- **Hledání ve vrstvách výkresu** — pole „Hledat vrstvu" zúží seznam podle
-  názvu, elementu nebo kódu objektu (bez diakritiky); viditelnost v mapě
-  nemění. Všechna pole hledání (vrstvy, legendy, Přehled prvků) vypadají
-  stejně, hledají bez ohledu na diakritiku a velikost písmen a mají křížek
-  pro vymazání, vidět vždy, když je pole vyplněné.
-- **Přidat, nebo nahradit projekt** — jsou-li načtená data, nahrání souboru
-  nebo ukázky se zeptá, zda ho přidat jako další projekt, nebo jím data
-  nahradit; stejný soubor se podruhé nepřidá (upozornění).
-- **Značky v liniích v legendě a náhledech** — linie, které Katalog DTM ČR
-  prokládá značkou (blesk elektrického vedení NN / VN / VVN / ZVN, třídy
-  silnic „D II", „S I", „MK II", plynovod, vodovod, kanalizace, teplovod,
-  produktovod, zábradlí…), ji ukazují v legendě, panelu vrstev i Přehledu
-  prvků (SVG z kartografického balíčku ČÚZK) a ve 2D mapě do mezer čárkování
-  — natočenou podle linie, v nativní velikosti Katalogu (1 jednotka SVG =
-  0,01 mm), texty tříd silnic hlavou nahoru; při oddálení se nečitelné
-  značky vynechají. Ve 3D scéně stejně: linie čárkovaná v metrech, značka
-  ve vodorovné rovině v mezeře, vektorově (čára stejně tenká jako linie
-  v každé vzdálenosti). Export do CAD zatím jen čárkování.
+> Hotové, zatím nevydané: nástroje **UDM** a **JŽM** (v produkčním
+> buildu vypnuté — `RELEASED_APP_MODES` ve `jvf_viewer/vite.config.ts`).
 
+### Přidáno
 - **Tři nástroje na jedné doméně: JVF (`/`), UDM (`/udm`), JŽM (`/jzm`)**
   — každý s vlastním názvem v hlavičce (JVF / UDM / JŽM Prohlížeč),
   titulkem stránky a barevným schématem Material 3 (JVF modrá, UDM
@@ -35,51 +19,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   vrstev) místo trojtlačítka; dlaždice jsou odkazy (nová záložka
   prostředním klikem). Staré adresy `/jvf_viewer/` a `?mode=udm` se
   trvale přesměrují na nové.
-- **Anonymní měření používání** (PostHog Cloud EU) — jen na produkční
-  adrese: použití funkcí (soubor / ukázka, režim, kontrola, Přehled
-  prvků, klik na prvek v mapě — jen typ objektu, měření, podklady,
-  překryvy, dotaz na parcelu, motiv, export do CAD, SVG symboly a terén
-  ve 3D, klik na LinkedIn autora), aktivní čas v aplikaci a doba ve 3D. Bez cookies a úložiště
-  prohlížeče, bez záznamu obrazovky; nikdy názvy souborů, souřadnice,
-  ID prvků, atributy ani údaje o parcelách. Popis v info modalu.
-- **Export do CAD i v režimu JVF** — tlačítko Export do CAD (AutoCAD DXF)
-  je nově i v režimu JVF. Výkres má stejný vzhled jako mapa — podle
-  Katalogu kartografických symbolů DTM ČR (ČÚZK): hladiny podle objektových
-  typů v barvách a čárkování Katalogu, značky Katalogu jako bloky `DTM_…`
-  (převedené z SVG kartografického balíčku, v barvě značky), plochy
-  vyplněné barvou Katalogu (HATCH pod obrysy, lze vypnout; ochranná pásma
-  a záměry jen obrysem), atributy v XDATA.
-- **Vlastník parcely** — se zapnutým překryvem katastru tlačítko vedle
-  měření: klik do mapy (2D i 3D) zjistí parcelu (WMS GetFeatureInfo ČÚZK —
-  katastrální území, parcelní číslo, výměra, odkaz do VDP), zvýrazní
-  hranici parcely (WFS katastrálních parcel INSPIRE ČÚZK, i s otvory; v 2D
-  s Přiblížit na parcelu, ve 3D obrys položený na terén) a nabídne odkaz „Vlastník v Nahlížení do
-  KN", který otevře parcelu ve veřejném Nahlížení do katastru nemovitostí
-  podle souřadnic S-JTSK. Ikona polygonu se špendlíkem; s měřením se
-  vylučuje.
-- **Překryvná vrstva katastru nemovitostí** — stejně jako DTM ČR: WMS ČÚZK
-  s výběrem všech nebo jednotlivých vrstev (hranice parcel, parcelní čísla,
-  obrazy parcel, další prvky mapy, KM-D, analogové mapy, orientační mapa
-  parcel) a vlastní sytostí; ve světlém motivu černý, v tmavém bílý
-  (inverzní vrstvy ČÚZK), nad DTM a pod daty JVF, ve 3D přehoz přes terén.
-- **Překryvná vrstva DTM ČR** — tlačítko „DTM" nad mapou:
-  Digitální technická mapa ČR ze služeb ČÚZK (IS DMVS, veřejné, bez
-  přihlášení) jako volitelný rastrový překryv nad podkladem a pod daty JVF.
-  Výběr všech vrstev, celých skupin (ZPS – plochy, DI, TI, přípojky, ZPS –
-  linie a body) i jednotlivých podvrstev; vlastní sytost. Celé skupiny přes
-  cachované dlaždice WMTS, výběr podvrstev přes WMS. Ve 3D se vybrané
-  vrstvy přehodí přes terén. Vektorová služba DTM celostátně neexistuje.
-- **Měření vzdálenosti a plochy ve 2D i 3D** — tlačítko s pravítkem vlevo
-  dole (inspirace mapy.cz): klikáním se přidávají body, vzdálenost se
-  počítá průběžně a od 3 bodů zároveň plocha mnohoúhelníku; klik na první
-  bod polygon uzavře. Popisky délek úseků, celkové délky a plochy v mapě,
-  souhrn v kartě (Zpět a Nové měření aktivní jen s body). Body se
-  přichytávají k bodům měření a k prvkům JVF — k vrcholům, hranám linií
-  a obvodů ploch a k průsečíkům, jen k právě viditelným prvkům; kurzor
-  a karta ukazují, k čemu je bod přichycený. Dvojklik měření ukončí,
-  Backspace vrátí bod, Esc zavře. Ve 2D rovinně v S-JTSK; ve 3D bod
-  z místa pod kurzorem (objekt, terén) a navíc šikmá vzdálenost,
-  vodorovná vzdálenost a převýšení (skutečné výšky bez převýšení scény).
 - **Režimy aplikace JVF / UDM / JŽM** — přepínač v hlavičce; výchozí je JVF,
   do UDM a JŽM se přepíná ručně. Přepnutí zavře načtené soubory
   (s potvrzením); soubor jiného modelu nabídne přepnutí režimu, bez něj se
@@ -116,8 +55,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 - **Ukázkové soubory ŽXML** — oficiální ukázka SŽ (1.4.2.1), minimální
   změnové věty a schematické nádraží v místě stanice Řevnice (1.5.1.6,
   smyšlená data, validní proti XSD SŽ).
-- **Podpora JVF DTM 1.5.0.2** — opravná verze 1.5.0.1 (ČÚZK 9. 9. 2026),
-  produkční verze IS DMVS od 18. 11. 2026. Výchozí verze režimu JVF.
 - **Podpora UDM 2.1.1 (Univerzální datový model ČKZ)** — otevřeného
   datového modelu České komory zeměměřičů, který rozšiřuje JVF DTM
   (1.5.0.2) o objekty a atributy nad rámec DTM (stromy, mobiliář, svislé
@@ -138,24 +75,119 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   reálná ukázka ČKZ, minimální testovací soubor a samostatná ukázka
   **pontonového mostu** (obvod mostu typu „jiný" s upřesněním, komunikace
   s dřevěným povrchem).
-- **Export do CAD (AutoCAD DXF)** — tlačítko v hlavičce (režimy UDM a JŽM)
-  vyexportuje projekt do DXF ve vzhledu datového modelu (UDM, znaky SŽ):
-  hladiny podle objektových typů (barva, tloušťka,
-  typ čáry), symboly UDM z knihovny ČKZ jako bloky, popisy a názvy jako
-  texty (výšky dle UDM pro 1:500) a atributy objektů v XDATA „UDM". DXF pro
-  AutoCAD 2013+ (true color) nebo R2000; volitelně mazané záznamy a 2D.
-  Nový balíček `jvf-cad` (MIT). DWG se neexportuje — DXF stačí v AutoCADu
-  uložit jako DWG.
-- **Přepínač „Zvýraznit změny barvou"** — vypne zelené / oranžové / červené
-  přebarvení nových, editovaných a mazaných záznamů; zůstanou viditelné
-  s vlastní symbologií (2D i 3D). U souborů UDM a ŽXML je ve výchozím stavu
-  vypnutý, protože data geodeta jsou celá jako nová a mapa by byla jen zelená.
-- **Hlídání nových verzí** — `npm run check:upstream` porovná verze
-  zveřejněné ČÚZK (JVF DTM), SŽ (ŽXML) a ČKZ (UDM) s podporovanými;
-  týdenní GitHub Action při nálezu založí issue. CI ověřuje, že generované
-  typy odpovídají XSD (`npm run check:generated`).
+- **Export do CAD i v režimech UDM a JŽM** — výkres ve vzhledu datového
+  modelu (UDM, znaky SŽ): symboly UDM z knihovny ČKZ jako bloky, popisy
+  a názvy jako texty (výšky dle UDM pro 1:500) a atributy objektů v XDATA
+  „UDM".
 
 ### Změněno
+- **Dialekty JVF DTM jako registr** (revize UDM / DTM) — UDM i ŽXML jsou
+  položky jednoho registru (`DIALECTS` v `jvf-dtm-types`, `PARSER_DIALECTS`
+  v parseru); router, topologie, export do CAD i viewer se řídí registrem
+  místo natvrdo zadaného UDM. Generátor typů pracuje s profily verzí.
+- `JvfDtm.verze` je vždy vyřešené id datového modelu (`1.5.0.2`,
+  `udm-2.1.1`, `zxml-1.5.1.6`); surová hlavička je ve `verzeJvfDtm`,
+  dialekt v `dialect` (`verzeUdm` zůstává jako zastaralý alias).
+- Symbologie dialektu se volí podle verze projektu (ne podle režimu);
+  popisky číselníků v panelu prvku podle verze projektu, ze kterého prvek je.
+- Meziobjektová topologie se pro soubory UDM nespouští (UDM nepracuje
+  s plošnou mapou ani s vazbou definiční bod ↔ plocha); ŽXML se kontroluje
+  dle podkladové verze JVF. Kontrola rozsahu výšek ZPS se vztahuje i na
+  objekty ZPSUDM a H3D.
+
+### Opraveno
+- **Široké značky SŽ ve 3D** (tabulky návěstidel s ramenem) mají velikost
+  podle šířky (`Size type="width"` v SLD), ne 5× větší.
+- **Legenda znaků jen v UDM a JŽM** — při přepnutí nástroje nebo verze se
+  zavře a v režimu JVF se neotevře (JVF má jednu legendu, Legendu DTM).
+- **JŽM: objekty JVF podle Katalogu ČÚZK i v exportu do CAD** — DXF ze
+  souboru ŽXML kreslil objekty JVF jen barvou obsahové části, viewer je
+  přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
+  (`usesDialectStyle`).
+
+## [2026.11.11] - 2026-11-11
+
+### Přidáno
+- **Hledání ve vrstvách výkresu** — pole „Hledat vrstvu" zúží seznam podle
+  názvu, elementu nebo kódu objektu (bez diakritiky); viditelnost v mapě
+  nemění. Všechna pole hledání (vrstvy, legendy, Přehled prvků) vypadají
+  stejně, hledají bez ohledu na diakritiku a velikost písmen a mají křížek
+  pro vymazání, vidět vždy, když je pole vyplněné.
+- **Přidat, nebo nahradit projekt** — jsou-li načtená data, nahrání souboru
+  nebo ukázky se zeptá, zda ho přidat jako další projekt, nebo jím data
+  nahradit; stejný soubor se podruhé nepřidá (upozornění).
+- **Značky v liniích v legendě a náhledech** — linie, které Katalog DTM ČR
+  prokládá značkou (blesk elektrického vedení NN / VN / VVN / ZVN, třídy
+  silnic „D II", „S I", „MK II", plynovod, vodovod, kanalizace, teplovod,
+  produktovod, zábradlí…), ji ukazují v legendě, panelu vrstev i Přehledu
+  prvků (SVG z kartografického balíčku ČÚZK) a ve 2D mapě do mezer čárkování
+  — natočenou podle linie, v nativní velikosti Katalogu (1 jednotka SVG =
+  0,01 mm), texty tříd silnic hlavou nahoru; při oddálení se nečitelné
+  značky vynechají. Ve 3D scéně stejně: linie čárkovaná v metrech, značka
+  ve vodorovné rovině v mezeře, vektorově (čára stejně tenká jako linie
+  v každé vzdálenosti). Export do CAD zatím jen čárkování.
+- **Anonymní měření používání** (PostHog Cloud EU) — jen na produkční
+  adrese: použití funkcí (soubor / ukázka, režim, kontrola, Přehled
+  prvků, klik na prvek v mapě — jen typ objektu, měření, podklady,
+  překryvy, dotaz na parcelu, motiv, export do CAD, SVG symboly a terén
+  ve 3D, klik na LinkedIn autora), aktivní čas v aplikaci a doba ve 3D. Bez cookies a úložiště
+  prohlížeče, bez záznamu obrazovky; nikdy názvy souborů, souřadnice,
+  ID prvků, atributy ani údaje o parcelách. Popis v info modalu.
+- **Export do CAD (AutoCAD DXF)** — tlačítko v hlavičce vyexportuje načtený
+  projekt do DXF ve stejném vzhledu jako mapa — podle Katalogu
+  kartografických symbolů DTM ČR (ČÚZK): hladiny podle objektových typů
+  v barvách a čárkování Katalogu, značky Katalogu jako bloky `DTM_…`
+  (převedené z SVG kartografického balíčku, v barvě značky), plochy
+  vyplněné barvou Katalogu (HATCH pod obrysy, lze vypnout; ochranná pásma
+  a záměry jen obrysem), popisy jako texty a atributy v XDATA. DXF pro
+  AutoCAD 2013+ (true color) nebo R2000; volitelně mazané záznamy a 2D.
+  DWG se neexportuje — DXF stačí v AutoCADu uložit jako DWG.
+- **Vlastník parcely** — se zapnutým překryvem katastru tlačítko vedle
+  měření: klik do mapy (2D i 3D) zjistí parcelu (WMS GetFeatureInfo ČÚZK —
+  katastrální území, parcelní číslo, výměra, odkaz do VDP), zvýrazní
+  hranici parcely (WFS katastrálních parcel INSPIRE ČÚZK, i s otvory; v 2D
+  s Přiblížit na parcelu, ve 3D obrys položený na terén) a nabídne odkaz „Vlastník v Nahlížení do
+  KN", který otevře parcelu ve veřejném Nahlížení do katastru nemovitostí
+  podle souřadnic S-JTSK. Ikona polygonu se špendlíkem; s měřením se
+  vylučuje.
+- **Překryvná vrstva katastru nemovitostí** — stejně jako DTM ČR: WMS ČÚZK
+  s výběrem všech nebo jednotlivých vrstev (hranice parcel, parcelní čísla,
+  obrazy parcel, další prvky mapy, KM-D, analogové mapy, orientační mapa
+  parcel) a vlastní sytostí; ve světlém motivu černý, v tmavém bílý
+  (inverzní vrstvy ČÚZK), nad DTM a pod daty JVF, ve 3D přehoz přes terén.
+- **Překryvná vrstva DTM ČR** — tlačítko „DTM" nad mapou:
+  Digitální technická mapa ČR ze služeb ČÚZK (IS DMVS, veřejné, bez
+  přihlášení) jako volitelný rastrový překryv nad podkladem a pod daty JVF.
+  Výběr všech vrstev, celých skupin (ZPS – plochy, DI, TI, přípojky, ZPS –
+  linie a body) i jednotlivých podvrstev; vlastní sytost. Celé skupiny přes
+  cachované dlaždice WMTS, výběr podvrstev přes WMS. Ve 3D se vybrané
+  vrstvy přehodí přes terén. Vektorová služba DTM celostátně neexistuje.
+- **Měření vzdálenosti a plochy ve 2D i 3D** — tlačítko s pravítkem vlevo
+  dole (inspirace mapy.cz): klikáním se přidávají body, vzdálenost se
+  počítá průběžně a od 3 bodů zároveň plocha mnohoúhelníku; klik na první
+  bod polygon uzavře. Popisky délek úseků, celkové délky a plochy v mapě,
+  souhrn v kartě (Zpět a Nové měření aktivní jen s body). Body se
+  přichytávají k bodům měření a k prvkům JVF — k vrcholům, hranám linií
+  a obvodů ploch a k průsečíkům, jen k právě viditelným prvkům; kurzor
+  a karta ukazují, k čemu je bod přichycený. Dvojklik měření ukončí,
+  Backspace vrátí bod, Esc zavře. Ve 2D rovinně v S-JTSK; ve 3D bod
+  z místa pod kurzorem (objekt, terén) a navíc šikmá vzdálenost,
+  vodorovná vzdálenost a převýšení (skutečné výšky bez převýšení scény).
+- **Podpora JVF DTM 1.5.0.2** — opravná verze 1.5.0.1 (ČÚZK 9. 9. 2026),
+  produkční verze IS DMVS od 18. 11. 2026. Výchozí verze aplikace; soubory
+  1.4.3 a 1.5.0.1 se načtou dál.
+- **Hlídání nových verzí** — `npm run check:upstream` porovná verze JVF DTM
+  zveřejněné ČÚZK s podporovanými; týdenní GitHub Action při nálezu založí
+  issue. CI ověřuje, že generované typy odpovídají XSD
+  (`npm run check:generated`).
+
+### Změněno
+- **Licence: proprietární, všechna práva vyhrazena** (dřív MIT) — viz
+  `LICENSE`. Používání webové aplikace pro vlastní potřebu je dovoleno;
+  kopírování, úpravy a šíření kódu jen se souhlasem autora. Verze do
+  2026.8.25 zůstávají pod MIT.
+- **Aplikace na kořeni domény** — https://cz-dtm-utils.vercel.app/ (dřív
+  `/jvf_viewer/`); staré adresy se trvale přesměrují.
 - **Změny v souboru jako tlačítko „Změny" nad mapou** (tužka, vedle DTM
   a Katastru, jen pro data se změnami) místo čtyř přepínačů v panelu
   vrstev. V kartě přepínač **Obarvit změny** mění jen vzhled (barevný lem
@@ -169,9 +201,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   DTM / katastru ukazuje kolečko v tlačítku nad mapou (jako u podkladu),
   ne vedle posuvníku.
 - **Filtr obsahových částí v Přehledu prvků s výběrem více částí** — klik
-  na část ji přidá k výběru / odebere (např. ZPS + DIUDM), „Vše" výběr
+  na část ji přidá k výběru / odebere (např. ZPS + TI), „Vše" výběr
   zruší; souhrn ukazuje vybrané části a počty „z celkem".
-- **Panel vrstev kompaktnější** (nižší řádky, u ŽXML je vidět víc vrstev)
+- **Panel vrstev kompaktnější** (nižší řádky — vejde se víc vrstev)
   a hlavičky obsahových částí s celým názvem („DI Dopravní infrastruktura")
   v panelu i Legendě DTM.
 - **Přehled prvků** — hlavičky skupin jako ploché řádky bez rámečku
@@ -204,15 +236,14 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 - **Tlačítko „Terén" nad mapou** (jen ve 3D, vedle Katastru, ikona hory)
   nahrazuje přepínač „Terén (ČÚZK DMR5G)" v levém panelu; se zapnutým
   terénem má aktivní barvu textu.
-- **„O aplikaci a historie verzí"** se otevírá jen ze spouštěče nástrojů —
-  zdvojená ikona „i" v patičce levého panelu odpadla.
+- **„O aplikaci a historie verzí" a Legenda DTM** se otevírají z nabídky
+  (ikona mřížky vlevo v hlavičce) — zdvojená ikona „i" v patičce levého
+  panelu odpadla.
 - **Karty nad mapou** (Podkladová mapa, DTM, Katastr) se otevírají pod lištou
   přes mapu a neodsouvají sousední skupinu tlačítek.
 - **Vodotisk „Přetáhněte data ve formátu JVF"** s ikonou uprostřed levého
-  panelu, dokud nejsou načtená data (v UDM a JŽM s formátem UDM / ŽXML);
-  ikona je tlačítko, které otevře výběr souboru. Nahrazuje hlášku
-  „Nahrajte JVF soubor".
-
+  panelu, dokud nejsou načtená data; ikona je tlačítko, které otevře výběr
+  souboru. Nahrazuje hlášku „Nahrajte JVF soubor".
 - **Výběr podkladové mapy nad mapou** (jako mapy.cz): tlačítko
   „Podkladová mapa" vlevo nahoře otevře kartu se seznamem náhledů — Základní
   mapa, Letecká (ortofoto) a Prázdná; vybraná mapa je podbarvená a pod
@@ -252,36 +283,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   (ikona nabídky, zavření klepnutím vedle nebo Esc) a obsahuje přepínač
   režimu; popisky tlačítek v liště se na užší obrazovce skryjí do ikon.
 - **Zavírací tlačítka** v hlavičce panelů Kontrol a Přehledu prvků.
-- **Dialekty JVF DTM jako registr** (revize UDM / DTM) — UDM i ŽXML jsou
-  položky jednoho registru (`DIALECTS` v `jvf-dtm-types`, `PARSER_DIALECTS`
-  v parseru); router, topologie, export do CAD i viewer se řídí registrem
-  místo natvrdo zadaného UDM. Generátor typů pracuje s profily verzí.
-- `JvfDtm.verze` je vždy vyřešené id datového modelu (`1.5.0.2`,
-  `udm-2.1.1`, `zxml-1.5.1.6`); surová hlavička je ve `verzeJvfDtm`,
-  dialekt v `dialect` (`verzeUdm` zůstává jako zastaralý alias).
-- Symbologie dialektu se volí podle verze projektu (ne podle režimu);
-  popisky číselníků v panelu prvku podle verze projektu, ze kterého prvek je.
-- Meziobjektová topologie se pro soubory UDM nespouští (UDM nepracuje
-  s plošnou mapou ani s vazbou definiční bod ↔ plocha); ŽXML se kontroluje
-  dle podkladové verze JVF. Kontrola rozsahu výšek ZPS se vztahuje i na
-  objekty ZPSUDM a H3D.
 
 ### Opraveno
-- **Legenda znaků jen v UDM a JŽM** — při přepnutí nástroje nebo verze se
-  zavře a v režimu JVF se neotevře (JVF má jednu legendu, Legendu DTM).
 - **3D: SVG ikony bodů nemizí při přiblížení** — ikona se skrývala podle
   vzdálenosti kamery od středu otáčení (nad 150 m) a nic ji nenahradilo;
   teď se podle skutečné velikosti na obrazovce střídá ikona a puntík
   (jako 2D), hned po zapnutí i při každém pohybu kamery.
 - **3D: SVG značky bodů rychle a bez výpadku scény** — značky se rastrují
   nejvýš na 256 px (fyzická velikost beze změny); dřív v nativní velikosti
-  SVG, u vzorníku SŽ ~0,6 GB textur, WebGL ztratil kontext a scéna po
-  posunu zmizela. Široké značky SŽ (tabulky návěstidel s ramenem) mají
-  velikost podle šířky (`Size type="width"` v SLD), ne 5× větší.
-- **JŽM: objekty JVF podle Katalogu ČÚZK i v exportu do CAD** — DXF ze
-  souboru ŽXML kreslil objekty JVF jen barvou obsahové části, viewer je
-  přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
-  (`usesDialectStyle`).
+  SVG, u velkých souborů WebGL ztratil kontext a scéna po posunu zmizela.
 - **Plot jako plná čára s příčkami** (jako mapa ČÚZK) — vzor Katalogu
   „0,15 10,0" se kreslil doslova jako řídké tečky. Teď plná čára 0,18 mm
   s krátkými příčkami po 10 mm v mapě, legendě i panelu vrstev; ve 3D
@@ -293,7 +303,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   (hledá i v nich), panel vrstev a Přehled prvků značku podle dat.
 - **Posuvník sytosti podkladové mapy jde znovu táhnout** — dřív reagoval
   jen na kliknutí, tažení se po prvním kroku přerušilo.
-
 - **Vzhled JVF podle Katalogu DTM ČR** — vzhled se nově řídí i typem
   geometrie (bod / linie / plocha / definiční bod), ne jen kódem objektu:
   - bodové objekty s variantou podle atributu (šachty, stožáry, zařízení
@@ -330,14 +339,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   měření, nový střed otáčení) se ve 3D bere jen krátké stisknutí do 200 ms
   bez tažení; dřív se klik zaregistroval i po posunu scény tam a zpět
   nebo po dlouhém stisknutí.
-- **Filtr obsahových částí v Přehledu prvků** nabízel pevně jen ZPS / TI /
-  DI / GAD / OPL — části UDM (ZPSUDM, DIUDM, OST) a ŽXML (ZDT, ZDD, H3D,
-  ODSZ, SKLEP) nešlo vyfiltrovat a souhrn ukazoval vždy celkové počty.
-  Tlačítka se nyní tvoří podle částí přítomných v datech, souhrn ukazuje
-  počty ve filtru a filtr platí i pro 2D a 3D mapu (dřív jen tabulka).
+- **Filtr obsahových částí v Přehledu prvků** nabízel pevně všech pět částí
+  bez ohledu na data a souhrn ukazoval vždy celkové počty. Tlačítka se nyní
+  tvoří podle částí přítomných v datech, souhrn ukazuje počty ve filtru
+  a filtr platí i pro 2D a 3D mapu (dřív jen tabulka).
 - Filtry obsahové části a úrovní umístění jsou v Přehledu prvků vidět
   vždy, když jsou data — dřív se při jediné části / úrovni (běžné u JVF,
-  vše na úrovni 0) skryly, takže v režimu JVF chyběly.
+  vše na úrovni 0) skryly, takže u JVF chyběly.
 - **Klik do mapy neoznačil nový prvek v Přehledu prvků** — prvky s prázdným
   `<ID/>` (nové záznamy changesetu, ID přiděluje IS DMVS) měly prázdný
   identifikátor a klik je ignoroval. Prvky bez ID a s duplicitním ID nyní
@@ -356,7 +364,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   nově se použije verze podle struktury souboru.
 - Katalog entit obsahuje i atributy, které se vyskytují jen v referenčních
   nebo aktualizačních záznamech (např. `IDRDTI` u O6 v 1.5.0.2).
-
 - Legenda se po načtení souboru jiné verze při dalším otevření překreslí
   (dřív zůstal katalog verze platné při prvním otevření).
 - Hláška o nepodporované verzi vypisuje aktuální seznam podporovaných verzí.

@@ -1,21 +1,104 @@
-MIT License
+PROPRIETÁRNÍ LICENCE — VŠECHNA PRÁVA VYHRAZENA
+(anglické znění níže; v případě rozporu má přednost české znění)
 
-Copyright (c) 2026 Vojtěch Dubrovský
+Copyright © 2026 Vojtěch Dubrovský. Všechna práva vyhrazena.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Předmět
+   Tato licence se vztahuje na software „DTM Prohlížeč" / cz-dtm-utils,
+   tj. na zdrojový kód, sestavené (zkompilované a minifikované) soubory,
+   dokumentaci, grafiku, styly a další součásti v tomto repozitáři
+   (dále „Software"). Software je autorským dílem chráněným zákonem
+   č. 121/2000 Sb., autorský zákon, a mezinárodními smlouvami.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. Žádná licence se neuděluje
+   Zveřejnění Softwaru nebo jeho části (např. na GitHubu nebo na webu)
+   neznamená udělení jakékoli licence ani jiného oprávnění. Bez
+   předchozího písemného souhlasu autora je zakázáno zejména:
+   a) Software rozmnožovat, kopírovat nebo ukládat, a to i částečně;
+   b) Software upravovat, překládat, zpracovávat nebo z něj vytvářet
+      odvozená díla;
+   c) Software šířit, zveřejňovat, pronajímat, půjčovat, prodávat,
+      sublicencovat nebo jinak zpřístupňovat třetím osobám;
+   d) Software provozovat jako službu pro třetí osoby (SaaS, hosting)
+      nebo jej začleňovat do jiných produktů či služeb;
+   e) Software nebo jeho části používat k trénování, ladění nebo
+      vyhodnocování modelů umělé inteligence;
+   f) odstraňovat nebo měnit údaje o autorství a tuto licenci.
+   Zákonná oprávnění, která nelze smluvně vyloučit (např. § 66
+   autorského zákona), tím nejsou dotčena.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. Používání veřejně provozované aplikace
+   Autor může provozovat webovou aplikaci založenou na Softwaru
+   (např. https://cz-dtm-utils.vercel.app/). Její používání v prohlížeči
+   pro vlastní potřebu je dovoleno za podmínek, které autor stanoví;
+   neuděluje žádná práva ke zdrojovému kódu ani jiným součástem Softwaru.
+
+4. Bez záruky
+   Software se poskytuje „tak, jak je", bez jakékoli záruky. Autor
+   v rozsahu přípustném právními předpisy neodpovídá za škodu vzniklou
+   jeho užitím. Výstupy Softwaru nenahrazují oficiální nástroje ČÚZK
+   a IS DMVS.
+
+5. Součásti třetích stran
+   Knihovny třetích stran zůstávají pod svými licencemi (MIT, Apache-2.0,
+   BSD, ISC aj. — viz jejich soubory package.json a LICENSE). Datová
+   schémata (XSD), katalogy, číselníky a kartografické značky ČÚZK,
+   České komory zeměměřičů a Správy železnic jsou majetkem svých
+   vlastníků a podléhají jejich podmínkám; tato licence se na ně
+   nevztahuje.
+
+6. Platnost
+   Tato licence platí od verze 2026.11.11. Verze vydané dříve pod licencí
+   MIT zůstávají pod licencí MIT pro osoby, které je takto získaly.
+
+7. Licence a spolupráce
+   Komerční licence, spolupráci a jiná oprávnění lze sjednat písemně
+   s autorem (kontakt: LinkedIn — Vojtěch Dubrovský).
+
+--------------------------------------------------------------------------
+
+PROPRIETARY LICENSE — ALL RIGHTS RESERVED
+(English translation; the Czech version prevails in case of conflict)
+
+Copyright © 2026 Vojtěch Dubrovský. All rights reserved.
+
+1. Scope. This license covers the software "DTM Prohlížeč" / cz-dtm-utils,
+   including source code, built (compiled and minified) files,
+   documentation, graphics, styles and other components in this repository
+   (the "Software"). The Software is protected by Czech copyright law
+   (Act No. 121/2000 Coll.) and international treaties.
+
+2. No license granted. Publishing the Software or any part of it (e.g. on
+   GitHub or the web) does not grant any license or other right. Without
+   the author's prior written consent it is prohibited in particular to:
+   (a) reproduce, copy or store the Software, in whole or in part;
+   (b) modify, translate, adapt it or create derivative works;
+   (c) distribute, publish, rent, lend, sell, sublicense or otherwise make
+       it available to third parties;
+   (d) operate it as a service for third parties (SaaS, hosting) or
+       incorporate it into other products or services;
+   (e) use the Software or any part of it to train, fine-tune or evaluate
+       artificial-intelligence models;
+   (f) remove or alter authorship notices or this license.
+   Statutory rights that cannot be excluded by contract are not affected.
+
+3. Use of the publicly operated application. The author may operate a web
+   application based on the Software. Using it in a browser for one's own
+   purposes is permitted under terms set by the author and grants no
+   rights to the source code or other parts of the Software.
+
+4. No warranty. The Software is provided "as is", without warranty of any
+   kind. To the extent permitted by law, the author is not liable for any
+   damage arising from its use.
+
+5. Third-party components. Third-party libraries remain under their own
+   licenses. XSD schemas, catalogues, code lists and cartographic symbols
+   of ČÚZK, the Czech Chamber of Surveyors and Správa železnic belong to
+   their owners and are subject to their terms.
+
+6. Effective date. This license applies from version 2026.11.11. Versions
+   released earlier under the MIT license remain under the MIT license for
+   those who obtained them that way.
+
+7. Licensing. Commercial licenses and other permissions can be agreed in
+   writing with the author.

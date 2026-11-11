@@ -1,6 +1,6 @@
 # cz-dtm-utils
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000?logo=vercel)](https://cz-dtm-utils.vercel.app/)
 
@@ -165,7 +165,7 @@ cz-dtm-utils/
 │       └── ui/           # Modal dialogs, panels, file upload, legend
 ├── CHANGELOG.md          # Keep a Changelog (Czech), CalVer YYYY.M.D
 ├── CLAUDE.md             # Internal contributor / agent guidelines
-└── LICENSE               # MIT
+└── LICENSE               # proprietární — všechna práva vyhrazena
 ```
 
 ---
@@ -233,13 +233,15 @@ on Material Design palettes for the high-level content parts (ZPS / TI / DI /
 GAD / OPL); per-object-type colours come from the official ČÚZK Symbol Catalog
 but have not been verified value-by-value against the reference rendering.
 
-Pull requests, bug reports and feedback are welcome.
+Bug reports and feedback are welcome.
 
 ---
 
 ## License
 
-[MIT](./LICENSE) © 2026 Vojtěch Dubrovský
+Proprietary — all rights reserved. © 2026 Vojtěch Dubrovský. See [LICENSE](./LICENSE).
+No license is granted by publishing this repository; versions up to 2026.8.25
+were released under the MIT license.
 
 The JVF DTM specification, XSD schemas, sample data and the symbol catalog
 (ČÚZK Katalog DTM 1.4.3) are property of the Czech Office for Surveying,
