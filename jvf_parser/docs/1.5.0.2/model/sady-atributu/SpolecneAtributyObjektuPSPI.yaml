@@ -1,0 +1,104 @@
+id: SpolecneAtributyObjektuPSPI
+namespace: atr
+popis: Společné atributy objektů PSPI
+atributy:
+  - id: IDBS
+    volitelny: true
+    atribut: IDBS
+  - id: IDPSPI
+    volitelny: true
+    atribut: IDPSPI
+  - id: UrovenUmisteniObjektuPSPI
+    volitelny: false
+    atribut: UrovenUmisteniObjektuPSPI
+  - id: IDExterni
+    volitelny: false
+    atribut: IDExterni
+  - id: EvidencniCisloObjektu
+    volitelny: true
+    atribut: EvidencniCisloObjektu
+  - id: ICS
+    volitelny: true
+    atribut: ICS
+
+kontexty:
+  Ref:
+    obsah:
+     - id: IDBS
+       namespace: atr
+       volitelny: false
+     - id: IDPSPI
+       namespace: atr
+       volitelny: false
+     - id: UrovenUmisteniObjektuPSPI
+       namespace: atr
+       volitelny: false
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: false
+     - id: ICS
+       namespace: atr
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: UrovenUmisteniObjektuPSPI
+       namespace: atr
+       volitelny: false
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true
+
+  Upd:
+    obsah:
+     - id: UrovenUmisteniObjektuPSPI
+       namespace: atr
+       volitelny: true
+     - id: IDExterni
+       namespace: atr
+       volitelny: true
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: IDBS
+       namespace: atr
+       volitelny: true
+     - id: IDPSPI
+       namespace: atr
+       volitelny: true
+     - id: UrovenUmisteniObjektuPSPI
+       namespace: atr
+       volitelny: true
+     - id: IDExterni
+       namespace: atr
+       volitelny: true
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true
+     - id: ICS
+       namespace: atr
+       volitelny: true
+
+zobrazeni:
+  pohledy:
+    EditorZobrazeni:
+      obsah:
+        - id: UrovenUmisteniObjektuPSPI
+        - id: EvidencniCisloObjektu
+        - id: IDExterni
+        - id: ICS
+
+    EditorEditace:
+      obsah:
+        - id: UrovenUmisteniObjektuPSPI
+        - id: EvidencniCisloObjektu
+        - id: IDExterni

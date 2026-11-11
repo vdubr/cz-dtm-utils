@@ -1,0 +1,15 @@
+id: TypTechnologickehoObjektuTeplovodniSite
+nazev: Typ technologického objektu teplovodní sítě
+namespace: atr
+popis: Typ technologického objektu teplovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: teplárna
+ - hodnota: 2
+   popis: kotelna
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: nezjištěno/neurčeno

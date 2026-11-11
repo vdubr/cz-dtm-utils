@@ -1,8 +1,10 @@
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
-import Feature from 'ol/Feature.js';
+import Feature, { type FeatureLike } from 'ol/Feature.js';
 import OlPoint from 'ol/geom/Point.js';
 import OlLineString from 'ol/geom/LineString.js';
+import OlMultiLineString from 'ol/geom/MultiLineString.js';
+import type OlGeometry from 'ol/geom/Geometry.js';
 import OlPolygon from 'ol/geom/Polygon.js';
 import Style from 'ol/style/Style.js';
 import CircleStyle from 'ol/style/Circle.js';
@@ -11,23 +13,37 @@ import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import { extend, createEmpty } from 'ol/extent.js';
 import type { Extent } from 'ol/extent.js';
-import type Map from 'ol/Map.js';
+import type OlMap from 'ol/Map.js';
 import type { ObjektovyTyp, ZaznamObjektu, Geometry, GmlPolygon } from 'jvf-parser';
+import { endConnectors, offsetPolyline } from 'jvf-parser';
 import {
-  getSymbology,
-  FALLBACK_COLORS,
-  DEFAULT_COLOR,
-  type ObjectSymbology,
-  type SymbolVariant,
-} from './symbology.js';
-import { VARIANT_ATTR } from './variantAttrMap.js';
+  KATALOG_DEFAULT_COLOR as DEFAULT_COLOR,
+  KATALOG_FALLBACK_COLORS as FALLBACK_COLORS,
+  parseKatalogLineStyle,
+  resolveKatalogLook,
+  resolveKatalogRepresentativeLook,
+  resolveKatalogVariantLooks,
+  resolveKatalogVariantValue,
+  type KatalogLook,
+} from 'jvf-parser';
+import {
+  isDialectStyled,
+  resolveDialectLook,
+  resolveDialectRepresentativeLook,
+  type DialectLook,
+} from './dialectStyle.js';
 import {
   isShowZapis,
+  isHighlightZapis,
   isChangesetZapis,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
-import { resolveZaznamId } from '../state/zaznamId.js';
+import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
+import { getLineSymbol, loadLineSymbol } from './lineSymbolShapes.js';
+import { drawLineSymbols } from './lineSymbolRenderer.js';
+import { drawRepeatSymbols, getRepeatImage, loadRepeatImage } from './repeatSymbol.js';
 import {
+  isContentPartVisible,
   isLevelVisible,
   isProjectVisible,
   resolveLevelKey,
@@ -35,14 +51,15 @@ import {
 } from '../state/featureFilter.js';
 import { resolveProjectKey } from '../state/projects.js';
 
-// Re-export for consumers that previously imported LAYER_COLORS from here
-export { FALLBACK_COLORS as LAYER_COLORS } from './symbology.js';
+// Barvy obsahových částí (náhradní barva objektů mimo Katalog)
+export { KATALOG_FALLBACK_COLORS as LAYER_COLORS } from 'jvf-parser';
 
 /**
  * Barvy pro vizualizaci changeset záznamů podle `ZapisObjektu`:
  *   'i' — nové (zeleně), 'u' — editované (oranžově), 'd' — mazané (červeně).
- * Záměrně syté, aby šly typy změn na první pohled odlišit. Fill má 20 % alpha.
- * Barvy odpovídají badge barvám I/U/D v Přehledu prvků (style.css).
+ * Záměrně syté, aby šly typy změn na první pohled odlišit. Barvy odpovídají
+ * badge barvám I/U/D v Přehledu prvků (style.css). Kreslí se jako průsvitný
+ * lem POD prvkem — prvek sám si ponechá styl Katalogu (jako v legendě).
  */
 export const ZAPIS_HIGHLIGHT_COLORS: Record<
   ChangesetZapisType,
@@ -54,7 +71,7 @@ export const ZAPIS_HIGHLIGHT_COLORS: Record<
 };
 
 /** Base path for SVG symbols served from public/symboly/ */
-const SVG_BASE = './symboly/';
+const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
 /**
  * Referenční měřítko pro převod mm (papírová velikost v katalogu) na metry
@@ -126,38 +143,8 @@ function mmToPx(mm: number): number {
   return Math.max(1, mm * 3.78);
 }
 
-/**
- * Parse lineStyle string from catalog into dash pattern in mm.
- *
- * Examples:
- *   'plná'                            → undefined
- *   'čárkovaná 60,0 6,0 [68]'          → [60, 6]
- *   'čárkovaná 2,0 1,5 /\n3,5 7,0'     → [2, 1.5, 3.5, 7]
- *
- * CZ decimal comma is normalized to dot. The `[NN]` suffix (pattern number
- * from the catalog) is ignored. Forward slashes / newlines separate segments
- * but are flattened into a single dash array.
- */
-export function parseLineStyle(lineStyle: string | undefined): number[] | undefined {
-  if (!lineStyle) return undefined;
-  const trimmed = lineStyle.trim();
-  if (trimmed === 'plná' || trimmed === '') return undefined;
-  // Strip leading keyword ("čárkovaná") and trailing [NN]
-  const body = trimmed
-    .replace(/^čárkovaná\s+/i, '')
-    .replace(/\s*\[\d+\]\s*$/, '');
-  // Split on whitespace / slashes / newlines, keep numeric tokens
-  const tokens = body.split(/[\s/\n]+/).filter(Boolean);
-  const nums: number[] = [];
-  for (const t of tokens) {
-    const n = parseFloat(t.replace(',', '.'));
-    if (Number.isFinite(n) && n > 0) nums.push(n);
-  }
-  if (nums.length === 0) return undefined;
-  // OL requires even-length dash array (dash, gap, dash, gap, …)
-  if (nums.length % 2 === 1) nums.push(nums[nums.length - 1]!);
-  return nums;
-}
+/** Čárkování z popisu typu čáry Katalogu (mm papíru) — viz `parseKatalogLineStyle`. */
+export const parseLineStyle = parseKatalogLineStyle;
 
 /**
  * Convert dash pattern from mm (on paper at REFERENCE_SCALE) to px on screen
@@ -180,116 +167,321 @@ export interface ResolvedStyle {
   lineDashMm?: number[];
   /** SVG filename for point symbol, if available */
   pointSvg?: string;
+  /** Natočení symbolu bodu ve stupních (proti směru hodinových ručiček, jako v CAD). */
+  pointRotationDeg?: number;
+  /** Značka vložená do linie (`*_l_*.svg`, Katalog) — mapa, legenda a náhledy. */
+  lineSymbolSvg?: string;
+  /** Příčky na plné čáře [tloušťka, rozestup] v mm papíru (plot). */
+  lineTicksMm?: number[];
+  /** Další čáry linie (ŽXML) — souběžné s osou (odsazení v mm papíru, kladně vlevo). */
+  lineStrokes?: ResolvedLineStroke[];
+  /** Osa linie se nekreslí, jen `lineStrokes` / `lineRepeat` (ŽXML, např. brzda). */
+  lineNoAxis?: boolean;
+  /** Značka opakovaná podél linie (ŽXML GraphicStroke): SVG a rozestupy v mm papíru. */
+  lineRepeat?: { svg: string; intervalMm: number; startMm: number };
+}
+
+export interface ResolvedLineStroke {
+  color: string;
+  widthPx: number;
+  dashMm?: number[];
+  offsetMm: number;
+  /** Konce spojit s osou kolmou úsečkou (izolovaná kolejnice). */
+  endTicks: boolean;
+}
+
+/** Příčka je oproti linii širší tah (jako ČÚZK: ~2,5× tloušťka čáry, nejméně 3 px). */
+export function tickWidthPx(lineWidthPx: number): number {
+  return Math.max(3, lineWidthPx * 2.5);
+}
+/** Hustší příčky nekreslit (px mezi příčkami) — při oddálení by splynuly s čarou. */
+const MIN_TICK_GAP_PX = 6;
+
+/** Příčky na plné čáře (plot): širší čárkovaný tah přes linii, nebo `null`. */
+function createTickStyle(s: ResolvedStyle, resolution: number): Style | null {
+  if (!s.lineTicksMm) return null;
+  // Příčka je tenká (1 px), ne krátký úsek čáry (min. 2 px u čárkování).
+  const px = s.lineTicksMm.map((mm, i) => (i % 2 === 0 ? 1 : (mm * MM_TO_MAP_METERS) / resolution));
+  if (Math.min(...px.filter((_, i) => i % 2 === 1)) < MIN_TICK_GAP_PX) return null;
+  // Příčka na začátku linie by splynula s koncem — posun o půl rozestupu.
+  const offset = -(px[1] ?? 0) / 2;
+  return new Style({
+    stroke: new Stroke({
+      color: s.strokeColor,
+      width: tickWidthPx(s.strokeWidthPx),
+      lineDash: px,
+      lineDashOffset: offset,
+      lineCap: 'butt',
+    }),
+  });
+}
+
+/** Nejmenší mezera čárkování (mm papíru), do které se značka kreslí; menší = tečkování. */
+const LINE_SYMBOL_MIN_GAP_MM = 4;
+/** Rozestup značek na linii bez čárkování (zábradlí, lanové dráhy), mm papíru. */
+const LINE_SYMBOL_INTERVAL_MM = 20;
+/**
+ * Užší značku nekreslit (px obrazovky) — při oddálení by byla nečitelná;
+ * mezery čárkování zůstanou prázdné (jako mapa ČÚZK v menším měřítku).
+ */
+const LINE_SYMBOL_MIN_WIDTH_PX = 12;
+
+/**
+ * Styl značek vložených do linie (vlastní renderer — map/lineSymbolRenderer):
+ * do mezer čárkování, nebo v pravidelném rozestupu. `null`, dokud se SVG
+ * značky nenačte (vrstvu pak překreslí `buildJvfLayers`).
+ */
+function createLineSymbolStyle(s: ResolvedStyle, resolution: number): Style | null {
+  const shape = s.lineSymbolSvg ? getLineSymbol(s.lineSymbolSvg) : undefined;
+  if (!shape) return null;
+  const toPx = (mm: number): number => (mm * MM_TO_MAP_METERS) / resolution;
+  // Nativní velikost značky (1 SVG jednotka = 0,01 mm papíru, jako body).
+  const widthPx = (shape.viewBox[2] * SVG_PX_TO_METERS) / resolution;
+  const maxGapMm = s.lineDashMm ? Math.max(...s.lineDashMm.filter((_, i) => i % 2 === 1)) : 0;
+  const dashPx = s.lineDashMm && maxGapMm >= LINE_SYMBOL_MIN_GAP_MM ? dashMmToPx(s.lineDashMm, resolution) : undefined;
+  return new Style({
+    renderer: (coords, state) => {
+      const pr = state.pixelRatio;
+      drawLineSymbols(state.context, coords as number[][], {
+        shape,
+        linePx: s.strokeWidthPx * pr,
+        ...(dashPx ? { dashPx: dashPx.map((v) => v * pr) } : {}),
+        intervalPx: toPx(LINE_SYMBOL_INTERVAL_MM) * pr,
+        widthPx: widthPx * pr,
+        minWidthPx: LINE_SYMBOL_MIN_WIDTH_PX * pr,
+      });
+    },
+  });
 }
 
 /**
- * Merge base symbology + matching variant (if any) into a flat style source.
- * Variant fields override base fields only when defined.
+ * Odvozené geometrie linie (souběžné čáry) — geometrie prvku se nemění,
+ * počítají se jednou na prvek a odsazení.
  */
-function mergeSymbologyWithVariant(
-  base: ObjectSymbology,
-  variant: SymbolVariant | undefined,
-): {
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  lineStyle?: string;
-  pointSvg?: string;
-} {
-  return {
-    fillColor: variant?.fillColor ?? base.fillColor,
-    strokeColor: variant?.strokeColor ?? base.strokeColor,
-    strokeWidth: variant?.strokeWidth ?? base.strokeWidth,
-    lineStyle: variant?.lineStyle ?? base.lineStyle,
-    pointSvg: base.pointSvg,
-  };
+const derivedGeometry = new WeakMap<FeatureLike, Map<string, OlGeometry>>();
+
+function derived(feature: FeatureLike, key: string, build: (coords: number[][]) => OlGeometry): OlGeometry | undefined {
+  let cache = derivedGeometry.get(feature);
+  if (!cache) {
+    cache = new Map();
+    derivedGeometry.set(feature, cache);
+  }
+  let g = cache.get(key);
+  if (!g) {
+    const geom = feature.getGeometry();
+    if (!(geom instanceof OlLineString)) return undefined;
+    g = build(geom.getCoordinates());
+    cache.set(key, g);
+  }
+  return g;
+}
+
+/** Další čáry linie (ŽXML): souběžné s osou v odsazení (mm papíru → m), s případnými spojkami na koncích. */
+function createLineStrokeStyles(s: ResolvedStyle, resolution: number): Style[] {
+  return (s.lineStrokes ?? []).map((ls) => {
+    const d = ls.offsetMm * MM_TO_MAP_METERS;
+    return new Style({
+      geometry: (f) =>
+        derived(f, `${d}${ls.endTicks ? 't' : ''}`, (coords) => {
+          const off = offsetPolyline(coords, d);
+          return ls.endTicks ? new OlMultiLineString([off, ...endConnectors(coords, off)]) : new OlLineString(off);
+        }),
+      stroke: new Stroke({
+        color: ls.color,
+        width: ls.widthPx,
+        ...(ls.dashMm ? { lineDash: dashMmToPx(ls.dashMm, resolution) } : {}),
+        lineCap: 'butt',
+      }),
+    });
+  });
+}
+
+/** Značka opakovaná podél linie (ŽXML GraphicStroke), nebo `null`, dokud se SVG nenačte. */
+function createRepeatStyle(s: ResolvedStyle, resolution: number): Style | null {
+  const r = s.lineRepeat;
+  const image = r ? getRepeatImage(r.svg) : undefined;
+  if (!r || !image) return null;
+  const toPx = (mm: number): number => (mm * MM_TO_MAP_METERS) / resolution;
+  return new Style({
+    renderer: (coords, state) => {
+      const pr = state.pixelRatio;
+      drawRepeatSymbols(state.context, coords as number[][], {
+        image,
+        pxPerUnit: (SVG_PX_TO_METERS / resolution) * pr,
+        intervalPx: toPx(r.intervalMm) * pr,
+        startPx: toPx(r.startMm) * pr,
+      });
+    },
+  });
 }
 
 /**
- * Build ResolvedStyle from merged symbology fields. Falls back to content-part
- * default color when catalog is silent. For lines & polygons: if strokeColor
- * is not set, fillColor is used as stroke (catalog convention — most line
- * entries carry their color in `fillColor`).
+ * ResolvedStyle ze vzhledu Katalogu DTM ČR (`resolveKatalogLook` — podle typu
+ * geometrie a hodnot atributů). Plocha bez výplně (ochranná pásma, záměry)
+ * dostane jen průsvitný nádech barvy obrysu; linie a obrys bez barvy přebírá
+ * barvu výplně; objekt bez barvy náhradní barvu obsahové části.
  */
-function buildResolvedStyle(
-  merged: ReturnType<typeof mergeSymbologyWithVariant>,
-  obsahovaCast: string,
-): ResolvedStyle {
+function buildKatalogResolvedStyle(look: KatalogLook, obsahovaCast: string): ResolvedStyle {
   const fallback = FALLBACK_COLORS[obsahovaCast] ?? DEFAULT_COLOR;
-  const primary = merged.fillColor ?? fallback;
-  const fill = merged.fillColor ?? fallback + '55';
-  // Pro linie / obrysy: když chybí strokeColor, použij fillColor (katalog
-  // u linií ukládá barvu do fillColor).
-  const stroke = merged.strokeColor ?? primary;
-  const width = merged.strokeWidth != null ? mmToPx(merged.strokeWidth) : 1.5;
-  const lineDashMm = parseLineStyle(merged.lineStyle);
+  const stroke = look.color ?? look.fill ?? fallback;
   return {
-    fillColor: fill,
+    fillColor: look.fill ?? stroke + '1a',
     strokeColor: stroke,
-    strokeWidthPx: width,
-    lineDashMm,
-    pointSvg: merged.pointSvg,
+    strokeWidthPx: look.widthMm != null ? mmToPx(look.widthMm) : 1.5,
+    ...(look.dashMm ? { lineDashMm: look.dashMm } : {}),
+    ...(look.lineSvg ? { lineSymbolSvg: look.lineSvg } : {}),
+    ...(look.ticksMm ? { lineTicksMm: look.ticksMm } : {}),
+    ...(look.svg ? { pointSvg: look.svg } : {}),
   };
 }
 
 /**
- * Resolve style for an ObjektovyTyp from its codeBase (base style, no variant).
- * Exported so threeScene.ts can use the same logic.
+ * ResolvedStyle ze vzhledu dialektu (UDM, ŽXML). Plocha bez výplně (UDM)
+ * dostane jen průsvitný nádech barvy objektu; symbol bodu je SVG v barvě
+ * objektu / položky číselníku.
+ */
+function buildDialectResolvedStyle(look: DialectLook): ResolvedStyle {
+  const app = look.appearance;
+  const color = app.color ?? '#000000';
+  return {
+    fillColor: app.fill ?? color + '1a',
+    strokeColor: color,
+    strokeWidthPx: mmToPx(app.widthMm ?? 0.25),
+    lineDashMm: app.dashMm,
+    pointSvg: look.symbolPath,
+    ...(app.ticksMm ? { lineTicksMm: app.ticksMm } : {}),
+    ...(look.rotationDeg ? { pointRotationDeg: look.rotationDeg } : {}),
+    ...(app.lines
+      ? {
+          lineStrokes: app.lines.map((l) => ({
+            color: l.color ?? color,
+            widthPx: mmToPx(l.widthMm ?? app.widthMm ?? 0.25),
+            ...(l.dashMm ? { dashMm: l.dashMm } : {}),
+            offsetMm: l.offsetMm ?? 0,
+            endTicks: Boolean(l.endTicks),
+          })),
+        }
+      : {}),
+    ...(app.axis === false ? { lineNoAxis: true } : {}),
+    ...(app.lineSymbol && look.lineSymbolPath
+      ? { lineRepeat: { svg: look.lineSymbolPath, intervalMm: app.lineSymbol.intervalMm, startMm: app.lineSymbol.startMm } }
+      : {}),
+  };
+}
+
+/**
+ * Resolve style for an ObjektovyTyp (vzhled objektu a geometrie, bez
+ * záznamu). Exported so threeScene.ts can use the same logic.
  */
 export function resolveStyle(ot: ObjektovyTyp): ResolvedStyle {
-  const sym = getSymbology(ot.codeBase);
-  if (sym) {
-    return buildResolvedStyle(mergeSymbologyWithVariant(sym, undefined), ot.obsahovaCast);
-  }
+  const dialect = resolveDialectLook(ot);
+  if (dialect) return buildDialectResolvedStyle(dialect);
+  const look = resolveKatalogLook(ot);
+  if (look) return buildKatalogResolvedStyle(look, ot.obsahovaCast);
   const fallback = FALLBACK_COLORS[ot.obsahovaCast] ?? DEFAULT_COLOR;
   return { fillColor: fallback + '33', strokeColor: fallback, strokeWidthPx: 1.5 };
 }
 
 /**
  * Reprezentativní styl objektového typu pro base-only kontexty (legenda,
- * vrstvový panel). Když base symbologie nemá `fillColor` ani `strokeColor`,
- * ale barvu nese některá **varianta** (typicky trasy sítí), vezme se barva
- * z první varianty s barvou — aby swatch v legendě/panelu odpovídal tomu, jak
- * se prvek reálně vykreslí v mapě, místo jednotné fallback barvy obsahové
- * části. Objekty s barvou v base i objekty bez symbologie se chovají shodně
- * s {@link resolveStyle}.
+ * vrstvový panel). Když objekt nemá barvu v základu ani ve variantě
+ * geometrie, ale nese ji některá varianta atributu (typicky trasy sítí),
+ * vezme se z ní — aby swatch odpovídal tomu, jak se prvek reálně vykreslí.
  */
 export function resolveRepresentativeStyle(ot: ObjektovyTyp): ResolvedStyle {
-  const sym = getSymbology(ot.codeBase);
-  if (!sym) return resolveStyle(ot);
+  const dialect = resolveDialectRepresentativeLook(ot);
+  if (dialect) return buildDialectResolvedStyle(dialect);
+  const look = resolveKatalogRepresentativeLook(ot);
+  return look ? buildKatalogResolvedStyle(look, ot.obsahovaCast) : resolveStyle(ot);
+}
 
-  let repVariant: SymbolVariant | undefined;
-  if (sym.fillColor == null && sym.strokeColor == null && sym.variants?.length) {
-    repVariant = sym.variants.find((v) => v.fillColor != null || v.strokeColor != null);
-  }
-  return buildResolvedStyle(mergeSymbologyWithVariant(sym, repVariant), ot.obsahovaCast);
+/** Styl jedné hodnoty atributu (dlaždice legendy). */
+export interface VariantStyle {
+  /** Hodnota atributu z Katalogu („nástěnná konzola", „NN", …). */
+  value: string;
+  style: ResolvedStyle;
 }
 
 /**
- * Resolve style for a single záznam, applying variant lookup based on
- * VARIANT_ATTR map. Falls back to base style when no variant matches.
+ * Styly objektu podle hodnoty atributu (Katalog DTM ČR) — legenda ukáže
+ * dlaždici pro každou, aby odpovídala mapě. Prázdné u objektů s jedním
+ * vzhledem a u dialektů (UDM, ŽXML mají vlastní symbologii).
+ */
+export function resolveVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
+  if (isDialectStyled(ot)) return [];
+  // Katalog je statický — styly variant stačí spočítat jednou na kód.
+  const key = `${ot.codeBase}-${ot.codeSuffix}-${ot.obsahovaCast}`;
+  let styles = variantStyleCache.get(key);
+  if (!styles) {
+    styles = resolveKatalogVariantLooks(ot).map((v) => ({
+      value: v.value,
+      style: buildKatalogResolvedStyle(v.look, ot.obsahovaCast),
+    }));
+    variantStyleCache.set(key, styles);
+  }
+  return styles;
+}
+const variantStyleCache = new Map<string, VariantStyle[]>();
+
+/** Styl podle načtených dat a počty hodnot atributu, podle kterých se vzhled liší. */
+export interface DataStyle {
+  style: ResolvedStyle;
+  /** Hodnoty atributu s vlastním vzhledem a jejich počet záznamů (sestupně). */
+  variants: { value: string; count: number }[];
+}
+
+/**
+ * Značka objektového typu podle načtených záznamů (panel vrstev, Přehled
+ * prvků): u objektů, jejichž vzhled závisí na atributu (podpěrné zařízení,
+ * trasy sítí, …), vzhled nejčastější hodnoty v datech — ne první varianty
+ * Katalogu, kterou kreslí legenda bez dat. Jinak reprezentativní styl.
+ */
+export function resolveDataStyle(ot: ObjektovyTyp): DataStyle {
+  // Záznamy se po načtení nemění — panel vrstev i Přehled prvků (překreslují
+  // se často) sdílí jeden výpočet na objektový typ.
+  let ds = dataStyleCache.get(ot);
+  if (!ds) {
+    ds = computeDataStyle(ot);
+    dataStyleCache.set(ot, ds);
+  }
+  return ds;
+}
+const dataStyleCache = new WeakMap<ObjektovyTyp, DataStyle>();
+
+function computeDataStyle(ot: ObjektovyTyp): DataStyle {
+  // Jen objekty, které mají v Katalogu víc vzhledů (jako dlaždice legendy).
+  if (ot.zaznamy.length > 0 && resolveVariantStyles(ot).length > 0) {
+    const counts = new Map<string, { count: number; first: ZaznamObjektu }>();
+    for (const z of ot.zaznamy) {
+      const value = resolveKatalogVariantValue(ot, z);
+      if (value === undefined) continue;
+      const entry = counts.get(value);
+      if (entry) entry.count++;
+      else counts.set(value, { count: 1, first: z });
+    }
+    if (counts.size > 0) {
+      const sorted = [...counts.entries()].sort((a, b) => b[1].count - a[1].count);
+      return {
+        style: resolveStyleForZaznam(ot, sorted[0]![1].first),
+        variants: sorted.map(([value, { count }]) => ({ value, count })),
+      };
+    }
+  }
+  return { style: resolveRepresentativeStyle(ot), variants: [] };
+}
+
+/**
+ * Styl záznamu: vzhled Katalogu podle typu geometrie objektu a hodnoty
+ * atributu (varianta pro bod nese značku, pro plochu obrys a výplň).
  */
 export function resolveStyleForZaznam(
   ot: ObjektovyTyp,
   zaznam: ZaznamObjektu,
 ): ResolvedStyle {
-  const sym = getSymbology(ot.codeBase);
-  if (!sym) return resolveStyle(ot);
-
-  const variantMap = VARIANT_ATTR[ot.codeBase];
-  let variant: SymbolVariant | undefined;
-  if (variantMap && sym.variants && sym.variants.length > 0) {
-    const raw = zaznam.attributes?.[variantMap.attrName];
-    if (raw !== undefined && raw !== null) {
-      const key = String(raw);
-      const idx = variantMap.valueToVariantIndex[key];
-      if (idx !== undefined && sym.variants[idx]) {
-        variant = sym.variants[idx];
-      }
-    }
-  }
-
-  return buildResolvedStyle(mergeSymbologyWithVariant(sym, variant), ot.obsahovaCast);
+  const dialect = resolveDialectLook(ot, zaznam);
+  if (dialect) return buildDialectResolvedStyle(dialect);
+  const look = resolveKatalogLook(ot, zaznam);
+  return look ? buildKatalogResolvedStyle(look, ot.obsahovaCast) : resolveStyle(ot);
 }
 
 /**
@@ -301,7 +493,7 @@ function createStyleForGeom(
   geomType: Geometry['type'],
   s: ResolvedStyle,
   resolution: number,
-): Style {
+): Style | Style[] {
   const dashPx = s.lineDashMm ? dashMmToPx(s.lineDashMm, resolution) : undefined;
   switch (geomType) {
     case 'Point': {
@@ -313,6 +505,8 @@ function createStyleForGeom(
           image: new IconStyle({
             src: SVG_BASE + s.pointSvg,
             scale: iconScale,
+            // OL otáčí po směru hodinových ručiček, natočení v DTM je proti.
+            ...(s.pointRotationDeg ? { rotation: (-s.pointRotationDeg * Math.PI) / 180 } : {}),
           }),
         });
       }
@@ -327,14 +521,27 @@ function createStyleForGeom(
       });
     }
     case 'LineString':
-    case 'MultiCurve':
-      return new Style({
+    case 'MultiCurve': {
+      const line = new Style({
         stroke: new Stroke({
           color: s.strokeColor,
           width: s.strokeWidthPx,
           lineDash: dashPx,
         }),
       });
+      // Značka vložená do linie (blesk vedení, třída silnice, …) nad čarou,
+      // příčky plotu přes čáru.
+      const extra = s.lineSymbolSvg ? createLineSymbolStyle(s, resolution) : createTickStyle(s, resolution);
+      // ŽXML: souběžné čáry, značka opakovaná podél linie, linie bez osy.
+      if (!s.lineStrokes && !s.lineRepeat && !s.lineNoAxis) return extra ? [line, extra] : line;
+      const repeat = createRepeatStyle(s, resolution);
+      return [
+        ...(s.lineNoAxis ? [] : [line]),
+        ...(extra ? [extra] : []),
+        ...createLineStrokeStyles(s, resolution),
+        ...(repeat ? [repeat] : []),
+      ];
+    }
     case 'Polygon':
       return new Style({
         fill: new Fill({ color: s.fillColor }),
@@ -355,12 +562,44 @@ function createStyleForGeom(
   }
 }
 
+/**
+ * Lem changeset záznamu (pod prvkem): u linií a obrysů ploch široká
+ * průsvitná čára, u bodů průsvitný kruh pod symbolem. Barva = typ změny.
+ */
+function createZapisHaloStyle(geomType: Geometry['type'], s: ResolvedStyle, color: string): Style {
+  const halo = color + '80';
+  if (geomType === 'Point') {
+    return new Style({
+      image: new CircleStyle({ radius: 9, fill: new Fill({ color: halo }) }),
+    });
+  }
+  const width = (geomType === 'Polygon' ? Math.max(1, s.strokeWidthPx * 0.5) : s.strokeWidthPx) + 6;
+  return new Style({ stroke: new Stroke({ color: halo, width }) });
+}
+
 export interface JvfVectorLayer {
   olLayer: VectorLayer;
+  /** Lemy changeset záznamů (pod daty, neklikatelné). */
+  haloLayer: VectorLayer;
   objektovyTyp: ObjektovyTyp;
   featureCount: number;
   /** Id projektu, ze kterého vrstva pochází (null bez provenience). */
   projectId: string | null;
+}
+
+/**
+ * Kreslí se prvek JVF vrstvy? Filtr prvků (úroveň umístění, projekt,
+ * obsahová část) a filtr typů změn (karta „Změny": Nové / Editované / Mazané).
+ * Jediné místo rozhodnutí — používá ho style funkce vrstev i přichytávání
+ * při měření (map/measure.ts), aby se neměřilo ke skrytým prvkům.
+ * Viditelnost celé vrstvy (panel vrstev) sem nepatří — tu nese vrstva.
+ */
+export function isJvfFeatureDisplayed(feature: FeatureLike): boolean {
+  if (!isLevelVisible(feature.get('jvfLevel') as LevelKey | undefined)) return false;
+  if (!isProjectVisible(feature.get('jvfProjectId') as string | null | undefined)) return false;
+  if (!isContentPartVisible(feature.get('jvfPart') as string | undefined)) return false;
+  const zo = feature.get('jvfZapisObjektu') as string | undefined;
+  return !isChangesetZapis(zo) || isShowZapis(zo);
 }
 
 export function buildJvfLayers(objekty: ObjektovyTyp[]): {
@@ -375,12 +614,17 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
     // Provenience: id projektu, ze kterého objektový typ pochází — dimenze
     // filtru prvků (state/featureFilter.ts) při více načtených projektech.
     const projectId = resolveProjectKey(ot);
+    // Obsahová část — dimenze filtru prvků (tlačítka v Přehledu prvků).
+    const part = String(ot.obsahovaCast);
 
-    for (const [zaznamIndex, zaznam] of ot.zaznamy.entries()) {
+    for (const zaznam of ot.zaznamy) {
       const sFeature = resolveStyleForZaznam(ot, zaznam);
-      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
-      // (nové prvky `ZapisObjektu='i'`, které se teprve budou do DTM vkládat).
-      const objectId = resolveZaznamId(ot.elementName, zaznam, zaznamIndex);
+      // Identifikace záznamu: DTM ID, nebo interní UUID pro záznamy bez ID
+      // (nové prvky `ZapisObjektu='i'`) a s duplicitním ID — viz state/zaznamId.ts.
+      const objectId = resolveZaznamId(zaznam, ot.zaznamy);
+      // Holé DTM ID (bez prefixu projektu a rozlišení duplicit) — podle něj
+      // hledá prvek panel chyb (`TopologyError.objectId`).
+      const dtmId = dtmIdOf(zaznam);
       // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
       const levelKey = resolveLevelKey(zaznam);
       for (const geom of zaznam.geometrie) {
@@ -424,9 +668,11 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfGeomType', 'LineString');
                 mcFeature.set('jvfElementName', ot.elementName);
                 mcFeature.set('jvfObjectId', objectId);
+                mcFeature.set('jvfDtmId', dtmId);
                 mcFeature.set('jvfZapisObjektu', zaznam.zapisObjektu);
                 mcFeature.set('jvfLevel', levelKey);
                 mcFeature.set('jvfProjectId', projectId);
+                mcFeature.set('jvfPart', part);
                 features.push(mcFeature);
               }
             }
@@ -439,9 +685,11 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfGeomType', geom.type);
           feature.set('jvfElementName', ot.elementName);
           feature.set('jvfObjectId', objectId);
+          feature.set('jvfDtmId', dtmId);
           feature.set('jvfZapisObjektu', zaznam.zapisObjektu);
           feature.set('jvfLevel', levelKey);
           feature.set('jvfProjectId', projectId);
+          feature.set('jvfPart', part);
           features.push(feature);
         }
       }
@@ -471,53 +719,86 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
         const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
         const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
         if (!s || !geomType) return undefined;
-        // Filtr prvků (úroveň umístění + projekt) — odfiltrované záznamy se
-        // nekreslí. Při neaktivním filtru obě funkce vrací vždy true →
-        // chování beze změny.
-        const levelKey = feature.get('jvfLevel') as LevelKey | undefined;
-        if (!isLevelVisible(levelKey)) return undefined;
-        const projectKey = feature.get('jvfProjectId') as string | null | undefined;
-        if (!isProjectVisible(projectKey)) return undefined;
-        // Changeset záznamy (ZapisObjektu ∈ {i, u, d}) — buď skryjeme úplně,
-        // nebo přebarvíme podle typu změny (zelená/oranžová/červená).
-        // Globální flagy řídí checkboxy v UI.
-        const zo = feature.get('jvfZapisObjektu') as string | undefined;
-        if (isChangesetZapis(zo)) {
-          if (!isShowZapis(zo)) return undefined;
-          const hl = ZAPIS_HIGHLIGHT_COLORS[zo];
-          const zapisStyle: ResolvedStyle = {
-            ...s,
-            fillColor: hl.fill,
-            strokeColor: hl.stroke,
-            strokeWidthPx: Math.max(s.strokeWidthPx, 2),
-            // Bez SVG ikony — changeset body chceme barevnou tečkou, ne SVG
-            // symbol (jinak by uživatel barvu nepoznal — symbol kreslí ČÚZK
-            // barvami).
-            pointSvg: undefined,
-          };
-          return createStyleForGeom(geomType, zapisStyle, resolution);
-        }
+        // Filtr prvků a changeset přepínače — odfiltrované záznamy se nekreslí.
+        if (!isJvfFeatureDisplayed(feature)) return undefined;
+        // Changeset záznamy se kreslí ve vlastním stylu (jako v legendě);
+        // typ změny ukazuje lem ve vrstvě `haloLayer` pod daty.
         return createStyleForGeom(geomType, s, resolution);
       },
     });
 
+    // Lemy changeset záznamů (nové / editované / mazané): samostatná vrstva
+    // nad stejným zdrojem, pod vrstvami dat — lemy leží pod všemi prvky
+    // a nezachytávají klik (výběr prvku ji vyřazuje, viz `isJvfHaloLayer`).
+    // Viditelnost i překreslení (`olLayer.changed()` po změně filtrů
+    // a přepínačů) přebírá od vrstvy dat.
+    const haloLayer = new VectorLayer({
+      source,
+      updateWhileInteracting: true,
+      updateWhileAnimating: true,
+      properties: { [HALO_LAYER_PROP]: true },
+      style: (feature) => {
+        const s = feature.get('jvfResolvedStyle') as ResolvedStyle | undefined;
+        const geomType = feature.get('jvfGeomType') as Geometry['type'] | undefined;
+        const zo = feature.get('jvfZapisObjektu') as string | undefined;
+        if (!s || !geomType || !isChangesetZapis(zo) || !isHighlightZapis()) return undefined;
+        if (!isJvfFeatureDisplayed(feature)) return undefined;
+        return createZapisHaloStyle(geomType, s, ZAPIS_HIGHLIGHT_COLORS[zo].stroke);
+      },
+    });
+    olLayer.on('change', () => haloLayer.changed());
+
+    // Značky vložené do linií se kreslí z tvarů SVG — po načtení překreslit.
+    const lineSymbolFiles = new Set<string>();
+    for (const f of features) {
+      const file = (f.get('jvfResolvedStyle') as ResolvedStyle | undefined)?.lineSymbolSvg;
+      if (file) lineSymbolFiles.add(file);
+    }
+    if (lineSymbolFiles.size > 0) {
+      void Promise.all([...lineSymbolFiles].map(loadLineSymbol)).then(() => olLayer.changed());
+    }
+    const repeatFiles = new Set<string>();
+    for (const f of features) {
+      const svg = (f.get('jvfResolvedStyle') as ResolvedStyle | undefined)?.lineRepeat?.svg;
+      if (svg) repeatFiles.add(svg);
+    }
+    if (repeatFiles.size > 0) {
+      void Promise.all([...repeatFiles].map(loadRepeatImage)).then(() => olLayer.changed());
+    }
+    olLayer.on('change:visible', () => haloLayer.setVisible(olLayer.getVisible()));
+
     olLayer.set('jvfNazev', ot.nazev);
     olLayer.set('jvfObsahova', ot.obsahovaCast);
 
-    layers.push({ olLayer, objektovyTyp: ot, featureCount: features.length, projectId });
+    layers.push({ olLayer, haloLayer, objektovyTyp: ot, featureCount: features.length, projectId });
   }
 
   return { layers, extent: totalExtent };
 }
 
-export function addJvfLayersToMap(map: Map, layers: JvfVectorLayer[]): void {
-  for (const { olLayer } of layers) {
+/** Pořadí vrstev JVF v mapě: nad podkladem (0) a překryvy DTM / KN (1–8). */
+export const JVF_LAYER_Z_INDEX = 10;
+/** Lemy changeset záznamů — pod daty JVF, nad překryvy. */
+const JVF_HALO_Z_INDEX = JVF_LAYER_Z_INDEX - 1;
+const HALO_LAYER_PROP = 'jvfHalo';
+
+/** Je vrstva lemů changeset záznamů? (Výběr prvku klikem ji přeskakuje.) */
+export function isJvfHaloLayer(layer: { get(key: string): unknown }): boolean {
+  return layer.get(HALO_LAYER_PROP) === true;
+}
+
+export function addJvfLayersToMap(map: OlMap, layers: JvfVectorLayer[]): void {
+  for (const { olLayer, haloLayer } of layers) {
+    haloLayer.setZIndex(JVF_HALO_Z_INDEX);
+    map.addLayer(haloLayer);
+    olLayer.setZIndex(JVF_LAYER_Z_INDEX);
     map.addLayer(olLayer);
   }
 }
 
-export function removeJvfLayersFromMap(map: Map, layers: JvfVectorLayer[]): void {
-  for (const { olLayer } of layers) {
+export function removeJvfLayersFromMap(map: OlMap, layers: JvfVectorLayer[]): void {
+  for (const { olLayer, haloLayer } of layers) {
+    map.removeLayer(haloLayer);
     map.removeLayer(olLayer);
   }
 }
@@ -531,15 +812,17 @@ export function findFeature(
   elementName: string,
   objectId: string,
 ): Feature | null {
-  for (const { olLayer } of layers) {
-    const source = olLayer.getSource();
-    if (!source) continue;
-    const found = source.getFeatures().find(
-      (f) =>
-        f.get('jvfElementName') === elementName &&
-        f.get('jvfObjectId') === objectId,
-    );
-    if (found) return found;
+  // 1. přesná shoda klíče vieweru; 2. holé DTM ID (panel chyb zná jen to —
+  // bez prefixu projektu a bez rozlišení duplicitních ID).
+  for (const key of ['jvfObjectId', 'jvfDtmId'] as const) {
+    for (const { olLayer } of layers) {
+      const source = olLayer.getSource();
+      if (!source) continue;
+      const found = source.getFeatures().find(
+        (f) => f.get('jvfElementName') === elementName && f.get(key) === objectId,
+      );
+      if (found) return found;
+    }
   }
   return null;
 }

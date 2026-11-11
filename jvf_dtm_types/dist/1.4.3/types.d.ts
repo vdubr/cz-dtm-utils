@@ -7,8 +7,11 @@ export type ZapisObjektuType = 'i' | 'u' | 'd' | 'r';
  * 1.5.0.1 — neveřejná kategorie, jen 2D plocha, `ObsahovaCast` DI/TI
  * (viz zadání „jvf version", změna #6). Ostatní hodnoty jsou sdílené napříč
  * verzemi.
+ *
+ * UDM (Univerzální datový model ČKZ) přidává obsahové části objektů nad
+ * rámec DTM: `ZPSUDM`, `DIUDM`, `TIUDM` a `OST` (ostatní).
  */
-export type ObsahovaCast = 'ZPS' | 'TI' | 'DI' | 'GAD' | 'OPL' | 'PSPI';
+export type ObsahovaCast = 'ZPS' | 'TI' | 'DI' | 'GAD' | 'OPL' | 'PSPI' | 'ZPSUDM' | 'DIUDM' | 'TIUDM' | 'OST';
 /**
  * Surový druh záznamu podle názvu elementu v JVF DTM 1.5.0.1.
  *
@@ -189,8 +192,56 @@ export interface ErrorProtocol {
     dti: ProtokolKontrola[];
     zps: ProtokolKontrola[];
 }
+/** Dialekt JVF DTM souboru (UDM, ŽXML) — viz registr `DIALECTS`. */
+export interface DtmDialectInfo {
+    /** Id dialektu (`udm`, `zxml`). */
+    id: string;
+    /** Surová verze dialektu z hlavičky (`2.1.1`, `1.5.1.6`). */
+    version: string;
+}
+/**
+ * Jeden údaj staničení (`cmn:StaniceniData/StaniceniInfo`, ŽXML 1.5.x) —
+ * poloha objektu vztažená k traťovému úseku (TUDU).
+ */
+export interface StaniceniInfo {
+    /** ID objektu, ke kterému se staničení vztahuje. */
+    id: string;
+    staniceni: Array<{
+        typStaniceni?: string;
+        zpusobVypoctu?: string;
+        tudu?: string;
+        staniceni?: number;
+        bod?: GmlPoint;
+        datumVypoctu?: string;
+        datumPlatnostiOd?: string;
+        datumPlatnostiDo?: string;
+    }>;
+}
+/** Data dokumentu nad rámec JVF DTM (dialekty). */
+export interface JvfDtmExt {
+    /** Staničení objektů (ŽXML). */
+    staniceni?: StaniceniInfo[];
+}
 export interface JvfDtm {
+    /**
+     * Id datového modelu souboru — **vždy vyřešené routerem** `parseJvfDtm`:
+     * verze JVF DTM (`1.4.3`, `1.5.0.1`, `1.5.0.2`) nebo id dialektu
+     * (`udm-2.1.1`, `zxml-1.5.1.6`). Podle něj se volí katalog, číselníky,
+     * symbologie i chování topologie. Surová hodnota hlavičky je v
+     * {@link verzeJvfDtm}.
+     */
     verze: string;
+    /** Surová hodnota `<VerzeJVFDTM>` z hlavičky souboru (může být i prázdná). */
+    verzeJvfDtm?: string;
+    /** Dialekt souboru (UDM, ŽXML); u čistého JVF DTM `undefined`. */
+    dialect?: DtmDialectInfo;
+    /**
+     * Surová hodnota `<VerzeJVFUDM>` (jen UDM soubory, např. `2.1.1`).
+     * @deprecated použij `dialect.version`.
+     */
+    verzeUdm?: string;
+    /** Data dokumentu nad rámec JVF DTM (např. staničení v ŽXML). */
+    ext?: JvfDtmExt;
     datumZapisu: string;
     typZapisu: TypZapisu;
     /** Typ datové sady z hlavičky JVF (1.5.0.1+). Ve 1.4.3 typicky `undefined`. */

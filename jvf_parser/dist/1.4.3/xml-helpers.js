@@ -32,10 +32,17 @@ export function extractText(val) {
     }
     return null;
 }
+/** Identifikátory (`ID`, `IDZmeny`, `IDObjektu`, `IDRDTI`, …) — vždy text. */
+const IDENTIFIER_TAG = /^ID(?:[A-Z]|$)/;
 /**
- * Extract a primitive attribute value from a parsed element value.
- * Handles the `{#text: ..., @_xmlns: ...}` wrapper form.
+ * `tagValueProcessor` pro `XMLParser`: hodnoty identifikátorů se nepřevádějí
+ * na čísla (`parseTagValue`), ale zůstávají doslova jako text. Jinak by
+ * `00123` ztratilo úvodní nuly a `1e5` se změnilo na `100000` — ID by pak
+ * neodpovídalo souboru ani protokolu chyb IS DMVS. `null` = „neparsovat".
  */
+export function keepIdentifierText(tagName, value) {
+    return IDENTIFIER_TAG.test(tagName) ? null : value;
+}
 /**
  * Pick the first present child among `keys` from a parsed element object.
  *
@@ -55,6 +62,10 @@ export function pickChild(obj, keys) {
     }
     return undefined;
 }
+/**
+ * Extract a primitive attribute value from a parsed element value.
+ * Handles the `{#text: ..., @_xmlns: ...}` wrapper form.
+ */
 export function extractAttributeValue(val) {
     if (val == null)
         return null;

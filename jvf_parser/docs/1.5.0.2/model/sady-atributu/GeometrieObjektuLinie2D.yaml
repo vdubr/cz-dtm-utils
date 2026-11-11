@@ -1,0 +1,27 @@
+id: GeometrieObjektuLinie2D
+namespace: cmn
+atributy:
+  - id: Linie2D
+    volitelny: false
+    atribut: Linie2DCurveProperty
+
+kontexty:
+  Ref:
+    obsah:
+      - id: Linie2D
+        volitelny: false
+
+  Ins:
+    obsah:
+      - id: Linie2D
+        volitelny: false
+
+  Upd:
+    obsah:
+      - id: Linie2D
+        volitelny: true
+
+  Del:
+    obsah:
+      - id: Linie2D
+        volitelny: true

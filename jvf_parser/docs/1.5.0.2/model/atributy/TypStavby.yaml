@@ -1,0 +1,35 @@
+id: TypStavby
+nazev: Typ stavby
+namespace: atr
+popis: Typ stavby
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: podezdívka
+ - hodnota: 2
+   popis: rampa
+ - hodnota: 3
+   popis: terasa
+ - hodnota: 4
+   popis: komín
+ - hodnota: 5
+   popis: skleník
+ - hodnota: 6
+   popis: zahradní bazén
+ - hodnota: 7
+   popis: patka, deska, monolit, pilíř
+ - hodnota: 8
+   popis: stavba pro zpevnění povrchu
+ - hodnota: 9
+   popis: čelo propustku
+ - hodnota: 10
+   popis: drobná sakrální stavba
+ - hodnota: 11
+   popis: drobná kulturní stavba
+ - hodnota: 12
+   popis: ostatní zastřešená stavba
+ - hodnota: 13
+   popis: zastřešení
+ - hodnota: 99
+   popis: nezjištěno

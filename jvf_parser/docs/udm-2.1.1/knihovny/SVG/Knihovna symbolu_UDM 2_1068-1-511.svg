@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="42.2997581995224" height="42.2997581995224">
+<title>1068-1-511</title>
+<desc>Knihovna symbolu_UDM 2 - 1068-1-511</desc>
+<g id="1068-1-511" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 42.2997581995224,0 42.2997581995224,42.2997581995224 0,42.2997581995224" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="14.5357058714139,17.3703515407056 17.5593279186584,18.6931861863751 21.1498790997612,19.2601153202334 24.5514539029113,18.6931861863751 27.7640523281085,17.3703515407056" style="stroke:#000000" />
+		<polyline points="25.6853121706279,17.1813751627529 27.7640523281085,17.3703515407056 26.6301940603918,19.4490916981862" style="stroke:#000000" />
+		<polyline points="15.4805877611778,19.4490916981862 14.5357058714139,17.3703515407056 16.6144460288945,17.1813751627529" style="stroke:#000000" />
+		<circle cx="21.1479893359817" cy="5.06232004464109" r="0.871429072947104" style="stroke:#000000"/>
+		<circle cx="21.1479893359817" cy="5.06420980842061" r="0.871181102362314" style="stroke:#000000;fill:#000000"/>
+		<polyline points="21.1498790997612,6.03176886353885 21.1498790997612,21.1498790997612" style="stroke:#000000" />
+		<polyline points="21.1460995722022,6.02798933597979 21.1460995722022,5.9335011470034" style="stroke:#000000" />
+		<polyline points="19.2601153202334,6.03176886353885 23.039642879289,6.03176886353885" style="stroke:#000000" />
+		<polyline points="20.5186979973989,5.65003658007423 21.7357058714148,4.43302870605833" style="stroke:#000000" />
+		<text x="0" y="1.889734" transform="translate(28.4897216194472,9.81129642259444) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291254" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">PRE</text>
+	</g>
+</g>
+</svg>

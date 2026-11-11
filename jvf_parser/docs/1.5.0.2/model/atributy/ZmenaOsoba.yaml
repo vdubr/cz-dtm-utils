@@ -1,0 +1,9 @@
+id: ZmenaOsoba
+nazev: Osoba změny
+namespace: atr
+popis: |-
+  Identifikátor fyzické osoby, která provedla poslední změnu objektu
+  Zadává IS DTMK
+nillable: false
+typ: String
+maxDelka: 255

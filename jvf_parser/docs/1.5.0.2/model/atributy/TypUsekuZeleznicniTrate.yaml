@@ -1,0 +1,15 @@
+id: TypUsekuZeleznicniTrate
+nazev: Typ úseku železniční tratě
+namespace: atr
+popis: Typ úseku železniční tratě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: zemní těleso
+ - hodnota: 2
+   popis: most
+ - hodnota: 3
+   popis: tunel
+ - hodnota: 99
+   popis: nezjištěno

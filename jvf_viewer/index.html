@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,11 +10,11 @@
   <meta name="keywords" content="JVF, DTM, Digitální technická mapa, ČR, ČÚZK, DMVS, prohlížeč, viewer, validace, S-JTSK, GIS, IS DMVS" />
   <meta name="author" content="Vojtěch Dubrovský" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://cz-dtm-utils.vercel.app/jvf_viewer/" />
+  <link rel="canonical" href="https://cz-dtm-utils.vercel.app/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://cz-dtm-utils.vercel.app/jvf_viewer/" />
+  <meta property="og:url" content="https://cz-dtm-utils.vercel.app/" />
   <meta property="og:title" content="JVF DTM Prohlížeč" />
   <meta property="og:description" content="Vizualizace a validace souborů JVF DTM (Digitální technická mapa ČR) přímo v prohlížeči. 2D + 3D, topologická validace, podklady ČÚZK." />
   <meta property="og:locale" content="cs_CZ" />
@@ -25,7 +25,7 @@
   <meta name="twitter:description" content="Vizualizace a validace souborů JVF DTM (Digitální technická mapa ČR) přímo v prohlížeči." />
 
   <!-- Theme color (mobile browser chrome) -->
-  <meta name="theme-color" content="#0d1117" />
+  <meta name="theme-color" content="#ededf4" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -33,8 +33,11 @@
   <!-- Fonts & styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..24,100..700,0..1,0" />
   <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/app-m3.css" />
+  <link rel="stylesheet" href="/src/app-themes.css" />
 
   <!-- Structured data (JSON-LD) — pomáhá Googlu pochopit, co aplikace dělá -->
   <script type="application/ld+json">
@@ -43,7 +46,7 @@
       "@type": "WebApplication",
       "name": "JVF DTM Prohlížeč",
       "description": "Webový prohlížeč souborů JVF DTM (Jednotný výměnný formát Digitální technické mapy ČR) s 2D mapou, 3D pohledem a topologickou validací.",
-      "url": "https://cz-dtm-utils.vercel.app/jvf_viewer/",
+      "url": "https://cz-dtm-utils.vercel.app/",
       "applicationCategory": "GIS",
       "operatingSystem": "Web (any)",
       "offers": {
@@ -64,50 +67,63 @@
   <div id="app">
     <header id="app-header">
       <div class="header-left">
-        <span class="app-logo">&#11041;</span>
-        <h1>JVF DTM Prohlížeč</h1>
+        <button id="btn-drawer" class="m3-icon-btn drawer-toggle" type="button" aria-label="Otevřít panel vrstev" aria-controls="layer-panel" aria-expanded="false" title="Panel vrstev">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <button id="btn-app-launcher" class="m3-icon-btn app-launcher-btn" type="button" aria-label="Nástroje DTM (JVF, UDM, JŽM)" aria-haspopup="dialog" aria-controls="app-launcher" aria-expanded="false" title="Nástroje DTM — JVF, UDM, JŽM">
+          <span class="material-symbols-outlined">apps</span>
+        </button>
+        <span id="app-badge" class="app-badge app-logo" data-app-badge data-app-id="jvf" aria-hidden="true">JVF</span>
+        <div class="app-title">
+          <h1 id="app-title" data-app-name>JVF Prohlížeč</h1>
+          <span class="app-family">DTM Prohlížeč</span>
+        </div>
       </div>
       <div class="header-right">
         <div class="upload-wrapper">
           <button id="btn-upload" class="btn btn-primary" title="Vybrat a načíst JVF DTM soubor (XML)">
-            <span class="btn-icon">&#8593;</span> Nahrát soubor
+            <span class="material-symbols-outlined">upload</span><span class="btn-label">Nahrát soubor</span>
           </button>
-          <button id="btn-upload-menu" class="btn btn-primary btn-upload-menu" title="Načíst ukázkový soubor" aria-haspopup="true" aria-expanded="false">
+          <button id="btn-upload-menu" class="btn btn-primary btn-upload-menu" title="Načíst ukázkový soubor" aria-label="Ukázkové soubory" aria-haspopup="true" aria-expanded="false">
             <span class="material-symbols-outlined">expand_more</span>
           </button>
           <div id="upload-menu" class="upload-menu" hidden role="menu">
             <div class="upload-menu-title">Ukázkové soubory</div>
-            <button class="upload-menu-item" data-sample="ukazka_ZPS.xml" role="menuitem" title="Základní prostorová situace">ukazka_ZPS.xml</button>
-            <button class="upload-menu-item" data-sample="ukazka_DI.xml" role="menuitem" title="Dopravní infrastruktura">ukazka_DI.xml</button>
-            <button class="upload-menu-item" data-sample="ukazka_KI.xml" role="menuitem" title="Komunikační infrastruktura">ukazka_KI.xml</button>
-            <button class="upload-menu-item" data-sample="ukazka_OPL.xml" role="menuitem" title="Ochranná pásma a linie">ukazka_OPL.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_ZPS.xml" role="menuitem" title="Základní prostorová situace">ukazka_ZPS.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_DI.xml" role="menuitem" title="Dopravní infrastruktura">ukazka_DI.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_KI.xml" role="menuitem" title="Komunikační infrastruktura">ukazka_KI.xml</button>
+            <button class="upload-menu-item" data-mode="jvf" data-sample="ukazka_OPL.xml" role="menuitem" title="Ochranná pásma a linie">ukazka_OPL.xml</button>
+            <button class="upload-menu-item" data-mode="udm" data-sample="UDM_ukazka-1.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — ukázka reálných dat (ČKZ)">UDM_ukazka-1.xml</button>
+            <button class="upload-menu-item" data-mode="udm" data-sample="udm_minimal.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — minimální testovací soubor">udm_minimal.xml</button>
+            <button class="upload-menu-item" data-mode="udm" data-sample="udm_pontonovy_most.xml" role="menuitem" title="Univerzální datový model ČKZ 2.1.1 — pontonový most (obvod mostu + komunikace s dřevěným povrchem)">udm_pontonovy_most.xml</button>
+            <button class="upload-menu-item" data-mode="jzm" data-sample="zxml_nadrazi.xml" role="menuitem" title="ŽXML 1.5.1.6 — schematické nádraží v místě stanice Řevnice (koleje, nástupiště, výhybky, návěstidla, balízy, přejezd, staničení; smyšlená data)">zxml_nadrazi.xml</button>
+            <button class="upload-menu-item" data-mode="jzm" data-sample="zxml_vzornik.xml" role="menuitem" title="ŽXML 1.5.1.6 — vzorník znaků SŽ: každý objekt SŽ ve všech vzhledech stylů SLD (body, linie se souběžnými čarami a značkami, plochy) a objekty JVF s rozšířením číselníků SŽ; smyšlená data">zxml_vzornik.xml</button>
+            <button class="upload-menu-item" data-mode="jzm" data-sample="zxml_minimal.xml" role="menuitem" title="ŽXML 1.5.1.6 — minimální změnové věty (Ins / Upd / Del, staničení)">zxml_minimal.xml</button>
+            <button class="upload-menu-item" data-mode="jzm" data-sample="zxml-prvky-sz.xml" role="menuitem" title="ŽXML 1.4.2.1 — oficiální ukázka Správy železnic (kolejnicový mazník, přejezd)">zxml-prvky-sz.xml</button>
           </div>
         </div>
         <input type="file" id="file-input" accept=".xml,.jvf" multiple style="display:none" />
         <button id="btn-validate" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
-          Zkontrolovat
+          <span class="material-symbols-outlined">rule</span><span class="btn-label">Zkontrolovat</span>
         </button>
         <button id="btn-features" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
-          Přehled prvků
+          <span class="material-symbols-outlined">list</span><span class="btn-label">Přehled prvků</span>
         </button>
-        <button id="btn-3d" class="btn btn-secondary" title="Přepnout mezi 2D mapou a 3D pohledem">3D</button>
-        <button id="btn-theme" class="btn btn-secondary btn-theme" data-theme="light" title="Přepnout na tmavý režim (pozadí 2D mapy i 3D scény)"><span class="material-symbols-outlined">dark_mode</span></button>
+        <button id="btn-export-cad" class="btn btn-outlined" data-mode="jvf udm jzm" disabled title="Nejprve nahrajte JVF soubor">
+          <span class="material-symbols-outlined">download</span><span class="btn-label">Export do CAD</span>
+        </button>
+        <button id="btn-theme" class="btn btn-icon-round btn-theme" data-theme="light" title="Přepnout na tmavý motiv (aplikace, 2D mapa i 3D scéna)" aria-label="Přepnout na tmavý motiv"><span class="material-symbols-outlined">dark_mode</span></button>
       </div>
     </header>
+    <!-- Spouštěč nástrojů (ui/appModeSwitch.ts) — mimo hlavičku, aby překryl i panel vrstev na mobilu. -->
+    <div id="app-launcher" class="app-launcher" role="dialog" aria-label="Nástroje DTM" hidden></div>
     <div id="app-body">
       <aside id="layer-panel">
-        <div class="panel-section">
-          <div class="panel-section-title">Podkladové mapy</div>
-          <div id="base-layer-btns" class="base-layer-btns">
-            <button class="base-btn active" data-layer="zm" title="Přepnout ČÚZK Základní mapu (kliknutí na aktivní tlačítko podklad vypne)">Základní mapa</button>
-            <button class="base-btn" data-layer="ortofoto" title="Přepnout ČÚZK Ortofoto (kliknutí na aktivní tlačítko podklad vypne)">Ortofoto</button>
-          </div>
-          <div class="basemap-opacity-row">
-            <span class="material-symbols-outlined basemap-opacity-icon" title="Sytost podkladové mapy (2D i 3D textura na terénu)">opacity</span>
-            <input type="range" id="basemap-opacity" min="10" max="100" value="100" title="Sytost podkladové mapy (2D i 3D textura na terénu) — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
-            <span id="basemap-spinner" class="terrain-spinner" hidden></span>
-          </div>
-        </div>
+        <button id="btn-app-launcher-drawer" class="drawer-app-btn" type="button" aria-haspopup="dialog" aria-controls="app-launcher" aria-expanded="false" title="Přepnout nástroj (JVF, UDM, JŽM)">
+          <span class="app-badge" data-app-badge data-app-id="jvf" aria-hidden="true">JVF</span>
+          <span class="drawer-app-name" data-app-name>JVF Prohlížeč</span>
+          <span class="material-symbols-outlined" aria-hidden="true">apps</span>
+        </button>
         <div class="panel-section" id="projects-section" style="display:none">
           <button type="button" class="panel-section-title projects-header" id="projects-header" aria-expanded="true" title="Sbalit / rozbalit seznam projektů">
             <span class="material-symbols-outlined projects-chevron">expand_more</span>
@@ -118,44 +134,32 @@
         </div>
         <div class="panel-section panel-section-jvf">
           <div class="panel-section-title-row">
-            <div class="panel-section-title">JVF vrstvy</div>
+            <div class="panel-section-title">Vrstvy výkresu</div>
             <button id="btn-legend" class="section-icon-btn" title="Zobrazit legendu všech typů DTM">
               <span class="material-symbols-outlined">legend_toggle</span>
             </button>
+            <button id="btn-symbol-legend" class="section-icon-btn" hidden title="Legenda znaků dialektu (symboly) — náhled a stažení SVG v balíku ZIP">
+              <span class="material-symbols-outlined">category</span>
+            </button>
           </div>
+          <input type="text" id="layer-search" class="legend-search layer-search" placeholder="Hledat vrstvu (název, kód)…" aria-label="Hledat vrstvu" hidden />
+          <!-- Bez dat vodotisk uprostřed panelu (kreslí i ui/layerPanel.ts). -->
           <div id="jvf-layers-list" class="jvf-layers-list">
-            <div class="empty-hint">Nahrajte JVF soubor</div>
-          </div>
-          <div id="changeset-options-section" class="three-options-footer" style="display:none">
-            <label class="toggle-row" id="row-show-inserted" style="display:none" title="Zobrazit objekty se ZapisObjektu='i' (nové záznamy, teprve se budou do DTM vkládat) zeleně">
-              <input type="checkbox" id="toggle-show-inserted" />
-              <span>Zobrazit nové (zeleně)</span>
-            </label>
-            <label class="toggle-row" id="row-show-updated" style="display:none" title="Zobrazit objekty se ZapisObjektu='u' (editované záznamy) oranžově">
-              <input type="checkbox" id="toggle-show-updated" />
-              <span>Zobrazit editované (oranžově)</span>
-            </label>
-            <label class="toggle-row" id="row-show-deleted" style="display:none" title="Zobrazit objekty se ZapisObjektu='d' (změnové věty — záznamy ke smazání) sytě červeně">
-              <input type="checkbox" id="toggle-show-deleted" />
-              <span>Zobrazit mazané (červeně)</span>
-            </label>
+            <div class="empty-hint panel-empty-hint">
+              <button type="button" class="panel-empty-upload" data-upload-trigger title="Nahrát soubor z disku" aria-label="Nahrát soubor z disku">
+                <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+              </button>
+              <span>Přetáhněte data ve formátu <span data-app-format>JVF</span></span>
+            </div>
           </div>
           <div id="three-options-section" class="three-options-footer" style="display:none">
             <label class="toggle-row" title="Renderovat bodové objekty jako SVG ikony (stejné jako 2D) místo jednoduchých puntíků">
-              <input type="checkbox" id="toggle-svg-symbols" />
+              <input type="checkbox" class="m3-switch" id="toggle-svg-symbols" />
               <span>SVG symboly pro body</span>
-            </label>
-            <label class="toggle-row" title="Zobrazit terén z ČÚZK DMR5G (±300 m kolem dat), hypsometricky obarvený">
-              <input type="checkbox" id="toggle-terrain" />
-              <span>Terén (ČÚZK DMR5G)</span>
-              <span id="terrain-spinner" class="terrain-spinner" hidden></span>
             </label>
           </div>
         </div>
         <footer class="panel-footer">
-          <button id="btn-info" class="footer-info-btn" title="O aplikaci">
-            <span class="material-symbols-outlined">info</span>
-          </button>
           <div class="footer-text">
             Made by
             <a href="https://www.linkedin.com/in/vojtechdubrovsky/" target="_blank" rel="noopener noreferrer" class="linkedin-link" title="Vojtěch Dubrovský — LinkedIn">
@@ -167,8 +171,128 @@
           </div>
         </footer>
       </aside>
+      <div id="drawer-scrim" class="drawer-scrim" hidden></div>
       <main id="map-area">
         <div id="map-container"></div>
+        <!-- Podkladová mapa nad mapou (jako mapy.cz) — map/cuzk.ts: „Podkladová mapa"
+             otevře kartu se seznamem náhledů, „Letecká" rychle přepne na ortofoto a zpět. -->
+        <!-- Plovoucí ovládání nad mapou vlevo nahoře (ui/mapCard.ts). -->
+        <div class="map-top-controls">
+        <div id="basemap-control" class="map-control">
+          <div class="basemap-bar" role="group" aria-label="Podkladová mapa">
+            <button id="btn-basemap-menu" class="basemap-bar-btn basemap-bar-menu" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="basemap-card" title="Vybrat podkladovou mapu a její sytost">
+              <span class="material-symbols-outlined" aria-hidden="true">layers</span><span>Podkladová mapa</span>
+              <span id="basemap-spinner" class="terrain-spinner" hidden></span>
+            </button>
+            <button id="btn-basemap-quick" class="basemap-bar-btn" type="button" title="Přepnout na leteckou mapu (ortofoto)">
+              <span class="material-symbols-outlined" aria-hidden="true" data-quick-icon>flight</span><span data-quick-label>Letecká</span>
+            </button>
+          </div>
+          <div id="basemap-card" class="basemap-card" role="dialog" aria-label="Podkladová mapa" hidden>
+            <div id="base-layer-btns" class="basemap-list" role="radiogroup" aria-label="Podkladová mapa">
+              <div class="basemap-item active" data-layer="zm">
+                <button class="base-btn active" type="button" data-layer="zm" role="radio" aria-checked="true" title="Podklad ČÚZK — Základní mapa ČR">
+                  <img class="basemap-thumb" src="/podklady/zakladni.jpg" alt="" width="88" height="56" loading="lazy" />
+                  <span class="basemap-label">Základní mapa</span>
+                </button>
+                <div class="basemap-opacity-row" id="basemap-opacity-row">
+                  <input type="range" class="m3-slider" id="basemap-opacity" min="0" max="100" value="100" aria-label="Sytost podkladové mapy" title="Sytost podkladové mapy (2D i 3D textura na terénu) — nižší hodnota nechá lépe vyniknout vykreslené prvky" />
+                </div>
+              </div>
+              <div class="basemap-item" data-layer="ortofoto">
+                <button class="base-btn" type="button" data-layer="ortofoto" role="radio" aria-checked="false" title="Podklad ČÚZK — Ortofoto ČR (letecké snímky)">
+                  <img class="basemap-thumb" src="/podklady/letecka.jpg" alt="" width="88" height="56" loading="lazy" />
+                  <span class="basemap-label">Letecká</span>
+                </button>
+              </div>
+              <div class="basemap-item" data-layer="none">
+                <button class="base-btn" type="button" data-layer="none" role="radio" aria-checked="false" title="Bez podkladu — bílé pozadí, v tmavém motivu černé">
+                  <span class="basemap-thumb basemap-thumb-blank" aria-hidden="true"></span>
+                  <span class="basemap-label">Prázdná</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Překryvy DTM ČR a Katastr nemovitostí — jedna skupina tlačítek, každé
+             otevře svou kartu (obsah kreslí ui/overlayPanel.ts). -->
+        <div id="overlay-control" class="map-control">
+          <div class="basemap-bar" role="group" aria-label="Překryvné vrstvy">
+            <button id="btn-dtm-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="dtm-card" title="DTM ČR — překryv Digitální technické mapy ČR (ČÚZK), výběr vrstev a sytost">
+              <span class="material-symbols-outlined" aria-hidden="true">polyline</span><span>DTM</span>
+              <span id="dtm-spinner" class="terrain-spinner" hidden></span>
+            </button>
+            <button id="btn-kn-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="kn-card" title="Katastr nemovitostí — překryv ČÚZK, výběr vrstev a sytost">
+              <span class="material-symbols-outlined" aria-hidden="true">grid_on</span><span>Katastr</span>
+              <span id="kn-spinner" class="terrain-spinner" hidden></span>
+            </button>
+          </div>
+          <div id="dtm-card" class="basemap-card" role="dialog" aria-label="DTM ČR" hidden>
+            <div class="overlay-section" id="overlay-dtm"></div>
+          </div>
+          <div id="kn-card" class="basemap-card" role="dialog" aria-label="Katastr nemovitostí" hidden>
+            <div class="overlay-section" id="overlay-kn"></div>
+          </div>
+        </div>
+        <!-- Změny v souboru (ZapisObjektu i / u / d) — jen pro data se změnami
+             (ui/changesetToggle.ts): přepínač Obarvit = styl, zaškrtávátka typů = filtr. -->
+        <div id="changes-control" class="map-control" hidden>
+          <div class="basemap-bar" role="group" aria-label="Změny v souboru">
+            <button id="btn-changes-menu" class="basemap-bar-btn map-toggle-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="changes-card" title="Změny v souboru — nové / editované / mazané záznamy: obarvení a filtr">
+              <span class="material-symbols-outlined" aria-hidden="true">edit</span><span>Změny</span>
+            </button>
+          </div>
+          <div id="changes-card" class="basemap-card" role="dialog" aria-label="Změny v souboru" hidden>
+            <div id="changeset-options-section" class="overlay-section changeset-section">
+              <label class="toggle-row overlay-toggle" id="row-highlight-zapis" title="Pod změněné prvky přidat lem barvy změny: zelená nové, oranžová editované, červená mazané. Prvek sám zůstává ve svém znaku, nic se neskryje.">
+                <span class="panel-section-title overlay-title">Obarvit změny</span>
+                <input type="checkbox" class="m3-switch" id="toggle-highlight-zapis" />
+              </label>
+              <div id="changeset-rows" class="overlay-sublayers overlay-sublayers--flat">
+              <label class="overlay-check-row changeset-row" id="row-show-inserted" data-zapis="i" title="Zobrazit / skrýt nové záznamy (ZapisObjektu = i, do DTM se teprve vloží)">
+                <input type="checkbox" class="m3-checkbox" id="toggle-show-inserted" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Nové</span>
+                <span class="overlay-count changeset-count"></span>
+              </label>
+              <label class="overlay-check-row changeset-row" id="row-show-updated" data-zapis="u" title="Zobrazit / skrýt editované záznamy (ZapisObjektu = u)">
+                <input type="checkbox" class="m3-checkbox" id="toggle-show-updated" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Editované</span>
+                <span class="overlay-count changeset-count"></span>
+              </label>
+              <label class="overlay-check-row changeset-row" id="row-show-deleted" data-zapis="d" title="Zobrazit / skrýt mazané záznamy (ZapisObjektu = d, z DTM se odstraní)">
+                <input type="checkbox" class="m3-checkbox" id="toggle-show-deleted" />
+                <span class="changeset-dot" aria-hidden="true"></span>
+                <span>Mazané</span>
+                <span class="overlay-count changeset-count"></span>
+              </label>
+              </div>
+              <p class="overlay-note changeset-hint" id="changeset-hint"></p>
+            </div>
+          </div>
+        </div>
+        <!-- Terén ČÚZK DMR5G — jen ve 3D (ui/toggle3d.ts). -->
+        <div id="terrain-control" class="map-control" hidden>
+          <div class="basemap-bar" role="group" aria-label="Terén">
+            <button id="btn-terrain" class="basemap-bar-btn map-toggle-btn" type="button" aria-pressed="false" title="Terén ČÚZK DMR5G (±300 m kolem dat), hypsometricky obarvený nebo s podkladovou mapou">
+              <span class="material-symbols-outlined" aria-hidden="true">landscape</span><span>Terén</span>
+              <span id="terrain-spinner" class="terrain-spinner" hidden></span>
+            </button>
+          </div>
+        </div>
+        </div>
+        <!-- Přepínač 2D / 3D a přiblížení „+ | −" vpravo nahoře nad mapou (ui/toggle3d.ts). -->
+        <div class="map-top-right">
+          <div class="basemap-bar view-switch" role="group" aria-label="Pohled">
+            <button id="btn-view-2d" class="basemap-bar-btn active" type="button" aria-pressed="true" title="2D mapa">2D</button>
+            <button id="btn-3d" class="basemap-bar-btn" type="button" aria-pressed="false" title="3D pohled (výšky geometrií, terén)">3D</button>
+          </div>
+          <div class="basemap-bar zoom-switch" role="group" aria-label="Přiblížení">
+            <button id="btn-zoom-in" class="basemap-bar-btn" type="button" title="Přiblížit" aria-label="Přiblížit"><span class="material-symbols-outlined" aria-hidden="true">add</span></button>
+            <button id="btn-zoom-out" class="basemap-bar-btn" type="button" title="Oddálit" aria-label="Oddálit"><span class="material-symbols-outlined" aria-hidden="true">remove</span></button>
+          </div>
+        </div>
         <canvas id="three-canvas" style="display:none"></canvas>
         <div id="bottom-toolbars" style="display:none">
           <button id="bottom-toolbars-toggle" class="btn btn-secondary toolbars-toggle" title="Skrýt/zobrazit ovládání"><span class="material-symbols-outlined">expand_more</span></button>
@@ -219,6 +343,9 @@
         <div class="panel-resize-handle" id="error-panel-resize"></div>
         <div class="panel-header error-panel-header">
           <span>Topologická validace</span>
+          <button type="button" class="m3-icon-btn sheet-close-btn" data-close-for="btn-validate" aria-label="Zavřít panel validace" title="Zavřít">
+            <span class="material-symbols-outlined">close</span>
+          </button>
         </div>
         <div class="error-panel-toolbar">
           <div id="error-summary" class="error-summary"></div>
@@ -234,20 +361,18 @@
         <div class="panel-resize-handle" id="features-panel-resize"></div>
         <div class="panel-header features-panel-header">
           <span>Přehled prvků</span>
+          <button type="button" class="m3-icon-btn sheet-close-btn" data-close-for="btn-features" aria-label="Zavřít přehled prvků" title="Zavřít">
+            <span class="material-symbols-outlined">close</span>
+          </button>
         </div>
         <div class="features-panel-toolbar">
           <div id="features-summary" class="features-summary"></div>
           <div class="features-filters">
-            <button class="features-filter-btn active" data-filter="all" title="Zobrazit všechny obsahové části">Vše</button>
-            <button class="features-filter-btn" data-filter="ZPS" title="Základní prostorová situace">ZPS</button>
-            <button class="features-filter-btn" data-filter="TI" title="Technická infrastruktura">TI</button>
-            <button class="features-filter-btn" data-filter="DI" title="Dopravní infrastruktura">DI</button>
-            <button class="features-filter-btn" data-filter="GAD" title="Geodetické a administrativní údaje">GAD</button>
-            <button class="features-filter-btn" data-filter="OPL" title="Ostatní prvky a linie">OPL</button>
+            <!-- Tlačítka obsahových částí podle načtených dat (featuresPanel.ts) -->
           </div>
           <div id="features-project-filter" class="features-level-filter" style="display:none"></div>
           <div id="features-level-filter" class="features-level-filter" style="display:none"></div>
-          <input id="features-search" class="features-search" type="search" placeholder="Filtrovat podle názvu nebo ID…" />
+          <input id="features-search" class="features-search" type="text" placeholder="Filtrovat podle názvu nebo ID…" />
         </div>
         <div id="features-list" class="features-list"></div>
       </aside>
@@ -274,6 +399,19 @@
         </button>
       </div>
       <div class="modal-body" id="legend-modal-body"></div>
+    </div>
+  </div>
+  <div id="symbol-legend-modal" class="modal-overlay" style="display:none">
+    <div class="modal-dialog modal-dialog-lg" role="dialog" aria-modal="true" aria-labelledby="symbol-legend-modal-title">
+      <div class="modal-header">
+        <h2 id="symbol-legend-modal-title">Legenda znaků</h2>
+        <input type="text" id="symbol-legend-modal-search" class="legend-search" placeholder="Hledat (objekt, hodnota, kód znaku)…" />
+        <button id="symbol-legend-download" class="btn btn-secondary" title="Stáhnout zobrazené znaky jako SVG soubory v balíku ZIP (se seznamem znaky.csv)">Stáhnout SVG (ZIP)</button>
+        <button id="symbol-legend-modal-close" class="modal-close" title="Zavřít">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="modal-body" id="symbol-legend-modal-body"></div>
     </div>
   </div>
   <div id="confirm-modal" class="modal-overlay" style="display:none">

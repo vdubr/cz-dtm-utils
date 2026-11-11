@@ -1,0 +1,7 @@
+id: IDSpravce
+nazev: ID správce
+namespace: atr
+popis: Identifikátor správce DTI
+nillable: false
+typ: String
+maxDelka: 50

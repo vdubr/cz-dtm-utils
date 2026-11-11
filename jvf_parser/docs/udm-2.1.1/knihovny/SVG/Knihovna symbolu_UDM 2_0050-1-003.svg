@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="31.2484196168439" height="31.2484196168439">
+<title>0050-1-003</title>
+<desc>Knihovna symbolu_UDM 2 - 0050-1-003</desc>
+<g id="0050-1-003" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 31.2484196168439,0 31.2484196168439,31.2484196168439 0,31.2484196168439" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="9.11716277776993,22.1661290874118 21.8730682895826,22.1661290874118 21.8730682895826,9.41022357559917 9.11716277776993,9.41022357559917 9.11716277776993,22.1661290874118" style="stroke:#000000" />
+		<text x="0" y="1.889734" transform="translate(15.6242098084219,15.6242098084219) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291254" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">RAS</text>
+	</g>
+</g>
+</svg>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="951.181" height="951.181" viewBox="0 0 35.9501519003091 35.9501519003091">
+<title>1041-1-523</title>
+<desc>Knihovna symbolu_UDM 2 - 1041-1-523</desc>
+<g id="1041-1-523" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 35.9501519003091,0 35.9501519003091,35.9501519003091 0,35.9501519003091" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="10.4160208320433,17.9750759501545 16.4632649265323,17.9750759501545" style="stroke:#000000" />
+		<polyline points="19.4868869737768,17.9750759501545 25.5341310682657,17.9750759501545" style="stroke:#000000" />
+		<circle cx="17.9750759501545" cy="17.9750759501545" r="1.51181102362224" style="stroke:#000000;fill:#000000"/>
+		<text x="0" y="2.645669" transform="translate(22.0267294934621,13.6286192572406)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="7.407874" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">B</text>
+		<text x="0" y="2.645669" transform="translate(14.4676743753509,13.6286192572406)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="7.407874" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">Z</text>
+	</g>
+</g>
+</svg>

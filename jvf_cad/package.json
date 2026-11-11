@@ -1,0 +1,37 @@
+{
+  "name": "jvf-cad",
+  "version": "2026.11.11",
+  "description": "Export JVF DTM / UDM (Univerzální datový model ČKZ) to AutoCAD DXF",
+  "license": "UNLICENSED",
+  "private": true,
+  "author": "Vojtěch Dubrovský",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vdubr/cz-dtm-utils.git",
+    "directory": "jvf_cad"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jvf-dtm-types": "file:../jvf_dtm_types",
+    "jvf-parser": "file:../jvf_parser"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  }
+}

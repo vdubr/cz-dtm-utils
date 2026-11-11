@@ -2,7 +2,9 @@
  * XSD → TypeScript code generator for JVF DTM.
  *
  * Verze se předává argumentem: `tsx scripts/generate-types.ts [version]`
- * (default `1.4.3`). Podporováno `1.4.3` i `1.5.0.1`.
+ * (default `1.4.3`). Podporováno JVF DTM `1.4.3`, `1.5.0.1`, `1.5.0.2`
+ * a dialekty `udm-2.1.1`, `zxml-1.4.2.1`, `zxml-1.5.1.6` — viz
+ * `profileFor` (profil = struktura XSD + vstupní soubory).
  *
  * Reads all XSD files in `docs/<version>/xsd/objekty/` and the common
  * schemas, then generates:
@@ -24,8 +26,65 @@ const VERSION = process.argv[2] ?? '1.4.3';
 const ROOT = resolve(import.meta.dirname ?? '.', '..');
 const XSD_DIR = join(ROOT, `docs/${VERSION}/xsd`);
 const OUT_DIR = join(ROOT, `src/${VERSION}/generated`);
-/** Struktura objektových XSD 1.5.0.1 (abstraktní ZaznamObjektu). */
-const IS_1501 = VERSION === '1.5.0.1';
+/**
+ * Profil generátoru pro danou verzi:
+ * - `structure` — tvar objektových XSD: `1.4.3` (jeden `ZaznamObjektu`,
+ *   geometrie přes `gml:*Property`) nebo `1.5` (abstraktní `ZaznamObjektu`
+ *   + `Ins/Upd/Del/RefV…`, geometrie typem `cmn:GeometrieObjektu…Type`),
+ * - `kind` — `jvf` (atributy v `common/atributy.xsd`), `udm` (UDM ČKZ:
+ *   atributy inline, číselníky v `common/lists.xsd`), `zxml` (ŽXML SŽ:
+ *   navíc `common/atributy_sz.xsd` a objekty SŽ v `objekty_sz/`),
+ * - `origin` — prefix `code_base` objektů dialektu (UDM `94…`, ŽXML `999…`).
+ */
+interface GeneratorProfile {
+  kind: 'jvf' | 'udm' | 'zxml';
+  structure: '1.4.3' | '1.5';
+  modelName: string;
+  attributeFiles: string[];
+  objectDirs: string[];
+  /** Soubor se sdílenými skupinami dialektu (ŽXML 1.5: `atributy_sz.xsd`). */
+  dialectSharedFile?: string;
+  origin?: { id: 'udm' | 'zxml'; codeBasePrefix: string };
+}
+
+function profileFor(version: string): GeneratorProfile {
+  if (version.startsWith('udm-')) {
+    return {
+      kind: 'udm',
+      structure: '1.5',
+      modelName: `UDM ${version.slice(4)}`,
+      attributeFiles: [],
+      objectDirs: ['objekty'],
+      origin: { id: 'udm', codeBasePrefix: '94' },
+    };
+  }
+  if (version.startsWith('zxml-')) {
+    const raw = version.slice(5);
+    const is14 = raw.startsWith('1.4.');
+    return {
+      kind: 'zxml',
+      structure: is14 ? '1.4.3' : '1.5',
+      modelName: `ŽXML ${raw}`,
+      attributeFiles: ['common/atributy.xsd', 'common/atributy_sz.xsd'],
+      objectDirs: ['objekty', 'objekty_sz'],
+      ...(is14 ? {} : { dialectSharedFile: 'common/atributy_sz.xsd' }),
+      origin: { id: 'zxml', codeBasePrefix: '999' },
+    };
+  }
+  return {
+    kind: 'jvf',
+    structure: version.startsWith('1.5.') ? '1.5' : '1.4.3',
+    modelName: `JVF DTM ${version}`,
+    attributeFiles: ['common/atributy.xsd'],
+    objectDirs: ['objekty'],
+  };
+}
+
+const PROFILE = profileFor(VERSION);
+const IS_UDM = PROFILE.kind === 'udm';
+/** Struktura objektových XSD 1.5.x (abstraktní ZaznamObjektu). */
+const IS_15 = PROFILE.structure === '1.5';
+const MODEL_NAME = PROFILE.modelName;
 
 // ---------------------------------------------------------------------------
 // XSD parser
@@ -72,11 +131,45 @@ interface ElementTypeDef {
   enumName?: string;
 }
 
+/**
+ * Číselníky a typy atributů z `atributy.xsd` (u ŽXML i `atributy_sz.xsd`).
+ * Stejnojmenný číselník ve více souborech (ŽXML 1.4.2.1: např.
+ * `ZpusobPorizeniZPS` s kódy JVF i SŽ) se sloučí sjednocením hodnot.
+ */
 function extractEnumsAndElements(): {
   enums: EnumDef[];
   elements: Map<string, ElementTypeDef>;
 } {
-  const xml = readFileSync(join(XSD_DIR, 'common/atributy.xsd'), 'utf-8');
+  const enums: EnumDef[] = [];
+  const elements = new Map<string, ElementTypeDef>();
+  for (const file of PROFILE.attributeFiles) {
+    const part = extractEnumsAndElementsFrom(file);
+    for (const e of part.enums) {
+      const prev = enums.find((x) => x.name === e.name);
+      if (!prev) {
+        enums.push(e);
+        continue;
+      }
+      const known = new Set(prev.values.map((v) => v.value));
+      const added = e.values.filter((v) => !known.has(v.value));
+      if (added.length > 0) {
+        console.log(`  Sloučen číselník ${e.name} (+${added.length} hodnot z ${file})`);
+        prev.values.push(...added);
+      }
+    }
+    for (const [name, def] of part.elements) {
+      const prev = elements.get(name);
+      if (!prev || (prev.type !== 'enum' && def.type === 'enum')) elements.set(name, def);
+    }
+  }
+  return { enums, elements };
+}
+
+function extractEnumsAndElementsFrom(file: string): {
+  enums: EnumDef[];
+  elements: Map<string, ElementTypeDef>;
+} {
+  const xml = readFileSync(join(XSD_DIR, file), 'utf-8');
   const parsed = xsdParser.parse(xml) as Record<string, unknown>;
   const schema = parsed['xs:schema'] as Record<string, unknown>;
   const topElements = schema['xs:element'];
@@ -171,6 +264,29 @@ const GEOM_TYPE_MAP_1501: Record<string, GeomType> = {
 
 const SHARED_ATTR_NAMES = new Set(SHARED_ATTR_GROUPS.map((g) => g.name));
 
+/**
+ * Sdílené skupiny atributů dialektu (ŽXML 1.5: `SpolecneAtributyObjektu…SZ`
+ * v `atributy_sz.xsd`) — názvy skupin bez kontextového suffixu.
+ */
+function extractDialectGroupNames(): SharedAttrGroup[] {
+  if (!PROFILE.dialectSharedFile) return [];
+  const xml = readFileSync(join(XSD_DIR, PROFILE.dialectSharedFile), 'utf-8');
+  const names = new Set<string>();
+  for (const m of xml.matchAll(/<xs:complexType name="(SpolecneAtributyObjektu\w+?)(?:Ins|Upd|Del|RefN|RefV)Type"/g)) {
+    names.add(m[1]!);
+  }
+  return [...names].sort().map((name) => ({
+    name,
+    tsName: `SharedAttrs${name.replace('SpolecneAtributyObjektu', '')}`,
+  }));
+}
+
+const DIALECT_GROUPS = extractDialectGroupNames();
+const DIALECT_GROUP_NAMES = new Set(DIALECT_GROUPS.map((g) => g.name));
+
+/** Pořadí obsahových částí v generovaném unionu (zbylé hodnoty za nimi). */
+const CAST_ORDER = ['ZPS', 'TI', 'DI', 'PSPI', 'ZPSUDM', 'DIUDM', 'TIUDM', 'OST', 'ZDT', 'ZDD', 'H3D', 'ODSZ', 'SKLEP'];
+
 interface EntityDef {
   elementName: string;
   nazev: string;
@@ -184,6 +300,17 @@ interface EntityDef {
   geomType: GeomType;
   geomOptional: boolean;
   hasOblastKI: boolean;
+  /** Dialekt, ze kterého objekt pochází (`udm`/`zxml`); u objektů JVF chybí. */
+  origin?: string;
+  /** Kód objektu v datovém modelu dialektu (ŽXML `ObjektovyKod`, např. `100447`). */
+  objektovyKod?: string;
+  /** Sdílená skupina atributů dialektu (ŽXML `SpolecneAtributyObjektu…SZ`). */
+  dialectAttrGroup?: string;
+}
+
+/** Název bez jmenného prefixu (`atr:X`, `atrsz:X` → `X`). */
+function stripPrefix(name: string): string {
+  return name.replace(/^[A-Za-z0-9_]+:/, '');
 }
 
 function extractEntity(xsdPath: string): EntityDef | null {
@@ -268,7 +395,7 @@ function extractEntity(xsdPath: string): EntityDef | null {
             const attrItems = flattenAll(ziObj);
             for (const ai of attrItems) {
               const aiObj = ai as Record<string, unknown>;
-              const aiRef = ((aiObj['@_ref'] ?? '') as string).replace('atr:', '');
+              const aiRef = stripPrefix((aiObj['@_ref'] ?? '') as string);
               if (aiRef === 'SpolecneAtributyVsechObjektu') continue;
               if (SHARED_ATTR_NAMES.has(aiRef)) {
                 sharedAttrGroup = aiRef;
@@ -414,7 +541,7 @@ function extractEntity1501(xsdPath: string): EntityDef | null {
     if (!elementName) return null;
 
     const typeByName = complexTypesByName(schema);
-    const rootTypeName = ((rootEl['@_type'] as string | undefined) ?? '').replace(/^[a-z]+:/, '');
+    const rootTypeName = ((rootEl['@_type'] as string | undefined) ?? '').replace(/^[A-Za-z0-9_]+:/, '');
     const mainType = rootTypeName ? typeByName.get(rootTypeName) : undefined;
     if (!mainType) return null;
 
@@ -424,12 +551,15 @@ function extractEntity1501(xsdPath: string): EntityDef | null {
     let kategorieObjektu = '';
     let skupinaObjektu = '';
     let obsahovaCast = '';
+    let objektovyKod: string | undefined;
 
     for (const item of flattenSequence(mainType)) {
       const itemObj = item as Record<string, unknown>;
       const itemName = (itemObj['@_name'] ?? '') as string;
       const fixed = itemObj['@_fixed'] as string | undefined;
-      if (itemName === 'ObjektovyTypNazev') {
+      if (itemName === 'ObjektovyKod' && fixed) {
+        objektovyKod = fixed;
+      } else if (itemName === 'ObjektovyTypNazev') {
         nazev = (fixed ?? '') as string;
         const ct = itemObj['xs:complexType'] as Record<string, unknown> | undefined;
         const sc = ct?.['xs:simpleContent'] as Record<string, unknown> | undefined;
@@ -455,9 +585,30 @@ function extractEntity1501(xsdPath: string): EntityDef | null {
     // Kanonický záznamový typ: Ins (u všech objektů), fallback RefV.
     const recordType = typeByName.get('Ins') ?? typeByName.get('RefV') ?? null;
     let sharedAttrGroup: string | null = null;
+    let dialectAttrGroup: string | undefined;
     const specificAttrs: string[] = [];
     let geomType: GeomType = 'point';
     let geomOptional = true;
+
+    // Atributy = sjednocení přes všechny druhy záznamů (kanonický Ins první):
+    // některé atributy existují jen v referenčním stavu / aktualizaci
+    // (např. `IDRDTI` u O6 v 1.5.0.2 — RefV/RefN/Upd, ne Ins).
+    const otherRecordTypes = ['RefV', 'RefN', 'Upd', 'Del']
+      .map((k) => typeByName.get(k))
+      .filter((t): t is Record<string, unknown> => t !== undefined && t !== recordType);
+    const extraAttrs: string[] = [];
+    for (const rt of otherRecordTypes) {
+      for (const ri of flattenSequence(rt)) {
+        const riObj = ri as Record<string, unknown>;
+        if (riObj['@_name'] !== 'AtributyObjektu') continue;
+        for (const ai of flattenAll(riObj)) {
+          const aiRef = stripPrefix(((ai as Record<string, unknown>)['@_ref'] ?? '') as string);
+          if (aiRef && !SHARED_ATTR_NAMES.has(aiRef) && aiRef !== 'SpolecneAtributyVsechObjektu') {
+            extraAttrs.push(aiRef);
+          }
+        }
+      }
+    }
 
     if (recordType) {
       for (const ri of flattenSequence(recordType)) {
@@ -467,8 +618,12 @@ function extractEntity1501(xsdPath: string): EntityDef | null {
           for (const ai of flattenAll(riObj)) {
             const aiObj = ai as Record<string, unknown>;
             const aiName = (aiObj['@_name'] ?? '') as string;
-            const aiRef = ((aiObj['@_ref'] ?? '') as string).replace('atr:', '');
+            const aiRef = stripPrefix((aiObj['@_ref'] ?? '') as string);
             if (aiName === 'SpolecneAtributyVsechObjektu' || aiRef === 'SpolecneAtributyVsechObjektu') {
+              continue;
+            }
+            if (DIALECT_GROUP_NAMES.has(aiName)) {
+              dialectAttrGroup = aiName;
               continue;
             }
             // 1.5.0.1: sdílená skupina přes `name=` (+ type=); specifické atr. přes `ref=`.
@@ -482,11 +637,13 @@ function extractEntity1501(xsdPath: string): EntityDef | null {
           }
         } else if (riName === 'GeometrieObjektu') {
           geomOptional = riObj['@_minOccurs'] === '0';
-          const gt = ((riObj['@_type'] ?? '') as string).replace(/^[a-z]+:/, '');
+          const gt = ((riObj['@_type'] ?? '') as string).replace(/^[A-Za-z0-9_]+:/, '');
           geomType = GEOM_TYPE_MAP_1501[gt] ?? 'point';
         }
       }
     }
+
+    for (const attr of extraAttrs) if (!specificAttrs.includes(attr)) specificAttrs.push(attr);
 
     // PSPI normalizace — objekty s code_base 0200000* patří do obsahové části PSPI
     // (v XSD mají fixed ObsahovaCast DI/TI, ale downstream je řadí do PSPI).
@@ -505,8 +662,11 @@ function extractEntity1501(xsdPath: string): EntityDef | null {
       geomType,
       geomOptional,
       hasOblastKI: false, // KI zrušeno v 1.5.0.1
+      ...(objektovyKod ? { objektovyKod } : {}),
+      ...(dialectAttrGroup ? { dialectAttrGroup } : {}),
     };
-  } catch {
+  } catch (err) {
+    console.warn(`  WARN: ${xsdPath}: ${err instanceof Error ? err.message : String(err)}`);
     return null;
   }
 }
@@ -519,15 +679,18 @@ function extractEntity1501(xsdPath: string): EntityDef | null {
  * varianty dané skupiny; type-level jsou všechna volitelná (napříč kontexty
  * se povinnost liší a parser je stejně data-driven).
  */
-function extractSharedGroups1501(): Record<string, string[]> {
-  const xml = readFileSync(join(XSD_DIR, 'common/atributy.xsd'), 'utf-8');
+function extractSharedGroups1501(
+  file = 'common/atributy.xsd',
+  groups: SharedAttrGroup[] = SHARED_ATTR_GROUPS
+): Record<string, string[]> {
+  const xml = readFileSync(join(XSD_DIR, file), 'utf-8');
   const parsed = xsdParser.parse(xml) as Record<string, unknown>;
   const schema = parsed['xs:schema'] as Record<string, unknown>;
   const cts = schema['xs:complexType'];
   const arr = Array.isArray(cts) ? cts : cts ? [cts] : [];
 
   const result: Record<string, string[]> = {};
-  for (const g of SHARED_ATTR_GROUPS) {
+  for (const g of groups) {
     const fields = new Set<string>();
     for (const t of arr) {
       const o = t as Record<string, unknown>;
@@ -544,13 +707,159 @@ function extractSharedGroups1501(): Record<string, string[]> {
       const elArr = Array.isArray(els) ? els : els ? [els] : [];
       for (const e of elArr) {
         const eObj = e as Record<string, unknown>;
-        const name = (((eObj['@_ref'] ?? eObj['@_name']) ?? '') as string).replace('atr:', '');
+        const name = stripPrefix(((eObj['@_ref'] ?? eObj['@_name']) ?? '') as string);
         if (name) fields.add(name);
       }
     }
     if (fields.size > 0) result[g.tsName] = [...fields];
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// 2c. UDM — číselníky z lists.xsd, atributy a geometrie inline v objektech
+// ---------------------------------------------------------------------------
+
+/**
+ * Atributy společné všem objektům UDM — v JVF patří do
+ * `SpolecneAtributyVsechObjektu`, parser je mapuje do `commonAttributes`,
+ * proto nejsou mezi `specificAttrs`.
+ */
+const UDM_COMMON_ATTRS = new Set([
+  'ID',
+  'IDZmeny',
+  'IDEditora',
+  'PopisObjektu',
+  'DatumVkladu',
+  'VkladOsoba',
+  'DatumZmeny',
+  'ZmenaOsoba',
+]);
+
+/** Wrapper geometrie (`GeometrieObjektu/<wrapper>`) → `GeomType`. */
+function geomTypeFromWrapperUdm(wrapper: string): GeomType {
+  if (wrapper.startsWith('Plocha')) return 'surface';
+  if (wrapper.startsWith('Linie')) return 'curve';
+  return 'point';
+}
+
+/** Pojmenované číselníky `lst:<Nazev>` z `common/lists.xsd`. */
+function extractListsUdm(): Map<string, EnumDef> {
+  const parsed = parseXsd(join(XSD_DIR, 'common/lists.xsd'));
+  const schema = parsed['xs:schema'] as Record<string, unknown>;
+  const sts = schema['xs:simpleType'];
+  const arr = Array.isArray(sts) ? sts : sts ? [sts] : [];
+  const lists = new Map<string, EnumDef>();
+  for (const st of arr) {
+    const o = st as Record<string, unknown>;
+    const name = o['@_name'] as string | undefined;
+    const restriction = o['xs:restriction'] as Record<string, unknown> | undefined;
+    if (!name || !restriction) continue;
+    const values: EnumValue[] = [];
+    for (const en of (restriction['xs:enumeration'] as unknown[] | undefined) ?? []) {
+      const enObj = en as Record<string, unknown>;
+      const annotation = enObj['xs:annotation'] as Record<string, unknown> | undefined;
+      const docEl = annotation?.['xs:documentation'];
+      values.push({ value: String(enObj['@_value'] ?? ''), doc: typeof docEl === 'string' ? docEl : '' });
+    }
+    const baseType = ((restriction['@_base'] as string | undefined) ?? 'xs:string').replace('xs:', '');
+    lists.set(name, { name, baseType, values });
+  }
+  return lists;
+}
+
+/** Záznamový typ `Ins` (fallback `RefV`) z objektového XSD UDM. */
+function recordTypeUdm(schema: Record<string, unknown>): Record<string, unknown> | null {
+  const typeByName = complexTypesByName(schema);
+  return typeByName.get('Ins') ?? typeByName.get('RefV') ?? null;
+}
+
+/** Inline atributy (`AtributyObjektu/xs:all/xs:element`) záznamového typu. */
+function attributeElementsUdm(recordType: Record<string, unknown>): Record<string, unknown>[] {
+  for (const ri of flattenSequence(recordType)) {
+    const riObj = ri as Record<string, unknown>;
+    if (riObj['@_name'] === 'AtributyObjektu') return flattenAll(riObj) as Record<string, unknown>[];
+  }
+  return [];
+}
+
+/**
+ * Typy atributů napříč všemi objekty UDM. Atribut s `type="lst:X"` je
+ * číselník — pro `ENUM_LABELS` (klíčováno názvem atributu) se z něj odvodí
+ * `EnumDef` s názvem atributu a hodnotami číselníku `X`. Konflikt typů
+ * (např. `ZpusobPorizeniDI` jednou číselník, jindy číslo) → vyhrává číselník.
+ */
+function extractEnumsAndElementsUdm(lists: Map<string, EnumDef>): {
+  enums: EnumDef[];
+  elements: Map<string, ElementTypeDef>;
+} {
+  const elements = new Map<string, ElementTypeDef>();
+  const objDir = join(XSD_DIR, 'objekty');
+  for (const file of readdirSync(objDir).filter((f) => f.endsWith('.xsd')).sort()) {
+    const schema = parseXsd(join(objDir, file))['xs:schema'] as Record<string, unknown>;
+    const recordType = schema ? recordTypeUdm(schema) : null;
+    if (!recordType) continue;
+    for (const el of attributeElementsUdm(recordType)) {
+      const name = el['@_name'] as string | undefined;
+      if (!name) continue;
+      const rawType = el['@_type'] as string | undefined;
+      let def: ElementTypeDef;
+      if (rawType?.startsWith('lst:')) {
+        def = { name, type: 'enum', enumName: rawType.slice(4) };
+      } else if (rawType?.startsWith('xs:')) {
+        def = { name, type: rawType.slice(3) };
+      } else {
+        const st = el['xs:simpleType'] as Record<string, unknown> | undefined;
+        const base = (st?.['xs:restriction'] as Record<string, unknown> | undefined)?.['@_base'];
+        def = { name, type: typeof base === 'string' ? base.replace('xs:', '') : 'string' };
+      }
+      const prev = elements.get(name);
+      if (!prev || (prev.type !== 'enum' && def.type === 'enum')) elements.set(name, def);
+    }
+  }
+
+  const enums: EnumDef[] = [];
+  for (const def of elements.values()) {
+    if (def.type !== 'enum' || !def.enumName) continue;
+    const list = lists.get(def.enumName);
+    if (!list) {
+      console.warn(`  WARN: atribut ${def.name} odkazuje na neznámý číselník lst:${def.enumName}`);
+      continue;
+    }
+    enums.push({ name: def.name, baseType: list.baseType, values: list.values });
+  }
+  enums.sort((a, b) => a.name.localeCompare(b.name));
+  return { enums, elements };
+}
+
+/** Extrakce entity z objektového XSD UDM (metadata jako 1.5.0.1, atributy inline). */
+function extractEntityUdm(xsdPath: string): EntityDef | null {
+  // Metadata (název, kód, kategorie, skupina, obsahová část) má UDM ve stejném
+  // tvaru jako 1.5.0.1 — reuse; liší se jen atributy a geometrie.
+  const base = extractEntity1501(xsdPath);
+  if (!base) return null;
+  const schema = parseXsd(xsdPath)['xs:schema'] as Record<string, unknown>;
+  const recordType = recordTypeUdm(schema);
+  if (!recordType) return null;
+
+  const specificAttrs: string[] = [];
+  for (const el of attributeElementsUdm(recordType)) {
+    const name = el['@_name'] as string | undefined;
+    if (name && !UDM_COMMON_ATTRS.has(name)) specificAttrs.push(name);
+  }
+
+  let geomType: GeomType = 'point';
+  let geomOptional = true;
+  for (const ri of flattenSequence(recordType)) {
+    const riObj = ri as Record<string, unknown>;
+    if (riObj['@_name'] !== 'GeometrieObjektu') continue;
+    geomOptional = riObj['@_minOccurs'] === '0';
+    const ct = riObj['xs:complexType'] as Record<string, unknown> | undefined;
+    const wrapper = ct ? (flattenSequence(ct)[0] as Record<string, unknown> | undefined) : undefined;
+    geomType = geomTypeFromWrapperUdm((wrapper?.['@_name'] as string | undefined) ?? '');
+  }
+
+  return { ...base, sharedAttrGroup: null, specificAttrs, geomType, geomOptional };
 }
 
 // ---------------------------------------------------------------------------
@@ -580,7 +889,7 @@ function xsdTypeToTs(type: string): string {
 
 function generateEnumsFile(enums: EnumDef[]): string {
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '// Run: npx tsx scripts/generate-types.ts <version>',
     '',
   ];
@@ -588,8 +897,12 @@ function generateEnumsFile(enums: EnumDef[]): string {
   for (const e of enums) {
     lines.push(`/** ${e.name} */`);
     lines.push(`export const ${toTsEnumName(e.name)} = {`);
+    const usedKeys = new Set<string>();
     for (const v of e.values) {
-      const key = makeEnumKey(v.value, v.doc);
+      // Sloučené číselníky (ŽXML: stejný popisek u kódu JVF i SŽ) → klíč s kódem.
+      let key = makeEnumKey(v.value, v.doc);
+      if (usedKeys.has(key)) key = `${key}_${v.value.replace('-', 'MINUS_')}`;
+      usedKeys.add(key);
       const val = e.baseType === 'integer' ? v.value : `'${v.value}'`;
       const comment = v.doc ? ` // ${v.doc}` : '';
       lines.push(`  ${key}: ${val},${comment}`);
@@ -631,7 +944,7 @@ function generateEnumLabelsFile(
   elements: Map<string, ElementTypeDef>
 ): string {
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '// Run: npx tsx scripts/generate-types.ts <version>',
     '//',
     '// ENUM_LABELS: název číselníkového atributu → { kód → český popisek }.',
@@ -818,13 +1131,13 @@ function generateSharedAttrsFile1501(
 ): string {
   const enumNames = new Set(enums.map((e) => e.name));
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '',
     "import type { CommonAttributes } from '../types.js';",
     '',
   ];
 
-  for (const g of SHARED_ATTR_GROUPS) {
+  for (const g of [...SHARED_ATTR_GROUPS, ...DIALECT_GROUPS]) {
     const fields = groupFields[g.tsName];
     if (!fields || fields.length === 0) continue;
     lines.push(`export interface ${g.tsName} {`);
@@ -857,10 +1170,18 @@ function generateEntitiesFile(
   enums: EnumDef[]
 ): string {
   const enumNames = new Set(enums.map((e) => e.name));
-  // 1.5.0.1 přidává obsahovou část PSPI (code_base 0200000*).
-  const castUnion = IS_1501 ? "'ZPS' | 'TI' | 'DI' | 'PSPI' | ''" : "'ZPS' | 'TI' | 'DI' | ''";
+  // Union obsahových částí se skládá z dat (PSPI od 1.5.0.1, dialektové části
+  // UDM ZPSUDM/DIUDM/TIUDM/OST a ŽXML ZDT/ZDD/H3D/ODSZ/SKLEP).
+  const casts = [...new Set(entities.map((e) => e.obsahovaCast).filter((c) => c !== ''))];
+  casts.sort((a, b) => {
+    const ia = CAST_ORDER.indexOf(a);
+    const ib = CAST_ORDER.indexOf(b);
+    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib) || a.localeCompare(b);
+  });
+  const castUnion = [...casts, ''].map((c) => `'${c}'`).join(' | ');
+  const isDialect = PROFILE.kind !== 'jvf';
   const lines: string[] = [
-    `// Auto-generated from JVF DTM ${VERSION} XSD — DO NOT EDIT`,
+    `// Auto-generated from ${MODEL_NAME} XSD — DO NOT EDIT`,
     '// Run: npx tsx scripts/generate-types.ts <version>',
     '',
     "import type { Geometry, GmlPolygon, CommonAttributes } from '../types.js';",
@@ -902,6 +1223,14 @@ function generateEntitiesFile(
   lines.push('  geomType: GeomKind;');
   lines.push('  geomOptional: boolean;');
   lines.push('  hasOblastKI: boolean;');
+  if (isDialect) {
+    lines.push('  /** Dialekt, ze kterého objekt pochází; u objektů JVF DTM chybí. */');
+    lines.push('  origin?: string;');
+    lines.push('  /** Kód objektu v datovém modelu dialektu (ŽXML `ObjektovyKod`). */');
+    lines.push('  objektovyKod?: string;');
+    lines.push('  /** Sdílená skupina atributů dialektu (ŽXML `SpolecneAtributyObjektu…SZ`). */');
+    lines.push('  dialectAttrGroup?: string;');
+  }
   lines.push('}');
   lines.push('');
 
@@ -929,7 +1258,7 @@ function generateEntitiesFile(
 
   // Generate the catalog
   lines.push(
-    `/** Catalog of all ${entities.length} JVF DTM entity types, keyed by XML element name */`
+    `/** Catalog of all ${entities.length} ${MODEL_NAME} entity types, keyed by XML element name */`
   );
   lines.push('export const ENTITY_CATALOG: Record<string, EntityMeta> = {');
   for (const entity of entities) {
@@ -946,6 +1275,9 @@ function generateEntitiesFile(
     lines.push(`    geomType: ${JSON.stringify(entity.geomType)},`);
     lines.push(`    geomOptional: ${entity.geomOptional},`);
     lines.push(`    hasOblastKI: ${entity.hasOblastKI},`);
+    if (entity.origin) lines.push(`    origin: ${JSON.stringify(entity.origin)},`);
+    if (entity.objektovyKod) lines.push(`    objektovyKod: ${JSON.stringify(entity.objektovyKod)},`);
+    if (entity.dialectAttrGroup) lines.push(`    dialectAttrGroup: ${JSON.stringify(entity.dialectAttrGroup)},`);
     lines.push('  },');
   }
   lines.push('};');
@@ -974,36 +1306,51 @@ function generateEntitiesFile(
 // ---------------------------------------------------------------------------
 
 function main(): void {
-  console.log(`Generating JVF DTM ${VERSION} types (structure: ${IS_1501 ? '1.5.0.1' : '1.4.3'})`);
-  console.log('Extracting enums and element types from atributy.xsd...');
-  const { enums, elements } = extractEnumsAndElements();
+  console.log(`Generating ${MODEL_NAME} types (profile: ${PROFILE.kind}, structure: ${PROFILE.structure})`);
+  // UDM: enums.ts = pojmenované číselníky z lists.xsd; ENUM_LABELS a typy
+  // atributů = číselníky přemapované na názvy atributů (jako u JVF).
+  const udmLists = IS_UDM ? extractListsUdm() : null;
+  if (udmLists) console.log(`  Found ${udmLists.size} lists in lists.xsd`);
+  console.log(
+    IS_UDM
+      ? 'Extracting attribute types from objekty/*.xsd...'
+      : `Extracting enums and element types from ${PROFILE.attributeFiles.join(' + ')}...`
+  );
+  const { enums, elements } = udmLists ? extractEnumsAndElementsUdm(udmLists) : extractEnumsAndElements();
   console.log(`  Found ${enums.length} enums, ${elements.size} elements`);
 
-  console.log('Extracting entity definitions from objekty/*.xsd...');
-  const objDir = join(XSD_DIR, 'objekty');
-  const xsdFiles = readdirSync(objDir)
-    .filter((f) => f.endsWith('.xsd'))
-    .sort();
-
+  console.log(`Extracting entity definitions from ${PROFILE.objectDirs.join(' + ')}/*.xsd...`);
   const entities: EntityDef[] = [];
   let failed = 0;
-  for (const file of xsdFiles) {
-    const entity = IS_1501
-      ? extractEntity1501(join(objDir, file))
-      : extractEntity(join(objDir, file));
-    if (entity) {
-      entities.push(entity);
-    } else {
-      console.warn(`  WARN: failed to parse ${file}`);
-      failed++;
+  for (const dir of PROFILE.objectDirs) {
+    const objDir = join(XSD_DIR, dir);
+    const xsdFiles = readdirSync(objDir)
+      .filter((f) => f.endsWith('.xsd'))
+      .sort();
+    for (const file of xsdFiles) {
+      const entity = IS_UDM
+        ? extractEntityUdm(join(objDir, file))
+        : IS_15
+          ? extractEntity1501(join(objDir, file))
+          : extractEntity(join(objDir, file));
+      if (entity) {
+        const origin = PROFILE.origin;
+        if (origin && entity.codeBase.startsWith(origin.codeBasePrefix)) entity.origin = origin.id;
+        entities.push(entity);
+      } else {
+        console.warn(`  WARN: failed to parse ${dir}/${file}`);
+        failed++;
+      }
     }
   }
+  const dupNames = entities.map((e) => e.elementName).filter((n, i, a) => a.indexOf(n) !== i);
+  if (dupNames.length > 0) console.warn(`  WARN: duplicitní elementy objektů: ${dupNames.join(', ')}`);
   console.log(`  Extracted ${entities.length} entities (${failed} failed)`);
 
   // Write output
   mkdirSync(OUT_DIR, { recursive: true });
 
-  const enumsCode = generateEnumsFile(enums);
+  const enumsCode = generateEnumsFile(udmLists ? [...udmLists.values()] : enums);
   writeFileSync(join(OUT_DIR, 'enums.ts'), enumsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enums.ts`);
 
@@ -1011,9 +1358,17 @@ function main(): void {
   writeFileSync(join(OUT_DIR, 'enum-labels.ts'), enumLabelsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/enum-labels.ts`);
 
-  const sharedAttrsCode = IS_1501
-    ? generateSharedAttrsFile1501(elements, enums, extractSharedGroups1501())
-    : generateSharedAttrsFile(elements, enums);
+  // UDM nemá sdílené skupiny (atributy inline) → shared-attrs jen re-export.
+  const sharedAttrsCode = IS_UDM
+    ? generateSharedAttrsFile1501(elements, enums, {})
+    : IS_15
+      ? generateSharedAttrsFile1501(elements, enums, {
+          ...extractSharedGroups1501(),
+          ...(PROFILE.dialectSharedFile
+            ? extractSharedGroups1501(PROFILE.dialectSharedFile, DIALECT_GROUPS)
+            : {}),
+        })
+      : generateSharedAttrsFile(elements, enums);
   writeFileSync(join(OUT_DIR, 'shared-attrs.ts'), sharedAttrsCode, 'utf-8');
   console.log(`  Written ${OUT_DIR}/shared-attrs.ts`);
 

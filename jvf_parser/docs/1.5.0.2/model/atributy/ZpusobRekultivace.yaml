@@ -1,0 +1,7 @@
+id: ZpusobRekultivace
+nazev: Způsob rekultivace
+namespace: atr
+popis: Způsob rekultivace
+nillable: false
+typ: String
+maxDelka: 100

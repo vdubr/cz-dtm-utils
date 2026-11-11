@@ -1,0 +1,404 @@
+id: OsaPozemniKomunikace
+namespace: osapok
+nazev: osa pozemní komunikace
+skupinaPrvku: SilnicniDoprava
+obsahovaCast: DI
+typGeometrie: Linie
+code:
+  base: "0100000004"
+  suffix: "02"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuDI
+   typ: sada
+   sada: SpolecneAtributyObjektuDI
+ - id: PrevazujiciPovrch
+   typ: atribut
+   volitelny: false
+   atribut: PrevazujiciPovrch
+ - id: KategoriePozemniKomunikace
+   typ: atribut
+   volitelny: false
+   atribut: KategoriePozemniKomunikace
+ - id: CisloETahu
+   typ: atribut
+   volitelny: false
+   atribut: CisloETahu
+ - id: TypUsekuPozemniKomunikace
+   typ: atribut
+   volitelny: false
+   atribut: TypUsekuPozemniKomunikace
+ - id: PocetJizdnichPruhu
+   typ: atribut
+   volitelny: false
+   atribut: PocetJizdnichPruhu
+ - id: OznaceniKomunikace
+   typ: atribut
+   volitelny: false
+   atribut: OznaceniKomunikace
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie3D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PrevazujiciPovrch
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategoriePozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: CisloETahu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuPozemniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetJizdnichPruhu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniKomunikace
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

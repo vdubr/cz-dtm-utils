@@ -1,0 +1,27 @@
+id: GeometrieObjektuBod2D
+namespace: cmn
+atributy:
+  - id: Bod2D
+    volitelny: false
+    atribut: Bod2DPointProperty
+
+kontexty:
+  Ref:
+    obsah:
+      - id: Bod2D
+        volitelny: false
+
+  Ins:
+    obsah:
+      - id: Bod2D
+        volitelny: false
+
+  Upd:
+    obsah:
+      - id: Bod2D
+        volitelny: true
+
+  Del:
+    obsah:
+      - id: Bod2D
+        volitelny: true

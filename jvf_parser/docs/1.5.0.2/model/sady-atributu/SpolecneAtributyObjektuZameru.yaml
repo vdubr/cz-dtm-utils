@@ -1,0 +1,104 @@
+id: SpolecneAtributyObjektuZameru
+namespace: atr
+popis: Společné atributy objektů záměrů
+atributy:
+  - id: IDVlastnika
+    volitelny: true
+    atribut: IDVlastnika
+  - id: IDSpravce
+    volitelny: true
+    atribut: IDSpravce
+  - id: IDProvozovatele
+    volitelny: true
+    atribut: IDProvozovatele
+  - id: IDRDTI
+    volitelny: true
+    atribut: IDRDTI
+  - id: IDExterni
+    volitelny: false
+    atribut: IDExterni
+  - id: EvidencniCisloObjektu
+    volitelny: true
+    atribut: EvidencniCisloObjektu
+
+kontexty:
+  Ref:
+    obsah:
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: false
+     - id: IDSpravce
+       namespace: atr
+       volitelny: false
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: false
+     - id: IDRDTI
+       namespace: atr
+       volitelny: false
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: true
+     - id: IDSpravce
+       namespace: atr
+       volitelny: true
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: true
+     - id: IDExterni
+       namespace: atr
+       volitelny: false
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true
+
+  Upd:
+    obsah:
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: true
+     - id: IDSpravce
+       namespace: atr
+       volitelny: true
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: true
+     - id: IDRDTI
+       namespace: atr
+       volitelny: true
+     - id: IDExterni
+       namespace: atr
+       volitelny: true
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: IDVlastnika
+       namespace: atr
+       volitelny: true
+     - id: IDSpravce
+       namespace: atr
+       volitelny: true
+     - id: IDProvozovatele
+       namespace: atr
+       volitelny: true
+     - id: IDRDTI
+       namespace: atr
+       volitelny: true
+     - id: IDExterni
+       namespace: atr
+       volitelny: true
+     - id: EvidencniCisloObjektu
+       namespace: atr
+       volitelny: true

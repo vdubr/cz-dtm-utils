@@ -1,0 +1,47 @@
+id: SpolecneAtributyObjektuDefinicnichBodu
+namespace: atr
+popis: Společné atributy objektů definičních bodů
+atributy:
+  - id: UrovenUmisteniObjektuZPS
+    volitelny: false
+    atribut: UrovenUmisteniObjektuZPS
+  - id: ICS
+    volitelny: true
+    atribut: ICS
+
+kontexty:
+  Ref:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+     - id: ICS
+       namespace: atr
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+     - id: ICS
+       namespace: atr
+       volitelny: true
+
+  Upd:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+     - id: ICS
+       namespace: atr
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+     - id: ICS
+       namespace: atr
+       volitelny: true

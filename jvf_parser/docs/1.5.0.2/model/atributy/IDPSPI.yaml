@@ -1,0 +1,7 @@
+id: IDPSPI
+nazev: ID plánované stavební práce infrastruktury
+namespace: atr
+popis: Identifikátor plánované stavební práce infrastruktury
+nillable: false
+typ: String
+maxDelka: 50

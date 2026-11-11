@@ -1,0 +1,21 @@
+id: UrovenUmisteniObjektuZPS
+nazev: Úroveň umístění objektu ZPS
+namespace: atr
+popis: Úroveň umístění objektu ZPS vzhledem k povrchu a jiným objektům DTI a ZPS
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: -3
+   popis: 3. úroveň pod povrchem (nejníže)
+ - hodnota: -2
+   popis: 2. úroveň pod povrchem
+ - hodnota: -1
+   popis: 1. úroveň pod povrchem
+ - hodnota: 0
+   popis: na povrchu
+ - hodnota: 1
+   popis: 1. úroveň nad povrchem
+ - hodnota: 2
+   popis: 2. úroveň nad povrchem
+ - hodnota: 3
+   popis: 3. úroveň nad povrchem (nejvýše)

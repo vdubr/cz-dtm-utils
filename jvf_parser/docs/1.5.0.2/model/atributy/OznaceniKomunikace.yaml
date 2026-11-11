@@ -1,0 +1,7 @@
+id: OznaceniKomunikace
+nazev: Označení komunikace
+namespace: atr
+popis: Označení pozemní komunikace
+nillable: false
+typ: String
+maxDelka: 255

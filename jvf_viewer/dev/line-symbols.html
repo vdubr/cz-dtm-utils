@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zkušební kresba — značky v liniích</title>
+  <link rel="stylesheet" href="../node_modules/ol/ol.css" />
+  <style>
+    body { margin: 16px; font: 12px/1.4 system-ui, sans-serif; background: #fff; color: #222; }
+    h1 { font-size: 16px; margin: 0 0 4px; }
+    p { margin: 0 0 12px; color: #555; }
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 0; }
+    th { padding: 4px 8px; font-weight: 600; text-align: left; background: #f6f6f6; }
+    td .map { width: 300px; height: 150px; background: #fbfaf7; }
+    td .count { position: absolute; margin: 2px 4px; color: #999; font-size: 10px; }
+  </style>
+</head>
+<body>
+  <!-- Vývojová stránka (není v buildu): značky vložené do linií v mapě v různých
+       měřítkách — rovná, klikatá a zprava doleva vedená linie. Snímky dělá
+       e2e test (e2e/line-symbols.spec.ts) a skript pro export PNG. -->
+  <h1>Značky v liniích — 2D mapa (OpenLayers)</h1>
+  <p>Řádky: typ linie podle Katalogu DTM ČR. Sloupce: rozlišení mapy (m/px) a přibližné měřítko obrazovky.
+    V buňce: rovná linie nahoře, klikatá uprostřed, linie zprava doleva dole. Číslo = počet nakreslených značek.</p>
+  <table id="grid"></table>
+  <script type="module" src="./line-symbols.ts"></script>
+</body>
+</html>

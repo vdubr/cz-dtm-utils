@@ -1,0 +1,7 @@
+id: CisloBodu
+nazev: Číslo bodu
+namespace: atr
+popis: Číslo bodu
+nillable: false
+typ: String
+maxDelka: 50

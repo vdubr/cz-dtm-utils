@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="573.581" height="573.581" viewBox="0 0 21.6786558373151 21.6786558373151">
+<title>1002-1-501</title>
+<desc>Knihovna symbolu_UDM 2 - 1002-1-501</desc>
+<g id="1002-1-501" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 21.6786558373151,0 21.6786558373151,21.6786558373151 0,21.6786558373151" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="6.7655493435327,15.076217352872 14.7379902884156,15.076217352872 14.7379902884156,7.10377640798915 6.7655493435327,7.10377640798915 6.7655493435327,15.076217352872" style="stroke:#a68c00" />
+		<text x="0" y="1.133858" transform="translate(10.7146035092087,10.8884617769253) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#a68c00;stroke:none">DIS</text>
+	</g>
+</g>
+</svg>

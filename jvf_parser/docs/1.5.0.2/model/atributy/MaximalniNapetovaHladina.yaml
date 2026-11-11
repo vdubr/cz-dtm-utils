@@ -1,0 +1,21 @@
+id: MaximalniNapetovaHladina
+nazev: Maximální napěťová hladina
+namespace: atr
+popis: Maximální napěťová hladina
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 0
+   popis: uzemnění
+ - hodnota: 1
+   popis: NN
+ - hodnota: 2
+   popis: VN
+ - hodnota: 3
+   popis: VVN
+ - hodnota: 4
+   popis: ZVN
+ - hodnota: 5
+   popis: UVN
+ - hodnota: 99
+   popis: nezjištěno/neurčeno

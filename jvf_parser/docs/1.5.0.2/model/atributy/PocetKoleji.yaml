@@ -1,0 +1,7 @@
+id: PocetKoleji
+nazev: Počet kolejí
+namespace: atr
+popis: Počet kolejí
+nillable: true
+typ: Integer
+min: 0

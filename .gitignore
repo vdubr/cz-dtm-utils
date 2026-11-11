@@ -4,6 +4,7 @@ dist/
 !jvf_parser/dist/
 !jvf_dtm_types/dist/
 !jvf_topology/dist/
+!jvf_cad/dist/
 .vercel/
 *.js.map
 *.d.ts.map
@@ -23,3 +24,10 @@ dist/
 # VS Code Local History plugin
 .history/
 
+
+# Python
+__pycache__/
+*.pyc
+
+# Pracovní kopie canvasu návrhu (claude.ai Design)
+.design-canvas/

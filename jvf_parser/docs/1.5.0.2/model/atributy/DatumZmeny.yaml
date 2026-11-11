@@ -1,0 +1,8 @@
+id: DatumZmeny
+nazev: Datum změny
+namespace: atr
+popis:  |-
+  Datum a čas prvotního vložení nebo poslední změny objektu v DTMK
+  Zadává IS DTMK
+nillable: true
+typ: DateTime

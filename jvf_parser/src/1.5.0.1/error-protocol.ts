@@ -10,7 +10,7 @@
  */
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import type { ErrorProtocol, ProtokolChyba, ProtokolKontrola } from './types.js';
-import { extractText, extractAttributeValue } from '../1.4.3/xml-helpers.js';
+import { extractText, extractAttributeValue, keepIdentifierText } from '../1.4.3/xml-helpers.js';
 
 function createParser(): XMLParser {
   return new XMLParser({
@@ -19,6 +19,8 @@ function createParser(): XMLParser {
     removeNSPrefix: true,
     isArray: (name) => ['Kontrola', 'Chyba'].includes(name),
     parseTagValue: true,
+    // ID zůstávají doslova jako text (úvodní nuly, „1e5" apod.).
+    tagValueProcessor: keepIdentifierText,
     parseAttributeValue: true,
     trimValues: true,
   });

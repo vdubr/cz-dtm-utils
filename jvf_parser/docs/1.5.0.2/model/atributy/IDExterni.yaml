@@ -1,0 +1,7 @@
+id: IDExterni
+nazev: ID v externím systému
+namespace: atr
+popis: Identifikátor objektu v externím IS editora
+nillable: false
+typ: String
+maxDelka: 255

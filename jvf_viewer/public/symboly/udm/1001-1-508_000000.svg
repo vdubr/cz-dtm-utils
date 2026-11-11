@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="489.181" height="489.181" viewBox="0 0 18.4887345774722 18.4887345774722">
+<title>1001-1-508</title>
+<desc>Knihovna symbolu_UDM 2 - 1001-1-508</desc>
+<g id="1001-1-508" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 18.4887345774722,0 18.4887345774722,18.4887345774722 0,18.4887345774722" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="5.97784731680227,12.633878838654 12.3558000727086,12.633878838654 12.3558000727086,6.25592608274771 5.97784731680227,6.25592608274771 5.97784731680227,12.633878838654" style="stroke:#000000" />
+		<text x="0" y="1.133858" transform="translate(9.22546965094082,9.05161138322426) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">MHD</text>
+	</g>
+</g>
+</svg>

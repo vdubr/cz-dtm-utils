@@ -1,0 +1,8 @@
+id: OchrannaFunkce
+nazev: Ochranná funkce
+namespace: atr
+popis: |-
+  Ochranná funkce?
+  0 = ne, 1 = ano
+nillable: true
+typ: Boolean

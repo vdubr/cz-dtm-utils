@@ -1,0 +1,29 @@
+id: TypVodnihoDila
+nazev: Typ vodního díla
+namespace: atr
+popis: Typ vodního díla
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 9
+   popis: stupeň
+ - hodnota: 10
+   popis: stavebně upravené koryto
+ - hodnota: 11
+   popis: meliorační příkop, žlab
+ - hodnota: 17
+   popis: suchá nádrž
+ - hodnota: 18
+   popis: nádrž, zdrž se vzdouvacím objektem
+ - hodnota: 19
+   popis: nádrž bez vzdouvacího objektu
+ - hodnota: 20
+   popis: hráz
+ - hodnota: 21
+   popis: jez
+ - hodnota: 22
+   popis: štěrková přehrážka
+ - hodnota: 23
+   popis: protipovodňová zábrana
+ - hodnota: 99
+   popis: nezjištěno

@@ -1,0 +1,7 @@
+id: IDProvozovatele
+nazev: ID provozovatele
+namespace: atr
+popis: Identifikátor provozovatele DTI
+nillable: false
+typ: String
+maxDelka: 50

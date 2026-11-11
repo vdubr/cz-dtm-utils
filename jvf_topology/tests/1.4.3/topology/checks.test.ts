@@ -224,6 +224,32 @@ describe('checkLineSelfIntersection', () => {
     expect(checkLineSelfIntersection(dtm)).toEqual([]);
   });
 
+  it('uzavřená linie (obvod plochy) → uzavírací vrchol není křížení', () => {
+    const dtm = makeDtm([makeObjTyp('ObvodTest', [
+      makeZaznam([makeLine([
+        [VALID_X, VALID_Y, VALID_Z],
+        [VALID_X - 100, VALID_Y, VALID_Z],
+        [VALID_X - 100, VALID_Y - 50, VALID_Z],
+        [VALID_X, VALID_Y - 50, VALID_Z],
+        [VALID_X, VALID_Y, VALID_Z],
+      ])]),
+    ])]);
+    expect(checkLineSelfIntersection(dtm)).toEqual([]);
+  });
+
+  it('uzavřená „mašle" → LINE_SELF_INTERSECTION', () => {
+    const dtm = makeDtm([makeObjTyp('ObvodTest', [
+      makeZaznam([makeLine([
+        [VALID_X, VALID_Y, VALID_Z],
+        [VALID_X - 100, VALID_Y - 50, VALID_Z],
+        [VALID_X - 100, VALID_Y, VALID_Z],
+        [VALID_X, VALID_Y - 50, VALID_Z],
+        [VALID_X, VALID_Y, VALID_Z],
+      ])]),
+    ])]);
+    expect(checkLineSelfIntersection(dtm)[0]?.code).toBe('LINE_SELF_INTERSECTION');
+  });
+
   it('samokřížící se linie → LINE_SELF_INTERSECTION', () => {
     // Tvar Z-kříže
     const dtm = makeDtm([makeObjTyp('OsaTest', [

@@ -1,0 +1,13 @@
+id: TypObjektuStokoveSiteZameru
+nazev: Typ objektu stokové sítě - záměru
+namespace: atr
+popis: Typ objektu stokové sítě - záměru
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: čistírna odpadních vod
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: neurčeno

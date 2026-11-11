@@ -14,10 +14,28 @@ import { parseGeometrieObjektu1501 } from './geometry.js';
 import { parseAtributyObjektu1501 } from './attributes.js';
 import { isRecordElementName, resolveRecordKind } from './records.js';
 import { parseDoprovodneInformace1501 } from './doprovodne-informace.js';
-import { extractText } from '../1.4.3/xml-helpers.js';
+import { extractText, keepIdentifierText } from '../1.4.3/xml-helpers.js';
 import type { JvfDtm, ObjektovyTyp, TypZapisu, ZaznamObjektu } from './types.js';
 
 const VALID_TYP_ZAPISU: readonly string[] = ['kompletní zápis', 'změnové věty'];
+
+type AttributeParser = typeof parseAtributyObjektu1501;
+
+/**
+ * Volby jádra parseru 1.5.0.1 — používá je dialekt UDM (`udm-2.1.1/parser.ts`),
+ * který má stejnou strukturu záznamů/geometrie, ale zploštělé atributy.
+ */
+export interface ParseOptions1501 {
+  /** Parser `AtributyObjektu` (default `parseAtributyObjektu1501`). */
+  parseAttributes?: AttributeParser;
+  /** Varovat při nepodporované `VerzeJVFDTM` (default `true`). */
+  warnUnsupportedVersion?: boolean;
+  /**
+   * Data dokumentu nad rámec JVF DTM (dialekty) — dostane surový element
+   * `DataJVFDTM`, výsledek se uloží do `JvfDtm.ext` (např. staničení ŽXML).
+   */
+  parseDocumentExtras?: (dataJvfDtm: Record<string, unknown>) => JvfDtm['ext'] | undefined;
+}
 
 function createParser(): XMLParser {
   return new XMLParser({
@@ -28,6 +46,8 @@ function createParser(): XMLParser {
     isArray: (name) =>
       isRecordElementName(name) || ['curveMember', 'ZaznamZmeny'].includes(name),
     parseTagValue: true,
+    // ID zůstávají doslova jako text (úvodní nuly, „1e5" apod.).
+    tagValueProcessor: keepIdentifierText,
     parseAttributeValue: true,
     trimValues: true,
   });
@@ -35,10 +55,11 @@ function createParser(): XMLParser {
 
 function parseZaznamObjektu1501(
   kindKey: string,
-  zaznamEl: Record<string, unknown>
+  zaznamEl: Record<string, unknown>,
+  parseAttributes: AttributeParser
 ): ZaznamObjektu {
   const kind = resolveRecordKind(kindKey);
-  const { commonAttributes, attributes } = parseAtributyObjektu1501(zaznamEl['AtributyObjektu']);
+  const { commonAttributes, attributes } = parseAttributes(zaznamEl['AtributyObjektu']);
   const geometrie = parseGeometrieObjektu1501(
     zaznamEl['GeometrieObjektu'] as Record<string, unknown> | undefined
   );
@@ -55,7 +76,11 @@ function parseZaznamObjektu1501(
   return result;
 }
 
-function parseObjektovyTyp1501(elementName: string, typEl: Record<string, unknown>): ObjektovyTyp {
+function parseObjektovyTyp1501(
+  elementName: string,
+  typEl: Record<string, unknown>,
+  parseAttributes: AttributeParser
+): ObjektovyTyp {
   const nazevEl = typEl['ObjektovyTypNazev'];
   let nazev = '';
   let codeBase = '';
@@ -87,7 +112,9 @@ function parseObjektovyTyp1501(elementName: string, typEl: Record<string, unknow
       const list = Array.isArray(val) ? val : [val];
       for (const zaznam of list) {
         if (typeof zaznam === 'object' && zaznam !== null) {
-          zaznamy.push(parseZaznamObjektu1501(key, zaznam as Record<string, unknown>));
+          zaznamy.push(
+            parseZaznamObjektu1501(key, zaznam as Record<string, unknown>, parseAttributes)
+          );
         }
       }
     }
@@ -105,7 +132,8 @@ function parseObjektovyTyp1501(elementName: string, typEl: Record<string, unknow
   };
 }
 
-export function parseJvfDtm1501(xml: string): JvfDtm {
+export function parseJvfDtm1501(xml: string, options: ParseOptions1501 = {}): JvfDtm {
+  const parseAttributes = options.parseAttributes ?? parseAtributyObjektu1501;
   const validation = XMLValidator.validate(xml);
   if (validation !== true) {
     const { msg, line, col } = validation.err;
@@ -125,7 +153,7 @@ export function parseJvfDtm1501(xml: string): JvfDtm {
   }
 
   const verze = extractText(dataJvfDtm['VerzeJVFDTM']) ?? '';
-  if (verze !== '' && !isSupportedVersion(verze)) {
+  if (verze !== '' && !isSupportedVersion(verze) && options.warnUnsupportedVersion !== false) {
     console.warn(
       `jvf-parser: nepodporovaná verze JVF DTM specifikace "${verze}". Parsování pokračuje, ale výsledek nemusí odpovídat schématu.`
     );
@@ -149,23 +177,26 @@ export function parseJvfDtm1501(xml: string): JvfDtm {
       if (Array.isArray(val)) {
         for (const item of val) {
           if (typeof item === 'object' && item !== null) {
-            objekty.push(parseObjektovyTyp1501(key, item as Record<string, unknown>));
+            objekty.push(parseObjektovyTyp1501(key, item as Record<string, unknown>, parseAttributes));
           }
         }
       } else {
-        objekty.push(parseObjektovyTyp1501(key, val as Record<string, unknown>));
+        objekty.push(parseObjektovyTyp1501(key, val as Record<string, unknown>, parseAttributes));
       }
     }
   }
 
   const { doprovodneInformace, typDatoveSady } = parseDoprovodneInformace1501(dataJvfDtm);
+  const ext = options.parseDocumentExtras?.(dataJvfDtm);
 
   return {
     verze,
+    verzeJvfDtm: verze,
     datumZapisu,
     typZapisu,
     ...(typDatoveSady !== undefined ? { typDatoveSady } : {}),
     objekty,
     ...(doprovodneInformace !== undefined ? { doprovodneInformace } : {}),
+    ...(ext !== undefined ? { ext } : {}),
   };
 }

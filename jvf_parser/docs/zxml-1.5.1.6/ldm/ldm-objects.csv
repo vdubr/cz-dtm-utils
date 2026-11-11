@@ -1,0 +1,540 @@
+codeDtmz,codeBase,suffix,name,origin,obsahovaCast
+1,0100000001,03,Budova,JVF,ZPS
+2,0100000001,04,Budova,JVF,ZPS
+3,0100000003,03,Obvod pozemní komunikace,JVF,DI
+4,0100000004,02,Osa pozemní komunikace,JVF,DI
+5,0100000005,03,Provozní plocha pozemní komunikace,JVF,ZPS
+6,0100000005,04,Provozní plocha pozemní komunikace,JVF,ZPS
+7,0100000007,03,Chodník,JVF,ZPS
+8,0100000007,04,Chodník,JVF,ZPS
+9,0100000009,03,Cyklostezka,JVF,ZPS
+10,0100000009,04,Cyklostezka,JVF,ZPS
+11,0100000011,03,"Parkoviště, odstavná plocha",JVF,ZPS
+12,0100000011,04,"Parkoviště, odstavná plocha",JVF,ZPS
+13,0100000013,03,Dopravní ostrůvek,JVF,ZPS
+14,0100000013,04,Dopravní ostrůvek,JVF,ZPS
+15,0100000015,03,Dělící pás,JVF,ZPS
+16,0100000015,04,Dělící pás,JVF,ZPS
+17,0100000017,03,Nájezd,JVF,ZPS
+18,0100000017,04,Nájezd,JVF,ZPS
+19,0100000019,03,Obvod dráhy,JVF,DI
+20,0100000020,02,Osa železniční tratě,JVF,DI
+21,0100000021,02,Osa koleje železniční tratě,JVF,DI
+22,0100000022,03,Železniční přejezd,JVF,DI
+24,0100000024,03,Tramvajová dráha,JVF,ZPS
+25,0100000024,04,Tramvajová dráha,JVF,ZPS
+26,0100000026,02,Osa tramvajové dráhy,JVF,DI
+27,0100000027,02,Osa koleje tramvajové dráhy,JVF,DI
+28,0100000028,03,Pozemní lanová dráha,JVF,ZPS
+29,0100000028,04,Pozemní lanová dráha,JVF,ZPS
+30,0100000030,02,Osa pozemní lanové dráhy,JVF,DI
+31,0100000031,02,Osa koleje pozemní lanové dráhy,JVF,DI
+35,0100000035,03,Speciální dráha,JVF,ZPS
+36,0100000035,04,Speciální dráha,JVF,ZPS
+37,0100000037,02,Osa speciální dráhy,JVF,DI
+38,0100000038,02,Osa koleje speciální dráhy,JVF,DI
+39,0100000039,02,Visutá lanová dráha,JVF,ZPS
+370,0100000040,01,Dopravně významné místo na dráze,JVF,DI
+40,0100000040,03,Dopravně významné místo na dráze,JVF,DI
+371,0100000041,01,Plavební komora,JVF,DI
+41,0100000041,03,Plavební komora,JVF,DI
+43,0100000043,02,Sledovaná vodní cesta,JVF,DI
+42,0100000043,03,Sledovaná vodní cesta,JVF,DI
+372,0100000045,01,Vodní část přístavu,JVF,DI
+45,0100000045,03,Vodní část přístavu,JVF,DI
+46,0100000046,03,Vzletová a přistávací dráha,JVF,DI
+47,0100000047,03,Letiště,JVF,DI
+373,0100000048,01,Heliport,JVF,DI
+48,0100000048,03,Heliport,JVF,DI
+374,0100000049,01,Letecká stavba,JVF,DI
+49,0100000049,03,Letecká stavba,JVF,DI
+50,0100000050,01,Zařízení pro letecký provoz,JVF,DI
+51,0100000051,03,"Příkop, násep, zářez dopravní stavby",JVF,ZPS
+52,0100000051,04,"Příkop, násep, zářez dopravní stavby",JVF,ZPS
+53,0100000053,03,Nástupiště,JVF,ZPS
+54,0100000053,04,Nástupiště,JVF,ZPS
+55,0100000055,03,Manipulační plocha,JVF,ZPS
+56,0100000055,04,Manipulační plocha,JVF,ZPS
+57,0100000057,03,Obvod mostu,JVF,DI
+58,0100000058,03,Plocha mostní konstrukce,JVF,ZPS
+59,0100000058,04,Plocha mostní konstrukce,JVF,ZPS
+60,0100000060,03,Portál tunelu,JVF,ZPS
+61,0100000060,04,Portál tunelu,JVF,ZPS
+62,0100000062,03,Provozní plocha tunelu,JVF,ZPS
+63,0100000062,04,Provozní plocha tunelu,JVF,ZPS
+64,0100000064,03,Portál podchodu,JVF,ZPS
+65,0100000064,04,Portál podchodu,JVF,ZPS
+66,0100000066,03,Provozní plocha podchodu,JVF,ZPS
+67,0100000066,04,Provozní plocha podchodu,JVF,ZPS
+68,0100000068,01,"Stojan nabíjení, výdejní stojan",JVF,ZPS
+70,0100000070,03,Mostní váha,JVF,ZPS
+71,0100000070,04,Mostní váha,JVF,ZPS
+72,0100000072,03,"Nádrž, zdrž se vzdouvacím objektem",JVF,ZPS
+73,0100000072,04,"Nádrž, zdrž se vzdouvacím objektem",JVF,ZPS
+455,0100000076,01,Stupeň,JVF,ZPS
+76,0100000076,03,Stupeň,JVF,ZPS
+77,0100000076,04,Stupeň,JVF,ZPS
+78,0100000078,03,Stavebně upravené koryto,JVF,ZPS
+79,0100000078,04,Stavebně upravené koryto,JVF,ZPS
+80,0100000080,03,"Meliorační příkop, žlab",JVF,ZPS
+81,0100000080,04,"Meliorační příkop, žlab",JVF,ZPS
+82,0100000082,02,"Osa melioračního příkopu, žlabu, drénu",JVF,TI
+83,0100000083,01,Meliorační šachta,JVF,ZPS
+84,0100000084,01,Studna na veřejném prostranství,JVF,ZPS
+90,0100000085,02,Protipovodňová zábrana,JVF,ZPS
+85,0100000085,03,Protipovodňová zábrana,JVF,ZPS
+86,0100000085,04,Protipovodňová zábrana,JVF,ZPS
+87,0100000087,03,Suchá nádrž,JVF,ZPS
+88,0100000087,04,Suchá nádrž,JVF,ZPS
+89,0100000089,01,Objekt nebo zařízení k ochraně před povodněmi,JVF,TI
+456,0100000089,02,Objekt nebo zařízení k ochraně před povodněmi,JVF,TI
+91,0100000091,02,Kolektor,JVF,TI
+715,0100000091,03,Kolektor,JVF,TI
+92,0100000092,02,Technický kanál,JVF,TI
+94,0100000093,01,Sdílený objekt TI,JVF,TI
+95,0100000095,01,Podpěrné zařízení,JVF,TI
+96,0100000096,01,Jiná technologická stavba TI,JVF,TI
+716,0100000096,03,Jiná technologická stavba TI,JVF,TI
+97,0100000097,02,Průběh jiné technologické stavby TI,JVF,TI
+98,0100000098,02,Trasa elektrické sítě,JVF,TI
+99,0100000099,02,Trasa místní elektrické sítě,JVF,TI
+100,0100000100,02,Trasa odběrného elektrického zařízení,JVF,ZPS
+101,0100000101,01,Zařízení elektrické sítě,JVF,TI
+376,0100000102,01,Výrobna elektřiny nad 100 kW,JVF,TI
+102,0100000102,03,Výrobna elektřiny nad 100 kW,JVF,TI
+377,0100000103,01,Stanice elektrické sítě,JVF,TI
+103,0100000103,03,Stanice elektrické sítě,JVF,TI
+378,0100000104,01,Jaderné zařízení,JVF,TI
+104,0100000104,03,Jaderné zařízení,JVF,TI
+105,0100000105,02,Trasa sítě EK,JVF,TI
+106,0100000106,02,Trasa rádiového směrového spoje,JVF,TI
+107,0100000107,01,Zařízení sítě EK,JVF,TI
+379,0100000108,01,Technologický objekt sítě EK,JVF,TI
+108,0100000108,03,Technologický objekt sítě EK,JVF,TI
+109,0100000109,02,Trasa plynovodní sítě,JVF,TI
+110,0100000110,02,Trasa odběrného plynového zařízení,JVF,ZPS
+111,0100000111,01,Zařízení plynovodní sítě,JVF,TI
+380,0100000112,01,Technologický objekt plynovodní sítě,JVF,TI
+112,0100000112,03,Technologický objekt plynovodní sítě,JVF,TI
+113,0100000113,02,Trasa vodovodní sítě,JVF,TI
+114,0100000114,02,Trasa vodovodní přípojky,JVF,ZPS
+116,0100000116,01,Zařízení vodovodní přípojky,JVF,ZPS
+458,0100000116,03,Zařízení vodovodní přípojky,JVF,ZPS
+457,0100000116,04,Zařízení vodovodní přípojky,JVF,ZPS
+118,0100000118,02,"Přivaděč, náhon, odpad",JVF,TI
+459,0100000118,03,"Přivaděč, náhon, odpad",JVF,TI
+119,0100000119,01,Zařízení přivaděče,JVF,TI
+121,0100000121,02,Trasa stokové sítě,JVF,TI
+122,0100000122,02,Trasa kanalizační přípojky,JVF,ZPS
+124,0100000124,01,Zařízení kanalizační přípojky,JVF,ZPS
+460,0100000124,03,Zařízení kanalizační přípojky,JVF,ZPS
+461,0100000124,04,Zařízení kanalizační přípojky,JVF,ZPS
+127,0100000127,02,Trasa sítě produktovodu,JVF,TI
+128,0100000128,01,Zařízení sítě produktovodu,JVF,TI
+462,0100000128,03,Zařízení sítě produktovodu,JVF,TI
+384,0100000129,01,Technologický objekt sítě produktovodu,JVF,TI
+129,0100000129,03,Technologický objekt sítě produktovodu,JVF,TI
+130,0100000130,02,Trasa teplovodní sítě,JVF,TI
+131,0100000131,01,Zařízení teplovodní sítě,JVF,TI
+385,0100000132,01,Technologický objekt teplovodní sítě,JVF,TI
+132,0100000132,03,Technologický objekt teplovodní sítě,JVF,TI
+133,0100000133,02,Trasa potrubní pošty,JVF,TI
+134,0100000134,01,Zařízení potrubní pošty,JVF,TI
+135,0100000135,01,Povrchový znak TI,JVF,TI
+136,0100000136,01,Orientační sloupek TI,JVF,TI
+137,0100000137,02,Trasa protikorozní ochrany,JVF,TI
+138,0100000138,01,Zařízení protikorozní ochrany,JVF,TI
+463,0100000138,03,Zařízení protikorozní ochrany,JVF,TI
+139,0100000139,01,Jiné zařízení staveb TI,JVF,TI
+717,0100000139,02,Jiné zařízení staveb TI,JVF,TI
+718,0100000139,03,Jiné zařízení staveb TI,JVF,TI
+140,0100000140,03,"Důl, lom",JVF,ZPS
+141,0100000140,04,"Důl, lom",JVF,ZPS
+142,0100000142,03,Plocha rekultivace,JVF,ZPS
+143,0100000142,04,Plocha rekultivace,JVF,ZPS
+144,0100000144,03,Úložné místo těžebního odpadu,JVF,ZPS
+145,0100000144,04,Úložné místo těžebního odpadu,JVF,ZPS
+146,0100000146,03,"Jiné důlní dílo, důlní stavba",JVF,ZPS
+147,0100000146,04,"Jiné důlní dílo, důlní stavba",JVF,ZPS
+386,0100000148,01,Skládka odpadu,JVF,TI
+148,0100000148,03,Skládka odpadu,JVF,TI
+387,0100000149,01,Spalovna,JVF,TI
+149,0100000149,03,Spalovna,JVF,TI
+388,0100000150,01,"Jiné zařízení na odstraňování, využívání nebo sběr odpadů",JVF,TI
+150,0100000150,03,"Jiné zařízení na odstraňování, využívání nebo sběr odpadů",JVF,TI
+389,0100000151,01,Odkaliště,JVF,TI
+151,0100000151,03,Odkaliště,JVF,TI
+152,0100000152,03,Hřiště,JVF,ZPS
+153,0100000152,04,Hřiště,JVF,ZPS
+154,0100000154,01,Drobná sakrální stavba,JVF,ZPS
+155,0100000154,03,Drobná sakrální stavba,JVF,ZPS
+156,0100000154,04,Drobná sakrální stavba,JVF,ZPS
+157,0100000157,03,Hřbitov,JVF,ZPS
+158,0100000157,04,Hřbitov,JVF,ZPS
+159,0100000159,01,Drobná kulturní stavba,JVF,ZPS
+160,0100000159,03,Drobná kulturní stavba,JVF,ZPS
+161,0100000159,04,Drobná kulturní stavba,JVF,ZPS
+162,0100000162,02,Plot,JVF,ZPS
+163,0100000163,03,Podezdívka,JVF,ZPS
+164,0100000163,04,Podezdívka,JVF,ZPS
+165,0100000165,02,Stavebně upravený vjezd na pozemek,JVF,ZPS
+166,0100000166,03,Schodiště,JVF,ZPS
+167,0100000166,04,Schodiště,JVF,ZPS
+313,0100000168,02,Zeď,JVF,ZPS
+168,0100000168,03,Zeď,JVF,ZPS
+169,0100000168,04,Zeď,JVF,ZPS
+173,0100000173,03,Rampa,JVF,ZPS
+174,0100000173,04,Rampa,JVF,ZPS
+175,0100000175,03,Terasa,JVF,ZPS
+176,0100000175,04,Terasa,JVF,ZPS
+177,0100000177,03,Komín,JVF,ZPS
+178,0100000177,04,Komín,JVF,ZPS
+179,0100000179,03,Skleník,JVF,ZPS
+180,0100000179,04,Skleník,JVF,ZPS
+181,0100000181,03,Zahradní bazén,JVF,ZPS
+182,0100000181,04,Zahradní bazén,JVF,ZPS
+183,0100000183,03,"Patka, deska, monolit, pilíř",JVF,ZPS
+184,0100000183,04,"Patka, deska, monolit, pilíř",JVF,ZPS
+186,0100000186,01,Sloup technologické konstrukce,JVF,ZPS
+187,0100000187,03,Stavba pro zpevnění povrchu,JVF,ZPS
+188,0100000187,04,Stavba pro zpevnění povrchu,JVF,ZPS
+189,0100000189,03,"Dvůr, nádvoří",JVF,ZPS
+190,0100000189,04,"Dvůr, nádvoří",JVF,ZPS
+191,0100000191,01,Vrt,JVF,ZPS
+192,0100000192,01,Ochranná šachta vrtu,JVF,ZPS
+193,0100000193,03,Čelo propustku,JVF,ZPS
+194,0100000193,04,Čelo propustku,JVF,ZPS
+195,0100000195,02,Průběh propustku,JVF,ZPS
+197,0100000197,03,Podzemní objekt ZPS,JVF,ZPS
+198,0100000197,04,Podzemní objekt ZPS,JVF,ZPS
+199,0100000199,02,Zábradlí,JVF,ZPS
+200,0100000200,01,Výtah v chodníku,JVF,ZPS
+201,0100000201,01,Nosič technického zařízení,JVF,ZPS
+202,0100000202,02,Neidentifikovaný objekt,JVF,ZPS
+722,0100000203,02,Vodní tok,JVF,ZPS
+203,0100000203,03,Vodní tok,JVF,ZPS
+204,0100000203,04,Vodní tok,JVF,ZPS
+205,0100000205,03,Jezero,JVF,ZPS
+206,0100000205,04,Jezero,JVF,ZPS
+207,0100000207,03,Zemědělská plocha,JVF,ZPS
+208,0100000207,04,Zemědělská plocha,JVF,ZPS
+209,0100000209,03,Zahrada,JVF,ZPS
+210,0100000209,04,Zahrada,JVF,ZPS
+211,0100000211,03,Les,JVF,ZPS
+212,0100000211,04,Les,JVF,ZPS
+213,0100000213,03,Hospodářsky nevyužívaná plocha,JVF,ZPS
+214,0100000213,04,Hospodářsky nevyužívaná plocha,JVF,ZPS
+215,0100000215,03,Udržovaná plocha zeleně,JVF,ZPS
+216,0100000215,04,Udržovaná plocha zeleně,JVF,ZPS
+217,0100000217,02,Terénní hrana,JVF,ZPS
+218,0100000218,01,Podrobný bod ZPS,JVF,ZPS
+219,0100000219,01,Výškový bod na terénu,JVF,ZPS
+220,0100000220,01,Identický bod,JVF,ZPS
+279,0100000279,03,Ochranné pásmo objektu vodovodu,JVF,OP
+280,0100000280,03,Ochranné pásmo objektu kanalizace,JVF,OP
+281,0100000281,03,Ochranné pásmo elektrické sítě,JVF,OP
+282,0100000282,03,Ochranné pásmo výrobny elektřiny,JVF,OP
+283,0100000283,03,Ochranné pásmo plynovodní sítě,JVF,OP
+284,0100000284,03,Ochranné pásmo sítě produktovodu,JVF,OP
+285,0100000285,03,Ochranné pásmo teplovodní sítě,JVF,OP
+286,0100000286,03,Ochranné pásmo sítě EK,JVF,OP
+287,0100000287,03,"Ochranné pásmo kolektoru, kabelovodu",JVF,OP
+288,0100000288,03,Ochranné pásmo jaderného zařízení,JVF,OP
+289,0100000289,03,Ochranné pásmo zařízení PKO,JVF,OP
+290,0100000290,03,Bezpečnostní pásmo plynovodní sítě,JVF,BP
+291,0100000291,03,Bezpečnostní pásmo zařízení PKO,JVF,BP
+292,0100000292,03,Ochranné pásmo zařízení odpadového hospodářství,JVF,OP
+293,0100000293,03,Ochranné pásmo vodního díla,JVF,OP
+294,0100000294,03,Ochranné pásmo pozemní komunikace,JVF,OP
+295,0100000295,03,Ochranné pásmo drážní stavby,JVF,OP
+296,0100000296,03,Ochranné pásmo letiště,JVF,OP
+297,0100000297,03,Ochranné pásmo leteckých zabezpečovacích zařízení,JVF,OP
+298,0100000298,03,Ochranné pásmo stavby pro vodní dopravu,JVF,OP
+299,0100000299,02,Hranice budovy,JVF,ZPS
+300,0100000300,02,Hranice stavby,JVF,ZPS
+301,0100000301,02,Hranice schodiště,JVF,ZPS
+302,0100000302,02,Hranice zdi,JVF,ZPS
+304,0100000304,02,Hranice dopravní stavby nebo plochy,JVF,ZPS
+305,0100000305,02,Hranice přírodního a polopřírodního objektu,JVF,ZPS
+306,0100000306,02,Hranice vodního díla,JVF,ZPS
+307,0100000307,02,Hranice ostatní plochy,JVF,ZPS
+308,0100000308,02,Hranice udržované zeleně,JVF,ZPS
+309,0100000309,02,Hranice podzemního objektu ZPS,JVF,ZPS
+310,0100000310,02,Vnitřní členění budov a staveb,JVF,ZPS
+311,0100000311,01,Dopravní uzel silniční sítě,JVF,DI
+445,0100000312,03,Souhrnná plocha železničních drah,JVF,ZPS
+312,0100000312,04,Souhrnná plocha železničních drah,JVF,ZPS
+314,0100000314,03,Ostatní zastřešená stavba,JVF,ZPS
+439,0100000314,04,Ostatní zastřešená stavba,JVF,ZPS
+441,0100000315,03,Zastřešení,JVF,ZPS
+442,0100000315,04,Zastřešení,JVF,ZPS
+448,0100000317,03,Ochranné pásmo stanice elektrické sítě,JVF,OP
+437,0100000318,02,Svodidlo,JVF,ZPS
+438,0100000319,02,Protihluková stěna,JVF,ZPS
+434,0100000320,03,Přidružená plocha pozemní komunikace,JVF,ZPS
+435,0100000320,04,Přidružená plocha pozemní komunikace,JVF,ZPS
+449,0100000322,03,Provozní prostor elektrické sítě,JVF,TI
+450,0100000323,02,Vnitřní členění dopravní plochy,JVF,ZPS
+464,0100000325,01,Pozemní část přístavu,JVF,DI
+465,0100000325,03,Pozemní část přístavu,JVF,DI
+466,0100000328,02,Trasa plynovodní přípojky,JVF,TI
+468,0100000329,01,Objekt odvodnění stavby,JVF,TI
+469,0100000329,02,Objekt odvodnění stavby,JVF,TI
+467,0100000329,03,Objekt odvodnění stavby,JVF,TI
+470,0100000330,03,Nádrž bez vzdouvacího objektu,JVF,ZPS
+471,0100000330,04,Nádrž bez vzdouvacího objektu,JVF,ZPS
+473,0100000331,03,Hráz,JVF,ZPS
+472,0100000331,04,Hráz,JVF,ZPS
+474,0100000332,03,Jez,JVF,ZPS
+475,0100000332,04,Jez,JVF,ZPS
+476,0100000333,03,Štěrková přehrážka,JVF,ZPS
+477,0100000333,04,Štěrková přehrážka,JVF,ZPS
+478,0100000334,02,Zatrubněný vodní tok,JVF,TI
+479,0100000335,02,Osa protipovodňové zábrany,JVF,TI
+481,0100000336,01,Objekt vodovodní sítě,JVF,TI
+480,0100000336,03,Objekt vodovodní sítě,JVF,TI
+483,0100000337,01,Objekt stokové sítě,JVF,TI
+482,0100000337,03,Objekt stokové sítě,JVF,TI
+485,0100000338,03,Vegetační mísa,JVF,ZPS
+484,0100000338,04,Vegetační mísa,JVF,ZPS
+487,0100000339,02,Silniční doprava - koridor záměru,JVF,ZM
+486,0100000339,03,Silniční doprava - koridor záměru,JVF,ZM
+488,0100000340,01,Silniční doprava - místo záměru,JVF,ZM
+489,0100000340,03,Silniční doprava - místo záměru,JVF,ZM
+490,0100000341,02,Drážní doprava - koridor záměru,JVF,ZM
+491,0100000341,03,Drážní doprava - koridor záměru,JVF,ZM
+492,0100000342,01,Drážní doprava - místo záměru,JVF,ZM
+493,0100000342,03,Drážní doprava - místo záměru,JVF,ZM
+495,0100000343,02,Vodní doprava - koridor záměru,JVF,ZM
+494,0100000343,03,Vodní doprava - koridor záměru,JVF,ZM
+496,0100000344,01,Vodní doprava - místo záměru,JVF,ZM
+497,0100000344,03,Vodní doprava - místo záměru,JVF,ZM
+498,0100000345,02,Letecká doprava - koridor záměru,JVF,ZM
+499,0100000345,03,Letecká doprava - koridor záměru,JVF,ZM
+500,0100000346,01,Letecká doprava - místo záměru,JVF,ZM
+501,0100000346,03,Letecká doprava - místo záměru,JVF,ZM
+502,0100000347,02,Cyklistická doprava - koridor záměru,JVF,ZM
+503,0100000347,03,Cyklistická doprava - koridor záměru,JVF,ZM
+505,0100000348,01,Cyklistická doprava - místo záměru,JVF,ZM
+504,0100000348,03,Cyklistická doprava - místo záměru,JVF,ZM
+507,0100000349,01,Terminál kombinované dopravy - místo záměru,JVF,ZM
+506,0100000349,03,Terminál kombinované dopravy - místo záměru,JVF,ZM
+509,0100000350,02,Elektrická síť - koridor záměru,JVF,ZM
+508,0100000350,03,Elektrická síť - koridor záměru,JVF,ZM
+510,0100000351,01,Elektrická síť - místo záměru,JVF,ZM
+511,0100000351,03,Elektrická síť - místo záměru,JVF,ZM
+512,0100000352,02,Elektronická komunikace - koridor záměru,JVF,ZM
+513,0100000352,03,Elektronická komunikace - koridor záměru,JVF,ZM
+514,0100000353,01,Elektronická komunikace - místo záměru,JVF,ZM
+515,0100000353,03,Elektronická komunikace - místo záměru,JVF,ZM
+516,0100000354,02,Plynovod - koridor záměru,JVF,ZM
+517,0100000354,03,Plynovod - koridor záměru,JVF,ZM
+518,0100000355,01,Plynovod - místo záměru,JVF,ZM
+519,0100000355,03,Plynovod - místo záměru,JVF,ZM
+521,0100000356,02,Vodovod - koridor záměru,JVF,ZM
+520,0100000356,03,Vodovod - koridor záměru,JVF,ZM
+522,0100000357,01,Vodovod - místo záměru,JVF,ZM
+523,0100000357,03,Vodovod - místo záměru,JVF,ZM
+524,0100000358,02,Kanalizace - koridor záměru,JVF,ZM
+525,0100000358,03,Kanalizace - koridor záměru,JVF,ZM
+527,0100000359,01,Kanalizace - místo záměru,JVF,ZM
+526,0100000359,03,kanalizace - místo záměru,JVF,ZM
+529,0100000360,02,Produktovod - koridor záměru,JVF,ZM
+528,0100000360,03,Produktovod - koridor záměru,JVF,ZM
+531,0100000361,01,Produktovod - místo záměru,JVF,ZM
+530,0100000361,03,Produktovod - místo záměru,JVF,ZM
+533,0100000362,02,Teplovod - koridor záměru,JVF,ZM
+532,0100000362,03,Teplovod - koridor záměru,JVF,ZM
+534,0100000363,01,Teplovod - místo záměru,JVF,ZM
+535,0100000363,03,Teplovod - místo záměru,JVF,ZM
+537,0100000364,01,Odpadové hospodářství - záměr,JVF,ZM
+536,0100000364,02,Odpadové hospodářství - záměr,JVF,ZM
+538,0100000364,03,Odpadové hospodářství - záměr,JVF,ZM
+539,0100000365,02,Protipovodňové a ostatní opatření v krajině - záměr,JVF,ZM
+540,0100000365,03,Protipovodňové a ostatní opatření v krajině - záměr,JVF,ZM
+542,0100000366,02,Přivaděč povrchových vod - koridor záměru,JVF,ZM
+541,0100000366,03,Přivaděč povrchových vod - koridor záměru,JVF,ZM
+543,0100000367,02,Sdílená stavba TI - koridor záměru,JVF,ZM
+544,0100000367,03,Sdílená stavba TI - koridor záměru,JVF,ZM
+545,0100000368,03,Ochranné pásmo podzemního zásobníku plynu,JVF,OP
+546,0100000369,03,Bezpečnostní pásmo podzemního zásobníku plynu,JVF,BP
+547,0100000370,02,Hranice zařízení vodovodní přípojky,JVF,ZPS
+548,0100000371,02,Hranice zařízení kanalizační přípojky,JVF,ZPS
+746,0100000372,03,O6,JVF,OP
+700,0100000373,02,Technologický portál,JVF,DI
+701,0100000373,03,Technologický portál,JVF,DI
+702,0100000374,01,Označník zastávky hromadné dopravy,JVF,DI
+714,0100000379,03,Obvod tunelu,JVF,DI
+719,0100000380,02,Horní hrana obruby,JVF,ZPS
+721,0100000381,03,Rozestavěná plocha,JVF,ZPS
+720,0100000381,04,Rozestavěná plocha,JVF,ZPS
+712,0100000382,02,Trasa trakčního trolejového vedení,JVF,TI
+711,0100000387,01,Hydrant vodovodní sítě,JVF,TI
+744,0100000388,03,Ochranné pásmo dálnice pro reklamní zařízení,JVF,OP
+737,0200000001,03,Silniční doprava - plánovaná stavba,JVF,PSPI
+724,0200000002,03,Drážní doprava - plánovaná stavba,JVF,PSPI
+742,0200000003,03,Vodní doprava - plánovaná stavba,JVF,PSPI
+730,0200000004,03,Letecká doprava - plánovaná stavba,JVF,PSPI
+738,0200000005,03,Stavba pro pěší - plánovaná stavba,JVF,PSPI
+723,0200000006,03,Cyklistická doprava - plánovaná stavba,JVF,PSPI
+740,0200000007,03,Terminál kombinované dopravy - plánovaná stavba,JVF,PSPI
+725,0200000008,03,Elektrická síť - plánovaná stavba,JVF,PSPI
+726,0200000009,03,Elektronická komunikace - plánovaná stavba,JVF,PSPI
+732,0200000010,03,Plynovod - plánovaná stavba,JVF,PSPI
+743,0200000011,03,Vodovod - plánovaná stavba,JVF,PSPI
+729,0200000012,03,Kanalizace - plánovaná stavba,JVF,PSPI
+734,0200000013,03,Produktovod - plánovaná stavba,JVF,PSPI
+739,0200000014,03,Teplovod - plánovaná stavba,JVF,PSPI
+731,0200000015,03,Odpadové hospodářství - plánovaná stavba,JVF,PSPI
+735,0200000016,03,Protipovodňové a ostatní opatření v krajině - plánovaná stavba,JVF,PSPI
+733,0200000017,03,Přivaděč povrchových vod - plánovaná stavba,JVF,PSPI
+736,0200000018,03,Sdílená stavba TI - plánovaná stavba,JVF,PSPI
+741,0200000019,03,Veřejné prostranství - plánovaná stavba,JVF,PSPI
+727,0200000020,03,Jiná stavba DI - plánovaná stavba,JVF,PSPI
+728,0200000021,03,Jiná stavba TI - plánovaná stavba,JVF,PSPI
+990000,9900000005,03,Oblast editace,JVF,SD
+990001,9900000006,03,Oblast zámku,JVF,SD
+990002,9900000007,03,Oblast s plošnou topologií,JVF,SD
+990037,9900000040,03,Oblast s plošnou topologií (NEW) - návrh AZI,JVF,SD
+990038,9900000041,03,Oblast s plošnou topologií (DEL) - návrh AZI,JVF,SD
+100150,9990000150,02,Trasa drátovodu,SŽ,ZDT
+100151,9990000151,01,Zařízení drátovodů (bodové),SŽ,ZDT
+100277,9990000277,02,Zábradlí - horní hrana,SŽ,ODSZ
+100440,9990000440,01,Bod výhybky,SŽ,ZDD
+100441,9990000441,01,Bod křižovatky,SŽ,ZDD
+100442,9990000442,01,Kolejnicový mazník,SŽ,ZDD
+100443,9990000443,01,Snímač počítače náprav,SŽ,ZDT
+100444,9990000444,01,"Čidlo, snímač, přepínač obecný, v koleji",SŽ,ZDT
+100445,9990000445,01,Magnetická značka,SŽ,ZDT
+100446,9990000446,02,Magnetické informační body (MIB),SŽ,ZDT
+100447,9990000447,01,"Balíza (do 1,0 m délky)",SŽ,ZDT
+100448,9990000448,02,Diagnostický systém - hrana (např. kontrolní brána - měř.obvodem),SŽ,ZDT
+100449,9990000449,02,Diagnostický systém (detektor CPM - ASDEK)-v ose koleje,SŽ,ZDT
+100450,9990000450,01,Měřič kategorie hmotnosti,SŽ,ZDD
+100451,9990000451,01,"Začátek, konec elektrizovaného úseku trati",SŽ,ZDD
+100452,9990000452,01,Izolovaný styk,SŽ,ZDD
+100453,9990000453,01,KDZ,SŽ,ZDD
+100454,9990000454,01,KDZ - začátek pohyblivé části,SŽ,ZDD
+100455,9990000455,01,Konec KDZ,SŽ,ZDD
+100456,9990000456,02,Úhelník,SŽ,ZDD
+100457,9990000457,02,Ztužující kolejnice,SŽ,ZDD
+100458,9990000458,02,Pražcové kotvy,SŽ,ZDD
+100459,9990000459,02,Izolované kolejové pole,SŽ,ZDD
+100460,9990000460,02,Izolovaná kolejnice,SŽ,ZDD
+100461,9990000461,02,Brzda,SŽ,ZDD
+100462,9990000462,01,Zarážková brzda,SŽ,ZDD
+100463,9990000463,01,Vrchol svážného pahrbku,SŽ,ZDD
+100464,9990000464,01,Výkolejka,SŽ,ZDD
+100465,9990000465,01,Elektromagnetický zámek,SŽ,ZDT
+100466,9990000466,01,"Přestavník,závorník",SŽ,ZDT
+100467,9990000467,01,Snímač polohy jazyků,SŽ,ZDT
+100468,9990000468,01,Konec kolejového obvodu - napájecí či přijímačový,SŽ,ZDT
+100469,9990000469,01,"Čidlo, snímač, přepínač obecný, mimo koleje",SŽ,ZDT
+100470,9990000470,01,Stojan na vozové zarážky,SŽ,ZDD
+100472,9990000472,02,Budova - ostatní kresba,SŽ,H3D
+100473,9990000473,02,"Vodní tok, plocha – osa, ostatní kresba",SŽ,H3D
+100474,9990000474,02,Zastřešení  - ostatní kresba,SŽ,H3D
+100475,9990000475,02,Dopravní stavba nebo plocha - ostatní kresba,SŽ,H3D
+100476,9990000476,02,Souvislý porost  - ostatní kresba,SŽ,H3D
+100477,9990000477,01,"Mechanická závora, samostatný závorový stojan",SŽ,ZDT
+100478,9990000478,01,Výstražník PZS,SŽ,ZDT
+100479,9990000479,01,Pohon mechanických závor,SŽ,ZDT
+100481,9990000481,01,Výstražný kříž pro přejezd,SŽ,ZDD
+100483,9990000483,01,Detektor volnosti přejezdu (bez rozlišení principu),SŽ,ZDT
+100484,9990000484,01,"Návěst (rychlostník, předvěstník)",SŽ,ZDD
+100485,9990000485,01,Návěstidlo světelné,SŽ,ZDT
+100486,9990000486,01,Návěstidlo mechanické,SŽ,ZDT
+100487,9990000487,01,Návěstidlo tabulka,SŽ,ZDD
+100488,9990000488,01,Označník (Posun zakázán),SŽ,ZDD
+100489,9990000489,01,Staničník,SŽ,ZDD
+100490,9990000490,01,Zajišťovací značka,SŽ,ZDD
+100491,9990000491,01,Námezník / koncovník,SŽ,ZDD
+100492,9990000492,01,Návěst hranice izolovaného úseku,SŽ,ZDD
+100493,9990000493,01,Návěst hranice provozovatele dráhy,SŽ,ZDD
+100494,9990000494,01,Drhlík (kolík čistícího přítlaku),SŽ,ZDD
+100495,9990000495,01,Ovládání zabezpečovacího zařízení,SŽ,ZDT
+100497,9990000497,02,Stavba pro zpevnění povrchu - ostatní kresba,SŽ,H3D
+100498,9990000498,01,"Zajištění skal - zemní kotva, skalní trn apod.",SŽ,ODSZ
+100500,9990000500,02,Nástupiště - nástupní plocha,SŽ,H3D
+100501,9990000501,02,Nástupiště - ostatní kresba,SŽ,H3D
+100502,9990000502,02,Výtah,SŽ,ODSZ
+100503,9990000503,01,Výstražné zařízení na nástupišti,SŽ,ZDT
+100504,9990000504,01,Zarážedlo - bod,SŽ,ODSZ
+100505,9990000505,02,Zarážedlo,SŽ,ODSZ
+100506,9990000506,02,Zvláštní plocha - linie v ose koleje,SŽ,ODSZ
+100507,9990000507,02,"Prohlídková, čistící nebo odkalovací jáma - hrana",SŽ,ODSZ
+100508,9990000508,02,Most - ostatní kresba,SŽ,H3D
+100509,9990000509,02,Podchod - ostatní kresba,SŽ,H3D
+100510,9990000510,01,Mostní šachta,SŽ,ODSZ
+100511,9990000511,02,Propustek - ostatní kresba,SŽ,H3D
+100512,9990000512,02,Točnice,SŽ,ODSZ
+100513,9990000513,02,Přesuvna,SŽ,ODSZ
+100514,9990000514,02,Hříž,SŽ,ODSZ
+100515,9990000515,01,Obrysnice,SŽ,ODSZ
+100516,9990000516,01,Zdvihací zařízení vozových skříní,SŽ,ODSZ
+100517,9990000517,01,Vrátek na posun,SŽ,ODSZ
+100518,9990000518,02,Jeřáb,SŽ,ODSZ
+100519,9990000519,02,Kolejnice pojízdného jeřábu,SŽ,ODSZ
+100520,9990000520,02,"Portál tunelu, galerie - ostatní kresba",SŽ,H3D
+100521,9990000521,02,Tunelová trouba - ostatní kresba,SŽ,H3D
+100522,9990000522,02,Tunelový pás,SŽ,H3D
+100567,9990000523,01,Výklenek v tunelu - bod,SŽ,ODSZ
+100523,9990000523,02,Výklenek v tunelu - hrana,SŽ,H3D
+100524,9990000524,01,Revizní šachta tunelové stoky,SŽ,ODSZ
+100525,9990000525,02,Revizní šachta tunelové stoky - hrana,SŽ,H3D
+100526,9990000526,02,Tunelová stoka - hrana,SŽ,H3D
+100527,9990000527,01,Informační tabule neelektronické - bod,SŽ,ODSZ
+100528,9990000528,02,Informační tabule neelektronické - linie,SŽ,ODSZ
+100529,9990000529,02,Schodiště – ostatní kresba,SŽ,H3D
+100530,9990000530,02,Vjezd nebo vstup do budovy,SŽ,ODSZ
+100531,9990000531,01,"Líc objektu (sloup, lampa, zábradlí, konstrukce)",SŽ,ODSZ
+100532,9990000532,02,"Hrana protihlukové stěny, clony - ostatní kresba",SŽ,H3D
+100533,9990000533,01,"Dveře (únikový východ) v protihlukové stěně, cloně",SŽ,H3D
+100534,9990000534,02,Informační tabule elektronická-linie (delší než 3 m),SŽ,ODSZ
+100536,9990000536,01,Průzkumná šachtice,SŽ,ODSZ
+100537,9990000537,01,Sonda,SŽ,ODSZ
+100538,9990000538,01,"Ústí štoly nebo úklonné jámy, vstup do podz. prostoru",SŽ,ODSZ
+100539,9990000539,01,"Zřídlo,pramen,přír.léčivý zdroj",SŽ,ODSZ
+100541,9990000541,01,Předmět malého rozsahu,SŽ,ODSZ
+100544,9990000544,01,"Dopravní značka, objekt",SŽ,ODSZ
+100545,9990000545,01,Mezník,SŽ,ODSZ
+100546,9990000546,01,Speciální bod,SŽ,ODSZ
+100547,9990000547,02,"Hrana žumpy, septiku",SŽ,ZDT
+100548,9990000548,02,Nadzemní kanalizace (např. dešťová) měřená obvodem,SŽ,ZDT
+100551,9990000551,02,Trasa neurčeného trubkového vedení,SŽ,ZDT
+100552,9990000552,01,Zařízení neurčeného trubkového vedení (bodové),SŽ,ZDT
+100553,9990000553,02,Potrubní objekt neurčený,SŽ,ZDT
+100554,9990000554,01,Spojka na HDP trubce - spojka chráničky,SŽ,ZDT
+100555,9990000555,01,Dno šachty (kolektoru),SŽ,ZDT
+100556,9990000556,01,Kabelový vstup/výstup do šachty(kolektoru),SŽ,ZDT
+100557,9990000557,01,Přítok nebo odtok potrubí do šachty,SŽ,ZDT
+100558,9990000558,02,Příkop se zpevněným dnem (žlab),SŽ,H3D
+100559,9990000559,02,"Zvláštní plocha (zábrany, absorbér) - obrys",SŽ,ODSZ
+100560,9990000560,02,Železniční přejezd - ostatní kresba,SŽ,H3D
+100561,9990000561,02,"Patka, sokl - ostatní kresba",SŽ,H3D
+100562,9990000562,02,Zeď - ostatní kresba,SŽ,H3D
+100563,9990000563,02,Rampa - ostatní kresba,SŽ,H3D
+100564,9990000564,01,Bod kolejnicového pásu,SŽ,ODSZ
+100565,9990000565,01,Změna úsekové vlastnosti koleje (pražců i typu kolejnice),SŽ,ODSZ
+100566,9990000566,01,Kozlíkový jeřáb,SŽ,ODSZ
+100572,9990000572,02,Plošina pro osoby imobilní,SŽ,ODSZ
+100573,9990000573,02,Zajištění skal - kotevní lano,SŽ,ODSZ
+100574,9990000574,01,Jednotlivý strom,SŽ,ODSZ
+100575,9990000575,02,Šrafování sklonité terénní plochy,SŽ,ODSZ
+100576,9990000576,01,Svar,SŽ,ZDD
+100579,9990000579,02,Trasa neurčené kabelové sítě,SŽ,ZDT
+100580,9990000580,01,Zařízení neurčené kabelové sítě (bodové),SŽ,ZDT
+100581,9990000581,02,Chyba v datech,SŽ,ODSZ
+100582,9990000582,01,Sklep - bod,SŽ,SKLEP
+100583,9990000583,02,Sklep - linie,SŽ,SKLEP
+100584,9990000584,01,Sklep - text,SŽ,SKLEP
+100585,9990000585,01,Zařízení sítě EK SŽ,SŽ,ZDT
+100586,9990000586,01,Podpěrné zařízení SŽ nebo jeho příslušenství,SŽ,ZDT
+100587,9990000587,01,Začátek jazyka výhybky,SŽ,ZDD
+100588,9990000588,02,"Meliorační příkop, žlab – ostatní kresba",SŽ,H3D
+100589,9990000589,03,Výrobna elektřiny do 100 kW (včetně),SŽ,ZDT
+100590,9990000590,01,Výrobna elektřiny do 100 kW (včetně),SŽ,ZDT
+100591,9990000591,02,Vyhledávací vodič,SŽ,ZDT
+100592,9990000592,01,Hydrogeologický vrt,SŽ,ODSZ
+100593,9990000593,01,Přípojné místo,SŽ,ZDT
+100594,9990000594,01,Vnější konec příčného varovného pásu na nástupišti,SŽ,ODSZ

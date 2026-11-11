@@ -14,7 +14,7 @@ import { parseGeometrieObjektu1501 } from './geometry.js';
 import { parseAtributyObjektu1501 } from './attributes.js';
 import { isRecordElementName, resolveRecordKind } from './records.js';
 import { parseDoprovodneInformace1501 } from './doprovodne-informace.js';
-import { extractText } from '../1.4.3/xml-helpers.js';
+import { extractText, keepIdentifierText } from '../1.4.3/xml-helpers.js';
 const VALID_TYP_ZAPISU = ['kompletní zápis', 'změnové věty'];
 function createParser() {
     return new XMLParser({
@@ -24,13 +24,15 @@ function createParser() {
         // Záznamové věty (klíč = druh záznamu) i vícenásobné členy vždy jako pole.
         isArray: (name) => isRecordElementName(name) || ['curveMember', 'ZaznamZmeny'].includes(name),
         parseTagValue: true,
+        // ID zůstávají doslova jako text (úvodní nuly, „1e5" apod.).
+        tagValueProcessor: keepIdentifierText,
         parseAttributeValue: true,
         trimValues: true,
     });
 }
-function parseZaznamObjektu1501(kindKey, zaznamEl) {
+function parseZaznamObjektu1501(kindKey, zaznamEl, parseAttributes) {
     const kind = resolveRecordKind(kindKey);
-    const { commonAttributes, attributes } = parseAtributyObjektu1501(zaznamEl['AtributyObjektu']);
+    const { commonAttributes, attributes } = parseAttributes(zaznamEl['AtributyObjektu']);
     const geometrie = parseGeometrieObjektu1501(zaznamEl['GeometrieObjektu']);
     const result = {
         zapisObjektu: kind.zapisObjektu,
@@ -44,7 +46,7 @@ function parseZaznamObjektu1501(kindKey, zaznamEl) {
         result.visibility = kind.visibility;
     return result;
 }
-function parseObjektovyTyp1501(elementName, typEl) {
+function parseObjektovyTyp1501(elementName, typEl, parseAttributes) {
     const nazevEl = typEl['ObjektovyTypNazev'];
     let nazev = '';
     let codeBase = '';
@@ -78,7 +80,7 @@ function parseObjektovyTyp1501(elementName, typEl) {
             const list = Array.isArray(val) ? val : [val];
             for (const zaznam of list) {
                 if (typeof zaznam === 'object' && zaznam !== null) {
-                    zaznamy.push(parseZaznamObjektu1501(key, zaznam));
+                    zaznamy.push(parseZaznamObjektu1501(key, zaznam, parseAttributes));
                 }
             }
         }
@@ -94,7 +96,8 @@ function parseObjektovyTyp1501(elementName, typEl) {
         zaznamy,
     };
 }
-export function parseJvfDtm1501(xml) {
+export function parseJvfDtm1501(xml, options = {}) {
+    const parseAttributes = options.parseAttributes ?? parseAtributyObjektu1501;
     const validation = XMLValidator.validate(xml);
     if (validation !== true) {
         const { msg, line, col } = validation.err;
@@ -111,7 +114,7 @@ export function parseJvfDtm1501(xml) {
         throw new Error('Invalid JVF DTM XML: missing <DataJVFDTM> element');
     }
     const verze = extractText(dataJvfDtm['VerzeJVFDTM']) ?? '';
-    if (verze !== '' && !isSupportedVersion(verze)) {
+    if (verze !== '' && !isSupportedVersion(verze) && options.warnUnsupportedVersion !== false) {
         console.warn(`jvf-parser: nepodporovaná verze JVF DTM specifikace "${verze}". Parsování pokračuje, ale výsledek nemusí odpovídat schématu.`);
     }
     const datumZapisu = extractText(dataJvfDtm['DatumZapisu']) ?? '';
@@ -131,23 +134,26 @@ export function parseJvfDtm1501(xml) {
             if (Array.isArray(val)) {
                 for (const item of val) {
                     if (typeof item === 'object' && item !== null) {
-                        objekty.push(parseObjektovyTyp1501(key, item));
+                        objekty.push(parseObjektovyTyp1501(key, item, parseAttributes));
                     }
                 }
             }
             else {
-                objekty.push(parseObjektovyTyp1501(key, val));
+                objekty.push(parseObjektovyTyp1501(key, val, parseAttributes));
             }
         }
     }
     const { doprovodneInformace, typDatoveSady } = parseDoprovodneInformace1501(dataJvfDtm);
+    const ext = options.parseDocumentExtras?.(dataJvfDtm);
     return {
         verze,
+        verzeJvfDtm: verze,
         datumZapisu,
         typZapisu,
         ...(typDatoveSady !== undefined ? { typDatoveSady } : {}),
         objekty,
         ...(doprovodneInformace !== undefined ? { doprovodneInformace } : {}),
+        ...(ext !== undefined ? { ext } : {}),
     };
 }
 //# sourceMappingURL=parser.js.map

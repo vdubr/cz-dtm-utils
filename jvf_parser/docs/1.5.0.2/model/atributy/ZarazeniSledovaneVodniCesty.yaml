@@ -1,0 +1,15 @@
+id: ZarazeniSledovaneVodniCesty
+nazev: Zařazení sledované vodní cesty
+namespace: atr
+popis: Zařazení sledované vodní cesty
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: dopravně významná využívaná
+ - hodnota: 2
+   popis: dopravně významná využitelná
+ - hodnota: 3
+   popis: účelová
+ - hodnota: 4
+   popis: plánovaná

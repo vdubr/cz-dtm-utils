@@ -15,6 +15,17 @@ commitne. Po dokončení celého zadání pushne do `develop`.
 | 3 | **pripnuta-hlavicka-kategorie** — přišpendlená (sticky) hlavička kategorie v panelu „Přehled prvků" při scrollování | ✅ DONE | [`pripnuta-hlavicka-kategorie/README.md`](./pripnuta-hlavicka-kategorie/README.md) · [úkoly](./pripnuta-hlavicka-kategorie/TASKS.md) |
 | 4 | **klik-v-mape-otevre-panel** — klik na prvek v mapě (2D i 3D) automaticky otevře „Přehled prvků" a prvek vybere (dnes funguje jen při už otevřeném panelu) | ✅ DONE | [`klik-v-mape-otevre-panel/README.md`](./klik-v-mape-otevre-panel/README.md) · [úkoly](./klik-v-mape-otevre-panel/TASKS.md) |
 | 5 | **barvy-siti-legenda** — soulad barev sítí v legendě/panelu s mapou (reprezentativní barva z variant), oprava 27 poškozených výplní (RGB→fillColor), audit vs. Katalog DTM (kanalizace vs. teplovod) | ✅ DONE | [README](./barvy-siti-legenda/README.md) · [úkoly](./barvy-siti-legenda/TASKS.md) |
+| 6 | **ux-redesign-panelu** — poznámky k UX: redesign tabulky a rozbalování kategorií, levý panel rozdělený na Vrstvy / Data, výraznější rozlišení režimů JVF / UDM / JŽM, minimalizace přepínačů a posuvníků (před implementací upřesnit) | ⬜ TODO | [README](./ux-redesign-panelu/README.md) · [úkoly](./ux-redesign-panelu/TASKS.md) |
+| 7 | **logovani-uzivatelskeho-pruchodu** — měření použití funkcí a délky práce s aplikací (cookieless, bez dat ze souborů; nástroj a rozsah před implementací upřesnit) | ✅ DONE | [README](./logovani-uzivatelskeho-pruchodu/README.md) · [úkoly](./logovani-uzivatelskeho-pruchodu/TASKS.md) |
+| 8 | **skolici-rezim** — průvodce aplikací (školicí režim) nad ukázkovými daty; až po #6, podobu před implementací upřesnit | ⬜ TODO | [README](./skolici-rezim/README.md) · [úkoly](./skolici-rezim/TASKS.md) |
+| 9 | **formular-zpetne-vazby** — formulář pro zpětnou vazbu v aplikaci (cíl odesílání před implementací upřesnit) | ⬜ TODO | [README](./formular-zpetne-vazby/README.md) · [úkoly](./formular-zpetne-vazby/TASKS.md) |
+| 10 | **pripominky-2026-11-06** — list připomínek po zavedení symbologie SŽ (vyhledávání ve vrstvách, legendy dialektů se všemi geometriemi, přidat / nahradit projekt, změny v datech, terén a nástroje 3D, tečky bez značky, tisk); lehké položky hotové, zbytek T5–T12 a otázky v README | 🔄 IN PROGRESS | [README](./pripominky-2026-11-06/README.md) · [úkoly](./pripominky-2026-11-06/TASKS.md) |
+| 11 | **vydani-udm-jzm** — vydat do produkce nástroje UDM a JŽM (ve verzi 2026.11.11 vypnuté přepínačem buildu `RELEASED_APP_MODES`; texty O aplikaci a CHANGELOG uložené, vrátí se zapnutím) — až na pokyn uživatele | ⬜ TODO | [README](./vydani-udm-jzm/README.md) · [úkoly](./vydani-udm-jzm/TASKS.md) |
+
+## Ruční úkoly
+
+Úkoly mimo kód (článek, komunikace s kraji) jsou v
+[`rucni-ukoly.md`](./rucni-ukoly.md) — `/make-tasks` je nezpracovává.
 
 ## Legenda stavů
 - ⬜ **TODO** — nezačato

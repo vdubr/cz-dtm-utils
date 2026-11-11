@@ -1,0 +1,23 @@
+id: TypNosiceTechnickehoZarizeni
+nazev: Typ nosiče technického zařízení
+namespace: atr
+popis: Typ nosiče technického zařízení
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: informační tabule
+ - hodnota: 2
+   popis: billboard
+ - hodnota: 3
+   popis: nosič kamerového systému
+ - hodnota: 4
+   popis: reklamní sloup
+ - hodnota: 5
+   popis: vlajkový stožár
+ - hodnota: 6
+   popis: sdružený
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: nezjištěno

@@ -1,0 +1,15 @@
+id: TypPristavu
+nazev: Typ přístavu
+namespace: atr
+popis: Typ přístavu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: veřejný
+ - hodnota: 2
+   popis: neveřejný
+ - hodnota: 98
+   popis: jiný
+ - hodnota: 99
+   popis: nezjištěno

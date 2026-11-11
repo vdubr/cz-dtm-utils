@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:atr="atr" xmlns:atrsz="atrsz" xmlns:cmn="cmn" xmlns:gml="http://www.opengis.net/gml/3.2" targetNamespace="movdef" xmlns:movdef="movdef">
+  <xs:import schemaLocation="../common/atributy.xsd" namespace="atr"/>
+  <xs:import schemaLocation="../common/atributy_sz.xsd" namespace="atrsz"/>
+  <xs:import schemaLocation="../common/common.xsd" namespace="cmn"/>
+  <xs:import schemaLocation="../ext/gml/gml.xsd" namespace="http://www.opengis.net/gml/3.2"/>
+  <xs:element name="MostniVahaDefinicniBod" type="movdef:MostniVahaDefinicniBodType"/>
+  <xs:complexType name="MostniVahaDefinicniBodType">
+    <xs:sequence>
+      <xs:element name="ObjektovyKod" type="xs:string" fixed="71"/>
+      <xs:element name="ObjektovyTypNazev" fixed="mostní váha">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="code_base" type="xs:string" fixed="0100000070" use="required"/>
+              <xs:attribute name="code_suffix" type="xs:string" fixed="04" use="required"/>
+              <xs:attribute name="dim" type="xs:integer" fixed="3" use="prohibited"/>
+              <xs:attribute name="gia" type="xs:boolean" fixed="0" use="prohibited"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:sequence>
+        <xs:element name="KategorieObjektu" type="xs:string" fixed="Dopravní stavby">
+          <xs:annotation>
+            <xs:documentation>Kategorie objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="SkupinaObjektu" type="xs:string" fixed="Zařízení dopravních staveb">
+          <xs:annotation>
+            <xs:documentation>Skupina objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ObsahovaCast" type="xs:string" fixed="ZPS">
+          <xs:annotation>
+            <xs:documentation>Zařazení objektu do obsahové části dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ZaznamyObjektu">
+          <xs:annotation>
+            <xs:documentation>Jednotlivé záznamy daného objektu</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="movdef:ZaznamObjektu" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ZaznamObjektu" abstract="true"/>
+  <xs:element name="ZaznamObjektuRefV" type="movdef:RefV" substitutionGroup="movdef:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuRefN" type="movdef:RefN" substitutionGroup="movdef:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuIns" type="movdef:Ins" substitutionGroup="movdef:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuUpd" type="movdef:Upd" substitutionGroup="movdef:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuDel" type="movdef:Del" substitutionGroup="movdef:ZaznamObjektu"/>
+  <xs:complexType name="RefV">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuRefVType"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBoduSZ" type="atrsz:SpolecneAtributyObjektuDefinicnichBoduSZRefVType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBodu" type="atr:SpolecneAtributyObjektuDefinicnichBoduRefVType"/>
+            <xs:element ref="atrsz:Vazivost" minOccurs="0"/>
+            <xs:element ref="atrsz:EvidencniKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:NerozlisenaKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:TypVahy" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RefN">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuRefNType"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBoduSZ" type="atrsz:SpolecneAtributyObjektuDefinicnichBoduSZRefNType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBodu" type="atr:SpolecneAtributyObjektuDefinicnichBoduRefNType"/>
+            <xs:element ref="atrsz:Vazivost" minOccurs="0"/>
+            <xs:element ref="atrsz:EvidencniKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:NerozlisenaKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:TypVahy" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Ins">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuInsType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBoduSZ" type="atrsz:SpolecneAtributyObjektuDefinicnichBoduSZInsType"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBodu" type="atr:SpolecneAtributyObjektuDefinicnichBoduInsType"/>
+            <xs:element ref="atrsz:Vazivost" minOccurs="0"/>
+            <xs:element ref="atrsz:EvidencniKilometraz"/>
+            <xs:element ref="atrsz:NerozlisenaKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:TypVahy"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Upd">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuUpdType"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBoduSZ" type="atrsz:SpolecneAtributyObjektuDefinicnichBoduSZUpdType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBodu" type="atr:SpolecneAtributyObjektuDefinicnichBoduUpdType" minOccurs="0"/>
+            <xs:element ref="atrsz:Vazivost" minOccurs="0"/>
+            <xs:element ref="atrsz:EvidencniKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:NerozlisenaKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:TypVahy" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Del">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuDelType"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBoduSZ" type="atrsz:SpolecneAtributyObjektuDefinicnichBoduSZDelType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDefinicnichBodu" type="atr:SpolecneAtributyObjektuDefinicnichBoduDelType" minOccurs="0"/>
+            <xs:element ref="atrsz:Vazivost" minOccurs="0"/>
+            <xs:element ref="atrsz:EvidencniKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:NerozlisenaKilometraz" minOccurs="0"/>
+            <xs:element ref="atrsz:TypVahy" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuBod3DType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

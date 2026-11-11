@@ -1,0 +1,17 @@
+id: TypUsekuPozemniKomunikace
+nazev: Typ úseku pozemní komunikace
+namespace: atr
+popis: Typ úseku pozemní komunikace
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: zemní těleso komunikace
+ - hodnota: 2
+   popis: most
+ - hodnota: 3
+   popis: tunel
+ - hodnota: 4
+   popis: přesypaný most
+ - hodnota: 99
+   popis: nezjištěno

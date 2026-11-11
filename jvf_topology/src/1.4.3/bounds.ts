@@ -13,12 +13,13 @@
 
 import type { JvfDtm } from 'jvf-dtm-types';
 import type { ErrorCtx, TopologyError } from './types.js';
-import { SJTSK_BOUNDS, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS } from './constants.js';
+import { SJTSK_BOUNDS, Z_BOUNDS_DEFBOD, Z_BOUNDS_ZPS, Z_CHECKED_CASTS } from './constants.js';
 import { collectCoordSets, isDefBodElementName, mkError } from './geometry-math.js';
 
 /**
  * Kontrola 1.5: Souřadnice XY musí ležet v rozsahu S-JTSK pro území ČR.
- * Pro objekty ZPS (obsahovaCast === 'ZPS') se kontroluje i rozsah Z.
+ * Pro objekty ZPS se kontroluje i rozsah Z — obsahové části {@link Z_CHECKED_CASTS}
+ * (`ZPS`, u UDM `ZPSUDM`, u ŽXML `H3D` = 3D hrany kresby ZPS).
  *
  * Kódy chyb:
  * - `COORD_OUT_OF_BOUNDS_XY`  — X nebo Y mimo rozsah S-JTSK
@@ -28,7 +29,7 @@ export function checkCoordinateBounds(dtm: JvfDtm): TopologyError[] {
   const errors: TopologyError[] = [];
 
   for (const objTyp of dtm.objekty) {
-    const isZps = objTyp.obsahovaCast === 'ZPS';
+    const isZps = Z_CHECKED_CASTS.has(objTyp.obsahovaCast);
     const isDefBod = isDefBodElementName(objTyp.elementName);
     const zBounds = isDefBod ? Z_BOUNDS_DEFBOD : Z_BOUNDS_ZPS;
 

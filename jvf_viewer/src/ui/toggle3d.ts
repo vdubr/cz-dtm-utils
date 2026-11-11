@@ -1,4 +1,6 @@
 import type Map from 'ol/Map.js';
+import { track } from '../analytics.js';
+import { isQuickClick } from '../viewer3d/quickClick.js';
 import type { ObjektovyTyp } from 'jvf-parser';
 import {
   initThreeScene,
@@ -20,7 +22,9 @@ import {
   setBasemap,
   getBasemap,
   setBasemapOpacity,
+  refreshTerrainTexture,
 } from '../viewer3d/threeScene.js';
+import { getOverlayStates, subscribeOverlays } from '../state/overlays.js';
 import { clearHighlight } from '../map/highlight.js';
 import { reapplyActiveHighlight } from './errorPanel.js';
 import { reapplyActiveFeatureHighlight } from './featuresPanel.js';
@@ -63,8 +67,8 @@ async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<voi
     // položit. Zapneme ho tedy automaticky (vč. synchronizace checkboxu).
     if (kind !== 'none' && !isTerrainVisible()) {
       await setTerrainVisible(true);
-      const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
-      if (terrainCheckbox) terrainCheckbox.checked = true;
+      track('terrain_load', { via: 'basemap' });
+      syncTerrainButton();
     }
     setBasemapOpacity(getBasemapChoiceOpacity());
     await setBasemap(kind);
@@ -80,7 +84,51 @@ async function apply3dBasemapFromChoice(autoEnableTerrain: boolean): Promise<voi
     spinner?.setAttribute('hidden', '');
   }
 }
+/**
+ * Promítne překryvy (DTM ČR, katastr) do 3D. Kreslí se na povrch terénu —
+ * je-li některý zapnutý s výběrem a terén vypnutý, terén se zapne (stejně
+ * jako u podkladu).
+ */
+async function apply3dOverlays(): Promise<void> {
+  if (!is3dActive) return;
+  const wantsOverlay = getOverlayStates().some((s) => s.isActive());
+  const spinner = document.getElementById('basemap-spinner');
+  spinner?.removeAttribute('hidden');
+  try {
+    if (wantsOverlay && !isTerrainVisible()) {
+      await setTerrainVisible(true); // načte terén a nanese i překryvy
+      track('terrain_load', { via: 'overlay' });
+      syncTerrainButton();
+    }
+    // Pod překryvy patří podklad zvolený v panelu — při vstupu do 3D
+    // s vypnutým terénem se nepřenesl, terén zapnul až překryv.
+    const kind = getBasemapChoice();
+    if (wantsOverlay && kind !== getBasemap()) {
+      setBasemapOpacity(getBasemapChoiceOpacity());
+      await setBasemap(kind); // nanese podklad i s překryvy
+    } else {
+      await refreshTerrainTexture();
+    }
+  } catch (err) {
+    console.error('[překryv] přehoz na 3D terén selhal', err);
+  } finally {
+    spinner?.setAttribute('hidden', '');
+  }
+}
+
 let currentObjekty: ObjektovyTyp[] = [];
+
+/** Posluchači přepnutí 2D ↔ 3D (např. měření se při přepnutí ukončí). */
+const viewModeListeners = new Set<(is3d: boolean) => void>();
+
+export function onViewModeChange(listener: (is3d: boolean) => void): () => void {
+  viewModeListeners.add(listener);
+  return () => viewModeListeners.delete(listener);
+}
+
+function notifyViewMode(): void {
+  for (const l of viewModeListeners) l(is3dActive);
+}
 
 export function getIs3dActive(): boolean {
   return is3dActive;
@@ -145,9 +193,8 @@ export function reloadThreeSceneData(objekty: ObjektovyTyp[]): void {
   }
   initThreeScene(canvas, objekty, currentZExaggeration);
   // Spinner: pokud je terén zapnutý, fetch běží na pozadí; zobrazíme indikátor
-  const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
   const terrainSpinner = document.getElementById('terrain-spinner') as HTMLElement | null;
-  if (terrainCheckbox?.checked && isTerrainVisible()) {
+  if (isTerrainVisible()) {
     // initThreeScene už spustil ensureTerrainLoaded (fire-and-forget)
     // Pro UX ukážeme spinner do dalšího requestu — bohužel bez promise handle
     // nemůžeme přesně vypnout. Řešení: krátká heuristika na 3 s, nebo nechat spinner off.
@@ -161,17 +208,42 @@ export function setup3dToggle(
   getObjekty: () => ObjektovyTyp[]
 ): void {
   const btn = document.getElementById('btn-3d') as HTMLButtonElement;
+  const btn2d = document.getElementById('btn-view-2d') as HTMLButtonElement | null;
   const mapContainer = document.getElementById('map-container') as HTMLDivElement;
   const threeCanvas = document.getElementById('three-canvas') as HTMLCanvasElement;
 
+  // Přepínač „2D | 3D" nad mapou: 3D přepíná tam i zpět, 2D vrací do mapy.
   btn.addEventListener('click', () => {
     if (is3dActive) {
-      switchTo2d(olMap, mapContainer, threeCanvas, btn);
+      switchTo2d(olMap, mapContainer, threeCanvas);
     } else {
       currentObjekty = getObjekty();
-      switchTo3d(mapContainer, threeCanvas, btn, currentObjekty);
+      switchTo3d(mapContainer, threeCanvas, currentObjekty);
     }
   });
+  btn2d?.addEventListener('click', () => {
+    if (is3dActive) switchTo2d(olMap, mapContainer, threeCanvas);
+  });
+
+  // Přiblížení „+ | −" nad mapou: ve 2D o jeden stupeň mapy, ve 3D kamera
+  // (stejně jako + / − v navigaci 3D).
+  for (const [id, dir] of [['btn-zoom-in', 'in'], ['btn-zoom-out', 'out']] as const) {
+    const zoomBtn = document.getElementById(id);
+    let flashTimer: ReturnType<typeof setTimeout> | undefined;
+    zoomBtn?.addEventListener('click', () => {
+      // Krátké probliknutí aktivní barvou jako potvrzení kliku.
+      zoomBtn.classList.add('is-flash');
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => zoomBtn.classList.remove('is-flash'), 250);
+      if (is3dActive) {
+        zoom3d(dir);
+        return;
+      }
+      const view = olMap.getView();
+      const zoom = view.getZoom();
+      if (zoom !== undefined) view.animate({ zoom: zoom + (dir === 'in' ? 1 : -1), duration: 200 });
+    });
+  }
 
   // Collapse/expand bottom toolbars
   const toolbarsEl = document.getElementById('bottom-toolbars');
@@ -182,15 +254,22 @@ export function setup3dToggle(
 
   // Obecný přepínač světlý/tmavý režim (☀️/🌙 v hlavičce) — platí pro 3D
   // scénu i pro 2D mapu (pozadí #map-area viditelné pod vrstvami při
-  // vypnutém podkladu). Ikona ukazuje režim, NA který se kliknutím přepne.
+  // podkladu „Prázdná" a prosvítá při snížené sytosti podkladu): ve světlém
+  // motivu bílé, v tmavém černé. Ikona ukazuje režim, NA který se přepne.
   const BG_COLORS: Record<string, string> = {
-    dark: '#0a0a0f',
-    light: '#f5f5f5',
+    dark: '#000000',
+    light: '#ffffff',
   };
   const mapArea = document.getElementById('map-area') as HTMLElement | null;
   const themeBtn = document.getElementById('btn-theme') as HTMLButtonElement | null;
 
   function applyTheme(theme: 'light' | 'dark'): void {
+    // Motiv celé aplikace (tokeny M3 v m3.css podle `data-theme` na <html>).
+    document.documentElement.dataset['theme'] = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute(
+      'content',
+      theme === 'light' ? '#ededf4' : '#1e1f25',
+    );
     setThreeBackground(BG_COLORS[theme]!);
     if (mapArea) mapArea.style.background = BG_COLORS[theme]!;
     if (themeBtn) {
@@ -198,13 +277,16 @@ export function setup3dToggle(
       const icon = themeBtn.querySelector('.material-symbols-outlined');
       if (icon) icon.textContent = theme === 'light' ? 'dark_mode' : 'light_mode';
       themeBtn.title = theme === 'light'
-        ? 'Přepnout na tmavý režim (pozadí 2D mapy i 3D scény)'
-        : 'Přepnout na světlý režim (pozadí 2D mapy i 3D scény)';
+        ? 'Přepnout na tmavý motiv (aplikace, 2D mapa i 3D scéna)'
+        : 'Přepnout na světlý motiv (aplikace, 2D mapa i 3D scéna)';
+      themeBtn.setAttribute('aria-label', themeBtn.title);
     }
   }
 
   themeBtn?.addEventListener('click', () => {
-    applyTheme(themeBtn.dataset['theme'] === 'light' ? 'dark' : 'light');
+    const next = themeBtn.dataset['theme'] === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    track('theme_change', { theme: next });
   });
 
   // Aplikovat výchozí (světlý) režim hned při startu — i ve 2D.
@@ -216,20 +298,25 @@ export function setup3dToggle(
     svgCheckbox.checked = getUseSvgSymbols();
     svgCheckbox.addEventListener('change', () => {
       setUseSvgSymbols(svgCheckbox.checked);
+      if (svgCheckbox.checked) track('svg_symbols', {});
     });
   }
 
-  // Terén (ČÚZK DMR5G) toggle (jen 3D)
-  const terrainCheckbox = document.getElementById('toggle-terrain') as HTMLInputElement | null;
+  // Terén (ČÚZK DMR5G) — tlačítko „Terén" nad mapou (jen 3D); zapnutý
+  // terén = aktivní barva textu jako u překryvů.
+  const terrainBtn = document.getElementById('btn-terrain') as HTMLButtonElement | null;
   const terrainSpinner = document.getElementById('terrain-spinner') as HTMLElement | null;
-  if (terrainCheckbox) {
-    terrainCheckbox.checked = isTerrainVisible();
-    terrainCheckbox.addEventListener('change', async () => {
-      if (terrainCheckbox.checked) {
+  if (terrainBtn) {
+    syncTerrainButton();
+    terrainBtn.addEventListener('click', async () => {
+      if (terrainBtn.disabled) return;
+      if (!isTerrainVisible()) {
         terrainSpinner?.removeAttribute('hidden');
-        terrainCheckbox.disabled = true;
+        terrainBtn.disabled = true;
         try {
           await setTerrainVisible(true);
+          track('terrain_load', { via: 'toggle' });
+          syncTerrainButton();
           // Po zapnutí terénu nanést podklad zvolený v levém panelu.
           await apply3dBasemapFromChoice(false);
         } catch (err) {
@@ -238,15 +325,16 @@ export function setup3dToggle(
             'Nepodařilo se načíst terén z ČÚZK DMR5G:\n' +
             (err as Error).message
           );
-          terrainCheckbox.checked = false;
           // Zachovat konzistenci stavu v threeScene
           void setTerrainVisible(false);
         } finally {
           terrainSpinner?.setAttribute('hidden', '');
-          terrainCheckbox.disabled = false;
+          terrainBtn.disabled = false;
+          syncTerrainButton();
         }
       } else {
         await setTerrainVisible(false);
+        syncTerrainButton();
       }
     });
   }
@@ -257,6 +345,19 @@ export function setup3dToggle(
   subscribeBasemapChoice(() => {
     // Aktivní volba uživatele → smí automaticky zapnout terén.
     void apply3dBasemapFromChoice(true);
+  });
+
+  // Překryvy ve 3D = přehoz přes terén. Změny (výběr, sytost) se
+  // slučují s krátkým zpožděním, ať posuvník nepřeskládává texturu
+  // při každém pohybu.
+  let overlayTimer: ReturnType<typeof setTimeout> | null = null;
+  subscribeOverlays(() => {
+    if (!is3dActive) return;
+    if (overlayTimer) clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(() => {
+      overlayTimer = null;
+      void apply3dOverlays();
+    }, 250);
   });
 
   // Z exaggeration buttons
@@ -314,6 +415,7 @@ export function setup3dToggle(
 
   threeCanvasEl?.addEventListener('click', (e) => {
     if (!is3dActive || !pivotMode) return;
+    if (!isQuickClick(e)) return; // tažení / posun scény není klik
     const pt = pickPointFromClient(e.clientX, e.clientY);
     if (pt) setPivot(pt.x, pt.y, pt.z);
     togglePivotMode(); // vypni režim
@@ -383,16 +485,34 @@ export function setup3dToggle(
   });
 }
 
+/** Tlačítko „Terén" nad mapou podle stavu terénu ve 3D scéně. */
+function syncTerrainButton(): void {
+  const terrainBtn = document.getElementById('btn-terrain');
+  const on = isTerrainVisible();
+  terrainBtn?.classList.toggle('is-on', on);
+  terrainBtn?.setAttribute('aria-pressed', String(on));
+}
+
+/** Přepínač „2D | 3D" nad mapou a tlačítko „Terén" (jen ve 3D) podle pohledu. */
+function syncViewControls(): void {
+  for (const [id, active] of [['btn-view-2d', !is3dActive], ['btn-3d', is3dActive]] as const) {
+    const b = document.getElementById(id);
+    b?.classList.toggle('active', active);
+    b?.setAttribute('aria-pressed', String(active));
+  }
+  const terrainControl = document.getElementById('terrain-control');
+  if (terrainControl) terrainControl.hidden = !is3dActive;
+  syncTerrainButton();
+}
+
 function switchTo3d(
   mapContainer: HTMLDivElement,
   canvas: HTMLCanvasElement,
-  btn: HTMLButtonElement,
   objekty: ObjektovyTyp[]
 ): void {
   is3dActive = true;
-  btn.textContent = '2D';
-  btn.title = 'Přepnout zpět na 2D mapu';
-  btn.classList.add('active');
+  notifyViewMode();
+  syncViewControls();
 
   // 2D highlight přestává být viditelný (mapa je skrytá); 3D highlight
   // znovu aplikujeme níže po inicializaci scény.
@@ -430,18 +550,21 @@ function switchTo3d(
   // Promítnout volbu podkladu z levého panelu do 3D (textura na terénu) —
   // jen pokud je terén zapnutý; vstup do 3D ho sám nezapíná.
   void apply3dBasemapFromChoice(false);
+  // Zapnutý překryv si uživatel vybral sám → přehodit přes terén hned
+  // (terén se případně zapne).
+  if (getOverlayStates().some((s) => s.isActive())) {
+    void apply3dOverlays();
+  }
 }
 
 function switchTo2d(
   olMap: Map,
   mapContainer: HTMLDivElement,
-  canvas: HTMLCanvasElement,
-  btn: HTMLButtonElement
+  canvas: HTMLCanvasElement
 ): void {
   is3dActive = false;
-  btn.textContent = '3D';
-  btn.title = 'Přepnout mezi 2D mapou a 3D pohledem';
-  btn.classList.remove('active');
+  notifyViewMode();
+  syncViewControls();
 
   if (resizeObserver) {
     resizeObserver.disconnect();

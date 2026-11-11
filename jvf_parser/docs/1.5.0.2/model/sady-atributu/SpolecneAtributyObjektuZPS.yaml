@@ -1,0 +1,77 @@
+id: SpolecneAtributyObjektuZPS
+namespace: atr
+popis: Společné atributy objektů ZPS s výjimkou definičních bodů, podrobných bodů a přípojek TI
+atributy:
+  - id: UrovenUmisteniObjektuZPS
+    volitelny: false
+    atribut: UrovenUmisteniObjektuZPS
+  - id: TridaPresnostiPoloha
+    volitelny: false
+    atribut: TridaPresnostiPoloha
+  - id: TridaPresnostiVyska
+    volitelny: false
+    atribut: TridaPresnostiVyska
+  - id: ICS
+    volitelny: true
+    atribut: ICS
+
+kontexty:
+  Ref:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: false
+     - id: ICS
+       namespace: atr
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: false
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: false
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: false
+     - id: ICS
+       namespace: atr
+       volitelny: true
+
+  Upd:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: true
+     - id: ICS
+       namespace: atr
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: UrovenUmisteniObjektuZPS
+       namespace: atr
+       volitelny: true
+     - id: TridaPresnostiPoloha
+       namespace: atr
+       volitelny: true
+     - id: TridaPresnostiVyska
+       namespace: atr
+       volitelny: true
+     - id: ICS
+       namespace: atr
+       volitelny: true

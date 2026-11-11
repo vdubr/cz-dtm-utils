@@ -2,6 +2,9 @@ import TileLayer from 'ol/layer/Tile.js';
 import XYZ from 'ol/source/XYZ.js';
 import TileGrid from 'ol/tilegrid/TileGrid.js';
 import Map from 'ol/Map.js';
+import { track } from '../analytics.js';
+import { setupMapCard } from '../ui/mapCard.js';
+import { setSliderValue } from '../ui/m3Slider.js';
 import {
   getBasemapChoice,
   setBasemapChoice,
@@ -88,6 +91,9 @@ export function setupBaseLayerSwitcher(
   const btns = document.querySelectorAll<HTMLButtonElement>('#base-layer-btns .base-btn');
   const opacitySlider = document.getElementById('basemap-opacity') as HTMLInputElement | null;
 
+  /** Poslední podklad mimo leteckou mapu — kam vrací rychlé tlačítko. */
+  let lastNonAerial: BasemapChoice = getBasemapChoice() === 'ortofoto' ? 'zm' : getBasemapChoice();
+
   // Jediný zdroj pravdy je sdílený stav basemapChoice — 2D vrstvy jsou jen
   // jeho konzument (3D texturu na terénu konzumuje toggle3d).
   function applyChoiceTo2d(): void {
@@ -98,27 +104,72 @@ export function setupBaseLayerSwitcher(
     zmLayer.setOpacity(opacity);
     ortofotoLayer.setOpacity(opacity);
     btns.forEach((b) => {
-      b.classList.toggle('active', b.dataset['layer'] === kind);
+      const active = b.dataset['layer'] === kind;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-checked', String(active));
+      b.closest('.basemap-item')?.classList.toggle('active', active);
     });
+    // Posuvník sytosti pod vybranou mapou; bez podkladu („Prázdná") nemá smysl.
+    const opacityRow = document.getElementById('basemap-opacity-row');
+    const activeItem = document.querySelector<HTMLElement>(`#base-layer-btns .basemap-item[data-layer="${kind}"]`);
+    if (opacityRow) {
+      // Přesunout jen při změně podkladu — přesun prvku v DOM během tažení
+      // (změna sytosti volá tuto funkci také) by tažení posuvníku přerušil.
+      if (kind !== 'none' && activeItem && opacityRow.parentElement !== activeItem) activeItem.appendChild(opacityRow);
+      opacityRow.hidden = kind === 'none';
+    }
+    if (opacitySlider) opacitySlider.disabled = kind === 'none';
+    // Rychlé tlačítko: na letecké mapě nabízí návrat na předchozí podklad.
+    if (kind !== 'ortofoto') lastNonAerial = kind;
+    const quick = document.getElementById('btn-basemap-quick');
+    if (quick) {
+      const toAerial = kind !== 'ortofoto';
+      const label = toAerial ? 'Letecká' : lastNonAerial === 'none' ? 'Prázdná' : 'Základní';
+      quick.querySelector('[data-quick-label]')!.textContent = label;
+      quick.querySelector('[data-quick-icon]')!.textContent = toAerial ? 'flight' : 'map';
+      quick.title = toAerial ? 'Přepnout na leteckou mapu (ortofoto)' : `Zpět na podklad ${label}`;
+    }
   }
   subscribeBasemapChoice(applyChoiceTo2d);
   applyChoiceTo2d();
 
+  // Seznam podkladů s náhledy: Základní mapa / Letecká (ortofoto) / Prázdná.
+  // „Prázdná" (`none`) = bez podkladu, pod vrstvami je pozadí mapy podle
+  // motivu (bílé / černé, viz toggle3d.ts).
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      const layer = (btn.dataset['layer'] ?? 'none') as BasemapChoice;
-      // Toggle: kliknutí na aktivní tlačítko podkladovou vrstvu vypne
-      // (žádný podklad — vidíme jen JVF vrstvy nad pozadím mapy). Druhým
-      // klikem se vrstva opět zapne.
-      const wasActive = btn.classList.contains('active');
-      setBasemapChoice(wasActive ? 'none' : layer);
+      setBasemapChoice((btn.dataset['layer'] ?? 'none') as BasemapChoice);
+      track('basemap_change', { basemap: btn.dataset['layer'] ?? 'none' });
     });
   });
 
+  setupBasemapCard();
+
   if (opacitySlider) {
-    opacitySlider.value = String(Math.round(getBasemapChoiceOpacity() * 100));
+    setSliderValue(opacitySlider, Math.round(getBasemapChoiceOpacity() * 100));
     opacitySlider.addEventListener('input', () => {
       setBasemapChoiceOpacity(Number(opacitySlider.value) / 100);
     });
   }
+}
+
+/**
+ * Plovoucí výběr podkladu nad mapou (jako mapy.cz): „Podkladová mapa" otevře /
+ * zavře kartu se seznamem náhledů (zavře ji i klik mimo nebo Esc), „Letecká"
+ * přepne rychle na ortofoto a zpět na předchozí podklad.
+ */
+function setupBasemapCard(): void {
+  setupMapCard('btn-basemap-menu', 'basemap-card');
+  const quick = document.getElementById('btn-basemap-quick') as HTMLButtonElement | null;
+  quick?.addEventListener('click', () => {
+    const target = getBasemapChoice() === 'ortofoto' ? quickReturn() : 'ortofoto';
+    setBasemapChoice(target);
+    track('basemap_change', { basemap: target });
+  });
+}
+
+/** Kam se vrátí rychlé tlačítko z letecké mapy (podle popisku tlačítka). */
+function quickReturn(): BasemapChoice {
+  const label = document.querySelector('#btn-basemap-quick [data-quick-label]')?.textContent;
+  return label === 'Prázdná' ? 'none' : 'zm';
 }

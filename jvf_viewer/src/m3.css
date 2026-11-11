@@ -1,0 +1,808 @@
+/*
+ * m3.css — design tokeny a komponenty podle Material Design 3.
+ *
+ * Jediný zdroj vzhledu: používá ho návrh (canvas „JVF DTM Prohlížeč —
+ * redesign") i aplikace (importuje ho src/style.css). Barvy jsou role M3
+ * (primary, secondary-container, surface-container-*, outline…) ze seed
+ * barvy #2E5BBA, ve světlé i tmavé variantě; motiv přepíná atribut
+ * `data-theme` na <html> (výchozí světlý).
+ *
+ * Komponenty (třídy `m3-…`): top app bar, tlačítka (filled / tonal /
+ * outlined / text), split button, icon button, segmented button, filter
+ * chip, switch, checkbox / radio, slider, list + list item, navigation
+ * drawer, side sheet, menu, dialog, search, badge, divider, small FAB.
+ */
+
+/* Atribut `hidden` skrývá vždy — i prvky s vlastním `display` (flex, …),
+   jinak by každá komponenta potřebovala vlastní pravidlo `.x[hidden]`. */
+[hidden] { display: none !important; }
+
+/* ------------------------------------------------------------------ */
+/* Tokeny                                                              */
+/* ------------------------------------------------------------------ */
+
+:root {
+  color-scheme: light;
+  --md-sys-color-primary: #2e5bba;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #dae2ff;
+  --md-sys-color-on-primary-container: #001946;
+  --md-sys-color-secondary: #575e71;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #dbe2f9;
+  --md-sys-color-on-secondary-container: #141b2c;
+  --md-sys-color-tertiary: #715573;
+  --md-sys-color-tertiary-container: #fbd7fc;
+  --md-sys-color-on-tertiary-container: #29132d;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  /* Rozšíření (M3 „custom color"): varování z topologické validace. */
+  --app-color-warning: #8a5100;
+  --app-color-warning-container: #ffdcbe;
+  --app-color-on-warning-container: #2c1600;
+  --app-color-success: #23722e;
+  --app-color-success-container: #a8f5a5;
+
+  --md-sys-color-surface: #f9f9ff;
+  --md-sys-color-surface-dim: #d9d9e0;
+  --md-sys-color-surface-bright: #f9f9ff;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f3f3fa;
+  --md-sys-color-surface-container: #ededf4;
+  --md-sys-color-surface-container-high: #e7e8ee;
+  --md-sys-color-surface-container-highest: #e2e2e9;
+  --md-sys-color-on-surface: #1a1b20;
+  --md-sys-color-on-surface-variant: #44464f;
+  --md-sys-color-outline: #757780;
+  --md-sys-color-outline-variant: #c5c6d0;
+  --md-sys-color-inverse-surface: #2f3036;
+  --md-sys-color-inverse-on-surface: #f0f0f7;
+  --md-sys-color-inverse-primary: #b1c5ff;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-shadow: #000000;
+  /* Plocha mapy bez podkladu (pod vrstvami). */
+  --app-map-background: #ffffff;
+
+  --md-sys-typescale-font: 'Roboto', 'Roboto Flex', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --md-sys-typescale-mono: 'Roboto Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 9999px;
+
+  --md-sys-elevation-1: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px 1px rgb(0 0 0 / 0.15);
+  --md-sys-elevation-2: 0 1px 2px rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15);
+  --md-sys-elevation-3: 0 1px 3px rgb(0 0 0 / 0.3), 0 4px 8px 3px rgb(0 0 0 / 0.15);
+
+  --md-sys-state-hover: 0.08;
+  --md-sys-state-focus: 0.1;
+  --md-sys-state-pressed: 0.1;
+  --md-sys-motion-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root[data-theme='dark'],
+.m3-theme-dark {
+  color-scheme: dark;
+  --md-sys-color-primary: #b1c5ff;
+  --md-sys-color-on-primary: #002c71;
+  --md-sys-color-primary-container: #12419e;
+  --md-sys-color-on-primary-container: #dae2ff;
+  --md-sys-color-secondary: #bfc6dc;
+  --md-sys-color-on-secondary: #293041;
+  --md-sys-color-secondary-container: #3f4759;
+  --md-sys-color-on-secondary-container: #dbe2f9;
+  --md-sys-color-tertiary: #dfbbdf;
+  --md-sys-color-tertiary-container: #583e5b;
+  --md-sys-color-on-tertiary-container: #fbd7fc;
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffdad6;
+  --app-color-warning: #ffb870;
+  --app-color-warning-container: #693c00;
+  --app-color-on-warning-container: #ffdcbe;
+  --app-color-success: #8dd88b;
+  --app-color-success-container: #005314;
+
+  --md-sys-color-surface: #121318;
+  --md-sys-color-surface-dim: #121318;
+  --md-sys-color-surface-bright: #38393f;
+  --md-sys-color-surface-container-lowest: #0d0e13;
+  --md-sys-color-surface-container-low: #1a1b21;
+  --md-sys-color-surface-container: #1e1f25;
+  --md-sys-color-surface-container-high: #282a2f;
+  --md-sys-color-surface-container-highest: #33353a;
+  --md-sys-color-on-surface: #e2e2e9;
+  --md-sys-color-on-surface-variant: #c5c6d0;
+  --md-sys-color-outline: #8f9099;
+  --md-sys-color-outline-variant: #44464f;
+  --md-sys-color-inverse-surface: #e2e2e9;
+  --md-sys-color-inverse-on-surface: #2f3036;
+  --md-sys-color-inverse-primary: #2e5bba;
+  --app-map-background: #000000;
+}
+
+/* ------------------------------------------------------------------ */
+/* Typografie (M3 type scale)                                          */
+/* ------------------------------------------------------------------ */
+
+.m3-display-small { font: 400 36px/44px var(--md-sys-typescale-font); }
+.m3-headline-small { font: 400 24px/32px var(--md-sys-typescale-font); }
+.m3-title-large { font: 400 22px/28px var(--md-sys-typescale-font); }
+.m3-title-medium { font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
+.m3-title-small { font: 500 14px/20px var(--md-sys-typescale-font); letter-spacing: 0.1px; }
+.m3-body-large { font: 400 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.5px; }
+.m3-body-medium { font: 400 14px/20px var(--md-sys-typescale-font); letter-spacing: 0.25px; }
+.m3-body-small { font: 400 12px/16px var(--md-sys-typescale-font); letter-spacing: 0.4px; }
+.m3-label-large { font: 500 14px/20px var(--md-sys-typescale-font); letter-spacing: 0.1px; }
+.m3-label-medium { font: 500 12px/16px var(--md-sys-typescale-font); letter-spacing: 0.5px; }
+.m3-label-small { font: 500 11px/16px var(--md-sys-typescale-font); letter-spacing: 0.5px; }
+.m3-mono { font-family: var(--md-sys-typescale-mono); }
+.m3-on-surface-variant { color: var(--md-sys-color-on-surface-variant); }
+
+/* Ikony Material Symbols (font z Google Fonts). */
+.m3-icon,
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  user-select: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* State layer (hover / focus / pressed) — společné interaktivním prvkům */
+/* ------------------------------------------------------------------ */
+
+.m3-btn,
+.m3-icon-btn,
+.m3-segmented > button,
+.m3-chip,
+.m3-list-item--interactive,
+.m3-menu-item,
+.m3-fab {
+  position: relative;
+  isolation: isolate;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.m3-btn::before,
+.m3-icon-btn::before,
+.m3-segmented > button::before,
+.m3-chip::before,
+.m3-list-item--interactive::before,
+.m3-menu-item::before,
+.m3-fab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms var(--md-sys-motion-standard);
+  z-index: -1;
+}
+
+.m3-btn:hover::before,
+.m3-icon-btn:hover::before,
+.m3-segmented > button:hover::before,
+.m3-chip:hover::before,
+.m3-list-item--interactive:hover::before,
+.m3-menu-item:hover::before,
+.m3-fab:hover::before {
+  opacity: var(--md-sys-state-hover);
+}
+
+.m3-btn:active::before,
+.m3-icon-btn:active::before,
+.m3-segmented > button:active::before,
+.m3-chip:active::before,
+.m3-list-item--interactive:active::before,
+.m3-menu-item:active::before,
+.m3-fab:active::before {
+  opacity: var(--md-sys-state-pressed);
+}
+
+.m3-btn:focus-visible,
+.m3-icon-btn:focus-visible,
+.m3-segmented > button:focus-visible,
+.m3-chip:focus-visible,
+.m3-list-item--interactive:focus-visible,
+.m3-menu-item:focus-visible,
+.m3-fab:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Top app bar                                                         */
+/* ------------------------------------------------------------------ */
+
+.m3-top-app-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  flex-wrap: wrap;
+}
+
+.m3-top-app-bar__title {
+  font: 400 22px/28px var(--md-sys-typescale-font);
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tlačítka                                                            */
+/* ------------------------------------------------------------------ */
+
+.m3-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  text-decoration: none;
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  box-sizing: border-box;
+  transition: box-shadow 150ms var(--md-sys-motion-standard);
+}
+
+.m3-btn .m3-icon,
+.m3-btn .material-symbols-outlined { font-size: 18px; margin-left: -8px; }
+.m3-btn--icon-trailing .m3-icon:last-child { margin-left: 0; margin-right: -8px; }
+
+.m3-btn--filled { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+.m3-btn--filled:hover { box-shadow: var(--md-sys-elevation-1); }
+.m3-btn--tonal { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.m3-btn--outlined { border: 1px solid var(--md-sys-color-outline); color: var(--md-sys-color-primary); }
+.m3-btn--text { padding: 0 12px; }
+.m3-btn--elevated { background: var(--md-sys-color-surface-container-low); box-shadow: var(--md-sys-elevation-1); }
+
+/* Přepínací tlačítko ve stavu „vybráno" (např. otevřený panel). */
+.m3-btn--tonal[aria-pressed='true'],
+.m3-btn--outlined[aria-pressed='true'],
+.m3-btn--tonal.active,
+.m3-btn--outlined.active {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border-color: transparent;
+}
+
+.m3-btn:disabled,
+.m3-btn[aria-disabled='true'] {
+  cursor: default;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+.m3-btn--text:disabled,
+.m3-btn--outlined:disabled { background: transparent; }
+.m3-btn:disabled::before { display: none; }
+
+/* Split button (M3): akce + rozbalení nabídky. */
+.m3-split {
+  display: inline-flex;
+  gap: 2px;
+}
+.m3-split > .m3-btn:first-child { border-radius: 20px 4px 4px 20px; padding-right: 16px; }
+.m3-split > .m3-btn:last-child,
+.m3-split > .m3-icon-btn:last-child {
+  border-radius: 4px 20px 20px 4px;
+  width: 44px;
+  padding: 0 12px 0 8px;
+}
+.m3-split > .m3-btn:last-child .m3-icon,
+.m3-split > .m3-btn:last-child .material-symbols-outlined { margin: 0; }
+
+/* ------------------------------------------------------------------ */
+/* Icon button                                                         */
+/* ------------------------------------------------------------------ */
+
+.m3-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  flex-shrink: 0;
+}
+.m3-icon-btn .m3-icon,
+.m3-icon-btn .material-symbols-outlined { font-size: 24px; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.m3-icon-btn--small { width: 32px; height: 32px; }
+.m3-icon-btn--small .m3-icon,
+.m3-icon-btn--small .material-symbols-outlined { font-size: 20px; }
+.m3-icon-btn--tonal { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.m3-icon-btn--filled { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+.m3-icon-btn--outlined { border: 1px solid var(--md-sys-color-outline-variant); }
+.m3-icon-btn[aria-pressed='true'],
+.m3-icon-btn.active {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.m3-icon-btn:disabled { color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent); cursor: default; }
+.m3-icon-btn:disabled::before { display: none; }
+
+/* ------------------------------------------------------------------ */
+/* Segmented button                                                    */
+/* ------------------------------------------------------------------ */
+
+.m3-segmented {
+  display: inline-flex;
+  height: 40px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.m3-segmented > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 48px;
+  padding: 0 12px;
+  border: none;
+  border-left: 1px solid var(--md-sys-color-outline);
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  flex: 1 1 0;
+  white-space: nowrap;
+}
+.m3-segmented > button:first-child { border-left: none; }
+.m3-segmented > button.active,
+.m3-segmented > button[aria-pressed='true'] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.m3-segmented > button.active::after,
+.m3-segmented > button[aria-pressed='true']::after {
+  content: 'check';
+  font-family: 'Material Symbols Outlined';
+  font-size: 18px;
+  line-height: 1;
+  order: -1;
+}
+
+/* ------------------------------------------------------------------ */
+/* Filter chip                                                         */
+/* ------------------------------------------------------------------ */
+
+.m3-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-small);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.m3-chip.active,
+.m3-chip[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  padding-left: 8px;
+}
+.m3-chip.active::after,
+.m3-chip[aria-pressed='true']::after {
+  content: 'check';
+  font-family: 'Material Symbols Outlined';
+  font-size: 18px;
+  line-height: 1;
+  order: -1;
+}
+.m3-chip-set { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ------------------------------------------------------------------ */
+/* Switch, checkbox, radio, slider                                     */
+/* ------------------------------------------------------------------ */
+
+input[type='checkbox'].m3-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 52px;
+  height: 32px;
+  margin: 0;
+  flex-shrink: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 2px solid var(--md-sys-color-outline);
+  background: var(--md-sys-color-surface-container-highest);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 150ms var(--md-sys-motion-standard), border-color 150ms;
+}
+input[type='checkbox'].m3-switch::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--md-sys-color-outline);
+  transform: translateY(-50%);
+  transition: left 150ms var(--md-sys-motion-standard), width 150ms, height 150ms, background 150ms;
+}
+input[type='checkbox'].m3-switch:checked {
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+input[type='checkbox'].m3-switch:checked::after {
+  left: 22px;
+  width: 24px;
+  height: 24px;
+  background: var(--md-sys-color-on-primary);
+}
+input[type='checkbox'].m3-switch:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+input[type='checkbox'].m3-switch:disabled { opacity: 0.38; cursor: default; }
+
+input[type='checkbox'].m3-checkbox,
+input[type='radio'].m3-radio {
+  width: 18px;
+  height: 18px;
+  margin: 11px;
+  accent-color: var(--md-sys-color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Dráha M3: aktivní část (primary) vlevo od palce, neaktivní vpravo s tečkou
+   na konci (stop indicator). Výplň v Chrome / Safari z --m3-slider-fill
+   (podíl 0–1, nastavuje ui/m3Slider.ts) — ke středu palce. Velikost palce
+   --m3-slider-thumb (menší posuvník přepíše jen ji).
+   Tečka je za koncem dráhy palce (v pravém odsazení prvku, --m3-slider-end),
+   takže ji palec nezakryje ani na 100 %. */
+input[type='range'].m3-slider {
+  --m3-slider-fill: 1;
+  --m3-slider-thumb: 20px;
+  --m3-slider-end: 10px;
+  --m3-slider-inactive: var(--md-sys-color-secondary-container);
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  padding: 0 var(--m3-slider-end) 0 0;
+  background:
+    radial-gradient(circle 2px at calc(100% - 2px) 50%, var(--md-sys-color-primary) 99%, transparent 100%),
+    linear-gradient(var(--m3-slider-inactive), var(--m3-slider-inactive)) right center / var(--m3-slider-end) 4px no-repeat;
+  cursor: pointer;
+  accent-color: var(--md-sys-color-primary);
+}
+input[type='range'].m3-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px 0 0 2px; /* vpravo navazuje úsek k tečce */
+  background:
+    linear-gradient(
+      to right,
+      var(--md-sys-color-primary) calc(var(--m3-slider-thumb) / 2 + (100% - var(--m3-slider-thumb)) * var(--m3-slider-fill)),
+      var(--m3-slider-inactive) calc(var(--m3-slider-thumb) / 2 + (100% - var(--m3-slider-thumb)) * var(--m3-slider-fill))
+    );
+}
+input[type='range'].m3-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--m3-slider-thumb);
+  height: var(--m3-slider-thumb);
+  margin-top: calc((4px - var(--m3-slider-thumb)) / 2);
+  border-radius: 50%;
+  background: var(--md-sys-color-primary);
+  border: none;
+}
+input[type='range'].m3-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px 0 0 2px;
+  background: var(--m3-slider-inactive);
+}
+input[type='range'].m3-slider::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--md-sys-color-primary); }
+input[type='range'].m3-slider::-moz-range-thumb {
+  width: var(--m3-slider-thumb);
+  height: var(--m3-slider-thumb);
+  border-radius: 50%;
+  background: var(--md-sys-color-primary);
+  border: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* List                                                                */
+/* ------------------------------------------------------------------ */
+
+.m3-list { display: flex; flex-direction: column; padding: 4px 0; margin: 0; list-style: none; }
+
+.m3-list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 8px 12px 8px 16px;
+  box-sizing: border-box;
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-full);
+  text-align: left;
+  width: 100%;
+  border: none;
+  background: transparent;
+  font: inherit;
+}
+.m3-list-item--dense { min-height: 48px; gap: 12px; padding-top: 4px; padding-bottom: 4px; }
+.m3-list-item__leading { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 24px; color: var(--md-sys-color-on-surface-variant); }
+.m3-list-item__content { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.m3-list-item__headline {
+  font: 400 16px/24px var(--md-sys-typescale-font);
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m3-list-item--dense .m3-list-item__headline { font-size: 14px; line-height: 20px; letter-spacing: 0.25px; }
+.m3-list-item__supporting {
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.m3-list-item__trailing {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 500 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.m3-list-item.active,
+.m3-list-item[aria-selected='true'] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.m3-list-item--muted { opacity: 0.5; }
+
+.m3-subheader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ------------------------------------------------------------------ */
+/* Navigation drawer, side sheet                                       */
+/* ------------------------------------------------------------------ */
+
+.m3-drawer {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
+  overflow-y: auto;
+}
+
+.m3-side-sheet {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  box-sizing: border-box;
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
+  border-left: 1px solid var(--md-sys-color-outline-variant);
+}
+.m3-side-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 64px;
+  padding: 8px 12px 8px 24px;
+  box-sizing: border-box;
+}
+.m3-side-sheet__title {
+  flex: 1 1 auto;
+  margin: 0;
+  font: 400 22px/28px var(--md-sys-typescale-font);
+}
+
+/* ------------------------------------------------------------------ */
+/* Menu                                                                */
+/* ------------------------------------------------------------------ */
+
+.m3-menu {
+  min-width: 112px;
+  max-width: 320px;
+  padding: 8px 0;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-2);
+}
+.m3-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  text-align: left;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  box-sizing: border-box;
+}
+.m3-menu-item__text { display: flex; flex-direction: column; min-width: 0; }
+.m3-menu-item__supporting { font: 400 12px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
+.m3-menu__label {
+  padding: 8px 12px 4px;
+  font: 500 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ------------------------------------------------------------------ */
+/* Dialog                                                              */
+/* ------------------------------------------------------------------ */
+
+.m3-scrim { background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent); }
+
+.m3-dialog {
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  padding: 24px 0 0;
+  box-sizing: border-box;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-3);
+}
+.m3-dialog--wide { max-width: 1040px; width: calc(100vw - 48px); }
+.m3-dialog__icon { align-self: center; color: var(--md-sys-color-secondary); font-size: 24px; margin-bottom: 16px; }
+.m3-dialog__headline {
+  margin: 0;
+  padding: 0 24px 16px;
+  font: 400 24px/32px var(--md-sys-typescale-font);
+  color: var(--md-sys-color-on-surface);
+}
+.m3-dialog__content {
+  padding: 0 24px;
+  overflow-y: auto;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.m3-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 24px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Search, badge, divider, card, FAB                                   */
+/* ------------------------------------------------------------------ */
+
+.m3-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  box-sizing: border-box;
+}
+.m3-search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: 400 16px/24px var(--md-sys-typescale-font);
+  letter-spacing: 0.5px;
+}
+.m3-search input::placeholder { color: var(--md-sys-color-on-surface-variant); }
+.m3-search:focus-within { outline: 2px solid var(--md-sys-color-primary); }
+
+.m3-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+  font: 500 11px/16px var(--md-sys-typescale-font);
+  box-sizing: border-box;
+}
+.m3-badge--neutral { background: var(--md-sys-color-surface-container-highest); color: var(--md-sys-color-on-surface-variant); }
+.m3-badge--warning { background: var(--app-color-warning-container); color: var(--app-color-on-warning-container); }
+
+.m3-divider { height: 1px; border: none; margin: 8px 0; background: var(--md-sys-color-outline-variant); }
+
+.m3-card {
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  padding: 16px;
+}
+.m3-card--outlined { background: var(--md-sys-color-surface); border: 1px solid var(--md-sys-color-outline-variant); }
+
+.m3-fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-3);
+}
+
+.m3-tooltip {
+  padding: 4px 8px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  font: 400 12px/16px var(--md-sys-typescale-font);
+}
+
+.m3-swatch-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }

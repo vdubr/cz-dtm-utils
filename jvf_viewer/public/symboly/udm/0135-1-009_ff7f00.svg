@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="488.781" height="488.781" viewBox="0 0 18.473616467236 18.473616467236">
+<title>0135-1-009</title>
+<desc>Knihovna symbolu_UDM 2 - 0135-1-009</desc>
+<g id="0135-1-009" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 18.473616467236,0 18.473616467236,18.473616467236 0,18.473616467236" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="6.04783185566483,12.4257846115711 12.4257846115711,12.4257846115711 12.4257846115711,6.04783185566483 6.04783185566483,6.04783185566483 6.04783185566483,12.4257846115711" style="stroke:#ff7f00" />
+		<text x="0" y="1.133858" transform="translate(9.28972161944477,8.84751689503526) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#ff7f00;stroke:none">TEP</text>
+	</g>
+</g>
+</svg>

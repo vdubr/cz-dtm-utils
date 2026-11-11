@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="819.581" height="819.581" viewBox="0 0 30.9762936325919 30.9762936325919">
+<title>1043-1-503</title>
+<desc>Knihovna symbolu_UDM 2 - 1043-1-503</desc>
+<g id="1043-1-503" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 30.9762936325919,0 30.9762936325919,30.9762936325919 0,30.9762936325919" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polygon points="12.848998249967,9.81133409167864 18.1403368326448,9.81133409167864 12.848998249967,21.1499167688454 18.1403368326448,21.1499167688454 12.848998249967,9.81133409167864" style="stroke:#000000" />
+		<circle cx="15.4881468162959" cy="15.4881468162959" r="0.999283072439462" style="stroke:#000000;fill:#000000"/>
+		<text x="0" y="1.889734" transform="translate(22.4349184698401,15.559957839918) rotate(-0.000019)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291254" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">PO</text>
+	</g>
+</g>
+</svg>

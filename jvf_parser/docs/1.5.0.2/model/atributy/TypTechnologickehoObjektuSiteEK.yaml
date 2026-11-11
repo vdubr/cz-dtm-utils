@@ -1,0 +1,15 @@
+id: TypTechnologickehoObjektuSiteEK
+nazev: Typ technologického objektu sítě EK
+namespace: atr
+popis: Typ technologického objektu sítě elektronických komunikací
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: radioteleskop
+ - hodnota: 2
+   popis: technologická budova EK
+ - hodnota: 3
+   popis: telekomunikační věž
+ - hodnota: 4
+   popis: technologický kontejner sítě EK

@@ -24,3 +24,30 @@ export async function loadSample(page: Page, name = 'ukazka_ZPS.xml'): Promise<v
   await expect(page.locator('#jvf-layers-list .empty-hint')).toHaveCount(0);
   await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
 }
+
+/** Otevře spouštěč nástrojů v hlavičce a klikne na dlaždici nástroje (dialog při načtených datech řeší test). */
+export async function openTool(page: Page, mode: 'jvf' | 'udm' | 'jzm'): Promise<void> {
+  await page.locator('#btn-app-launcher').click();
+  await page.locator(`.app-launcher-tile[data-mode-btn="${mode}"]`).click();
+}
+
+/** Přepne nástroj spouštěčem v hlavičce (bez načtených dat — bez dialogu). */
+export async function switchMode(page: Page, mode: 'jvf' | 'udm' | 'jzm'): Promise<void> {
+  await openTool(page, mode);
+  await expect(page.locator('html')).toHaveAttribute('data-app', mode);
+}
+
+/** Otevře kartu překryvu nad mapou (je-li zavřená) — přepínač a vrstvy překryvu jsou v ní. */
+async function openOverlayCard(page: Page, id: 'dtm' | 'kn'): Promise<void> {
+  if (await page.locator(`#${id}-card`).isHidden()) await page.locator(`#btn-${id}-menu`).click();
+}
+
+/** Otevře kartu „Katastr" nad mapou (je-li zavřená). */
+export async function openKnCard(page: Page): Promise<void> {
+  await openOverlayCard(page, 'kn');
+}
+
+/** Otevře kartu „DTM" nad mapou (je-li zavřená). */
+export async function openDtmCard(page: Page): Promise<void> {
+  await openOverlayCard(page, 'dtm');
+}

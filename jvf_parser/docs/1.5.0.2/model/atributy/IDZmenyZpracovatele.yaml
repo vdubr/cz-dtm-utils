@@ -1,0 +1,9 @@
+id: IDZmenyZpracovatele
+nazev: ID změny zpracovatele
+namespace: atr
+popis: |-
+  Identifikátor změny v IS zpracovatele
+  Zadává zpracovatel
+nillable: false
+typ: String
+maxDelka: 255

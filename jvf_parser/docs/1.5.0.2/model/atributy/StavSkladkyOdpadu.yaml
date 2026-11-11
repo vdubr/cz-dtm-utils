@@ -1,0 +1,13 @@
+id: StavSkladkyOdpadu
+nazev: Stav skládky odpadů
+namespace: atr
+popis: Stav skládky odpadů
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: v provozu
+ - hodnota: 2
+   popis: uzavřeno
+ - hodnota: 99
+   popis: nezjištěno

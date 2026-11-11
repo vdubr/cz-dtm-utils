@@ -13,6 +13,10 @@ import { resolveProjectKey } from './projects.js';
  *   - **projekt** — při ≥2 načtených JVF souborech lze skrýt záznamy
  *     jednotlivých projektů (chips v Přehledu prvků). Klíčem je id
  *     projektu (`state/projects.ts`).
+ *   - **obsahová část** — výběr jedné části (ZPS, TI, ZPSUDM, ZDT, …)
+ *     tlačítky v Přehledu prvků; `null` = všechny. Část je vlastnost
+ *     objektového typu (`ObjektovyTyp.obsahovaCast`), proto ji 2D/3D nesou
+ *     per prvek (`jvfPart`) a tabulka filtruje celé skupiny.
  *
  * Architektura: filtr je průnik (AND) dimenzí, `matchesFeatureFilter` je
  * jediné místo, kde se dimenze vyhodnocují. Nové dimenze přidají vlastní
@@ -47,6 +51,9 @@ const hiddenLevels = new Set<LevelKey>();
 
 /** Skryté projekty (id projektu). Prázdná množina = dimenze neaktivní. */
 const hiddenProjects = new Set<string>();
+
+/** Zobrazené obsahové části (lze jich vybrat více); prázdná = všechny (dimenze neaktivní). */
+const contentParts = new Set<string>();
 
 const listeners = new Set<FeatureFilterListener>();
 
@@ -120,6 +127,26 @@ export function setProjectVisible(key: string, visible: boolean): void {
   if (changed) notify();
 }
 
+/** Vybrané obsahové části (prázdná množina = všechny). */
+export function getContentPartFilter(): ReadonlySet<string> {
+  return contentParts;
+}
+
+/** Vybrat obsahové části (prázdný seznam = všechny). Notifikuje jen při změně. */
+export function setContentPartFilter(parts: readonly string[]): void {
+  const next = new Set(parts);
+  if (next.size === contentParts.size && [...next].every((p) => contentParts.has(p))) return;
+  contentParts.clear();
+  for (const p of next) contentParts.add(p);
+  notify();
+}
+
+/** Je obsahová část viditelná? Prvek bez části se nikdy neskrývá. */
+export function isContentPartVisible(part: string | null | undefined): boolean {
+  if (contentParts.size === 0 || part == null) return true;
+  return contentParts.has(part);
+}
+
 /**
  * Prochází záznam všemi dimenzemi filtru? Jediné místo vyhodnocení —
  * 2D style fn i 3D visibility používají per-feature uložené klíče
@@ -135,7 +162,7 @@ export function matchesFeatureFilter(zaznam: ZaznamObjektu): boolean {
 
 /** Je filtr aktivní (aspoň jedna hodnota skrytá)? */
 export function isFeatureFilterActive(): boolean {
-  return hiddenLevels.size > 0 || hiddenProjects.size > 0;
+  return hiddenLevels.size > 0 || hiddenProjects.size > 0 || contentParts.size > 0;
 }
 
 /**
@@ -144,9 +171,10 @@ export function isFeatureFilterActive(): boolean {
  * nemá nová data ovlivňovat.
  */
 export function resetFeatureFilter(): void {
-  if (hiddenLevels.size === 0 && hiddenProjects.size === 0) return;
+  if (hiddenLevels.size === 0 && hiddenProjects.size === 0 && contentParts.size === 0) return;
   hiddenLevels.clear();
   hiddenProjects.clear();
+  contentParts.clear();
   notify();
 }
 

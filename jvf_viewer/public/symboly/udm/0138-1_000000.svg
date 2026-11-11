@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="551.581" height="551.581" viewBox="0 0 20.8471597743229 20.8471597743229">
+<title>0138-1</title>
+<desc>Knihovna symbolu_UDM 2 - 0138-1</desc>
+<g id="0138-1" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 20.8471597743229,0 20.8471597743229,20.8471597743229 0,20.8471597743229" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<ellipse cx="10.4240868306914" cy="10.423792468826" rx="3.77953220027173" ry="3.77952990269527" transform="rotate(-45.0 10.4240868306914 10.423792468826)" style="stroke:#000000"/>
+		<polyline points="7.75145390290914,13.0957058714138 13.0957058714138,7.75145390290914" style="stroke:#000000" />
+	</g>
+</g>
+</svg>

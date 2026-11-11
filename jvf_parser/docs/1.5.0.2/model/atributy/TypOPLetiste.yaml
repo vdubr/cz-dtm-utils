@@ -1,0 +1,21 @@
+id: TypOPLetiste
+nazev: Typ ochranného pásma letiště
+namespace: atr
+popis: Typ ochranného pásma letiště
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: OP se zákazem staveb
+ - hodnota: 2
+   popis: OP s výškovým omezením staveb
+ - hodnota: 3
+   popis: OP proti nebezpečným a klamavým světlům
+ - hodnota: 4
+   popis: OP se zákazem laserových zařízení
+ - hodnota: 5
+   popis: OP s omezením staveb vzdušných - vedení VN a VVN
+ - hodnota: 6
+   popis: OP hlukové
+ - hodnota: 7
+   popis: OP ornitologické

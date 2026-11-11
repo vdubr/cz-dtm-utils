@@ -9,9 +9,12 @@
  */
 export declare function extractText(val: unknown): string | null;
 /**
- * Extract a primitive attribute value from a parsed element value.
- * Handles the `{#text: ..., @_xmlns: ...}` wrapper form.
+ * `tagValueProcessor` pro `XMLParser`: hodnoty identifikátorů se nepřevádějí
+ * na čísla (`parseTagValue`), ale zůstávají doslova jako text. Jinak by
+ * `00123` ztratilo úvodní nuly a `1e5` se změnilo na `100000` — ID by pak
+ * neodpovídalo souboru ani protokolu chyb IS DMVS. `null` = „neparsovat".
  */
+export declare function keepIdentifierText(tagName: string, value: string): string | null;
 /**
  * Pick the first present child among `keys` from a parsed element object.
  *
@@ -23,5 +26,9 @@ export declare function extractText(val: unknown): string | null;
  * that behaviour in one place instead of duplicating the loop everywhere.
  */
 export declare function pickChild(obj: Record<string, unknown>, keys: readonly string[]): Record<string, unknown> | undefined;
+/**
+ * Extract a primitive attribute value from a parsed element value.
+ * Handles the `{#text: ..., @_xmlns: ...}` wrapper form.
+ */
 export declare function extractAttributeValue(val: unknown): string | number | boolean | null;
 //# sourceMappingURL=xml-helpers.d.ts.map

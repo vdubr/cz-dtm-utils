@@ -1,0 +1,17 @@
+id: TypOPDrazniStavby
+nazev: Typ ochranného pásma drážní stavby
+namespace: atr
+popis: Typ ochranného pásma drážní stavby
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: OP železniční tratě
+ - hodnota: 2
+   popis: OP tramvajové dráhy
+ - hodnota: 3
+   popis: OP pozemní lanové dráhy
+ - hodnota: 4
+   popis: OP speciální dráhy
+ - hodnota: 5
+   popis: OP visuté lanové dráhy

@@ -4,7 +4,7 @@ Browser application for inspecting and validating **JVF DTM 1.4.3** files —
 2D map, 3D scene with terrain, topological validation and an error panel
 with click-to-zoom.
 
-> **Live:** https://cz-dtm-utils.vercel.app/jvf_viewer/
+> **Live:** https://cz-dtm-utils.vercel.app/
 >
 > Files are processed entirely in the browser. Nothing is uploaded to a
 > server — the only outbound requests are tiles and DEM tiles from public
@@ -160,7 +160,7 @@ The `api/dmr5g.ts` Edge function lives at the **repository root**, not under
 
 ## License
 
-[MIT](../LICENSE) © 2026 Vojtěch Dubrovský
+Proprietární — všechna práva vyhrazena. © 2026 Vojtěch Dubrovský, viz [LICENSE](../LICENSE).
 
 ČÚZK basemaps, the DMR5G terrain dataset and the official Symbol Catalog
 are property of the Czech Office for Surveying, Mapping and Cadastre (ČÚZK).

@@ -1,0 +1,13 @@
+id: UmisteniHeliportu
+nazev: Umístění heliportu
+namespace: atr
+popis: Umístění heliportu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: úrovňový
+ - hodnota: 2
+   popis: vyvýšený
+ - hodnota: 99
+   popis: nezjištěno

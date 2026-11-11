@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="60.895033790076" height="60.895033790076">
+<title>1040-1-519</title>
+<desc>Knihovna symbolu_UDM 2 - 1040-1-519</desc>
+<g id="1040-1-519" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 60.895033790076,0 60.895033790076,60.895033790076 0,60.895033790076" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polygon points="23.8333436666907,24.4947609895254 37.0616901233853,24.4947609895254 37.0616901233853,36.4002728005505 23.8333436666907,36.4002728005505 23.8333436666907,24.4947609895254" style="stroke:#000000" />
+		<polyline points="30.447516895038,24.4947609895254 30.447516895038,15.2349184698392 32.4317688635422,15.2349184698392" style="stroke:#000000" />
+		<path d="M 37.0616901233853 21.1876743753518 A 5.95275590551256 4.6299212598431 90.0 1 1 37.0616901233853 9.28216256432666" style="stroke:#000000"/>
+		<text x="0" y="1.889764" transform="translate(30.447516895038,27.8018476036991)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291339" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">IRT</text>
+		<text x="0" y="1.889764" transform="translate(30.451296422597,33.0931861863769)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291339" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">RS</text>
+	</g>
+</g>
+</svg>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="24.6266873333785" height="24.6266873333785">
+<title>0207-4-002</title>
+<desc>Knihovna symbolu_UDM 2 - 0207-4-002</desc>
+<g id="0207-4-002" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 24.6266873333785,0 24.6266873333785,24.6266873333785 0,24.6266873333785" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<path d="M 10.2209620812724 9.65780936047918 A 1.13385826771668 1.13385826771668 -112.114472 0 0 10.3618569057604 11.8054610973289" style="stroke:#000000"/>
+		<path d="M 14.3847701510459 12.8539176016896 A 1.13385826771668 1.13385826771668 -75.39245 0 1 14.5349139554679 14.9977633829107" style="stroke:#000000"/>
+		<polyline points="12.3133436671398,7.65570113458032 12.3133436671398,17.1045200322193" style="stroke:#000000" />
+		<polyline points="15.1479893364315,7.65570113458032 10.219485399423,9.65885074087979" style="stroke:#000000" />
+		<polyline points="10.3631074466671,11.8056223944234 14.3845247695023,12.8525515282818" style="stroke:#000000" />
+		<polyline points="14.5357058718645,14.9993231818253 9.4786979978481,17.1045200322193" style="stroke:#000000" />
+	</g>
+</g>
+</svg>

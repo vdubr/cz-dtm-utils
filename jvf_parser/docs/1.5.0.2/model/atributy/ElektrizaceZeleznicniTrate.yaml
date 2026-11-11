@@ -1,0 +1,13 @@
+id: ElektrizaceZeleznicniTrate
+nazev: Elektrizace železniční tratě
+namespace: atr
+popis: Elektrizace železniční tratě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: elektrizovaná
+ - hodnota: 2
+   popis: neelektrizovaná
+ - hodnota: 99
+   popis: nezjištěno

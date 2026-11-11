@@ -1,0 +1,7 @@
+id: IDPodani
+nazev: ID podání
+namespace: atr
+popis: Identifikátor podání
+nillable: false
+typ: String
+maxDelka: 255

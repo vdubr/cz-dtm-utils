@@ -1,0 +1,11 @@
+id: TypZarizeniVodovodniPripojky
+nazev: Typ zařízení vodovodní přípojky
+namespace: atr
+popis: Typ zařízení vodovodní přípojky
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 2
+   popis: šachta měrná a kontrolní
+ - hodnota: 98
+   popis: jiné

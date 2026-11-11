@@ -10,8 +10,9 @@ function parseCommonAttributes(savoEl: unknown): CommonAttributes {
 
   const obj = savoEl as Record<string, unknown>;
 
-  const id = extractText(obj['ID']);
-  if (id != null) common.id = id;
+  // Prázdné `<ID/>` (nový prvek bez přiděleného ID) = ID chybí.
+  const id = extractText(obj['ID'])?.trim();
+  if (id) common.id = id;
 
   const idZmeny = extractText(obj['IDZmeny']);
   if (idZmeny != null) common.idZmeny = idZmeny;

@@ -22,5 +22,5 @@ export { ENUM_LABELS } from './generated/enum-labels.js';
 // ---------------------------------------------------------------------------
 // Re-export verzí (z jvf-dtm-types) — viewer importuje verze přes parser
 // ---------------------------------------------------------------------------
-export { SUPPORTED_VERSIONS, DEFAULT_VERSION, isSupportedVersion, } from 'jvf-dtm-types';
+export { JVF_VERSIONS, SUPPORTED_VERSIONS, DEFAULT_VERSION, LATEST_JVF_VERSION, isSupportedVersion, isJvfBaseVersion, allSupportedVersions, baseJvfVersionOf, formatVersionLabel, DIALECTS, getDialect, dialectOf, dialectVersionId, rawDialectVersion, isDialectVersion, UDM_VERSIONS, LATEST_UDM_VERSION, isUdmVersion, udmVersionId, ZXML_VERSIONS, LATEST_ZXML_VERSION, isZxmlVersion, } from 'jvf-dtm-types';
 //# sourceMappingURL=index.js.map

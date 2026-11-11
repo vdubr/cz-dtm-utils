@@ -1,0 +1,31 @@
+id: ZpusobPorizeniTI
+nazev: Způsob pořízení TI
+namespace: atr
+popis: Způsob pořízení objektu TI
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: geodeticky - terestricky
+ - hodnota: 2
+   popis: geodeticky - terestricky před záhozem
+ - hodnota: 3
+   popis: geodeticky - terestricky po záhozu
+ - hodnota: 4
+   popis: geodeticky - fotogrammetricky
+ - hodnota: 5
+   popis: geodeticky - pozemním laserovým skenováním
+ - hodnota: 6
+   popis: přibližným zákresem
+ - hodnota: 7
+   popis: vyhledáním
+ - hodnota: 8
+   popis: odvozením
+ - hodnota: 9
+   popis: geodeticky - technologií GNSS
+ - hodnota: 10
+   popis: geodeticky - technologií GNSS před záhozem
+ - hodnota: 11
+   popis: geodeticky - technologií GNSS po záhozu
+ - hodnota: 99
+   popis: nezjištěno

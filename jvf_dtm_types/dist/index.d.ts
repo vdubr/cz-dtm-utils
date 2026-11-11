@@ -7,4 +7,5 @@
  */
 export * from './1.4.3/types.js';
 export * from './versions.js';
+export * from './dialects.js';
 //# sourceMappingURL=index.d.ts.map

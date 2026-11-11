@@ -1,0 +1,23 @@
+id: TypVyrobnyElektriny
+nazev: Typ výrobny elektřiny
+namespace: atr
+popis: Typ výrobny elektřiny
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: geotermální
+ - hodnota: 2
+   popis: jaderná
+ - hodnota: 3
+   popis: vodní
+ - hodnota: 4
+   popis: fotovoltaická
+ - hodnota: 5
+   popis: tepelná
+ - hodnota: 6
+   popis: větrná
+ - hodnota: 7
+   popis: bioplynová
+ - hodnota: 99
+   popis: nezjištěno

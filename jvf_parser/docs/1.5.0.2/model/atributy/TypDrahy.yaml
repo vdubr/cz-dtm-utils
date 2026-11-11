@@ -1,0 +1,19 @@
+id: TypDrahy
+nazev: Typ dráhy
+namespace: atr
+popis: Typ dráhy
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: železniční
+ - hodnota: 2
+   popis: tramvajová
+ - hodnota: 3
+   popis: lanová
+ - hodnota: 4
+   popis: speciální
+ - hodnota: 5
+   popis: trolejbusová
+ - hodnota: 99
+   popis: nezjištěno/neurčeno

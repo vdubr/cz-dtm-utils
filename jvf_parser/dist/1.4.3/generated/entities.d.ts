@@ -791,7 +791,7 @@ export interface ZemedelskaPlochaDefinicniBodAttrs {
 export interface ZemedelskaPlochaPlochaAttrs {
     TypZemedelskePlochy?: number;
 }
-/** Catalog of all 358 JVF DTM entity types, keyed by XML element name */
+/** Catalog of all 358 JVF DTM 1.4.3 entity types, keyed by XML element name */
 export declare const ENTITY_CATALOG: Record<string, EntityMeta>;
 /** Map of element names to their specific attribute interface types */
 export type EntityAttrsMap = {

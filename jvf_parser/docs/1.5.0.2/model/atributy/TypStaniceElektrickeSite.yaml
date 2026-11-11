@@ -1,0 +1,21 @@
+id: TypStaniceElektrickeSite
+nazev: Typ stanice elektrické sítě
+namespace: atr
+popis: Typ stanice elektrické sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: transformační stanice
+ - hodnota: 2
+   popis: stanice distribuční soustavy
+ - hodnota: 3
+   popis: spínací stanice
+ - hodnota: 4
+   popis: měnírna
+ - hodnota: 5
+   popis: stanice přenosové soustavy
+ - hodnota: 6
+   popis: trakční napájecí stanice
+ - hodnota: 98
+   popis: jiná

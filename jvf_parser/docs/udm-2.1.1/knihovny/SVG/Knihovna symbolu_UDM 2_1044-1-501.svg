@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="20.9832227664489" height="20.9832227664489">
+<title>1044-1-501</title>
+<desc>Knihovna symbolu_UDM 2 - 1044-1-501</desc>
+<g id="1044-1-501" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 20.9832227664489,0 20.9832227664489,20.9832227664489 0,20.9832227664489" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<path d="M 13.0826436410716 8.76551442650237 A 2.59203569228157 2.59203569228157 0.472289 1 0 7.9051080991763 8.76331479063095" style="stroke:#000000"/>
+		<polyline points="10.4916113832244,10.4916113832244 14.3081783123581,7.94723343046752 14.3031893359825,13.0359893359814 6.67504445409081,7.94723343046752 6.67504445409081,13.0359893359814 10.4916113832244,10.4916113832244" style="stroke:#000000" />
+		<text x="0" y="1.133858" transform="translate(10.4840523281063,8.01224130448398)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="3.174803" font-stretch="condensed" text-anchor="middle" style="fill:#000000;stroke:none">BU</text>
+	</g>
+</g>
+</svg>

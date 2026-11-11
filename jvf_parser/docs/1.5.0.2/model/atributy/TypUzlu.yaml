@@ -1,0 +1,21 @@
+id: TypUzlu
+nazev: Typ uzlu
+namespace: atr
+popis: Typ uzlu
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: křižovatka
+ - hodnota: 2
+   popis: odpočívka
+ - hodnota: 3
+   popis: hraniční přechod ČR
+ - hodnota: 4
+   popis: hranice přívozu
+ - hodnota: 5
+   popis: hranice nevybudovaného úseku
+ - hodnota: 6
+   popis: hranice vojenského prostoru
+ - hodnota: 7
+   popis: konec úseku

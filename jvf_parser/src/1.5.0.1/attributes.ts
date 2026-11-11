@@ -9,7 +9,7 @@ import type { CommonAttributes } from './types.js';
 import { extractText, extractAttributeValue } from '../1.4.3/xml-helpers.js';
 
 /** Sdílené atributové skupiny 1.5.0.1 (1.4.3 sada + PSPI). */
-const SHARED_BLOCK_NAMES = [
+const KNOWN_SHARED_BLOCK_NAMES = [
   'SpolecneAtributyObjektuZPS',
   'SpolecneAtributyObjektuDefinicnichBodu',
   'SpolecneAtributyObjektuTI',
@@ -21,14 +21,28 @@ const SHARED_BLOCK_NAMES = [
   'SpolecneAtributyObjektuPSPI',
 ] as const;
 
+/**
+ * Je klíč sdílená atributová skupina, kterou zploštit do `attributes`?
+ * Kromě známých skupin JVF i dialektové bloky `SpolecneAtributyObjektu…`
+ * (např. ŽXML `SpolecneAtributyObjektuZDTSZ`) — jinak by se jejich obsah
+ * ztratil jako `null`.
+ */
+function isSharedBlockName(key: string): boolean {
+  return (
+    (KNOWN_SHARED_BLOCK_NAMES as readonly string[]).includes(key) ||
+    (key.startsWith('SpolecneAtributyObjektu') && key !== 'SpolecneAtributyVsechObjektu')
+  );
+}
+
 function parseCommonAttributes(savoEl: unknown): CommonAttributes {
   const common: CommonAttributes = {};
   if (savoEl == null || typeof savoEl !== 'object') return common;
   const obj = savoEl as Record<string, unknown>;
 
+  // Prázdný element (`<ID/>` u nového prvku) = hodnota chybí.
   const set = (key: keyof CommonAttributes, raw: unknown): void => {
-    const v = extractText(raw);
-    if (v != null) common[key] = v;
+    const v = extractText(raw)?.trim();
+    if (v) common[key] = v;
   };
 
   set('id', obj['ID']);
@@ -73,17 +87,15 @@ export function parseAtributyObjektu1501(atributyEl: unknown): {
 
   Object.assign(commonAttributes, parseCommonAttributes(obj['SpolecneAtributyVsechObjektu']));
 
-  for (const blockKey of SHARED_BLOCK_NAMES) {
-    const block = obj[blockKey];
-    if (block != null && typeof block === 'object') {
+  for (const [key, block] of Object.entries(obj)) {
+    if (isSharedBlockName(key) && block != null && typeof block === 'object') {
       flattenSharedBlock(block as Record<string, unknown>, attributes);
     }
   }
 
-  const skipKeys = new Set<string>(['SpolecneAtributyVsechObjektu', ...SHARED_BLOCK_NAMES]);
   for (const [key, val] of Object.entries(obj)) {
     if (key.startsWith('@_')) continue;
-    if (skipKeys.has(key)) continue;
+    if (key === 'SpolecneAtributyVsechObjektu' || isSharedBlockName(key)) continue;
     const extracted = extractAttributeValue(val);
     if (extracted !== null) {
       attributes[key] = extracted;

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:atr="atr" xmlns:atrsz="atrsz" xmlns:cmn="cmn" xmlns:gml="http://www.opengis.net/gml/3.2" targetNamespace="osapok" xmlns:osapok="osapok">
+  <xs:import schemaLocation="../common/atributy.xsd" namespace="atr"/>
+  <xs:import schemaLocation="../common/atributy_sz.xsd" namespace="atrsz"/>
+  <xs:import schemaLocation="../common/common.xsd" namespace="cmn"/>
+  <xs:import schemaLocation="../ext/gml/gml.xsd" namespace="http://www.opengis.net/gml/3.2"/>
+  <xs:element name="OsaPozemniKomunikace" type="osapok:OsaPozemniKomunikaceType"/>
+  <xs:complexType name="OsaPozemniKomunikaceType">
+    <xs:sequence>
+      <xs:element name="ObjektovyKod" type="xs:string" fixed="4"/>
+      <xs:element name="ObjektovyTypNazev" fixed="osa pozemní komunikace">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="code_base" type="xs:string" fixed="0100000004" use="required"/>
+              <xs:attribute name="code_suffix" type="xs:string" fixed="02" use="required"/>
+              <xs:attribute name="dim" type="xs:integer" fixed="3" use="prohibited"/>
+              <xs:attribute name="gia" type="xs:boolean" fixed="1" use="prohibited"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:sequence>
+        <xs:element name="KategorieObjektu" type="xs:string" fixed="Dopravní stavby">
+          <xs:annotation>
+            <xs:documentation>Kategorie objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="SkupinaObjektu" type="xs:string" fixed="Silniční doprava">
+          <xs:annotation>
+            <xs:documentation>Skupina objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ObsahovaCast" type="xs:string" fixed="DI">
+          <xs:annotation>
+            <xs:documentation>Zařazení objektu do obsahové části dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ZaznamyObjektu">
+          <xs:annotation>
+            <xs:documentation>Jednotlivé záznamy daného objektu</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="osapok:ZaznamObjektu" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ZaznamObjektu" abstract="true"/>
+  <xs:element name="ZaznamObjektuRefV" type="osapok:RefV" substitutionGroup="osapok:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuRefN" type="osapok:RefN" substitutionGroup="osapok:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuIns" type="osapok:Ins" substitutionGroup="osapok:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuUpd" type="osapok:Upd" substitutionGroup="osapok:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuDel" type="osapok:Del" substitutionGroup="osapok:ZaznamObjektu"/>
+  <xs:complexType name="RefV">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuRefVType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZRefVType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDI" type="atr:SpolecneAtributyObjektuDIRefVType"/>
+            <xs:element ref="atr:PocetJizdnichPruhu"/>
+            <xs:element ref="atr:CisloETahu"/>
+            <xs:element ref="atr:PrevazujiciPovrch"/>
+            <xs:element ref="atr:KategoriePozemniKomunikace"/>
+            <xs:element ref="atr:TypUsekuPozemniKomunikace"/>
+            <xs:element ref="atr:OznaceniKomunikace"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuLinie3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RefN">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuRefNType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZRefNType"/>
+            <xs:element name="SpolecneAtributyObjektuDI" type="atr:SpolecneAtributyObjektuDIRefNType"/>
+            <xs:element ref="atr:PocetJizdnichPruhu"/>
+            <xs:element ref="atr:CisloETahu"/>
+            <xs:element ref="atr:PrevazujiciPovrch"/>
+            <xs:element ref="atr:KategoriePozemniKomunikace"/>
+            <xs:element ref="atr:TypUsekuPozemniKomunikace"/>
+            <xs:element ref="atr:OznaceniKomunikace"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuLinie3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Ins">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuInsType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZInsType"/>
+            <xs:element name="SpolecneAtributyObjektuDI" type="atr:SpolecneAtributyObjektuDIInsType"/>
+            <xs:element ref="atr:PocetJizdnichPruhu"/>
+            <xs:element ref="atr:CisloETahu"/>
+            <xs:element ref="atr:PrevazujiciPovrch"/>
+            <xs:element ref="atr:KategoriePozemniKomunikace"/>
+            <xs:element ref="atr:TypUsekuPozemniKomunikace"/>
+            <xs:element ref="atr:OznaceniKomunikace"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuLinie3DType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Upd">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuUpdType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZUpdType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDI" type="atr:SpolecneAtributyObjektuDIUpdType" minOccurs="0"/>
+            <xs:element ref="atr:PocetJizdnichPruhu" minOccurs="0"/>
+            <xs:element ref="atr:CisloETahu" minOccurs="0"/>
+            <xs:element ref="atr:PrevazujiciPovrch" minOccurs="0"/>
+            <xs:element ref="atr:KategoriePozemniKomunikace" minOccurs="0"/>
+            <xs:element ref="atr:TypUsekuPozemniKomunikace" minOccurs="0"/>
+            <xs:element ref="atr:OznaceniKomunikace" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuLinie3DType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Del">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuDelType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZDelType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDI" type="atr:SpolecneAtributyObjektuDIDelType" minOccurs="0"/>
+            <xs:element ref="atr:PocetJizdnichPruhu" minOccurs="0"/>
+            <xs:element ref="atr:CisloETahu" minOccurs="0"/>
+            <xs:element ref="atr:PrevazujiciPovrch" minOccurs="0"/>
+            <xs:element ref="atr:KategoriePozemniKomunikace" minOccurs="0"/>
+            <xs:element ref="atr:TypUsekuPozemniKomunikace" minOccurs="0"/>
+            <xs:element ref="atr:OznaceniKomunikace" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuLinie3DType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

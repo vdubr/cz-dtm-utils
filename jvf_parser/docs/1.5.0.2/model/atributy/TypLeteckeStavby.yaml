@@ -1,0 +1,21 @@
+id: TypLeteckeStavby
+nazev: Typ letecké stavby
+namespace: atr
+popis: Typ letecké stavby
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: podzemní
+ - hodnota: 2
+   popis: pojezdová dráha
+ - hodnota: 3
+   popis: odbavovací plocha
+ - hodnota: 4
+   popis: manipulační plocha
+ - hodnota: 5
+   popis: odbavovací budova
+ - hodnota: 6
+   popis: hangár
+ - hodnota: 98
+   popis: jiná

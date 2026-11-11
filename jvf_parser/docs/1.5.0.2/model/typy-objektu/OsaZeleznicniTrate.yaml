@@ -1,0 +1,404 @@
+id: OsaZeleznicniTrate
+namespace: osazel
+nazev: osa železniční tratě
+skupinaPrvku: DrazniDoprava
+obsahovaCast: DI
+typGeometrie: Linie
+code:
+  base: "0100000020"
+  suffix: "02"
+dim: 3
+gia: 1
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuDI
+   typ: sada
+   sada: SpolecneAtributyObjektuDI
+ - id: TypUsekuZeleznicniTrate
+   typ: atribut
+   volitelny: false
+   atribut: TypUsekuZeleznicniTrate
+ - id: KategorieZeleznicniTrate
+   typ: atribut
+   volitelny: false
+   atribut: KategorieZeleznicniTrate
+ - id: TypZeleznicniTrate
+   typ: atribut
+   volitelny: false
+   atribut: TypZeleznicniTrate
+ - id: OznaceniTrate
+   typ: atribut
+   volitelny: false
+   atribut: OznaceniTrate
+ - id: PocetKoleji
+   typ: atribut
+   volitelny: false
+   atribut: PocetKoleji
+ - id: ElektrizaceZeleznicniTrate
+   typ: atribut
+   volitelny: false
+   atribut: ElektrizaceZeleznicniTrate
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie3D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypUsekuZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: KategorieZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: PocetKoleji
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ElektrizaceZeleznicniTrate
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

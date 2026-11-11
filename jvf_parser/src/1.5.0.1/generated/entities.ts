@@ -1212,7 +1212,7 @@ export interface ZemedelskaPlochaPlochaAttrs {
   TypZemedelskePlochy?: number;
 }
 
-/** Catalog of all 393 JVF DTM entity types, keyed by XML element name */
+/** Catalog of all 393 JVF DTM 1.5.0.1 entity types, keyed by XML element name */
 export const ENTITY_CATALOG: Record<string, EntityMeta> = {
   "BPPlynovodniSite": {
     elementName: "BPPlynovodniSite",

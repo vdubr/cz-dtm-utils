@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="31.3996007192061" height="31.3996007192061">
+<title>0095-1-004</title>
+<desc>Knihovna symbolu_UDM 2 - 0095-1-004</desc>
+<g id="0095-1-004" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 31.3996007192061,0 31.3996007192061,31.3996007192061 0,31.3996007192061" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<ellipse cx="15.6695641454384" cy="15.6998003857352" rx="1.51181195554273" ry="1.51180938981206" transform="rotate(-45.0 15.6695641454384 15.6998003857352)" style="stroke:#000000"/>
+		<ellipse cx="15.6998003596031" cy="15.6998003596031" rx="0.944882472214209" ry="0.94488086863254" transform="rotate(-45.0 15.6998003596031 15.6998003596031)" style="stroke:#000000"/>
+		<ellipse cx="15.6998003596031" cy="15.6998003596031" rx="0.377952988885684" ry="0.377952347453016" transform="rotate(-45.0 15.6998003596031 15.6998003596031)" style="stroke:#000000"/>
+		<polyline points="15.6695641454384,14.187989362113 15.6695641454384,4.37612056625129" style="stroke:#000000" />
+		<polyline points="15.6695641454384,4.37612056625129 12.8498213347306,4.37612056625129 15.6695641454384,7.19586337695904 18.4893069570472,4.37612056625129 15.6695641454384,4.37612056625129" style="stroke:#000000" />
+	</g>
+</g>
+</svg>

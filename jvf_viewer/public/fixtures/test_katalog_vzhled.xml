@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Testovací data: vzhled objektů podle Katalogu DTM ČR (varianty podle geometrie a atributů) -->
+<JVFDTM xmlns="objtyp" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <DataJVFDTM>
+    <VerzeJVFDTM xmlns="cmn">1.4.3</VerzeJVFDTM>
+    <DatumZapisu xmlns="cmn">2026-11-04T12:00:00</DatumZapisu>
+    <TypZapisu xmlns="cmn">kompletní zápis</TypZapisu>
+    <Data>
+      <OPPlynovodniSite>
+        <ObjektovyTypNazev code_base="0100000283" code_suffix="03" xmlns="opplyn">ochranné pásmo plynovodní sítě</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="opplyn">Ochranná a bezpečnostní pásma</KategorieObjektu>
+        <SkupinaObjektu xmlns="opplyn">Ochranné a bezpečnostní pásmo TI</SkupinaObjektu>
+        <ObsahovaCast xmlns="opplyn">TI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="opplyn">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">r</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr"><ID>1001</ID></SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuPasemTI xmlns="atr">
+                <IDVlastnika>SUBJ-00100001</IDVlastnika>
+              </SpolecneAtributyObjektuPasemTI>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="K1" srsDimension="2" srsName="EPSG:5514">
+                  <exterior><LinearRing><posList>-520830.00 -1164270.00 -520710.00 -1164270.00 -520710.00 -1164180.00 -520830.00 -1164180.00 -520830.00 -1164270.00</posList></LinearRing></exterior>
+                </Polygon>
+              </surfaceProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </OPPlynovodniSite>
+      <LesPlocha>
+        <ObjektovyTypNazev code_base="0100000211" code_suffix="03" xmlns="lesplo">les</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="lesplo">Vodstvo, vegetace a terén</KategorieObjektu>
+        <SkupinaObjektu xmlns="lesplo">Hospodářská plocha</SkupinaObjektu>
+        <ObsahovaCast xmlns="lesplo">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="lesplo">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">r</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr"><ID>1002</ID></SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuZPS xmlns="atr">
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <UrovenUmisteniObjektuZPS>0</UrovenUmisteniObjektuZPS>
+              </SpolecneAtributyObjektuZPS>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Polygon gml:id="K2" srsDimension="2" srsName="EPSG:5514">
+                  <exterior><LinearRing><posList>-520800.00 -1164240.00 -520760.00 -1164240.00 -520760.00 -1164210.00 -520800.00 -1164210.00 -520800.00 -1164240.00</posList></LinearRing></exterior>
+                </Polygon>
+              </surfaceProperty>
+              <multiCurveProperty xmlns="http://www.opengis.net/gml/3.2">
+                <MultiCurve gml:id="K3" srsDimension="3" srsName="EPSG:5514">
+                  <curveMember><LineString><posList>-520800.00 -1164240.00 250.00 -520760.00 -1164240.00 250.00 -520760.00 -1164210.00 250.00 -520800.00 -1164210.00 250.00 -520800.00 -1164240.00 250.00</posList></LineString></curveMember>
+                </MultiCurve>
+              </multiCurveProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </LesPlocha>
+      <LesDefinicniBod>
+        <ObjektovyTypNazev code_base="0100000211" code_suffix="04" xmlns="lesdef">les</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="lesdef">Vodstvo, vegetace a terén</KategorieObjektu>
+        <SkupinaObjektu xmlns="lesdef">Hospodářská plocha</SkupinaObjektu>
+        <ObsahovaCast xmlns="lesdef">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="lesdef">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">r</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr"><ID>1003</ID></SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuDefinicnichBodu xmlns="atr"/>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="K4" srsDimension="3" srsName="EPSG:5514"><pos>-520780.00 -1164225.00 250.00</pos></Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </LesDefinicniBod>
+      <DrobnaKulturniStavbaBod>
+        <ObjektovyTypNazev code_base="0100000159" code_suffix="01" xmlns="drobna">drobná kulturní stavba</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="drobna">Rekreační, kulturní a sakrální stavby</KategorieObjektu>
+        <SkupinaObjektu xmlns="drobna">Stavba kulturní, sakrální</SkupinaObjektu>
+        <ObsahovaCast xmlns="drobna">ZPS</ObsahovaCast>
+        <ZaznamyObjektu xmlns="drobna">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">r</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr"><ID>1004</ID></SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuZPS xmlns="atr">
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <UrovenUmisteniObjektuZPS>0</UrovenUmisteniObjektuZPS>
+              </SpolecneAtributyObjektuZPS>
+              <TypDrobneKulturniStavby xmlns="atr">4</TypDrobneKulturniStavby>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="K5" srsDimension="3" srsName="EPSG:5514"><pos>-520745.00 -1164225.00 250.00</pos></Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </DrobnaKulturniStavbaBod>
+      <ObjektStokoveSiteBod>
+        <ObjektovyTypNazev code_base="0100000337" code_suffix="01" xmlns="objekt">objekt stokové sítě</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="objekt">Stavby technické infrastruktury</KategorieObjektu>
+        <SkupinaObjektu xmlns="objekt">Kanalizace</SkupinaObjektu>
+        <ObsahovaCast xmlns="objekt">TI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="objekt">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">r</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr"><ID>1005</ID></SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuTI xmlns="atr">
+                <IDVlastnika>SUBJ-00100001</IDVlastnika>
+                <NeuplnaData>0</NeuplnaData>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniTI>1</ZpusobPorizeniTI>
+                <UrovenUmisteniObjektuTI>0</UrovenUmisteniObjektuTI>
+                <KritickaTI>0</KritickaTI>
+              </SpolecneAtributyObjektuTI>
+              <StavObjektu xmlns="atr">1</StavObjektu>
+              <TypObjektuStokoveSite xmlns="atr">8</TypObjektuStokoveSite>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="K6" srsDimension="3" srsName="EPSG:5514"><pos>-520730.00 -1164225.00 250.00</pos></Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </ObjektStokoveSiteBod>
+      <ZarizeniTeplovodniSite>
+        <ObjektovyTypNazev code_base="0100000131" code_suffix="01" xmlns="zarize">zařízení teplovodní sítě</ObjektovyTypNazev>
+        <KategorieObjektu xmlns="zarize">Stavby technické infrastruktury</KategorieObjektu>
+        <SkupinaObjektu xmlns="zarize">Teplovod</SkupinaObjektu>
+        <ObsahovaCast xmlns="zarize">TI</ObsahovaCast>
+        <ZaznamyObjektu xmlns="zarize">
+          <ZaznamObjektu>
+            <ZapisObjektu xmlns="cmn">r</ZapisObjektu>
+            <AtributyObjektu>
+              <SpolecneAtributyVsechObjektu xmlns="atr"><ID>1006</ID></SpolecneAtributyVsechObjektu>
+              <SpolecneAtributyObjektuTI xmlns="atr">
+                <IDVlastnika>SUBJ-00100001</IDVlastnika>
+                <NeuplnaData>0</NeuplnaData>
+                <TridaPresnostiPoloha>3</TridaPresnostiPoloha>
+                <TridaPresnostiVyska>3</TridaPresnostiVyska>
+                <ZpusobPorizeniTI>1</ZpusobPorizeniTI>
+                <UrovenUmisteniObjektuTI>0</UrovenUmisteniObjektuTI>
+                <KritickaTI>0</KritickaTI>
+              </SpolecneAtributyObjektuTI>
+              <StavObjektu xmlns="atr">1</StavObjektu>
+              <TypZarizeniTeplovodniSite xmlns="atr">2</TypZarizeniTeplovodniSite>
+            </AtributyObjektu>
+            <GeometrieObjektu>
+              <pointProperty xmlns="http://www.opengis.net/gml/3.2">
+                <Point gml:id="K7" srsDimension="3" srsName="EPSG:5514"><pos>-520720.00 -1164225.00 250.00</pos></Point>
+              </pointProperty>
+            </GeometrieObjektu>
+          </ZaznamObjektu>
+        </ZaznamyObjektu>
+      </ZarizeniTeplovodniSite>
+    </Data>
+  </DataJVFDTM>
+</JVFDTM>

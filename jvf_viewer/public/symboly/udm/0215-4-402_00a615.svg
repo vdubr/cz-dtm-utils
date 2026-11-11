@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="839.181" height="839.181" viewBox="0 0 31.7170810341668 31.7170810341668">
+<title>0215-4-402</title>
+<desc>Knihovna symbolu_UDM 2 - 0215-4-402</desc>
+<g id="0215-4-402" style="fill:none;stroke-width:0.377952755905559;stroke-linecap:round;stroke-linejoin:round">
+	<polygon points="0,0 31.7170810341668,0 31.7170810341668,31.7170810341668 0,31.7170810341668" style="stroke-opacity:0;fill-opacity:0"/>
+	<g>
+		<polyline points="14.3467294934612,18.5798003596034 12.8349184698389,12.5325562651145" style="stroke:#00a615" />
+		<polyline points="15.8585405170834,18.5798003596034 15.8585405170834,12.5325562651145" style="stroke:#00a615" />
+		<polyline points="17.3703515407056,18.5798003596034 18.8821625643279,12.5325562651145" style="stroke:#00a615" />
+		<text x="0" y="1.889764" transform="translate(15.2084617769258,9.35775311550777)" font-family="'Arial Narrow', 'Liberation Sans Narrow', 'Nimbus Sans Narrow', 'Helvetica Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif" font-size="5.291339" font-style="italic" font-stretch="condensed" text-anchor="middle" style="fill:#00a615;stroke:none">J</text>
+	</g>
+</g>
+</svg>

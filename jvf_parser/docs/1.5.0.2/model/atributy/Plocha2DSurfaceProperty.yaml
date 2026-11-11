@@ -1,0 +1,7 @@
+id: Plocha2DSurfaceProperty
+nazev: Plocha 2D (surfaceProperty)
+namespace: cmn
+nillable: false
+typ: Geometry
+typGeometrie: surfaceProperty
+dim: 2

@@ -1,0 +1,1418 @@
+/*
+ * app-m3.css — aplikace vzhledu z návrhu (Material Design 3) na komponenty
+ * vieweru. Tokeny a obecné komponenty jsou v m3.css (sdílené s návrhem);
+ * tady se na ně mapují existující třídy aplikace. Načítá se jako poslední
+ * (konec style.css), takže přebíjí původní pravidla.
+ */
+
+/* Jednotné zaoblení tlačítek, lišt, karet a modálů aplikace (ikonová
+   tlačítka zůstávají kruhová, čipy a vyhledávání pilulky). */
+:root { --app-radius: 10px; }
+
+html, body {
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Top app bar ===== */
+#app-header {
+  height: auto;
+  min-height: 64px;
+  padding: 8px 12px 8px 16px;
+  gap: 12px;
+  background: var(--md-sys-color-surface-container);
+  border-bottom: none;
+}
+.header-left { gap: 12px; min-width: 0; }
+.app-logo { font-size: 28px; color: var(--md-sys-color-primary); }
+#app-header h1 {
+  font: 400 22px/28px var(--md-sys-typescale-font);
+  letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+  white-space: nowrap;
+}
+.header-right { gap: 8px; }
+.drawer-toggle { display: none; }
+
+/* ===== Tlačítka (filled / tonal / outlined / icon) ===== */
+.btn {
+  position: relative;
+  isolation: isolate;
+  height: 40px;
+  padding: 0 24px;
+  gap: 8px;
+  border: none;
+  border-radius: var(--app-radius);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  transition: box-shadow 150ms var(--md-sys-motion-standard);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms var(--md-sys-motion-standard);
+  z-index: -1;
+}
+.btn:hover::before { opacity: var(--md-sys-state-hover); }
+.btn:active::before { opacity: var(--md-sys-state-pressed); }
+.btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+.btn .material-symbols-outlined { font-size: 18px; margin-left: -8px; }
+
+.btn-primary,
+.btn-primary:hover {
+  background: var(--md-sys-color-primary);
+  border: none;
+  color: var(--md-sys-color-on-primary);
+}
+.btn-primary:hover { box-shadow: var(--md-sys-elevation-1); }
+
+.btn-secondary,
+.btn-secondary:hover {
+  background: var(--md-sys-color-secondary-container);
+  border: none;
+  color: var(--md-sys-color-on-secondary-container);
+}
+.btn-secondary.active,
+.btn-outlined.active {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  border-color: transparent;
+}
+
+.btn-outlined {
+  background: transparent;
+  border: 1px solid var(--md-sys-color-outline);
+  color: var(--md-sys-color-primary);
+}
+
+.btn-icon-round,
+.btn-icon-round:hover {
+  width: 40px;
+  padding: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.btn-icon-round .material-symbols-outlined { margin: 0; font-size: 24px; }
+.btn-icon-round.active {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.btn:disabled {
+  opacity: 1;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+}
+.btn-outlined:disabled {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+.btn:disabled::before { display: none; }
+
+.btn-danger,
+.btn-danger:hover {
+  background: var(--md-sys-color-error);
+  border: none;
+  color: var(--md-sys-color-on-error);
+}
+
+/* Split button — Nahrát soubor + ukázkové soubory. */
+.upload-wrapper { gap: 2px; }
+.upload-wrapper #btn-upload { border-radius: var(--app-radius) 4px 4px var(--app-radius); padding-right: 16px; }
+.btn-upload-menu {
+  width: 44px;
+  min-width: 44px;
+  padding: 0 12px 0 8px;
+  border-left: none;
+  border-radius: 4px var(--app-radius) var(--app-radius) 4px;
+}
+.btn-upload-menu .material-symbols-outlined { margin: 0; font-size: 20px; }
+
+/* Menu ukázkových souborů. */
+.upload-menu {
+  top: calc(100% + 8px);
+  min-width: 280px;
+  padding: 8px 0;
+  gap: 0;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-surface-container);
+  box-shadow: var(--md-sys-elevation-2);
+}
+.upload-menu-title {
+  padding: 8px 16px 4px;
+  font: 500 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.5px;
+  text-transform: none;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.upload-menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 0;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-on-surface);
+}
+.upload-menu-item::before {
+  content: 'description';
+  font-family: 'Material Symbols Outlined';
+  font-size: 20px;
+  line-height: 1;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.upload-menu-item:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+
+/* Spouštěč nástrojů (JVF / UDM / JŽM) a odznak nástroje — ui/appModeSwitch.ts.
+   Barva odznaku = barva značky nástroje (stejná ve světlém i tmavém motivu),
+   barvy rozhraní nástroje = app-themes.css. */
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #2e5bba;
+  color: #ffffff;
+  font: 700 12px/1 var(--md-sys-typescale-font);
+  letter-spacing: 0.2px;
+}
+/* UDM zelená; JŽM oranžová Správy železnic (#ff5200 z loga SŽ). */
+.app-badge[data-app-id='udm'] { background: #2e7d32; }
+.app-badge[data-app-id='jzm'] { background: #ff5200; }
+.app-title { display: flex; flex-direction: column; min-width: 0; }
+#app-header .app-title h1 { margin: 0; font: 500 18px/24px var(--md-sys-typescale-font); white-space: nowrap; }
+.app-family { font: 400 12px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); white-space: nowrap; }
+.app-launcher-btn[aria-expanded='true'] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.app-launcher {
+  position: fixed;
+  top: 64px;
+  left: 12px;
+  z-index: 1200;
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: var(--md-sys-elevation-2, 0 6px 24px rgba(0, 0, 0, 0.18));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.app-launcher[hidden] { display: none; }
+.app-launcher-heading { font: 500 14px/20px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
+.app-launcher-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.app-launcher-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 4px 12px;
+  border-radius: var(--app-radius);
+  text-decoration: none;
+  color: var(--md-sys-color-on-surface);
+}
+.app-launcher-tile .app-badge { width: 48px; height: 48px; border-radius: 12px; font-size: 13px; }
+.app-launcher-tile:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.app-launcher-tile.active { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.app-launcher-tile:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.app-launcher-name { font: 500 13px/18px var(--md-sys-typescale-font); }
+.app-launcher-org { font: 400 11px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
+.app-launcher-tile.active .app-launcher-org { color: inherit; }
+/* Popis nástroje a formátu (aktivní / pod kurzorem) přes celou šířku. */
+.app-launcher-desc {
+  margin: 0;
+  min-height: 48px;
+  padding: 0 4px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.2px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.app-launcher-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+.app-launcher-link {
+  min-height: 40px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  text-align: left;
+  cursor: pointer;
+}
+.app-launcher-link:hover { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); }
+/* Řádek nástroje v panelu vrstev — jen mobil (viz media query níže). */
+.drawer-app-btn {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  margin: 4px 0 8px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font: 500 16px/24px var(--md-sys-typescale-font);
+  text-align: left;
+  cursor: pointer;
+}
+.drawer-app-btn .app-badge { width: 32px; height: 32px; border-radius: 8px; font-size: 11px; }
+.drawer-app-name { flex: 1; }
+
+/* ===== Navigation drawer (panel vrstev) ===== */
+#layer-panel {
+  width: 340px;
+  min-width: 340px;
+  padding: 0 12px;
+  background: var(--md-sys-color-surface-container-low);
+  border-right: none;
+}
+.panel-section { padding: 8px 0; }
+.panel-section + .panel-section { border-top: 1px solid var(--md-sys-color-outline-variant); }
+.panel-section-title,
+.projects-header {
+  padding: 8px 4px;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  text-transform: none;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.section-icon-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.section-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
+.section-icon-btn .material-symbols-outlined { font-size: 20px; }
+
+/* Podkladová mapa nad mapou (jako mapy.cz): skupina tlačítek „Podkladová mapa |
+   Letecká" vlevo nahoře, karta se seznamem náhledů; vybraná mapa je
+   podbarvená a pod ní je minimalistický posuvník sytosti. */
+.map-top-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 7;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  /* Vpravo zůstává místo pro přiblížení + | − a přepínač 2D | 3D. */
+  max-width: calc(100% - 24px - 208px);
+  max-height: calc(100% - 24px);
+  pointer-events: none;
+}
+.map-top-controls > * { pointer-events: auto; }
+.map-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 100%;
+  /* Karta se otevírá pod lištou mimo tok — šířka sloupce = šířka lišty,
+     takže otevřená karta neodsouvá sousední skupinu tlačítek. */
+  position: relative;
+}
+.map-control[hidden] { display: none; }
+/* Přepínač „2D | 3D" vpravo nahoře nad mapou (ui/toggle3d.ts). */
+.map-top-right {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 7;
+  display: flex;
+  gap: 8px;
+}
+.zoom-switch .basemap-bar-btn { width: 44px; justify-content: center; padding: 0; transition: color 120ms; }
+/* Po kliknutí krátce problikne aktivní barvou (třída is-flash z ui/toggle3d.ts). */
+.zoom-switch .basemap-bar-btn:active,
+.zoom-switch .basemap-bar-btn.is-flash { color: var(--md-sys-color-primary); }
+/* … a znak krátce ztuční. */
+.zoom-switch .basemap-bar-btn .material-symbols-outlined { transition: font-variation-settings 120ms; }
+.zoom-switch .basemap-bar-btn:active .material-symbols-outlined,
+.zoom-switch .basemap-bar-btn.is-flash .material-symbols-outlined { font-variation-settings: 'wght' 700; }
+.view-switch .basemap-bar-btn { min-width: 44px; justify-content: center; padding: 0 10px; font-weight: 600; }
+/* Aktivní pohled jako aktivní překryv — jen barva písma, bez podbarvení. */
+.view-switch .basemap-bar-btn.active { color: var(--md-sys-color-primary); }
+/* Tlačítko překryvu (Katastr): zapnutý překryv = jen aktivní barva textu a ikony. */
+.map-toggle-btn.is-on { color: var(--md-sys-color-primary); }
+/* Obsah překryvu v kartě (ui/overlayPanel.ts) — bez rámování sekce panelu. */
+.basemap-card .overlay-section { max-height: none; overflow: visible; padding: 2px 4px; }
+/* Menší zapínací přepínač v kartě (36 × 20 px místo 52 × 32 px). */
+.basemap-card .overlay-toggle { min-height: 32px; }
+.basemap-card .toggle-row input.m3-switch { width: 36px; height: 20px; }
+.basemap-card input[type='checkbox'].m3-switch::after { left: 4px; width: 8px; height: 8px; }
+.basemap-card input[type='checkbox'].m3-switch:checked::after { left: 18px; width: 12px; height: 12px; }
+/* Lišta tlačítek nad mapou (jako mapy.cz): hover i aktivní stav vyplní
+   celou polovinu lišty až k jejím okrajům (zaoblení ořízne lišta). */
+.basemap-bar {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: var(--md-sys-elevation-2, 0 2px 8px rgba(0, 0, 0, 0.18));
+}
+.basemap-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.basemap-bar-btn .material-symbols-outlined { font-size: 20px; }
+/* Tmavý motiv: plovoucí ovládání nad mapou musí být vidět i na černém
+   podkladu („Prázdná" je v tmavém motivu černá) — světlejší plocha a obrys. */
+:root[data-theme='dark'] .basemap-bar,
+:root[data-theme='dark'] .basemap-card,
+:root[data-theme='dark'] .map-tools .measure-btn {
+  background: var(--md-sys-color-surface-container-high);
+  box-shadow: 0 0 0 1px var(--md-sys-color-outline-variant), var(--md-sys-elevation-2, 0 2px 8px rgba(0, 0, 0, 0.5));
+}
+.basemap-bar-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.basemap-bar-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.basemap-bar-menu { color: var(--md-sys-color-primary); }
+.basemap-bar-btn + .basemap-bar-btn { position: relative; }
+.basemap-bar-btn + .basemap-bar-btn::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  background: var(--md-sys-color-outline-variant);
+}
+.basemap-card {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 160px);
+  min-height: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: var(--md-sys-elevation-2, 0 6px 24px rgba(0, 0, 0, 0.18));
+}
+.basemap-card[hidden] { display: none; }
+.basemap-list { display: flex; flex-direction: column; gap: 2px; padding: 0; }
+.basemap-item { border-radius: var(--app-radius); }
+.basemap-item.active { background: var(--md-sys-color-surface-container-high); }
+.basemap-list .base-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 6px;
+  border: none;
+  border-radius: var(--app-radius);
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: 500 15px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.basemap-list .base-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent); color: var(--md-sys-color-on-surface); }
+.basemap-list .base-btn.active { background: transparent; color: var(--md-sys-color-primary); font-weight: 700; }
+.basemap-list .base-btn.active::before { content: none; }
+.basemap-list .base-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.basemap-thumb {
+  flex-shrink: 0;
+  display: block;
+  width: 88px;
+  height: 56px;
+  box-sizing: border-box;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 10px;
+  object-fit: cover;
+}
+.base-btn.active .basemap-thumb { border: 3px solid var(--md-sys-color-primary); }
+.basemap-thumb-blank { background: var(--app-map-background); }
+.basemap-item .basemap-opacity-row { margin: 0; padding: 0 14px 8px; }
+.basemap-opacity-row[hidden] { display: none; }
+
+.basemap-opacity-row { gap: 12px; padding: 12px 4px 4px; }
+/* Ikona sytosti u překryvů DTM / katastru (ui/overlayPanel.ts). */
+.basemap-opacity-icon { color: var(--md-sys-color-on-surface-variant); font-size: 20px; }
+/* Posuvník sytosti podkladu = .m3-slider s menším palcem a tlumenější dráhou. */
+#basemap-opacity { flex: 1; --m3-slider-thumb: 16px; --m3-slider-inactive: var(--md-sys-color-outline-variant); }
+/* Bez podkladu (volba „Prázdná") nemá sytost smysl — vypnutý stav M3. */
+#basemap-opacity:disabled { opacity: 0.38; cursor: default; }
+
+/* Vrstvy = list (dense). */
+.layer-group-header {
+  min-height: 40px;
+  padding: 0 8px 0 4px;
+  gap: 8px;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  color: var(--md-sys-color-on-surface);
+  border-radius: var(--md-sys-shape-corner-full);
+}
+/* Obsahová část (ZPS, TI, DI, …) — název tlustě podtržený barvou části
+   (`--part-color` z KATALOG_FALLBACK_COLORS); vrstvy výkresu, legenda
+   a čipy filtru v Přehledu prvků. */
+.part-underline {
+  display: inline-block;
+  padding-bottom: 2px;
+  border-bottom: 3px solid var(--part-color, var(--md-sys-color-outline));
+  line-height: 1.2;
+}
+/* Ve vrstvách výkresu větší název části a podtržení přes celou šířku panelu. */
+.layer-group-header .layer-group-name.part-underline {
+  display: block;
+  flex: 1;
+  padding: 4px 4px 4px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--md-sys-color-on-surface);
+}
+/* Hledání ve vrstvách výkresu — stejné pole jako v legendách (.legend-search),
+   jen přes celou šířku panelu. */
+#layer-panel .search-field { margin: 0 0 8px; }
+.layer-search-empty { padding: 12px 20px; }
+/* Celý název obsahové části za zkratkou („DI · Dopravní infrastruktura"). */
+.part-title {
+  margin-left: 6px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--md-sys-color-on-surface-variant);
+}
+/* Seznam vrstev od kraje ke kraji panelu (přes jeho vnitřní okraj 12 px) —
+   hover řádku na celou šířku, bez zaoblení; obsah zůstává odsazený. */
+#jvf-layers-list { margin: 0 -12px; }
+/* Sekce nesmí seznam oříznout na svou šířku (posouvá se seznam sám). */
+.panel-section.panel-section-jvf { overflow: visible; }
+/* Náhled stylu v pevném rámečku — text všech řádků začíná stejně. */
+.layer-symbol-box { flex: 0 0 24px; width: 24px; display: flex; align-items: center; justify-content: center; }
+#jvf-layers-list .layer-group-header { padding: 0 20px 0 16px; }
+/* Kompaktní řádek (u ŽXML jsou desítky vrstev) — název a skupina pod sebou. */
+.layer-item {
+  min-height: 36px;
+  margin: 0;
+  padding: 2px 24px 2px 20px;
+  gap: 12px;
+  border-radius: 0;
+}
+.layer-item:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+/* Ikona stylu svisle na střed řádku (název + popisek). */
+.layer-item-left { gap: 12px; align-items: center; }
+.layer-name {
+  font: 400 13px/18px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-on-surface);
+}
+.layer-meta {
+  font: 400 11px/14px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.layer-count {
+  background: transparent;
+  font: 500 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.5px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.layer-symbol-img { width: 20px; height: 20px; filter: none; }
+:root[data-theme='dark'] .layer-symbol-img,
+:root[data-theme='dark'] .legend-swatch img { filter: invert(1) hue-rotate(180deg); }
+.empty-hint { padding: 16px 8px; font: 400 14px/20px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
+
+/* Přepínače (switch) — štítek vlevo, switch vpravo. */
+.toggle-row {
+  min-height: 48px;
+  gap: 12px;
+  padding: 4px;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-on-surface);
+}
+.toggle-row input.m3-switch { order: 3; margin-left: auto; width: 52px; height: 32px; }
+.three-options-footer { padding: 8px 0; border-top: 1px solid var(--md-sys-color-outline-variant); }
+
+/* Změny v souboru — karta nad mapou (tlačítko „Změny"): přepínač Obarvit
+   změny (styl) + zaškrtávátka Nové / Editované / Mazané (filtr, aktivní
+   vždy). Barva tečky --zapis-color = barva lemu změny (nastavuje
+   ui/changesetToggle.ts ze ZAPIS_HIGHLIGHT_COLORS), bez obarvení šedá. */
+.changeset-row { min-height: 36px; }
+.changeset-dot { width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; flex: none; background: var(--md-sys-color-outline); }
+.changeset-section:not(.highlight-off) .changeset-dot { background: var(--zapis-color); }
+.changeset-row .changeset-count { margin-left: auto; }
+
+/* Projekty = list. */
+/* Projekty jako vrstvy výkresu: hover od kraje ke kraji panelu, bez zaoblení. */
+#projects-list { margin: 0 -12px; }
+.project-item {
+  min-height: 56px;
+  padding: 8px 16px 8px 24px;
+  gap: 12px;
+  border-radius: 0;
+}
+.project-item:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.project-dot { width: 12px; height: 12px; }
+.feature-detail-project { display: flex; align-items: center; gap: 6px; }
+.feature-detail-project .project-dot { width: 10px; height: 10px; }
+.project-name { font: 400 14px/20px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface); }
+.project-count,
+.projects-header-count {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
+  font: 500 11px/16px var(--md-sys-typescale-font);
+}
+.project-remove-btn,
+.project-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--md-sys-shape-corner-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.project-remove-btn:hover,
+.project-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
+/* Odebrání projektu (popelnice) — při najetí barvou chyby. */
+.project-remove-btn:hover { color: var(--md-sys-color-error); background: color-mix(in srgb, var(--md-sys-color-error) 8%, transparent); }
+.project-icon-btn {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.project-icon-btn .material-symbols-outlined { font-size: 20px; }
+.project-icon-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+/* Skrytý projekt: ztlumený řádek, oko zůstává plně viditelné (zvýrazněné). */
+.project-item.project-hidden > :not(.project-visibility-btn):not(.project-remove-btn) { opacity: 0.45; }
+.project-item.project-hidden .project-visibility-btn { color: var(--md-sys-color-primary); }
+.project-item { gap: 8px; }
+
+/* Patička panelu. */
+.panel-footer {
+  padding: 8px 4px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+.build-info { font-family: var(--md-sys-typescale-mono); font-size: 11px; }
+
+/* ===== Side sheets — validace a přehled prvků ===== */
+#error-panel,
+#features-panel {
+  background: var(--md-sys-color-surface-container-low);
+  border-left: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface);
+}
+.error-panel-header,
+.features-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 64px;
+  padding: 8px 12px 8px 24px;
+  border-bottom: none;
+  background: transparent;
+  font: 400 22px/28px var(--md-sys-typescale-font);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--md-sys-color-on-surface);
+}
+.error-panel-header > span:first-child,
+.features-panel-header > span:first-child { flex: 1 1 auto; }
+.sheet-close-btn { margin-left: auto; }
+.error-panel-toolbar,
+.features-panel-toolbar {
+  padding: 0 24px 16px;
+  gap: 12px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  background: transparent;
+}
+.error-summary,
+.features-summary { font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
+
+/* Filter chips. */
+.error-filters,
+.features-filters,
+.features-level-filter { gap: 8px; flex-wrap: wrap; }
+.filter-btn,
+.features-filter-btn,
+.level-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-small);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+}
+.filter-btn:hover,
+.features-filter-btn:hover,
+.level-chip:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 8%, transparent);
+  border-color: var(--md-sys-color-outline-variant);
+}
+.filter-btn.active,
+.features-filter-btn.active,
+.level-chip.active {
+  padding-left: 8px;
+  border-color: transparent;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.filter-btn.active::before,
+.features-filter-btn.active::before,
+.level-chip.active::before {
+  content: 'check';
+  font-family: 'Material Symbols Outlined';
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Vyhledávání. */
+.features-search,
+.legend-search {
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+}
+.features-search:focus,
+.legend-search:focus { outline: 2px solid var(--md-sys-color-primary); border-color: transparent; }
+/* V dialogu (plocha surface-container-high) je pole o stupeň výraznější. */
+.modal-dialog .legend-search { background: var(--md-sys-color-surface-container-highest); }
+.modal-dialog .search-field { flex: 1 1 200px; min-width: 0; }
+/* Pole hledání s křížkem (ui/searchField.ts) — vrstvy, legendy, Přehled prvků.
+   Křížek je vidět vždy, když pole není prázdné. */
+.search-field { position: relative; display: block; }
+.search-field > input { display: block; width: 100%; box-sizing: border-box; margin: 0; padding-right: 44px; }
+.search-clear {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.search-clear:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); color: var(--md-sys-color-on-surface); }
+.search-clear:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
+.search-clear .material-symbols-outlined { font-size: 20px; }
+.search-field > input:placeholder-shown + .search-clear { display: none; }
+
+/* Skupiny a řádky nálezů / prvků = list. */
+.error-group-header,
+.feature-group-header {
+  min-height: 48px;
+  padding: 4px 16px;
+  gap: 12px;
+  border-bottom: none;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+}
+.error-group-code { font-family: var(--md-sys-typescale-mono); font-size: 12px; }
+.error-row,
+.feature-row {
+  min-height: 40px;
+  padding: 6px 16px 6px 24px;
+  gap: 12px;
+  border-bottom: none;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+}
+.error-row.has-target:hover,
+.feature-row.has-target:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.error-row.active,
+.feature-row.active { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.error-row-id,
+.feature-row-id { font-family: var(--md-sys-typescale-mono); font-size: 12px; }
+.group-count-badge,
+.group-count-features {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  font: 500 11px/20px var(--md-sys-typescale-font);
+}
+.group-count-error { background: var(--md-sys-color-error); color: var(--md-sys-color-on-error); }
+.group-count-warning { background: var(--app-color-warning-container); color: var(--app-color-on-warning-container); }
+
+/* ===== Dialogy ===== */
+.modal-overlay { background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent); backdrop-filter: none; }
+.modal-dialog {
+  border: none;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-3);
+}
+.modal-dialog .modal-header {
+  gap: 12px;
+  padding: 24px 16px 16px 24px;
+  border-bottom: none;
+}
+.modal-dialog .modal-header h2 {
+  font: 400 24px/32px var(--md-sys-typescale-font);
+  letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+}
+.modal-dialog .modal-close {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.modal-dialog .modal-close:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.modal-dialog .modal-body {
+  padding: 0 24px 16px;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+}
+.modal-dialog .modal-body h3 { font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
+/* Legendy: stálá výška (při hledání bez výsledků se modál nezmenší).
+   Legendy a O aplikaci: viditelný posuvník — tenký šedý se na pozadí
+   modálu ztrácel (na macOS se schovával úplně). */
+#legend-modal .modal-dialog,
+#symbol-legend-modal .modal-dialog { height: min(85vh, 900px); }
+/* Firefox (bez ::-webkit-scrollbar); v Chrome by standardní vlastnosti
+   přebily vlastní posuvník a na macOS by se schovával. */
+@supports not selector(::-webkit-scrollbar) {
+  #legend-modal .modal-body,
+  #symbol-legend-modal .modal-body,
+  #info-modal .modal-body { scrollbar-color: var(--md-sys-color-outline) transparent; }
+}
+#legend-modal .modal-body::-webkit-scrollbar,
+#symbol-legend-modal .modal-body::-webkit-scrollbar,
+#info-modal .modal-body::-webkit-scrollbar { width: 12px; }
+#legend-modal .modal-body::-webkit-scrollbar-thumb,
+#symbol-legend-modal .modal-body::-webkit-scrollbar-thumb,
+#info-modal .modal-body::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline);
+  border: 3px solid transparent;
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+.modal-dialog .modal-body code { font-family: var(--md-sys-typescale-mono); }
+.modal-footer {
+  gap: 8px;
+  padding: 16px 24px 24px;
+  border-top: none;
+}
+/* V dialogu jsou vedlejší akce textová tlačítka (M3). */
+.modal-footer .btn-secondary,
+.modal-footer .btn-secondary:hover {
+  padding: 0 12px;
+  background: transparent;
+  color: var(--md-sys-color-primary);
+}
+
+/* Export do CAD. */
+.cad-export fieldset.cad-row {
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--app-radius);
+}
+.cad-export input[type='radio'],
+.cad-export input[type='checkbox'] { accent-color: var(--md-sys-color-primary); width: 18px; height: 18px; }
+
+/* Legenda DTM a legenda znaků. */
+.legend-item {
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+.legend-cast-header { border-radius: var(--md-sys-shape-corner-small); }
+.legend-kat-header {
+  text-transform: none;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.legend-name { font: 400 14px/20px var(--md-sys-typescale-font); letter-spacing: 0.25px; }
+.legend-meta { font: 400 12px/16px var(--md-sys-typescale-font); letter-spacing: 0.4px; color: var(--md-sys-color-on-surface-variant); }
+
+/* Legenda DTM jako dlaždice: každá kategorie je jeden souvislý světlý
+   „list" (i v tmavém motivu — barvy symbolů jsou barvy mapy) bez mezer
+   a rámečků; dlaždice = náhled ve tvaru geometrie, pod ním název a typ. */
+#legend-modal .legend-grid {
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 0;
+  /* Mírně průsvitný list — prosvítá pozadí dialogu. */
+  background: color-mix(in srgb, #fbfaf7 82%, transparent);
+}
+:root[data-theme='dark'] #legend-modal .legend-grid { background: color-mix(in srgb, #e4e2dc 88%, transparent); }
+.legend-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px 0 12px;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  transition: background 120ms var(--md-sys-motion-standard);
+}
+.legend-tile:hover { background: rgba(26, 27, 32, 0.05); }
+.legend-tile .legend-tile-preview {
+  width: 100%;
+  height: 68px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-sizing: border-box;
+}
+.legend-tile .legend-geom-icon { display: block; }
+.legend-tile .legend-item-info { gap: 2px; padding: 0 12px; align-items: center; text-align: center; }
+.legend-tile .legend-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  color: #1a1b20;
+  font: 500 13px/18px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+}
+.legend-tile .legend-meta { color: #5d5e66; font: 400 11px/16px var(--md-sys-typescale-font); letter-spacing: 0.3px; }
+.legend-tile .legend-code { color: #80818a; font-variant-numeric: tabular-nums; }
+/* Hodnota atributu varianty („nástěnná konzola") — pod názvem objektu. */
+.legend-tile .legend-variant { color: #3a3b42; font-weight: 500; white-space: normal; }
+.legend-tile .legend-name + .legend-meta { margin-top: 2px; }
+
+/* Nadpis obsahové části (ZPS, TI, …) v legendě DTM — jen typografie:
+   tečka barvy části, název a počet typů; přilepený nahoře s pozadím
+   dialogu, bez pruhu, rámečku a čipu. */
+#legend-modal .legend-cast-header {
+  gap: 10px;
+  padding: 12px 0 8px;
+  margin-bottom: 4px;
+  border: none;
+  border-radius: 0;
+  background: var(--md-sys-color-surface-container-high);
+  align-items: baseline;
+}
+#legend-modal .legend-cast-name { font: 500 20px/28px var(--md-sys-typescale-font); letter-spacing: 0; }
+#legend-modal .legend-cast-count {
+  margin-left: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+#legend-modal .legend-kat-header { padding: 12px 0 8px; }
+.symbol-legend-item {
+  border-radius: var(--app-radius);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  /* Znaky jsou kreslené pro světlý podklad mapy — karta zůstává světlá. */
+  background: #ffffff;
+}
+.symbol-legend-item .legend-name { color: #1a1b20; font: 500 12px/16px var(--md-sys-typescale-font); }
+.symbol-legend-item .legend-meta { color: #44464f; }
+
+/* Vodotisk uprostřed prázdného panelu vrstev — ikona a „Přetáhněte data
+   ve formátu …" (index.html, ui/layerPanel.ts). */
+.panel-empty-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 24px 16px;
+  text-align: center;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 75%, transparent);
+  font: 500 16px/22px var(--md-sys-typescale-font);
+}
+/* Ikona = tlačítko nahrání (otevře výběr souboru jako „Nahrát soubor"). */
+.panel-empty-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 4px;
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  border-radius: var(--app-radius);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 150ms var(--md-sys-motion-standard), color 150ms, border-color 150ms;
+}
+.panel-empty-upload .material-symbols-outlined {
+  font-size: 52px;
+  font-variation-settings: 'wght' 300;
+}
+.panel-empty-upload:hover {
+  border-color: var(--md-sys-color-primary);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+  color: var(--md-sys-color-primary);
+}
+.panel-empty-upload:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+
+/* Overlaye. */
+#loading-overlay,
+#drop-overlay { background: color-mix(in srgb, var(--md-sys-color-surface) 80%, transparent); }
+.drop-overlay-box {
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-high);
+  border: 2px dashed var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Ovládací prvky mapy (OpenLayers) = small FAB. */
+.ol-control { background: transparent; padding: 0; }
+.ol-zoom button,
+.ol-control button {
+  width: 40px;
+  height: 40px;
+  margin: 0 0 8px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-3);
+  font: 400 22px/1 var(--md-sys-typescale-font);
+}
+.ol-zoom button:hover,
+.ol-control button:hover { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, var(--md-sys-color-surface-container-high)); }
+
+/* 3D ovládání. */
+.toolbar-panel {
+  border-radius: var(--app-radius);
+  background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 92%, transparent);
+  border: none;
+  box-shadow: var(--md-sys-elevation-2);
+}
+
+/* ===== Mobil a úzká okna — drawer přes mapu, akce jen ikonami ===== */
+.drawer-scrim { display: none; }
+
+@media (max-width: 1100px) {
+  .header-right .btn-label { display: none; }
+  .header-right .btn:not(.btn-icon-round):not(.btn-upload-menu) { padding: 0 12px; }
+  .header-right .btn:not(.btn-icon-round) .material-symbols-outlined { margin: 0; }
+}
+
+@media (max-width: 840px) {
+  /* Úzký displej: přepínač 2D | 3D a pod ním přiblížení + | − vpravo
+     pod sebou, ať se vejdou lišty vlevo. */
+  .map-top-right { flex-direction: column; align-items: flex-end; }
+  .map-top-controls { max-width: calc(100% - 24px - 100px); }
+  #app-header { padding: 4px 8px; gap: 4px; flex-wrap: nowrap; }
+  .drawer-toggle { display: inline-flex; }
+  /* Na mobilu je nástroj (a spouštěč) v panelu vrstev — hlavička je úzká. */
+  .app-logo,
+  .app-family,
+  #btn-app-launcher { display: none; }
+  .header-left { flex: 1 1 auto; overflow: hidden; }
+  #app-header .app-title { overflow: hidden; }
+  #app-header .app-title h1 { font-size: 16px; overflow: hidden; text-overflow: ellipsis; }
+  .drawer-app-btn { display: flex; }
+  /* Spouštěč na mobilu = spodní panel. */
+  .app-launcher {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: var(--app-radius) var(--app-radius) 0 0;
+    padding: 20px 16px 28px;
+  }
+  .header-right { gap: 4px; }
+  #layer-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    width: min(356px, calc(100vw - 56px));
+    min-width: 0;
+    border-radius: 0 var(--app-radius) var(--app-radius) 0;
+    box-shadow: var(--md-sys-elevation-1);
+    transform: translateX(-105%);
+    transition: transform 250ms var(--md-sys-motion-standard);
+  }
+  body.drawer-open #layer-panel { transform: none; }
+  body.drawer-open .drawer-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 899;
+    background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+  }
+  #error-panel,
+  #features-panel {
+    position: fixed;
+    inset: 64px 0 0 auto;
+    z-index: 800;
+    width: 100vw !important;
+    max-width: 100vw;
+  }
+}
+
+/* Přehled prvků — hlavička kategorie ve stylu položky legendy DTM
+   (náhled symbolu, název, skupina · část · element), oko skrývá kategorii. */
+/* Hlavička skupiny jako plochý řádek přes celou šířku (jako panel vrstev),
+   bez rámečku a zaoblení — skupiny odděluje jen dělicí čára. */
+.feature-group-header.legend-item {
+  margin: 0;
+  min-height: 44px;
+  padding: 4px 8px 4px 16px;
+  gap: 10px;
+  border: none;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 0;
+  background: var(--md-sys-color-surface-container-low);
+  font-weight: 400;
+}
+.feature-group-header.legend-item:first-child { margin-top: 0; }
+.feature-group-header.legend-item:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, var(--md-sys-color-surface-container-low));
+}
+.feature-group-header .legend-item-info { flex: 1; min-width: 0; }
+.feature-group-header .group-chevron { width: 12px; color: var(--md-sys-color-on-surface-variant); }
+.group-visibility-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.group-visibility-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.group-visibility-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+.group-visibility-btn .material-symbols-outlined { font-size: 20px; }
+/* Skrytá kategorie: ztlumená, oko zůstává plně viditelné. */
+.feature-group-header.layer-hidden > :not(.group-visibility-btn) { opacity: 0.45; }
+.feature-group-header.layer-hidden .group-visibility-btn { color: var(--md-sys-color-primary); }
+.feature-row.layer-hidden { opacity: 0.45; }
+
+/* Panel vrstev — část skrytá filtrem obsahové části v Přehledu prvků. */
+.layer-group.filtered-out { opacity: 0.45; }
+
+/* ===== Měření vzdálenosti a plochy (map/measure.ts) ===== */
+/* Nástroje nad mapou i 3D scénou (vlevo dole v #map-area). */
+.map-tools { position: absolute; bottom: 12px; left: 12px; z-index: 6; display: flex; flex-direction: row; gap: 8px; }
+/* Stejný styl jako lišty nad mapou (.basemap-bar-btn): bílý podklad, šedá
+   ikona; aktivní nástroj jen barvou ikony, bez podbarvení. */
+.map-tools .measure-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 38px;
+  margin: 0;
+  border: none;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface-variant);
+  box-shadow: var(--md-sys-elevation-2, 0 2px 8px rgba(0, 0, 0, 0.18));
+  cursor: pointer;
+}
+.map-tools .measure-btn:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-lowest));
+}
+.map-tools .measure-btn:focus { outline: none; }
+.map-tools .measure-btn:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: -3px; }
+.map-tools .measure-btn .material-symbols-outlined { font-size: 20px; }
+.map-tools .measure-btn.active { color: var(--md-sys-color-primary); }
+.measure-active canvas,
+.parcel-active canvas { cursor: crosshair; }
+
+.measure-card {
+  position: absolute;
+  left: 12px;
+  bottom: 64px; /* nad tlačítkem měření */
+  width: 280px;
+  max-width: calc(100% - 24px);
+  padding: 12px 12px 8px 16px;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-2);
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  z-index: 5;
+}
+.measure-card[hidden] { display: none; }
+/* Řádky jen pro 3D (vodorovná vzdálenost, převýšení). */
+.measure-card:not(.measure-card--3d) .measure-3d-only { display: none; }
+.measure-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.measure-card-head > .material-symbols-outlined { color: #d81b60; font-size: 20px; }
+.measure-card-title { flex: 1; font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
+.measure-icon-btn,
+.measure-text-btn {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.measure-icon-btn {
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--md-sys-shape-corner-full);
+}
+.measure-icon-btn .material-symbols-outlined { font-size: 20px; }
+.measure-text-btn {
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--app-radius);
+  color: var(--md-sys-color-primary);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+}
+.measure-text-btn .material-symbols-outlined { font-size: 18px; }
+.measure-icon-btn:hover,
+.measure-text-btn:hover:not(:disabled) { background: color-mix(in srgb, currentColor 8%, transparent); }
+/* Zpět / Nové měření bez bodů — neaktivní (M3 disabled: 38 % on-surface). */
+.measure-text-btn:disabled {
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  cursor: default;
+}
+.measure-icon-btn:focus-visible,
+.measure-text-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+.measure-values {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 16px;
+  margin: 0 0 8px;
+}
+.measure-values dt { color: var(--md-sys-color-on-surface-variant); }
+.measure-values dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  font-variant-numeric: tabular-nums;
+}
+.measure-hint {
+  margin: 0 0 4px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.measure-actions { display: flex; justify-content: flex-end; gap: 4px; margin-right: -4px; }
+
+/* Popisky měření ve 3D (DOM nad scénou, poloha z projekce bodů). */
+.measure-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 4;
+}
+.measure-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 2px 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1a1b20;
+  font: 500 12px/16px var(--md-sys-typescale-font);
+  white-space: nowrap;
+}
+.measure-label--area { font-weight: 700; }
+.measure-label--total {
+  margin-top: -18px;
+  background: #d81b60;
+  color: #ffffff;
+  font-weight: 700;
+}
+.measure-label[hidden] { display: none; }
+
+/* Objekt přichycení — řádek na celou šířku karty, dlouhý název se zkrátí. */
+.measure-values .measure-snap-target {
+  grid-column: 1 / -1;
+  margin-top: -2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  text-align: right;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.measure-values .measure-snap-target[hidden] { display: none; }
+
+/* ===== Překryvy ČÚZK — DTM ČR, katastr (ui/overlayPanel.ts) ===== */
+.overlay-toggle { min-height: 40px; padding: 0 4px; cursor: pointer; }
+.overlay-toggle .overlay-title { flex: 1; padding: 0; }
+.overlay-body[hidden] { display: none; }
+.overlay-body .basemap-opacity-row { padding-top: 4px; }
+.overlay-actions { display: flex; gap: 4px; margin: 4px 0 2px; }
+.overlay-action-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--app-radius);
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  cursor: pointer;
+}
+.overlay-action-btn:hover { background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); }
+.overlay-action-btn:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 1px; }
+.overlay-group-header { display: flex; align-items: center; min-height: 40px; }
+.overlay-expand {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.overlay-expand:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.overlay-expand .material-symbols-outlined { font-size: 20px; transition: transform 150ms var(--md-sys-motion-standard); }
+.overlay-expand.expanded .material-symbols-outlined { transform: rotate(90deg); }
+.overlay-check-row {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  font: 400 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-on-surface);
+}
+.overlay-check-row input.m3-checkbox { margin: 7px 10px 7px 4px; }
+.overlay-check-row span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.overlay-count {
+  flex-shrink: 0;
+  padding: 0 8px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+}
+.overlay-sublayers { padding: 0 0 4px 32px; }
+.overlay-sublayers[hidden] { display: none; }
+.overlay-sub { min-height: 32px; font-size: 13px; }
+.overlay-note {
+  margin: 6px 4px 0;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+/* Jediná služba (katastr) — podvrstvy rovnou pod akcemi, bez odsazení skupiny. */
+.overlay-sublayers--flat { padding: 0 0 4px 4px; }
+/* Sekce překryvů se neroztahují (místo patří vrstvám JVF); rozbalené se
+   posouvají uvnitř — `.panel-section + .panel-section` jinak dává flex: 1
+   a ořízne obsah. */
+.panel-section.overlay-section {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 40vh;
+  display: block;
+  overflow-y: auto;
+  padding: 2px 0;
+}
+
+/* Dotaz na parcelu (map/parcelQuery.ts) — odkazy v kartě. */
+.parcel-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0; }
+.parcel-owner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px 0 12px;
+  border-radius: var(--app-radius);
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font: 500 14px/20px var(--md-sys-typescale-font);
+  letter-spacing: 0.1px;
+  text-decoration: none;
+}
+.parcel-owner-link:hover { box-shadow: var(--md-sys-elevation-1); }
+.parcel-owner-link .material-symbols-outlined { font-size: 18px; }
+.parcel-links .measure-text-btn { text-decoration: none; }
+.map-tools .measure-btn[hidden] { display: none; }
+.parcel-card .measure-card-head .parcel-icon { color: #d81b60; width: 20px; height: 20px; }
+.map-tools .measure-btn .parcel-icon { display: block; }
+.parcel-links .measure-text-btn[hidden] { display: none; }

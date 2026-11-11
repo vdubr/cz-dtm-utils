@@ -1,0 +1,7 @@
+id: OznaceniKomunikaceTrate
+nazev: Označení komunikace tratě
+namespace: atr
+popis: Označení komunikace nebo tratě
+nillable: false
+typ: String
+maxDelka: 255

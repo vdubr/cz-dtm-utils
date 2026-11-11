@@ -1,0 +1,132 @@
+- id: DopravniStavby
+  nazev: Dopravní stavby
+  skupinyPrvku:
+  - id: DopravniStavbaSpolecnaProViceSkupin
+    nazev: Dopravní stavba společná pro více skupin
+  - id: VodniDoprava
+    nazev: Vodní doprava
+  - id: LeteckaDoprava
+    nazev: Letecká doprava
+  - id: ZarizeniDopravnichStaveb
+    nazev: Zařízení dopravních staveb
+  - id: DrazniDoprava
+    nazev: Drážní doprava
+  - id: SilnicniDoprava
+    nazev: Silniční doprava
+
+- id: StavbyTechnickeInfrastruktury
+  nazev: Stavby technické infrastruktury
+  skupinyPrvku:
+  - id: SdilenaStavbaObjektTechnickeInfrastruktury
+    nazev: Sdílená stavba / objekt technické infrastruktury
+  - id: Vodovod
+    nazev: Vodovod
+  - id: PotrubniPosta
+    nazev: Potrubní pošta
+  - id: Teplovod
+    nazev: Teplovod
+  - id: Kanalizace
+    nazev: Kanalizace
+  - id: ElektronickaKomunikace
+    nazev: Elektronická komunikace
+  - id: Plynovod
+    nazev: Plynovod
+  - id: Produktovod
+    nazev: Produktovod
+  - id: ZarizeniStavebTechnickeInfrastruktury
+    nazev: Zařízení staveb technické infrastruktury
+  - id: ElektrickeVedeni
+    nazev: Elektrické vedení
+
+- id: GeodetickePrvky
+  nazev: Geodetické prvky
+  skupinyPrvku:
+  - id: PodrobnyBod
+    nazev: Podrobný bod
+
+- id: VodniDila
+  nazev: Vodní díla
+  skupinyPrvku:
+  - id: Nadrz
+    nazev: Nádrž
+  - id: StavbaVKoryteVodnihoToku
+    nazev: Stavba v korytě vodního toku
+  - id: PrivadecPovrchovychVodNahonOdpad
+    nazev: Přivaděč povrchových vod, náhon, odpad
+  - id: StavbaKMelioracimPozemku
+    nazev: Stavba k melioracím pozemků
+  - id: StavbaObjektAZarizeniKOchranePredPovodnemi
+    nazev: Stavba, objekt a zařízení k ochraně před povodněmi
+  - id: VzdouvaciStavba
+    nazev: Vzdouvací stavba
+
+- id: SoucastiAPrislusenstviStaveb
+  nazev: Součásti a příslušenství staveb
+  skupinyPrvku:
+  - id: StavbaSpolecnaProViceSkupin
+    nazev: Stavba společná pro více skupin
+  - id: DoplnkoveZarizeniStaveb
+    nazev: Doplňkové zařízení staveb
+  - id: ZarizeniStaveb
+    nazev: Zařízení staveb
+
+- id: RekreacniKulturniASakralniStavby
+  nazev: Rekreační, kulturní a sakrální stavby
+  skupinyPrvku:
+  - id: StavbaKulturniSakralni
+    nazev: Stavba kulturní, sakrální
+  - id: SportovisteAHristeProRekreaci
+    nazev: Sportoviště a hřiště pro rekreaci
+
+- id: PlanovaneStavebniPraceInfrastruktury
+  nazev: Plánované stavební práce infrastruktury
+  skupinyPrvku:
+  - id: PlanovanaStavebniPraceInfrastruktury
+    nazev: Plánovaná stavební práce infrastruktury
+
+- id: VodstvoVegetaceATeren
+  nazev: Vodstvo, vegetace a terén
+  skupinyPrvku:
+  - id: PrirodniVodniPlocha
+    nazev: Přírodní vodní plocha
+  - id: UdrzovanaZelen
+    nazev: Udržovaná zeleň
+  - id: HospodarskaPlocha
+    nazev: Hospodářská plocha
+  - id: TerenniUtvar
+    nazev: Terénní útvar
+
+- id: OchrannaABezpecnostniPasma
+  nazev: Ochranná a bezpečnostní pásma
+  skupinyPrvku:
+  - id: OchranneABezpecnostniPasmo
+    nazev: Ochranné a bezpečnostní pásmo
+
+- id: KonstrukcniPrvkyObjektu
+  nazev: Konstrukční prvky objektů
+  skupinyPrvku:
+  - id: ZakladniKonstrukcniPrvek
+    nazev: Základní konstrukční prvek
+  - id: DoplnkovyKonstrukcniPrvek
+    nazev: Doplňkový konstrukční prvek
+
+- id: StavbyProPrumysloveUcelyAHospodarstvi
+  nazev: Stavby pro průmyslové účely a hospodářství
+  skupinyPrvku:
+  - id: OdpadoveHospodarstvi
+    nazev: Odpadové hospodářství
+  - id: DulniDiloDulniStavba
+    nazev: Důlní dílo, důlní stavba
+
+- id: ZameryNaProvedeniZmenDopravniATechnickeInfrastruktury
+  nazev: Záměry na provedení změn dopravní a technické infrastruktury
+  skupinyPrvku:
+  - id: ZamerNaProvedeniZmenDopravniATechnickeInfrastruktury
+    nazev: Záměr na provedení změn dopravní a technické infrastruktury
+
+- id: Budovy
+  nazev: Budovy
+  skupinyPrvku:
+  - id: ObjektBudovy
+    nazev: Objekt budovy
+

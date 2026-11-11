@@ -1,15 +1,18 @@
 # cz-dtm-utils
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000?logo=vercel)](https://cz-dtm-utils.vercel.app/jvf_viewer/)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000?logo=vercel)](https://cz-dtm-utils.vercel.app/)
 
 TypeScript monorepo for working with **JVF DTM** — the Czech *Jednotný Výměnný
 Formát Digitální Technické Mapy* (Unified Exchange Format for the Digital
 Technical Map). It provides a parser, a topological validator, and a browser-based
-viewer/validator UI for JVF DTM 1.4.3 files.
+viewer/validator UI for JVF DTM files (1.4.3, 1.5.0.1, 1.5.0.2) and the
+dialects UDM 2.1.1 (ČKZ) and ŽXML 1.4.2.1 / 1.5.1.6 (railway DTMŽ data of
+Správa železnic) — the viewer has dedicated modes JVF / UDM / JŽM with
+dialect symbology, a symbol legend with SVG download and DXF export.
 
-> **Live demo:** https://cz-dtm-utils.vercel.app/jvf_viewer/
+> **Live demo:** https://cz-dtm-utils.vercel.app/
 >
 > Files are processed entirely in the browser — nothing is uploaded to a server.
 
@@ -66,7 +69,8 @@ clean public APIs.
 | Package | Path | Purpose |
 |---|---|---|
 | **[`jvf-dtm-types`](./jvf_dtm_types/)** | `jvf_dtm_types/` | Shared TypeScript domain types — pure types, zero runtime dependencies. Single source of truth for `JvfDtm`, `ObjektovyTyp`, `ZaznamObjektu`, `Geometry`, GML primitives, enums. |
-| **[`jvf-parser`](./jvf_parser/)** | `jvf_parser/` | XML → typed object parser for JVF DTM 1.4.3. Auto-generated entity catalog (~358 object types) and shared attribute groups from the official XSD schemas. |
+| **[`jvf-parser`](./jvf_parser/)** | `jvf_parser/` | XML → typed object parser for JVF DTM 1.4.3 / 1.5.0.1 / 1.5.0.2 and dialects UDM and ŽXML (dialect registry, version router). Auto-generated entity catalogs and code lists from the official XSD schemas. |
+| **[`jvf-cad`](./jvf_cad/)** | `jvf_cad/` | Export to AutoCAD DXF (R2013 / R2000) with dialect appearance — layers, symbol blocks (UDM, ŽXML), texts, XDATA attributes. |
 | **[`jvf-topology`](./jvf_topology/)** | `jvf_topology/` | Topological validation of parsed JVF data — three layers of checks (geometric validity, intra-record consistency, inter-object topology). 185 fixture-based tests. |
 | **[`jvf-viewer`](./jvf_viewer/)** | `jvf_viewer/` | Browser application — Vite + OpenLayers (2D) + Three.js (3D with ČÚZK DMR5G terrain). Loads JVF files locally, renders all geometries, runs topology checks and lists errors with click-to-zoom. |
 
@@ -161,7 +165,7 @@ cz-dtm-utils/
 │       └── ui/           # Modal dialogs, panels, file upload, legend
 ├── CHANGELOG.md          # Keep a Changelog (Czech), CalVer YYYY.M.D
 ├── CLAUDE.md             # Internal contributor / agent guidelines
-└── LICENSE               # MIT
+└── LICENSE               # proprietární — všechna práva vyhrazena
 ```
 
 ---
@@ -229,13 +233,15 @@ on Material Design palettes for the high-level content parts (ZPS / TI / DI /
 GAD / OPL); per-object-type colours come from the official ČÚZK Symbol Catalog
 but have not been verified value-by-value against the reference rendering.
 
-Pull requests, bug reports and feedback are welcome.
+Bug reports and feedback are welcome.
 
 ---
 
 ## License
 
-[MIT](./LICENSE) © 2026 Vojtěch Dubrovský
+Proprietary — all rights reserved. © 2026 Vojtěch Dubrovský. See [LICENSE](./LICENSE).
+No license is granted by publishing this repository; versions up to 2026.8.25
+were released under the MIT license.
 
 The JVF DTM specification, XSD schemas, sample data and the symbol catalog
 (ČÚZK Katalog DTM 1.4.3) are property of the Czech Office for Surveying,

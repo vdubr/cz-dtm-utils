@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objtyp:JVFDTM xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:dopinf="dopinf" xmlns:objtyp="objtyp"
+    xmlns:cmn="cmn"
+    xmlns:atr="atr"
+    xmlns:atrsz="atrsz"
+    xmlns:kolmaz="kolmaz"
+    xmlns:vyhbod="vyhbod"
+    xmlns:zelpre="zelpre">
+    <objtyp:DataJVFDTM>
+        <cmn:VerzeJVFDTM>1.4.3</cmn:VerzeJVFDTM>
+        <cmn:VerzeZXML>1.4.2.1</cmn:VerzeZXML>
+        <cmn:DatumZapisu>2023-04-15T10:00:00</cmn:DatumZapisu>
+        <cmn:TypZapisu>kompletní zápis</cmn:TypZapisu>
+        <objtyp:Data>
+            <objtyp:KolejnicovyMaznik>
+                <kolmaz:ObjektovyTypNazev code_base="9990000442" code_suffix="01">Kolejnicový mazník</kolmaz:ObjektovyTypNazev>
+                <kolmaz:KategorieObjektu>Dopravní stavby</kolmaz:KategorieObjektu>
+                <kolmaz:SkupinaObjektu>Zařízení svršku</kolmaz:SkupinaObjektu>
+                <kolmaz:ObsahovaCast>ZDD</kolmaz:ObsahovaCast>
+                <kolmaz:ZaznamyObjektu>
+                    <kolmaz:ZaznamObjektu>
+                        <cmn:ZapisObjektu>u</cmn:ZapisObjektu>
+                        <kolmaz:AtributyObjektu>
+                            <atr:SpolecneAtributyVsechObjektu>
+                                <atr:ID>1000001</atr:ID>
+                                <atr:IDZmeny>10000000</atr:IDZmeny>
+                                <atr:PopisObjektu>Popis bodu výhybky</atr:PopisObjektu>
+                                <atr:IDEditora>1</atr:IDEditora>
+                                <atr:DatumVkladu>2023-04-15T10:00:00</atr:DatumVkladu>
+                                <atr:VkladOsoba>1234567890</atr:VkladOsoba>
+                                <atr:DatumZmeny>2023-04-15T10:00:00</atr:DatumZmeny>
+                                <atr:ZmenaOsoba>1234567890</atr:ZmenaOsoba>                                
+                            </atr:SpolecneAtributyVsechObjektu>
+                            <atr:SpolecneAtributyObjektuDI>
+                                <atr:NeuplnaData>false</atr:NeuplnaData>
+                                <atr:UrovenUmisteniObjektuDI>-3</atr:UrovenUmisteniObjektuDI>
+                                <atr:TridaPresnostiPoloha>1</atr:TridaPresnostiPoloha>
+                                <atr:TridaPresnostiVyska>1</atr:TridaPresnostiVyska>
+                                <atr:ZpusobPorizeniDI>1</atr:ZpusobPorizeniDI>
+                            </atr:SpolecneAtributyObjektuDI>
+                            <atrsz:ZdrojDatDI>101494</atrsz:ZdrojDatDI>
+                        </kolmaz:AtributyObjektu>
+                        <kolmaz:GeometrieObjektu>
+                            <gml:pointProperty>
+                                <gml:Point srsName="EPSG:5514" srsDimension="3" gml:id="ID99001000001">
+                                    <gml:pos>-730086.63 -1054554.45 100</gml:pos>
+                                </gml:Point>
+                            </gml:pointProperty>
+                        </kolmaz:GeometrieObjektu>
+                    </kolmaz:ZaznamObjektu>
+                </kolmaz:ZaznamyObjektu>
+            </objtyp:KolejnicovyMaznik>
+            <objtyp:ZeleznicniPrejezdOstatniKresba>
+                <zelpre:ObjektovyTypNazev code_base="9990000560" code_suffix="02">Železniční přejezd - ostatní kresba</zelpre:ObjektovyTypNazev>
+                <zelpre:KategorieObjektu>Dopravní stavby</zelpre:KategorieObjektu>
+                <zelpre:SkupinaObjektu>Přejezdy</zelpre:SkupinaObjektu>
+                <zelpre:ObsahovaCast>H3D</zelpre:ObsahovaCast>
+                <zelpre:ZaznamyObjektu>
+                    <zelpre:ZaznamObjektu>
+                        <cmn:ZapisObjektu>u</cmn:ZapisObjektu>
+                            <zelpre:AtributyObjektu>
+                                <atr:SpolecneAtributyVsechObjektu>
+                                    <atr:ID>1000002</atr:ID>
+                                    <atr:IDZmeny>10000000</atr:IDZmeny>
+                                    <atr:PopisObjektu>Popis bodu výhybky</atr:PopisObjektu>
+                                    <atr:IDEditora>1</atr:IDEditora>
+                                    <atr:DatumVkladu>2023-04-15T10:00:00</atr:DatumVkladu>
+                                    <atr:VkladOsoba>1234567890</atr:VkladOsoba>
+                                    <atr:DatumZmeny>2023-04-15T10:00:00</atr:DatumZmeny>
+                                    <atr:ZmenaOsoba>1234567890</atr:ZmenaOsoba>
+                                </atr:SpolecneAtributyVsechObjektu>
+                                <atrsz:TridaPresnostiPoloha>3</atrsz:TridaPresnostiPoloha>
+                                <atrsz:TridaPresnostiVyska>3</atrsz:TridaPresnostiVyska>
+                                <atrsz:UrovenUmisteniObjektuZPS>0</atrsz:UrovenUmisteniObjektuZPS>
+                                <atrsz:ZpusobPorizeniZPS>101168</atrsz:ZpusobPorizeniZPS>
+                            </zelpre:AtributyObjektu>
+                        <zelpre:GeometrieObjektu>
+                            <gml:curveProperty>
+                                <gml:LineString srsName="EPGS:5514" srsDimension="3" gml:id="ID99001000002">
+                                    <gml:posList>-730106.480 -1054558.020 323.320 -730109.640 -1054553.820 323.320</gml:posList>
+                                </gml:LineString>
+                            </gml:curveProperty>
+                        </zelpre:GeometrieObjektu>
+                    </zelpre:ZaznamObjektu>
+                </zelpre:ZaznamyObjektu>
+            </objtyp:ZeleznicniPrejezdOstatniKresba>
+        </objtyp:Data>
+        <DoprovodneInformace  xmlns="dopinf">
+            <UdajeOZmenach>
+                <ZaznamZmeny>
+                    <NazevZakazky>ŽXML testovací zakázka</NazevZakazky>
+                    <Zpracovatel>Zpracovatel</Zpracovatel>
+                    <OrganizaceZpracovatele>Organizace zpracovatele</OrganizaceZpracovatele>
+                    <DatumMereni>2023-10-10</DatumMereni>
+                    <DatumZpracovani>2023-10-15</DatumZpracovani>
+                    <AZI>9999</AZI>
+                    <DatumOvereni>2023-10-15</DatumOvereni>
+                    <CisloOvereni>124/2023</CisloOvereni>
+                    <OblastZmeny>
+                        <surfaceProperty xmlns="http://www.opengis.net/gml/3.2">
+                            <Polygon srsName="EPSG:5514" srsDimension="2" gml:id="ID6_03"> 
+                                <exterior> 
+                                    <LinearRing> 
+                                        <posList>-719921.40 -1051432.57 -719835.70 -1051390.95 -719836.92 -1051426.94 -719896.18 -1051463.91 -719926.54 -1051506.76 -719989.71 -1051467.10 -719988.97 -1051424.25 -719921.40 -1051432.57</posList> 
+                                    </LinearRing> 
+                                </exterior> 
+                            </Polygon> 
+                        </surfaceProperty>
+                    </OblastZmeny>
+                </ZaznamZmeny>
+            </UdajeOZmenach>
+        </DoprovodneInformace>
+    </objtyp:DataJVFDTM>
+</objtyp:JVFDTM>

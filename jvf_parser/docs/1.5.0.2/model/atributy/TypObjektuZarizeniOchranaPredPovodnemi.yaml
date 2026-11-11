@@ -1,0 +1,17 @@
+id: TypObjektuZarizeniOchranaPredPovodnemi
+nazev: Typ objektu nebo zařízení k ochraně před povodněmi
+namespace: atr
+popis: Typ objektu nebo zařízení k ochraně před povodněmi
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: hradítko hradidlové šachty
+ - hodnota: 2
+   popis: hrazení, uzávěr, vrata
+ - hodnota: 3
+   popis: patka protipovodňové stěny
+ - hodnota: 4
+   popis: odlehčovací koryto
+ - hodnota: 98
+   popis: jiný

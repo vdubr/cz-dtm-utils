@@ -1,0 +1,7 @@
+id: VyskaNaTerenu
+nazev: Výška na terénu
+namespace: atr
+popis: Výška na terénu
+nillable: false
+typ: String
+maxDelka: 10

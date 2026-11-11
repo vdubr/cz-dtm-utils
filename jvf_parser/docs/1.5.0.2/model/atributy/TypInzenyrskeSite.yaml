@@ -1,0 +1,23 @@
+id: TypInzenyrskeSite
+nazev: Typ inženýrské sítě
+namespace: atr
+popis: Typ inženýrské sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: elektrické vedení
+ - hodnota: 2
+   popis: elektronická komunikace
+ - hodnota: 3
+   popis: plynovod
+ - hodnota: 4
+   popis: vodovod
+ - hodnota: 5
+   popis: kanalizace
+ - hodnota: 6
+   popis: produktovod
+ - hodnota: 7
+   popis: teplovod
+ - hodnota: 99
+   popis: nezjištěno

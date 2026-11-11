@@ -1,0 +1,27 @@
+id: GeometrieObjektuLinie3D
+namespace: cmn
+atributy:
+  - id: Linie3D
+    volitelny: false
+    atribut: Linie3DCurveProperty
+
+kontexty:
+  Ref:
+    obsah:
+      - id: Linie3D
+        volitelny: false
+
+  Ins:
+    obsah:
+      - id: Linie3D
+        volitelny: false
+
+  Upd:
+    obsah:
+      - id: Linie3D
+        volitelny: true
+
+  Del:
+    obsah:
+      - id: Linie3D
+        volitelny: true

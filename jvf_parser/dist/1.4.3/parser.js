@@ -3,7 +3,7 @@ import { isSupportedVersion } from 'jvf-dtm-types';
 import { parseGeometrieObjektu, parseOblastObjektuKI } from './geometry.js';
 import { parseAtributyObjektu } from './attributes.js';
 import { parseDoprovodneInformace } from './doprovodne-informace.js';
-import { extractText } from './xml-helpers.js';
+import { extractText, keepIdentifierText } from './xml-helpers.js';
 /** Platné hodnoty `TypZapisu` (viz `jvf-dtm-types`), pro runtime validaci. */
 const VALID_TYP_ZAPISU = ['kompletní zápis', 'změnové věty'];
 function createParser() {
@@ -14,6 +14,8 @@ function createParser() {
         isArray: (name) => ['ZaznamObjektu', 'ZaznamZPS', 'curveMember'].includes(name),
         // Preserve text content of elements that may be pure numbers
         parseTagValue: true,
+        // ID zůstávají doslova jako text (úvodní nuly, „1e5" apod.).
+        tagValueProcessor: keepIdentifierText,
         parseAttributeValue: true,
         trimValues: true,
     });
@@ -87,7 +89,7 @@ function parseObjektovyTyp(elementName, typEl) {
         zaznamy,
     };
 }
-export function parseJvfDtm(xml) {
+export function parseJvfDtm(xml, options = {}) {
     const validation = XMLValidator.validate(xml);
     if (validation !== true) {
         const { msg, line, col } = validation.err;
@@ -104,7 +106,7 @@ export function parseJvfDtm(xml) {
         throw new Error('Invalid JVF DTM XML: missing <DataJVFDTM> element');
     }
     const verze = extractText(dataJvfDtm['VerzeJVFDTM']) ?? '';
-    if (verze !== '' && !isSupportedVersion(verze)) {
+    if (verze !== '' && !isSupportedVersion(verze) && options.warnUnsupportedVersion !== false) {
         console.warn(`jvf-parser: nepodporovaná verze JVF DTM specifikace "${verze}" — očekávána jedna z podporovaných verzí. Parsování pokračuje, ale výsledek nemusí odpovídat schématu.`);
     }
     const datumZapisu = extractText(dataJvfDtm['DatumZapisu']) ?? '';
@@ -138,6 +140,7 @@ export function parseJvfDtm(xml) {
     const doprovodneInformace = parseDoprovodneInformace(dataJvfDtm['DoprovodneInformace']);
     return {
         verze,
+        verzeJvfDtm: verze,
         datumZapisu,
         typZapisu,
         objekty,

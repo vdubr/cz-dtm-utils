@@ -1,10 +1,21 @@
 // Legend modal — zobrazí kompletní legendu všech objektových typů z ENTITY_CATALOG
-// s reprezentativním swatch (point/line/polygon) podle stylu z Katalogu DTM.
+// jako mřížku dlaždic: velký náhled ve tvaru geometrie (bod / linie / plocha)
+// podle reprezentativního stylu z Katalogu DTM, pod ním název a typ geometrie.
 
 import { getEntityCatalog } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
-import { getActiveVersion } from '../state/activeVersion.js';
-import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
+import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
+import {
+  LAYER_COLORS,
+  resolveRepresentativeStyle,
+  resolveVariantStyles,
+  type ResolvedStyle,
+  type VariantStyle,
+} from '../map/jvfLayers.js';
+import { markDialectObjekty } from '../map/dialectStyle.js';
+import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
+import { attachSearchClear, matchesSearch, normalizeSearch } from './searchField.js';
+import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -13,15 +24,14 @@ import { LAYER_COLORS, resolveRepresentativeStyle } from '../map/jvfLayers.js';
  */
 type EntityMeta = ReturnType<typeof getEntityCatalog>[string];
 
-const SVG_BASE = './symboly/';
-
 /**
  * Adapter EntityMeta → ObjektovyTyp pro `resolveRepresentativeStyle()`.
- * Ten používá pouze `codeBase` a `obsahovaCast`, ale typový kontrakt
- * vyžaduje plný ObjektovyTyp; doplníme prázdný `zaznamy` array.
+ * Ten používá `codeBase`, `codeSuffix` (typ geometrie) a `obsahovaCast` —
+ * stejná definice stylu jako mapa; typový kontrakt vyžaduje plný
+ * ObjektovyTyp, doplníme prázdný `zaznamy` array.
  */
 function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
-  return {
+  const ot: ObjektovyTyp = {
     elementName: meta.elementName,
     nazev: meta.nazev,
     codeBase: meta.codeBase,
@@ -31,11 +41,12 @@ function entityMetaToObjektovyTyp(meta: EntityMeta): ObjektovyTyp {
     obsahovaCast: meta.obsahovaCast,
     zaznamy: [],
   };
+  // Legenda aktivní verze dialektu (UDM, ŽXML) → swatche v symbologii dialektu.
+  markDialectObjekty([ot], getActiveVersion());
+  return ot;
 }
 
 /** Mapuj `EntityMeta.geomType` na konceptuální typ pro swatch. */
-type SwatchKind = 'point' | 'line' | 'polygon';
-
 function swatchKindFor(meta: EntityMeta): SwatchKind {
   switch (meta.geomType) {
     case 'point':
@@ -50,67 +61,44 @@ function swatchKindFor(meta: EntityMeta): SwatchKind {
   }
 }
 
-/** Vytvoř malý HTML element se symbolem (16×16, podobné layerPanel.buildSymbolEl). */
-function buildLegendSwatch(meta: EntityMeta): HTMLElement {
-  const ot = entityMetaToObjektovyTyp(meta);
-  const s = resolveRepresentativeStyle(ot);
-  const kind = swatchKindFor(meta);
+/** Definiční bod plochy (`BudovaDefinicniBod`, v 1.4.3 `BudovaDefBod`). */
+function isDefBod(meta: EntityMeta): boolean {
+  return meta.geomType === 'point' && /(DefBod|DefinicniBod)$/i.test(meta.elementName);
+}
 
-  if (kind === 'point') {
-    if (s.pointSvg) {
-      const img = document.createElement('img');
-      img.src = SVG_BASE + s.pointSvg;
-      img.width = 16;
-      img.height = 16;
-      img.className = 'layer-symbol-img';
-      img.loading = 'lazy';
-      return img;
-    }
-    const span = document.createElement('span');
-    span.className = 'layer-symbol-dot';
-    span.style.background = s.strokeColor;
-    return span;
-  }
+/**
+ * Náhled entity ve tvaru geometrie (dlaždice legendy). Obecný definiční bod
+ * (značka `*_db.svg` nebo tečka) drobně jako v mapě; definiční bod s vlastní
+ * značkou plochy (hřbitov, komín, …) v plné velikosti.
+ */
+function buildLegendIcon(meta: EntityMeta, style: ResolvedStyle): SVGSVGElement {
+  const genericDefBod = isDefBod(meta) && (!style.pointSvg || /_db\.svg$/.test(style.pointSvg));
+  return buildGeometryIcon(style, swatchKindFor(meta), genericDefBod ? 14 : 32);
+}
 
-  if (kind === 'polygon') {
-    const span = document.createElement('span');
-    span.className = 'layer-symbol-polygon';
-    const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-    const fill = s.fillColor.length > 7 ? s.fillColor.slice(0, 7) : s.fillColor;
-    span.style.background = fill;
-    span.style.borderColor = stroke;
-    return span;
-  }
+/** Položka legendy: entita a varianty vzhledu, které se ukážou jako dlaždice. */
+interface LegendEntry {
+  meta: EntityMeta;
+  ot: ObjektovyTyp;
+  variants: VariantStyle[];
+}
 
-  // Line — preferuj SVG s dash patternem, jinak prostý pruh.
-  const stroke = s.strokeColor.length > 7 ? s.strokeColor.slice(0, 7) : s.strokeColor;
-  if (s.lineDashMm && s.lineDashMm.length >= 2) {
-    // Vykresli SVG čáru s dash pattern — hodnoty v mm jsou ze symbology, ale
-    // pro 24px swatch je škálujeme dolů, aby pattern byl vidět.
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '24');
-    svg.setAttribute('height', '16');
-    svg.setAttribute('viewBox', '0 0 24 16');
-    svg.classList.add('layer-symbol-line-svg');
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', '0');
-    line.setAttribute('y1', '8');
-    line.setAttribute('x2', '24');
-    line.setAttribute('y2', '8');
-    line.setAttribute('stroke', stroke);
-    line.setAttribute('stroke-width', '2');
-    // Škála: nejdelší segment v patternu mapuj cca na 6 px
-    const maxMm = Math.max(...s.lineDashMm);
-    const scale = maxMm > 0 ? 6 / maxMm : 1;
-    const dasharray = s.lineDashMm.map((v) => (v * scale).toFixed(1)).join(' ');
-    line.setAttribute('stroke-dasharray', dasharray);
-    svg.appendChild(line);
-    return svg as unknown as HTMLElement;
+/** Typ geometrie česky — odliší dvojice se stejným názvem (definiční bod / plocha). */
+function geomLabel(meta: EntityMeta): string {
+  switch (meta.geomType) {
+    case 'point':
+      return isDefBod(meta) ? 'Definiční bod' : 'Bod';
+    case 'curve':
+      return 'Linie';
+    default:
+      return 'Plocha';
   }
-  const span = document.createElement('span');
-  span.className = 'layer-symbol-line';
-  span.style.background = stroke;
-  return span;
+}
+
+/** „typ / typy / typů" podle počtu. */
+function pluralTypes(n: number): string {
+  if (n === 1) return 'typ';
+  return n >= 2 && n <= 4 ? 'typy' : 'typů';
 }
 
 /** Render kompletní legendy do `#legend-modal-body`. */
@@ -119,46 +107,41 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
 
   // Seskup katalog aktivní verze podle obsahovaCast → kategorieObjektu →
   // skupinaObjektu. Verzně-vědomé — pro 1.5.0.1 obsahuje i PSPI a nové typy.
-  const filterLower = filter.trim().toLowerCase();
-  const allEntities = Object.values(getEntityCatalog(getActiveVersion()));
-  const filtered = filterLower
-    ? allEntities.filter((m) => {
-        return (
-          m.nazev.toLowerCase().includes(filterLower) ||
-          m.elementName.toLowerCase().includes(filterLower) ||
-          m.codeBase.includes(filterLower) ||
-          m.kategorieObjektu.toLowerCase().includes(filterLower) ||
-          m.skupinaObjektu.toLowerCase().includes(filterLower)
-        );
-      })
-    : allEntities;
+  // Hledá se i v hodnotách variant („sloup" najde sloupy podpěrného
+  // zařízení) — pak se ukážou jen odpovídající varianty.
+  const q = normalizeSearch(filter.trim());
+  const filtered: LegendEntry[] = [];
+  for (const m of Object.values(getEntityCatalog(getActiveVersion()))) {
+    const ot = entityMetaToObjektovyTyp(m);
+    const variants = resolveVariantStyles(ot);
+    const metaHit =
+      !q || matchesSearch(q, m.nazev, m.elementName, m.codeBase, m.kategorieObjektu, m.skupinaObjektu);
+    if (metaHit) {
+      filtered.push({ meta: m, ot, variants });
+      continue;
+    }
+    const hits = variants.filter((v) => matchesSearch(q, v.value));
+    if (hits.length > 0) filtered.push({ meta: m, ot, variants: hits });
+  }
 
   if (filtered.length === 0) {
     container.innerHTML = '<div class="empty-hint">Nic neodpovídá hledanému výrazu.</div>';
     return;
   }
 
-  // Mapa: obsahovaCast → kategorieObjektu → EntityMeta[]
-  const groups = new Map<string, Map<string, EntityMeta[]>>();
-  for (const meta of filtered) {
-    const cast = meta.obsahovaCast || '—';
-    const kat = meta.kategorieObjektu || '—';
+  // Mapa: obsahovaCast → kategorieObjektu → LegendEntry[]
+  const groups = new Map<string, Map<string, LegendEntry[]>>();
+  for (const entry of filtered) {
+    const cast = entry.meta.obsahovaCast || '—';
+    const kat = entry.meta.kategorieObjektu || '—';
     if (!groups.has(cast)) groups.set(cast, new Map());
     const catMap = groups.get(cast)!;
     if (!catMap.has(kat)) catMap.set(kat, []);
-    catMap.get(kat)!.push(meta);
+    catMap.get(kat)!.push(entry);
   }
 
-  // Stabilní pořadí: ZPS, TI, DI, GAD, OPL, PSPI, ostatní (alfa).
-  const CAST_ORDER = ['ZPS', 'TI', 'DI', 'GAD', 'OPL', 'PSPI'];
-  const sortedCasts = [...groups.keys()].sort((a, b) => {
-    const ai = CAST_ORDER.indexOf(a);
-    const bi = CAST_ORDER.indexOf(b);
-    if (ai !== -1 && bi !== -1) return ai - bi;
-    if (ai !== -1) return -1;
-    if (bi !== -1) return 1;
-    return a.localeCompare(b, 'cs');
-  });
+  // Stabilní pořadí: JVF, UDM, ŽXML, ostatní (alfa) — viz state/contentParts.ts.
+  const sortedCasts = [...groups.keys()].sort(compareContentParts);
 
   for (const cast of sortedCasts) {
     const catMap = groups.get(cast)!;
@@ -171,16 +154,15 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     groupHeader.className = 'legend-cast-header';
     const color = LAYER_COLORS[cast] ?? '#90a4ae';
     groupHeader.innerHTML = `
-      <span class="layer-group-dot" style="background:${color}"></span>
-      <span class="legend-cast-name">${cast}</span>
-      <span class="legend-cast-count">${total}</span>
+      <span class="legend-cast-name part-underline" style="--part-color:${color}">${cast}<span class="part-title">${contentPartTitle(cast)}</span></span>
+      <span class="legend-cast-count">${total} ${pluralTypes(total)}</span>
     `;
     groupEl.appendChild(groupHeader);
 
     const sortedKats = [...catMap.keys()].sort((a, b) => a.localeCompare(b, 'cs'));
     for (const kat of sortedKats) {
       const items = catMap.get(kat)!;
-      items.sort((a, b) => a.nazev.localeCompare(b.nazev, 'cs'));
+      items.sort((a, b) => a.meta.nazev.localeCompare(b.meta.nazev, 'cs'));
 
       const katEl = document.createElement('div');
       katEl.className = 'legend-kat-group';
@@ -193,26 +175,36 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
       const grid = document.createElement('div');
       grid.className = 'legend-grid';
 
-      for (const meta of items) {
-        const row = document.createElement('div');
-        row.className = 'legend-item';
-        row.title = `${meta.elementName} · kód ${meta.codeBase}`;
+      for (const { meta, ot, variants } of items) {
+        // Objekt se vzhledem podle atributu = dlaždice pro každou hodnotu.
+        const tiles: { variant?: string; style: ResolvedStyle }[] = variants.length > 0
+          ? variants.map((v) => ({ variant: v.value, style: v.style }))
+          : [{ style: resolveRepresentativeStyle(ot) }];
+        const name = meta.nazev || meta.elementName;
+        for (const { variant, style } of tiles) {
+          const tile = document.createElement('div');
+          tile.className = 'legend-item legend-tile';
+          tile.title = [name, variant, meta.skupinaObjektu, `${meta.elementName} · kód ${meta.codeBase}`]
+            .filter(Boolean)
+            .join('\n');
 
-        const swatch = buildLegendSwatch(meta);
-        const swatchWrap = document.createElement('div');
-        swatchWrap.className = 'legend-swatch';
-        swatchWrap.appendChild(swatch);
+          const preview = document.createElement('div');
+          preview.className = 'legend-swatch legend-tile-preview';
+          preview.appendChild(buildLegendIcon(meta, style));
 
-        const info = document.createElement('div');
-        info.className = 'legend-item-info';
-        info.innerHTML = `
-          <span class="legend-name">${meta.nazev || meta.elementName}</span>
-          <span class="legend-meta">${meta.skupinaObjektu || ''} · ${meta.codeBase}</span>
-        `;
+          const info = document.createElement('div');
+          info.className = 'legend-item-info';
+          info.innerHTML = `
+            <span class="legend-name">${name}</span>
+            ${variant ? `<span class="legend-meta legend-variant">${variant}</span>` : ''}
+            <span class="legend-meta">${geomLabel(meta)}</span>
+            <span class="legend-meta legend-code">${meta.codeBase}</span>
+          `;
 
-        row.appendChild(swatchWrap);
-        row.appendChild(info);
-        grid.appendChild(row);
+          tile.appendChild(preview);
+          tile.appendChild(info);
+          grid.appendChild(tile);
+        }
       }
 
       katEl.appendChild(grid);
@@ -236,6 +228,11 @@ export function setupLegendModal(): void {
   }
 
   let rendered = false;
+  // Legenda je katalogová podle aktivní verze — po načtení souboru jiné verze
+  // (např. UDM) ji při dalším otevření překresli.
+  onActiveVersionChange(() => {
+    rendered = false;
+  });
 
   const open = (): void => {
     if (!rendered) {
@@ -262,6 +259,7 @@ export function setupLegendModal(): void {
 
   // Inkrementální filtrování (debounce by tu bylo overkill — 358 položek).
   if (search) {
+    attachSearchClear(search);
     search.addEventListener('input', () => {
       renderLegendContent(body, search.value);
     });

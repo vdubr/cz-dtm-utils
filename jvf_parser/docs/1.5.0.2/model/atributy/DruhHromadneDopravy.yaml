@@ -1,0 +1,21 @@
+id: DruhHromadneDopravy
+nazev: Druh hromadné dopravy
+namespace: atr
+popis: Druh hromadné dopravy
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: autobusová
+ - hodnota: 2
+   popis: trolejbusová
+ - hodnota: 3
+   popis: tramvajová
+ - hodnota: 4
+   popis: lanová
+ - hodnota: 5
+   popis: přívoz
+ - hodnota: 6
+   popis: |-
+     sdílená
+     použité druhy dopravy lze zapsat do popisu objektu

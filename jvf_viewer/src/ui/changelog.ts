@@ -151,7 +151,9 @@ function parseChangelog(raw: string): ParsedVersion[] {
  * První `VERSIONS_VISIBLE_BY_DEFAULT` verze rozbalené; zbytek pod `<details>`.
  */
 export function buildChangelogHtml(): string {
-  const versions = parseChangelog(changelogRaw);
+  // Vydaná verze nevypisuje nevydané změny (`[Unreleased]`).
+  const releaseBuild = typeof __RELEASE_BUILD__ !== 'undefined' && __RELEASE_BUILD__;
+  const versions = parseChangelog(changelogRaw).filter((v) => !(releaseBuild && /unreleased/i.test(v.heading)));
   if (versions.length === 0) {
     return '<p class="empty-hint">Changelog není k dispozici.</p>';
   }

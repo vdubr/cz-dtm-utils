@@ -1,0 +1,7 @@
+id: InstalovanyVykon
+nazev: Instalovaný výkon
+namespace: atr
+popis: Instalovaný výkon
+nillable: false
+typ: String
+maxDelka: 50

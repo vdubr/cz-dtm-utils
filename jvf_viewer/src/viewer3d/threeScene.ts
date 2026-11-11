@@ -1,13 +1,19 @@
 import * as THREE from 'three';
-import type { ObjektovyTyp, Geometry } from 'jvf-parser';
-import { resolveStyle } from '../map/jvfLayers.js';
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { endConnectors, offsetPolyline, type ObjektovyTyp, type Geometry } from 'jvf-parser';
+import { resolveStyleForZaznam, type ResolvedLineStroke, type ResolvedStyle } from '../map/jvfLayers.js';
+import { addLineSymbols3d, addRepeatSymbols3d, countLineSymbols3d, lineSymbolDash3d } from './lineSymbols3d.js';
 import {
   isShowZapis,
+  shouldHighlightZapis,
   isChangesetZapis,
   type ChangesetZapisType,
 } from '../state/changesetToggle.js';
-import { resolveZaznamId } from '../state/zaznamId.js';
+import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import {
+  isContentPartVisible,
   isLevelVisible,
   isProjectVisible,
   resolveLevelKey,
@@ -22,14 +28,20 @@ import {
   getTerrainRealBbox,
   applyBasemapToTerrain,
   removeBasemapFromTerrain,
+  setTerrainDetail,
   setBasemapOpacityOnTerrain,
   type BBox,
 } from './terrain.js';
 import {
-  loadBasemapTexture,
+  loadTerrainTexture,
   clearBasemapTextureCache,
+  configureTerrainTextures,
+  getMaxTexturePx,
   type BasemapKind,
+  type OverlayTextureLayer,
 } from './basemapTexture.js';
+import { themedLayerNames } from '../map/overlayCatalog.js';
+import { getOverlayStates } from '../state/overlays.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
@@ -56,42 +68,98 @@ const ZAPIS_HIGHLIGHT_HEX: Record<ChangesetZapisType, number> = {
 };
 
 /**
- * Nastavit barvu materiálu(ů) objektu na `colorHex`. Sdílená implementace pro
- * `applyZapisColorToObject` (changeset barva) i `restoreOriginalColor`
- * (návrat na původní ČÚZK barvu) — obě jen zapisují hex do `material.color`.
- * Three.js Sprite (SVG ikona) má `SpriteMaterial` bez viditelného efektu, pokud
- * `color` chybí — proto `apply` bezpečně no-opuje, pokud materiál barvu nemá;
- * Line / LineLoop / Points mají `*BasicMaterial.color`.
+ * Lem changeset záznamu ve 3D (obdoba 2D): prvek si ponechá styl Katalogu
+ * (jako v legendě) a pod ním se kreslí průsvitný lem v barvě typu změny —
+ * u linií a obrysů tlustá čára (Line2), u bodů kruh. Lem je potomkem
+ * objektu (dědí viditelnost), nereaguje na raycast (výběr, měření)
+ * a zapíná / vypíná se v `applyChangesetHighlight`.
  */
-function setObjectMaterialColor(obj: THREE.Object3D, colorHex: number): void {
-  const withMat = obj as THREE.Object3D & { material?: unknown };
-  const mat = withMat.material as
-    | THREE.Material
-    | THREE.Material[]
-    | undefined;
-  if (!mat) return;
-  const apply = (m: THREE.Material): void => {
-    const colored = m as THREE.Material & { color?: THREE.Color };
-    if (colored.color) colored.color.setHex(colorHex);
-  };
-  if (Array.isArray(mat)) mat.forEach(apply);
-  else apply(mat);
+const ZAPIS_HALO_TAG = 'jvfZapisHalo';
+const ZAPIS_HALO_WIDTH_PX = 6;
+const ZAPIS_HALO_POINT_PX = 18;
+const zapisHaloLineMaterials = new Map<ChangesetZapisType, LineMaterial>();
+const zapisHaloPointMaterials = new Map<ChangesetZapisType, THREE.PointsMaterial>();
+let zapisHaloDot: THREE.Texture | null = null;
+
+function zapisHaloLineMaterial(zapis: ChangesetZapisType): LineMaterial {
+  let m = zapisHaloLineMaterials.get(zapis);
+  if (!m) {
+    m = new LineMaterial({
+      color: ZAPIS_HIGHLIGHT_HEX[zapis],
+      linewidth: ZAPIS_HALO_WIDTH_PX,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+    });
+    const size = getThreeCanvasSize();
+    if (size) m.resolution.set(size.width, size.height);
+    zapisHaloLineMaterials.set(zapis, m);
+  }
+  return m;
 }
 
-/** Aplikovat barvu changeset záznamu na materiál objektu. */
-function applyZapisColorToObject(obj: THREE.Object3D, colorHex: number): void {
-  setObjectMaterialColor(obj, colorHex);
+function zapisHaloPointMaterial(zapis: ChangesetZapisType): THREE.PointsMaterial {
+  let m = zapisHaloPointMaterials.get(zapis);
+  if (!m) {
+    if (!zapisHaloDot) {
+      // Kulatá tečka (PointsMaterial jinak kreslí čtverce).
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const ctx = c.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(32, 32, 30, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      zapisHaloDot = new THREE.CanvasTexture(c);
+    }
+    m = new THREE.PointsMaterial({
+      color: ZAPIS_HIGHLIGHT_HEX[zapis],
+      size: ZAPIS_HALO_POINT_PX,
+      sizeAttenuation: false,
+      map: zapisHaloDot,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+    });
+    zapisHaloPointMaterials.set(zapis, m);
+  }
+  return m;
 }
 
-/**
- * Vrátit objektu jeho původní barvu uloženou v `userData['jvfOrigColorHex']`
- * při buildu. Volá se, když uživatel odškrtne changeset checkbox
- * a `applyChangesetHighlight` chce vrátit obarvené objekty zpět na ČÚZK barvy.
- */
-function restoreOriginalColor(obj: THREE.Object3D): void {
-  const orig = obj.userData['jvfOrigColorHex'];
-  if (typeof orig !== 'number') return;
-  setObjectMaterialColor(obj, orig);
+/** Tloušťka lemu v px závisí na velikosti plátna — po změně velikosti. */
+function updateZapisHaloResolution(width: number, height: number): void {
+  for (const m of zapisHaloLineMaterials.values()) m.resolution.set(width, height);
+}
+
+/** Přidá objektu (linie, obrys, bod, symbol) lem v barvě typu změny. */
+function addZapisHalo(obj: THREE.Object3D, zapis: ChangesetZapisType): void {
+  let halo: THREE.Object3D | null = null;
+  if (obj instanceof THREE.Line) {
+    const pos = obj.geometry.getAttribute('position');
+    if (!pos || pos.count < 2) return;
+    const pts = Array.from(pos.array as ArrayLike<number>).slice(0, pos.count * 3);
+    if (obj instanceof THREE.LineLoop) pts.push(pts[0]!, pts[1]!, pts[2]!);
+    const g = new LineGeometry();
+    g.setPositions(pts);
+    halo = new Line2(g, zapisHaloLineMaterial(zapis));
+  } else if (obj instanceof THREE.Points || obj instanceof THREE.Sprite) {
+    const g = new THREE.BufferGeometry();
+    // Points: poloha v geometrii; Sprite: poloha objektu (lem v jeho počátku).
+    const at: number[] =
+      obj instanceof THREE.Points
+        ? Array.from(obj.geometry.getAttribute('position').array as ArrayLike<number>).slice(0, 3)
+        : [0, 0, 0];
+    g.setAttribute('position', new THREE.Float32BufferAttribute(at, 3));
+    halo = new THREE.Points(g, zapisHaloPointMaterial(zapis));
+  }
+  if (!halo) return;
+  halo.userData[ZAPIS_HALO_TAG] = true;
+  halo.raycast = () => {};
+  halo.renderOrder = -1;
+  halo.visible = shouldHighlightZapis(zapis);
+  obj.add(halo);
 }
 
 /** Buffer kolem JVF dat pro stahovaný terén (m) — režim jednoho projektu. */
@@ -175,8 +243,8 @@ const hiddenLayers = new Set<string>();
  *      více projektech kvalifikovaný projektem — viz `resolveLayerKey`
  *      ve `state/projects.ts`),
  *   2. changeset přepínače (`isShowZapis` pro `ZapisObjektu` ∈ {i, u, d}),
- *   3. filtr prvků — úroveň umístění (`isLevelVisible`) a projekt
- *      (`isProjectVisible`).
+ *   3. filtr prvků — úroveň umístění (`isLevelVisible`), projekt
+ *      (`isProjectVisible`) a obsahová část (`isContentPartVisible`).
  *
  * Jediné místo, kde se viditelnost skládá — používají ho build scény,
  * `setThreeLayerVisible`, `applyChangesetHighlight` i `applyFeatureFilter`,
@@ -193,6 +261,7 @@ function computeObjectVisibility(obj: THREE.Object3D): boolean {
   if (!isLevelVisible(levelKey)) return false;
   const projectKey = obj.userData['jvfProjectId'] as string | null | undefined;
   if (!isProjectVisible(projectKey)) return false;
+  if (!isContentPartVisible(obj.userData['jvfPart'] as string | undefined)) return false;
   return true;
 }
 
@@ -200,7 +269,7 @@ function computeObjectVisibility(obj: THREE.Object3D): boolean {
  *  přežila re-init při přepnutí 2D ↔ 3D a při rebuildu geometrie.
  *  Výchozí je světlé pozadí — barvy prvků z Katalogu ČÚZK počítají se
  *  světlým podkladem (stejně jako 2D mapa). */
-let currentBackground = '#f5f5f5';
+let currentBackground = '#ffffff';
 
 /** Přepínač: renderovat Point features jako SVG sprity (true) nebo jako
  *  `THREE.Points` (false, původní chování). Platí jen pro 3D. */
@@ -223,7 +292,7 @@ let basemapRequestId = 0;
 const svgTextureCache = new Map<string, THREE.Texture>();
 
 /** Base path pro SVG symboly (stejný jako v 2D). */
-const SVG_BASE = './symboly/';
+const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
 /**
  * Konverze nativní pixelové velikosti SVG na metry v terénu.
@@ -234,36 +303,59 @@ const SVG_BASE = './symboly/';
  */
 const SVG_PX_TO_METERS = 0.005;
 
-/** Načte SVG jako THREE.Texture. Vrací cachovanou instanci pro opakované volání. */
+/**
+ * Nejdelší strana rastru značky v px. SVG mají nativní velikost v jednotkách
+ * 0,01 mm papíru (značka SŽ se stožárem i přes 2 000 px) — rastr v plné
+ * velikosti by zahltil paměť GPU (vzorník SŽ ~0,6 GB, ztráta kontextu WebGL).
+ * Sprite na obrazovce víc nezabere; fyzická velikost se bere z rozměrů SVG.
+ */
+const MAX_SPRITE_TEXTURE_PX = 256;
+
+/** Sprity podle SVG — po načtení textury dostanou fyzickou velikost (bez procházení scény). */
+const spritesByTexture = new Map<string, Set<THREE.Sprite>>();
+
+/** Nativní rozměry SVG (jednotky 0,01 mm) načtené textury, jinak `undefined`. */
+function svgSizeOf(tex: THREE.Texture): [number, number] | undefined {
+  return tex.userData['svgSize'] as [number, number] | undefined;
+}
+
+/**
+ * Načte SVG jako texturu (rastr nejvýš `MAX_SPRITE_TEXTURE_PX`). Vrací
+ * cachovanou instanci pro opakované volání; po načtení nastaví sprity
+ * registrované v `spritesByTexture` na fyzickou velikost SVG.
+ */
 function getSvgTexture(svgFile: string): THREE.Texture {
   const cached = svgTextureCache.get(svgFile);
   if (cached) return cached;
 
-  const loader = new THREE.TextureLoader();
-  const tex = loader.load(SVG_BASE + svgFile, (loaded) => {
-    // SVG načteno — projdi všechny sprity používající tuto texturu a nastav
-    // jim správnou fyzickou velikost podle nativních rozměrů SVG. Texture
-    // loader je asynchronní, takže při vytvoření spritu jsme ještě neznali
-    // image.width/height. Po načtení je textura sdílená přes cache, můžeme
-    // sprity v aktivní scéně dohledat přes `userData.jvfSpriteTexKey`.
-    if (state) {
-      const w = (loaded.image as HTMLImageElement | undefined)?.width ?? 0;
-      const h = (loaded.image as HTMLImageElement | undefined)?.height ?? 0;
-      if (w > 0 && h > 0) {
-        const sx = w * SVG_PX_TO_METERS;
-        const sy = h * SVG_PX_TO_METERS;
-        state.scene.traverse((obj) => {
-          if (obj.userData['jvfSpriteTexKey'] === svgFile) {
-            obj.scale.set(sx, sy, 1);
-          }
-        });
-      }
-      state.renderer.render(state.scene, state.camera);
-    }
-  });
+  const placeholder = document.createElement('canvas');
+  placeholder.width = placeholder.height = 1;
+  const tex = new THREE.CanvasTexture(placeholder);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
+  const img = new Image();
+  img.onload = () => {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!(w > 0 && h > 0)) return;
+    const k = Math.min(1, MAX_SPRITE_TEXTURE_PX / Math.max(w, h));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(w * k));
+    canvas.height = Math.max(1, Math.round(h * k));
+    canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+    // Textura už mohla být nahraná v GPU v rozměru zástupce (1×1) — three.js
+    // ji při změně rozměru jen přepisuje (glCopySubTexture → GL_INVALID_VALUE);
+    // dispose uvolní starou, při dalším vykreslení se alokuje v nové velikosti.
+    tex.image = canvas;
+    tex.dispose();
+    tex.userData['svgSize'] = [w, h];
+    tex.needsUpdate = true;
+    for (const sprite of spritesByTexture.get(svgFile) ?? []) {
+      sprite.scale.set(w * SVG_PX_TO_METERS, h * SVG_PX_TO_METERS, 1);
+    }
+  };
+  img.src = SVG_BASE + svgFile;
   svgTextureCache.set(svgFile, tex);
   return tex;
 }
@@ -301,6 +393,11 @@ export function setThreeBackground(color: string): void {
     (state.grid.material as THREE.Material).dispose();
     state.grid = createGrid(color);
     state.scene.add(state.grid);
+    // Překryvy: pozadí motivu pod nimi (bez podkladu) a varianty vrstev
+    // pro tmavý motiv (bílý katastr) → přeskládat texturu.
+    if (overlayTextureLayers().length > 0) {
+      void applyCurrentBasemap().catch((err) => console.error('[překryv] přehoz na terén selhal', err));
+    }
   }
 }
 
@@ -320,13 +417,11 @@ export function setUseSvgSymbols(value: boolean): void {
 let lastZExaggeration = 1;
 
 /**
- * Hranice, nad kterou se SVG sprity skrývají (ekvivalent 2D
- * `HIDE_ICON_RESOLUTION`). Při velkém oddálení kamery od pivotu by
- * sprity pokrývaly scénu jako kobercová mozaika. Hodnota je v metrech
- * (jednotkách scény) — sprite je velký 2 m, takže nad ~150 m vzdálenosti
- * jsou ikony stejně skoro neviditelné.
+ * Nejmenší výška SVG ikony bodu na obrazovce (px). Menší ikona by byla
+ * nečitelná a při oddálení by sprity pokrývaly scénu jako mozaika — místo
+ * ní se kreslí puntík (jako 2D, kde ikonu při oddálení nahradí tečka).
  */
-const SPRITE_HIDE_RADIUS = 150;
+const MIN_SPRITE_PX = 6;
 
 function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void {
   const { spherical, center } = orbit;
@@ -345,34 +440,40 @@ function updateCamera(camera: THREE.PerspectiveCamera, orbit: OrbitState): void 
     // Marker mění velikost se vzdáleností kamery, aby byl vždy viditelný
     const s = spherical.radius * 0.015;
     state.pivotMarker.scale.setScalar(s);
-    // Skrýt SVG sprity při velkém oddálení (čitelnost scény).
-    updateSpriteVisibility(state.spriteObjects, spherical.radius);
+    // SVG ikony bodů: malé na obrazovce → puntík (čitelnost scény).
+    updateSpriteVisibility(state.spriteObjects, camera, state.renderer.domElement.clientHeight);
+    // Při přiblížení podrobnější textura okolí pohledu (po zastavení kamery).
+    scheduleTerrainDetail();
   }
 }
 
 /**
- * Skryje / zobrazí SVG sprity podle vzdálenosti kamery (resp. radiusu
- * orbitu). Volá se z `updateCamera` při KAŽDÉ změně kamery (tedy i při
- * každém mousemove během orbit/pan) — proto iterujeme jen přes
- * `state.spriteObjects` (udržovaný seznam sprite objektů), NIKOLI
- * `scene.traverse` přes celou scénu, které by bylo výrazně dražší na
- * velkých souborech. Při větším oddálení než `SPRITE_HIDE_RADIUS` se
- * sprity skryjí, body zůstanou reprezentovány barevnými puntíky, které
- * renderujeme zvlášť (vždy).
- *
- * V současné implementaci nemáme paralelní vrstvu puntíků — sprite je
- * jediná reprezentace bodu při zapnutém SVG toggle. Skrytí spritu = bod
- * není vidět vůbec. To je akceptovatelný kompromis: uživatel chce při
- * silném oddálení vidět hlavně linie a plochy, body znovu uvidí po
- * přiblížení.
+ * SVG ikona bodu, nebo puntík místo ní — podle výšky ikony na obrazovce
+ * (`MIN_SPRITE_PX`). Každý sprite má dvojici puntík (`userData.jvfDot`).
+ * Volá se z `updateCamera` při KAŽDÉ změně kamery — proto jen přes
+ * `state.spriteObjects` (udržovaný seznam spritů), ne `scene.traverse`.
  */
-function updateSpriteVisibility(spriteObjects: THREE.Object3D[], radius: number): void {
-  const radiusOk = radius < SPRITE_HIDE_RADIUS;
+function updateSpriteVisibility(spriteObjects: THREE.Object3D[], camera: THREE.PerspectiveCamera, viewportPx: number): void {
+  // px obrazovky na 1 m ve vzdálenosti 1 m (perspektiva, svislé FOV).
+  const pxPerMeter = (viewportPx || 600) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
   for (const obj of spriteObjects) {
+    const dist = camera.position.distanceTo(obj.position) || 1;
+    const big = (obj.scale.y * pxPerMeter) / dist >= MIN_SPRITE_PX;
+    obj.userData['jvfSpriteBig'] = big;
     // AND s ostatními přepínači (vrstvy / changeset / filtr prvků) —
-    // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý sprite.
-    obj.visible = radiusOk && computeObjectVisibility(obj);
+    // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý bod.
+    const visible = computeObjectVisibility(obj);
+    obj.visible = visible && big;
+    const dot = obj.userData['jvfDot'] as THREE.Object3D | undefined;
+    if (dot) dot.visible = visible && !big;
   }
+}
+
+/** Úroveň detailu bodu se SVG ikonou: ikona jen dost velká, puntík jen místo malé ikony. */
+function lodVisible(obj: THREE.Object3D): boolean {
+  if (obj.userData['jvfSprite'] === true) return obj.userData['jvfSpriteBig'] !== false;
+  const sprite = obj.userData['jvfDotFor'] as THREE.Object3D | undefined;
+  return sprite ? sprite.userData['jvfSpriteBig'] === false : true;
 }
 
 function createPivotMarker(): THREE.Object3D {
@@ -488,6 +589,67 @@ function getOrCreateMaterial<T extends THREE.Material>(
   return mat;
 }
 
+/**
+ * Linie ve 3D: u linií se značkou (Katalog — blesk vedení, třída silnice, …)
+ * čárkování v metrech a značky do mezer (viewer3d/lineSymbols3d), jinak plná
+ * čára. Materiály sdílené podle barvy a vzoru.
+ */
+function buildLine3d(
+  pts: number[],
+  s: ResolvedStyle,
+  color: THREE.Color,
+  materialCache: Map<string, THREE.Material>,
+): THREE.Line {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  const dash = lineSymbolDash3d(s);
+  const mat = dash
+    ? getOrCreateMaterial(materialCache, `dashed:${color.getHex()}:${dash.dash}:${dash.gap}`, () =>
+        new THREE.LineDashedMaterial({ color, dashSize: dash.dash, gapSize: dash.gap }))
+    : getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }));
+  // ŽXML linie bez osy (brzda — jen souběžné čáry): osa zůstane pro výběr
+  // kliknutím a viditelnost potomků, ale nekreslí se.
+  const line = new THREE.Line(g, s.lineNoAxis
+    ? getOrCreateMaterial(materialCache, 'line:hidden', () => new THREE.LineBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }))
+    : mat);
+  if (dash) line.computeLineDistances();
+  if (s.lineSymbolSvg) addLineSymbols3d(line, s, pts);
+  for (const ls of s.lineStrokes ?? []) line.add(buildOffsetLine3d(pts, ls, materialCache));
+  if (s.lineRepeat) addRepeatSymbols3d(line, s, pts);
+  return line;
+}
+
+/** Metry terénu na 1 mm papíru (1 : 500). */
+const MM_TO_M_3D = 0.5;
+
+/**
+ * ŽXML: souběžná čára linie ve 3D — odsazení ve vodorovné rovině (kladně
+ * vlevo ve směru linie, jako 2D), výška bodů osy, spojky s osou na koncích.
+ * Scéna má z = jih (z = cy − Y), proto se odsazuje v souřadnicích (x, −z).
+ */
+function buildOffsetLine3d(pts: number[], ls: ResolvedLineStroke, materialCache: Map<string, THREE.Material>): THREE.Object3D {
+  const map: number[][] = [];
+  for (let i = 0; i + 2 < pts.length; i += 3) map.push([pts[i]!, -pts[i + 2]!, pts[i + 1]!]);
+  const off = offsetPolyline(map, ls.offsetMm * MM_TO_M_3D);
+  const toScene = (line: number[][]): number[] => line.flatMap((p) => [p[0]!, p[2]!, -p[1]!]);
+  const color = new THREE.Color(ls.color);
+  const dash = ls.dashMm && ls.dashMm.length >= 2 ? ls.dashMm : undefined;
+  const mat = dash
+    ? getOrCreateMaterial(materialCache, `dashed:${color.getHex()}:${dash.join(',')}`, () =>
+        new THREE.LineDashedMaterial({ color, dashSize: dash[0]! * MM_TO_M_3D, gapSize: dash[1]! * MM_TO_M_3D }))
+    : getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }));
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(toScene(off), 3));
+  const line = new THREE.Line(g, mat);
+  if (dash) line.computeLineDistances();
+  if (ls.endTicks) {
+    const cg = new THREE.BufferGeometry();
+    cg.setAttribute('position', new THREE.Float32BufferAttribute(endConnectors(map, off).flatMap(toScene), 3));
+    line.add(new THREE.LineSegments(cg, getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))));
+  }
+  return line;
+}
+
 // Add all data objects to the scene for given objekty, cx/cy/cz centroid, zExaggeration.
 // `spriteObjects` je výstupní pole — každý vytvořený SVG sprite se do něj přidá,
 // aby `updateSpriteVisibility` nemusela procházet celou scénu (viz jeho komentář).
@@ -505,35 +667,30 @@ function buildSceneObjects(
   // na tutéž instanci) a znovu se založí zde.
   const materialCache = new Map<string, THREE.Material>();
   for (const ot of objekty) {
-    const s = resolveStyle(ot);
-    const color = new THREE.Color(s.strokeColor);
-    // fillColor may have 2-digit alpha suffix (e.g. '#ebe9e855') — strip it for Three.js
-    const fillHex = s.fillColor === 'none' ? s.strokeColor
-      : s.fillColor.length === 9 ? s.fillColor.slice(0, 7) : s.fillColor;
-    const fillColor = new THREE.Color(fillHex);
     const key = layerKey(ot);
     // Klíč viditelnosti vrstvy (kvalifikovaný projektem při ≥2 projektech)
     // + provenience projektu pro filtr prvků.
     const layerVisKey = resolveLayerKey(ot);
     const projectKey = resolveProjectKey(ot);
+    // Obsahová část — dimenze filtru prvků (tlačítka v Přehledu prvků).
+    const part = String(ot.obsahovaCast);
 
-    for (const [zaznamIndex, zaz] of ot.zaznamy.entries()) {
-      // Identifikace záznamu: DTM ID, nebo syntetický klíč pro záznamy bez ID
+    for (const zaz of ot.zaznamy) {
+      // Styl záznamu — stejná definice jako ve 2D a v legendě (Katalog podle
+      // geometrie a hodnoty atributu, u dialektů jejich vzhled).
+      const s = resolveStyleForZaznam(ot, zaz);
+      const color = new THREE.Color(s.strokeColor);
+      // Identifikace záznamu: DTM ID, nebo interní UUID pro záznamy bez ID
       // (nové prvky `ZapisObjektu='i'` — bez něj by nešly pickovat/zvýraznit).
-      const objectId = resolveZaznamId(ot.elementName, zaz, zaznamIndex);
+      const objectId = resolveZaznamId(zaz, ot.zaznamy);
+      // Holé DTM ID — podle něj hledá prvek panel chyb (viz findSceneObjects).
+      const dtmId = dtmIdOf(zaz);
       const zapisObjektu = zaz.zapisObjektu;
-      // Changeset záznamy (i/u/d) mění barvu materiálu za běhu (viz komentář
-      // u `getOrCreateMaterial`) — pro ně vždy vytváříme vlastní instanci
-      // materiálu, aby přebarvení jednoho záznamu neovlivnilo ostatní.
-      const shareableMaterial = !isChangesetZapis(zapisObjektu);
+      // Materiály se sdílejí podle barvy (changeset záznamy se nepřebarvují —
+      // typ změny ukazuje lem, viz `addZapisHalo`).
+      const shareableMaterial = true;
       // Úroveň umístění (LEVEL) — klíč pro filtr prvků (state/featureFilter.ts).
       const levelKey = resolveLevelKey(zaz);
-      // Při buildu uložíme původní barvu vrstvy do userData — `applyChangesetHighlight`
-      // ji potřebuje pro vrácení changeset objektů zpět na původní vzhled,
-      // když uživatel checkbox odškrtne. Bez toho bychom po flipu znali jen
-      // aktuální (případně přebarvenou) barvu materiálu.
-      const origLineColor = color;
-      const origFillColor = fillColor;
       for (const geom of zaz.geometrie) {
         let obj: THREE.Object3D | null = null;
 
@@ -547,15 +704,25 @@ function buildSceneObjects(
             const z3 = cy - (c[1] ?? 0);
             const y3 = ((c[2] ?? 0) - cz) * zExaggeration;
 
+            const makeDot = (): THREE.Points => {
+              const geomPt = new THREE.BufferGeometry();
+              geomPt.setAttribute('position', new THREE.Float32BufferAttribute([x, y3, z3], 3));
+              const makePointsMaterial = (): THREE.PointsMaterial =>
+                new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
+              const mat = shareableMaterial
+                ? getOrCreateMaterial(materialCache, `points:${color.getHex()}`, makePointsMaterial)
+                : makePointsMaterial();
+              return new THREE.Points(geomPt, mat);
+            };
             if (useSvgSymbols && s.pointSvg) {
               // Sprite s SVG texturou — fyzická velikost v metrech podle
               // nativních rozměrů SVG (konvence ČÚZK Katalog: 1 SVG-px =
               // 0,01 mm na papíře × 1:500 = 0,005 m v terénu).
               //
-              // Texture loader je asynchronní; při prvním vytvoření spritu
+              // SVG se načítá asynchronně; při prvním vytvoření spritu
               // textura ještě nemá rozměry. Použijeme proto fallback scale
-              // (0.5 m) a po načtení texturu callback v `getSvgTexture`
-              // přepočítá sprity se shodným `jvfSpriteTexKey`.
+              // (0.5 m) a po načtení `getSvgTexture` přepočítá sprity
+              // registrované v `spritesByTexture`.
               //
               // depthTest=true: sprite respektuje hloubku scény (nepřekrývá
               // všechno jako dřív s depthTest=false).
@@ -571,27 +738,23 @@ function buildSceneObjects(
                 : makeSpriteMaterial();
               const sprite = new THREE.Sprite(mat);
               sprite.position.set(x, y3, z3);
-              const img = (tex.image as HTMLImageElement | undefined);
-              if (img && img.width > 0 && img.height > 0) {
-                sprite.scale.set(img.width * SVG_PX_TO_METERS, img.height * SVG_PX_TO_METERS, 1);
+              const size = svgSizeOf(tex);
+              if (size) {
+                sprite.scale.set(size[0] * SVG_PX_TO_METERS, size[1] * SVG_PX_TO_METERS, 1);
               } else {
                 sprite.scale.set(0.5, 0.5, 1); // placeholder, přepíše se po načtení
               }
+              let registered = spritesByTexture.get(s.pointSvg);
+              if (!registered) spritesByTexture.set(s.pointSvg, (registered = new Set()));
+              registered.add(sprite);
               sprite.userData['jvfSprite'] = true;
-              sprite.userData['jvfSpriteTexKey'] = s.pointSvg;
+              // Puntík místo ikony, když je na obrazovce malá (viz updateSpriteVisibility).
+              const dot = makeDot();
+              dot.userData['jvfDotFor'] = sprite;
+              sprite.userData['jvfDot'] = dot;
               obj = sprite;
             } else {
-              const geomPt = new THREE.BufferGeometry();
-              geomPt.setAttribute(
-                'position',
-                new THREE.Float32BufferAttribute([x, y3, z3], 3)
-              );
-              const makePointsMaterial = (): THREE.PointsMaterial =>
-                new THREE.PointsMaterial({ color, size: 5, sizeAttenuation: false });
-              const mat = shareableMaterial
-                ? getOrCreateMaterial(materialCache, `points:${color.getHex()}`, makePointsMaterial)
-                : makePointsMaterial();
-              obj = new THREE.Points(geomPt, mat);
+              obj = makeDot();
             }
             break;
           }
@@ -605,14 +768,7 @@ function buildSceneObjects(
                 cy - (geom.data.coordinates[i + 1] ?? 0)
               );
             }
-            if (pts.length >= 6) {
-              const g = new THREE.BufferGeometry();
-              g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-              const mat = shareableMaterial
-                ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
-                : new THREE.LineBasicMaterial({ color });
-              obj = new THREE.Line(g, mat);
-            }
+            if (pts.length >= 6) obj = buildLine3d(pts, s, color, materialCache);
             break;
           }
           case 'Polygon': {
@@ -628,9 +784,10 @@ function buildSceneObjects(
             if (pts.length >= 9) {
               const g = new THREE.BufferGeometry();
               g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+              // Obrys plochy v barvě obrysu — stejně jako ve 2D.
               const mat = shareableMaterial
-                ? getOrCreateMaterial(materialCache, `line:${fillColor.getHex()}`, () => new THREE.LineBasicMaterial({ color: fillColor }))
-                : new THREE.LineBasicMaterial({ color: fillColor });
+                ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
+                : new THREE.LineBasicMaterial({ color });
               obj = new THREE.LineLoop(g, mat);
             }
             break;
@@ -647,23 +804,17 @@ function buildSceneObjects(
                 );
               }
               if (pts.length >= 6) {
-                const g = new THREE.BufferGeometry();
-                g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-                const curveMat = shareableMaterial
-                  ? getOrCreateMaterial(materialCache, `line:${color.getHex()}`, () => new THREE.LineBasicMaterial({ color }))
-                  : new THREE.LineBasicMaterial({ color });
-                const lineObj = new THREE.Line(g, curveMat);
+                const lineObj = buildLine3d(pts, s, color, materialCache);
                 lineObj.userData[DATA_TAG] = key;
                 lineObj.userData[LAYER_KEY_TAG] = layerVisKey;
                 lineObj.userData['jvfObjectId'] = objectId;
+                lineObj.userData['jvfDtmId'] = dtmId;
                 lineObj.userData['jvfZapisObjektu'] = zapisObjektu;
                 lineObj.userData['jvfLevel'] = levelKey;
                 lineObj.userData['jvfProjectId'] = projectKey;
-                lineObj.userData['jvfOrigColorHex'] = origLineColor.getHex();
+                lineObj.userData['jvfPart'] = part;
                 lineObj.visible = computeObjectVisibility(lineObj);
-                if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
-                  lineObj.material.color.setHex(ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
-                }
+                if (isChangesetZapis(zapisObjektu)) addZapisHalo(lineObj, zapisObjektu);
                 scene.add(lineObj);
               }
             }
@@ -675,19 +826,24 @@ function buildSceneObjects(
           obj.userData[DATA_TAG] = key;
           obj.userData[LAYER_KEY_TAG] = layerVisKey;
           obj.userData['jvfObjectId'] = objectId;
+          obj.userData['jvfDtmId'] = dtmId;
           obj.userData['jvfZapisObjektu'] = zapisObjektu;
           obj.userData['jvfLevel'] = levelKey;
           obj.userData['jvfProjectId'] = projectKey;
-          // Polygon používá fillColor, ostatní geometrie používají strokeColor —
-          // pro restoraci po toggle off potřebujeme znát ten správný.
-          const origColor = geom.type === 'Polygon' ? origFillColor : origLineColor;
-          obj.userData['jvfOrigColorHex'] = origColor.getHex();
-          obj.visible = computeObjectVisibility(obj);
-          if (isChangesetZapis(zapisObjektu) && isShowZapis(zapisObjektu)) {
-            applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapisObjektu]);
-          }
+          obj.userData['jvfPart'] = part;
+          obj.visible = computeObjectVisibility(obj) && lodVisible(obj);
+          if (isChangesetZapis(zapisObjektu)) addZapisHalo(obj, zapisObjektu);
           scene.add(obj);
           if (obj.userData['jvfSprite'] === true) spriteObjects.push(obj);
+          const dot = obj.userData['jvfDot'] as THREE.Object3D | undefined;
+          if (dot) {
+            // Puntík nese identitu záznamu (výběr kliknutím, filtry, vrstvy).
+            for (const k of [DATA_TAG, LAYER_KEY_TAG, 'jvfObjectId', 'jvfDtmId', 'jvfZapisObjektu', 'jvfLevel', 'jvfProjectId', 'jvfPart']) {
+              dot.userData[k] = obj.userData[k];
+            }
+            dot.visible = computeObjectVisibility(dot) && lodVisible(dot);
+            scene.add(dot);
+          }
         }
       }
     }
@@ -702,6 +858,7 @@ function buildSceneObjects(
 // v `buildSceneObjects`) — `Material.dispose()` je idempotentní, takže
 // vícenásobné volání na tutéž instanci je neškodné.
 function clearSceneObjects(scene: THREE.Scene, spriteObjects: THREE.Object3D[]): void {
+  spritesByTexture.clear();
   const toRemove: THREE.Object3D[] = [];
   scene.traverse((obj) => {
     // Terén má vlastní TERRAIN_TAG a NEMÁ DATA_TAG — nepromazat ho.
@@ -711,6 +868,9 @@ function clearSceneObjects(scene: THREE.Scene, spriteObjects: THREE.Object3D[]):
   });
   for (const obj of toRemove) {
     scene.remove(obj);
+    for (const child of obj.children) {
+      if (child.userData[ZAPIS_HALO_TAG] === true) (child as THREE.Line | THREE.Points).geometry.dispose();
+    }
     const withGeom = obj as Partial<THREE.Line & THREE.Points>;
     withGeom.geometry?.dispose();
     const mat = withGeom.material;
@@ -811,6 +971,11 @@ export function initThreeScene(
   // sousedy. Synchronizujeme jen framebuffer (atributy width/height).
   renderer.setSize(width, height, false);
   renderer.setPixelRatio(window.devicePixelRatio);
+  // Textury terénu (podklad + překryvy) v co nejlepší kvalitě, kterou GPU zvládne.
+  configureTerrainTextures({
+    maxTextureSize: renderer.capabilities.maxTextureSize,
+    maxAnisotropy: renderer.capabilities.getMaxAnisotropy(),
+  });
 
   // Ambient + directional light
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
@@ -958,6 +1123,7 @@ export function rebuildSceneGeometry(zExaggeration: number): void {
   clearThreeHighlight();
   clearSceneObjects(state.scene, state.spriteObjects);
   buildSceneObjects(state.scene, state.objekty, state.cx, state.cy, state.cz, zExaggeration, state.spriteObjects);
+  updateSpriteVisibility(state.spriteObjects, state.camera, state.renderer.domElement.clientHeight);
   for (const mesh of state.terrainMeshes) {
     updateTerrainZExaggeration(mesh, zExaggeration);
   }
@@ -974,14 +1140,13 @@ export function setThreeLayerVisible(layerKey: string, visible: boolean): void {
   if (visible) hiddenLayers.delete(layerKey);
   else hiddenLayers.add(layerKey);
   if (!state) return;
-  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     if (obj.userData[LAYER_KEY_TAG] === layerKey) {
       // AND s changeset přepínači a filtrem prvků — zobrazení vrstvy nesmí
       // od-skrýt objekt skrytý jiným přepínačem.
       obj.visible =
         computeObjectVisibility(obj) &&
-        (obj.userData['jvfSprite'] !== true || radiusOk);
+        lodVisible(obj);
     }
   });
 }
@@ -999,8 +1164,8 @@ export function resetThreeLayerVisibility(): void {
  * mazané). Pro každý objekt s `userData['jvfZapisObjektu']` ∈ {i, u, d}
  * nastaví viditelnost a barvu podle `isShowZapis(typ)`:
  *
- *   flag = true  → obj.visible = layerVisible, materiál v barvě typu změny
- *   flag = false → obj.visible = false (skryje), barva se vrací na původní
+ *   flag = true  → obj.visible = layerVisible, lem v barvě typu změny zapnutý
+ *   flag = false → obj.visible = false (skryje), lem vypnutý
  *
  * Funkce respektuje per-vrstvu skrytí (`hiddenLayers`) — když uživatel
  * skrývá celou vrstvu, changeset objekt z ní zůstává skrytý i když je
@@ -1010,19 +1175,16 @@ export function resetThreeLayerVisibility(): void {
  */
 export function applyChangesetHighlight(): void {
   if (!state) return;
-  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     const zapis = obj.userData['jvfZapisObjektu'];
     if (!isChangesetZapis(zapis)) return;
-    const show = isShowZapis(zapis);
+    const show = shouldHighlightZapis(zapis);
     // Viditelnost = AND všech přepínačů (vrstvy / changeset / filtr prvků)
     obj.visible =
       computeObjectVisibility(obj) &&
-      (obj.userData['jvfSprite'] !== true || radiusOk);
-    if (show) {
-      applyZapisColorToObject(obj, ZAPIS_HIGHLIGHT_HEX[zapis]);
-    } else {
-      restoreOriginalColor(obj);
+      lodVisible(obj);
+    for (const child of obj.children) {
+      if (child.userData[ZAPIS_HALO_TAG] === true) child.visible = show;
     }
   });
 }
@@ -1038,12 +1200,11 @@ export function applyChangesetHighlight(): void {
  */
 export function applyFeatureFilter(): void {
   if (!state) return;
-  const radiusOk = state.orbit.spherical.radius < SPRITE_HIDE_RADIUS;
   state.scene.traverse((obj) => {
     if (obj.userData[DATA_TAG] === undefined) return;
     obj.visible =
       computeObjectVisibility(obj) &&
-      (obj.userData['jvfSprite'] !== true || radiusOk);
+      lodVisible(obj);
   });
 }
 
@@ -1145,7 +1306,7 @@ async function ensureTerrainLoaded(): Promise<void> {
   }
   // Byl-li zvolen podklad, aplikuj ho na nové meshe. Fire-and-forget:
   // selhání podkladu nesmí rozbít terén ani scénu.
-  if (currentBasemap !== 'none') {
+  if (currentBasemap !== 'none' || overlayTextureLayers().length > 0) {
     void applyCurrentBasemap().catch((err) => {
       console.error('[basemap] načtení podkladu selhalo', err);
     });
@@ -1182,21 +1343,147 @@ export async function setBasemap(kind: BasemapKind | 'none'): Promise<void> {
 async function applyCurrentBasemap(): Promise<void> {
   const reqId = ++basemapRequestId;
   if (!state || state.terrainMeshes.length === 0) return;
-  if (currentBasemap === 'none') {
-    for (const mesh of state.terrainMeshes) removeBasemapFromTerrain(mesh);
+  const overlays = overlayTextureLayers();
+  if (currentBasemap === 'none' && overlays.length === 0) {
+    for (const mesh of state.terrainMeshes) {
+      removeBasemapFromTerrain(mesh); // odebere i podrobný výřez
+      detailKeys.delete(mesh);
+    }
     return;
   }
-  const kind = currentBasemap;
+  const request = {
+    basemap: currentBasemap,
+    overlays,
+    background: currentBackground,
+  };
+  // Bez podkladu (jen překryvy přes pozadí) plná sytost textury.
+  const opacity = currentBasemap === 'none' ? 1 : basemapOpacity;
   await Promise.all(
     state.terrainMeshes.map(async (mesh) => {
       const bbox = getTerrainRealBbox(mesh);
       if (!bbox) return;
-      const texture = await loadBasemapTexture(bbox, kind);
+      const texture = await loadTerrainTexture(bbox, request);
       // Mezitím mohl uživatel přepnout podklad nebo scéna zanikla — zahodit.
-      if (reqId !== basemapRequestId || !state) return;
-      applyBasemapToTerrain(mesh, texture, basemapOpacity);
+      if (reqId !== basemapRequestId || !state) {
+        if (texture.userData['ownedComposite'] === true) texture.dispose();
+        return;
+      }
+      applyBasemapToTerrain(mesh, texture, opacity);
     })
   );
+  // Podrobný výřez kolem pohledu podle nového podkladu / překryvů.
+  scheduleTerrainDetail();
+}
+
+/**
+ * Vybrané služby zapnutých překryvů (DTM ČR, katastr) pro přehoz na terén,
+ * v pořadí vykreslování; vrstvy už podle motivu (bílý katastr v tmavém).
+ */
+function overlayTextureLayers(): OverlayTextureLayer[] {
+  const out: OverlayTextureLayer[] = [];
+  for (const state of getOverlayStates()) {
+    if (!state.isEnabled()) continue;
+    for (const svc of state.def.services) {
+      const names = state.getSelection(svc.id);
+      if (names.length === 0) continue;
+      out.push({ url: svc.wmsUrl, layers: themedLayerNames(svc, names), opacity: state.getOpacity() });
+    }
+  }
+  return out;
+}
+
+// ── Podrobný výřez textury terénu kolem pohledu ───────────────────────────────
+// Celková textura terénu (až 4096 px na celý výřez dat) je hrubé pozadí.
+// Při přiblížení se kolem středu pohledu (orbit.center) stáhne podrobnější
+// výřez — podklad i překryvy v rozlišení podle vzdálenosti kamery — a nanese
+// se přes terén. Stahuje se jen „rozumné okolí pohledu": velikost podle
+// radiusu orbitu, zaokrouhlená na mocninu 2 a střed na mřížku (drobné posuny
+// nic nestahují), jen když je výrazně jemnější než celková textura,
+// a až po zastavení kamery.
+
+/** Delší strana textury podrobného výřezu (px). */
+const DETAIL_PX = 2048;
+/** Polovina strany výřezu = radius orbitu × tento koeficient (pokryje pohled). */
+const DETAIL_HALF_PER_RADIUS = 1.2;
+const DETAIL_MIN_HALF_M = 32;
+let detailTimer: ReturnType<typeof setTimeout> | null = null;
+let detailRequestId = 0;
+/** Klíč aktuálního výřezu per terénní mesh (bez změny se nic nestahuje). */
+const detailKeys = new WeakMap<THREE.Group, string>();
+
+function scheduleTerrainDetail(): void {
+  if (detailTimer) clearTimeout(detailTimer);
+  detailTimer = setTimeout(() => {
+    detailTimer = null;
+    void updateTerrainDetail().catch((err) => console.error('[terén] podrobný výřez selhal', err));
+  }, 400);
+}
+
+function clearTerrainDetail(mesh: THREE.Group): void {
+  if (detailKeys.has(mesh)) {
+    setTerrainDetail(mesh, null, null, 1);
+    detailKeys.delete(mesh);
+  }
+}
+
+async function updateTerrainDetail(): Promise<void> {
+  if (!state || state.terrainMeshes.length === 0) return;
+  const reqId = ++detailRequestId;
+  const overlays = overlayTextureLayers();
+  if (currentBasemap === 'none' && overlays.length === 0) {
+    for (const mesh of state.terrainMeshes) clearTerrainDetail(mesh);
+    return;
+  }
+  const center = sceneToSjtsk(state.orbit.center);
+  if (!center) return;
+  const half = 2 ** Math.ceil(Math.log2(Math.max(DETAIL_MIN_HALF_M, state.orbit.spherical.radius * DETAIL_HALF_PER_RADIUS)));
+  const grid = half / 2;
+  const cx = Math.round(center[0] / grid) * grid;
+  const cy = Math.round(center[1] / grid) * grid;
+  const opacity = currentBasemap === 'none' ? 1 : basemapOpacity;
+  const signature = JSON.stringify([currentBasemap, overlays, currentBackground]);
+
+  await Promise.all(state.terrainMeshes.map(async (mesh) => {
+    const real = getTerrainRealBbox(mesh);
+    if (!real) return;
+    const span = Math.max(real.maxX - real.minX, real.maxY - real.minY);
+    const baseRes = span / getMaxTexturePx();
+    const patch = {
+      minX: Math.max(real.minX, cx - half),
+      minY: Math.max(real.minY, cy - half),
+      maxX: Math.min(real.maxX, cx + half),
+      maxY: Math.min(real.maxY, cy + half),
+    };
+    const patchRes = Math.max(patch.maxX - patch.minX, patch.maxY - patch.minY) / DETAIL_PX;
+    // Mimo terén, nebo výřez není výrazně jemnější než celková textura → bez výřezu.
+    if (patch.maxX <= patch.minX || patch.maxY <= patch.minY || patchRes > baseRes * 0.6) {
+      clearTerrainDetail(mesh);
+      return;
+    }
+    const key = `${signature}|${patch.minX},${patch.minY},${patch.maxX},${patch.maxY}`;
+    if (detailKeys.get(mesh) === key) return;
+    const texture = await loadTerrainTexture(patch, {
+      basemap: currentBasemap,
+      overlays,
+      background: currentBackground,
+      maxPx: DETAIL_PX,
+      transparentBorder: true,
+    });
+    if (reqId !== detailRequestId || !state || !state.terrainMeshes.includes(mesh)) {
+      texture.dispose();
+      return;
+    }
+    setTerrainDetail(mesh, texture, patch, opacity);
+    detailKeys.set(mesh, key);
+  }));
+}
+
+/**
+ * Přeskládá texturu terénu po změně překryvu (zapnutí, výběr, sytost).
+ * Bez načteného terénu nic nedělá — překryvy se nanesou po jeho načtení.
+ */
+export async function refreshTerrainTexture(): Promise<void> {
+  await applyCurrentBasemap();
 }
 
 /** Nastaví průhlednost podkladové textury (0–1). */
@@ -1372,24 +1659,33 @@ export function resizeThreeScene(canvas: HTMLCanvasElement): void {
   state.camera.aspect = width / height;
   state.camera.updateProjectionMatrix();
   state.renderer.setSize(width, height, false);
+  updateZapisHaloResolution(width, height);
 }
 
 // ── Highlight & zoom ─────────────────────────────────────────────────────────
 
-/** Najde všechny scene objekty odpovídající dvojici elementName + objectId. */
+/**
+ * Najde všechny scene objekty odpovídající dvojici elementName + objectId.
+ * Nejdřív přesná shoda klíče vieweru, jinak holé DTM ID (panel chyb zná jen
+ * to — bez prefixu projektu a bez rozlišení duplicitních ID).
+ */
 function findSceneObjects(elementName: string, objectId: string): THREE.Object3D[] {
   if (!state) return [];
-  const found: THREE.Object3D[] = [];
-  state.scene.traverse((obj) => {
-    if (
-      obj.userData[DATA_TAG] === elementName &&
-      obj.userData['jvfObjectId'] === objectId &&
-      obj.userData[HIGHLIGHT_TAG] !== true
-    ) {
-      found.push(obj);
-    }
-  });
-  return found;
+  const scene = state.scene;
+  for (const key of ['jvfObjectId', 'jvfDtmId'] as const) {
+    const found: THREE.Object3D[] = [];
+    scene.traverse((obj) => {
+      if (
+        obj.userData[DATA_TAG] === elementName &&
+        obj.userData[key] === objectId &&
+        obj.userData[HIGHLIGHT_TAG] !== true
+      ) {
+        found.push(obj);
+      }
+    });
+    if (found.length > 0) return found;
+  }
+  return [];
 }
 
 /** Spočte svět. bounding box pro zadané objekty. */
@@ -1555,6 +1851,36 @@ export function zoomToThreeExtent(
  * Animovaný zoom 3D kamery na bounding box objektu. Nastavuje orbit.center
  * do středu bboxu a upravuje radius dle velikosti.
  */
+/** Počet značek v liniích ve 3D scéně (0 bez scény) — ladění, e2e. */
+export function getLineSymbol3dCount(): number {
+  return state ? countLineSymbols3d(state.scene) : 0;
+}
+
+/**
+ * Velikost 3D scény (objekty, volání kreslení posledního snímku, SVG sprity
+ * a z nich ty s načtenou texturou) — ladění, e2e.
+ */
+export function getScene3dStats(): {
+  objects: number; drawCalls: number; sprites: number; spritesLoaded: number; spritesVisible: number; dotsVisible: number;
+} | null {
+  if (!state) return null;
+  let objects = 0;
+  let sprites = 0;
+  let spritesLoaded = 0;
+  let spritesVisible = 0;
+  let dotsVisible = 0;
+  state.scene.traverse((o) => {
+    objects++;
+    if (o.userData['jvfDotFor'] && o.visible) dotsVisible++;
+    if (!(o instanceof THREE.Sprite)) return;
+    sprites++;
+    if (o.visible) spritesVisible++;
+    const map = (o.material as THREE.SpriteMaterial).map;
+    if (map && svgSizeOf(map) && (map.image as HTMLCanvasElement).width > 1) spritesLoaded++;
+  });
+  return { objects, drawCalls: state.renderer.info.render.calls, sprites, spritesLoaded, spritesVisible, dotsVisible };
+}
+
 export function zoomToThreeFeature(elementName: string, objectId: string): void {
   if (!state) return;
   const objs = findSceneObjects(elementName, objectId);
@@ -1593,4 +1919,155 @@ function animateCameraTo(target: THREE.Vector3, targetRadius: number, durationMs
     if (t < 1) requestAnimationFrame(step);
   }
   step();
+}
+
+// ── Podpora měření ve 3D (viewer3d/measure3d.ts) ─────────────────────────────
+// Scéna: x = X − cx, z = cy − Y, y = (Z − cz) · převýšení. Měření drží body
+// v S-JTSK se skutečnou výškou, scénu jen kreslí.
+
+/** Je 3D scéna inicializovaná? */
+export function isThreeSceneReady(): boolean {
+  return state !== null;
+}
+
+/** Aktuální převýšení Z ve scéně. */
+export function getZExaggeration(): number {
+  return lastZExaggeration;
+}
+
+/** Souřadnice scény → S-JTSK [X, Y, skutečné Z]. */
+export function sceneToSjtsk(v: THREE.Vector3): [number, number, number] | null {
+  if (!state) return null;
+  const ex = lastZExaggeration || 1;
+  return [v.x + state.cx, state.cy - v.z, v.y / ex + state.cz];
+}
+
+/** S-JTSK [X, Y, Z] → souřadnice scény (s aktuálním převýšením). */
+export function sjtskToScene(x: number, y: number, z: number): THREE.Vector3 | null {
+  if (!state) return null;
+  return new THREE.Vector3(x - state.cx, (z - state.cz) * lastZExaggeration, state.cy - y);
+}
+
+/** Promítne bod scény na souřadnice klienta (px); null, je-li za kamerou. */
+export function projectSceneToClient(v: THREE.Vector3): { x: number; y: number } | null {
+  if (!state) return null;
+  const p = v.clone().project(state.camera);
+  if (p.z > 1 || p.z < -1) return null;
+  const rect = state.renderer.domElement.getBoundingClientRect();
+  return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height };
+}
+
+/** Je objekt i všichni jeho předci viditelný? */
+function isShown(obj: THREE.Object3D): boolean {
+  for (let o: THREE.Object3D | null = obj; o; o = o.parent) if (!o.visible) return false;
+  return true;
+}
+
+export interface MeasureHit {
+  point: THREE.Vector3;
+  object: THREE.Object3D;
+  /** Datový objekt JVF (název elementu), nebo terén. */
+  elementName: string | null;
+  isTerrain: boolean;
+}
+
+/**
+ * Paprsek pod kurzorem pro měření: zásahy VIDITELNÝCH datových objektů
+ * a terénu, seřazené podle vzdálenosti. U linie je `point` přímo na úsečce
+ * (Three.js), takže slouží jako přichycení k hraně.
+ */
+export function raycastForMeasure(clientX: number, clientY: number): MeasureHit[] {
+  if (!state) return [];
+  const { scene, camera, renderer, orbit } = state;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -(((clientY - rect.top) / rect.height) * 2 - 1),
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Line = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.params.Points = { threshold: orbit.spherical.radius * 0.01 };
+  raycaster.setFromCamera(ndc, camera);
+  const targets: THREE.Object3D[] = [];
+  scene.traverse((o) => {
+    if (o.userData[DATA_TAG] !== undefined && o.userData[HIGHLIGHT_TAG] !== true) targets.push(o);
+  });
+  const terrain = state.terrainMeshes.filter((m) => m.visible);
+  const hits = raycaster.intersectObjects([...targets, ...terrain], true);
+  const out: MeasureHit[] = [];
+  for (const h of hits) {
+    if (!isShown(h.object)) continue;
+    let isTerrain = false;
+    let elementName: string | null = null;
+    for (let o: THREE.Object3D | null = h.object; o; o = o.parent) {
+      if (o.userData[TERRAIN_TAG] === true) { isTerrain = true; break; }
+      const tag = o.userData[DATA_TAG];
+      if (typeof tag === 'string') { elementName = tag; break; }
+    }
+    if (!isTerrain && elementName === null) continue;
+    out.push({ point: h.point.clone(), object: h.object, elementName, isTerrain });
+  }
+  return out;
+}
+
+/** Bod na vodorovné rovině (výška scény `sceneY`) pod kurzorem. */
+export function rayPlaneFromClient(clientX: number, clientY: number, sceneY: number): THREE.Vector3 | null {
+  if (!state) return null;
+  const { camera, renderer } = state;
+  const rect = renderer.domElement.getBoundingClientRect();
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -(((clientY - rect.top) / rect.height) * 2 - 1),
+  ), camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -sceneY);
+  return raycaster.ray.intersectPlane(plane, new THREE.Vector3());
+}
+
+/** Přidá / odebere pomocný objekt (měření) do aktuální scény. */
+export function addSceneOverlay(obj: THREE.Object3D): void {
+  if (state && obj.parent !== state.scene) state.scene.add(obj);
+}
+export function removeSceneOverlay(obj: THREE.Object3D): void {
+  obj.parent?.remove(obj);
+}
+
+/**
+ * Položí body (S-JTSK [x, y]) na povrch viditelného terénu: výška ze
+ * svislého paprsku na povrch DMR; bez terénu (nebo mimo něj) skutečná výška
+ * `fallbackZ`. Vrací body scény (s aktuálním převýšením).
+ */
+export function drapeOnTerrain(points: ReadonlyArray<readonly number[]>, fallbackZ: number): THREE.Vector3[] {
+  if (!state) return [];
+  const surfaces: THREE.Object3D[] = [];
+  for (const g of state.terrainMeshes) {
+    if (!g.visible) continue;
+    g.traverse((o) => { if (o.userData['isTerrainMesh'] === true && o.visible) surfaces.push(o); });
+  }
+  const raycaster = new THREE.Raycaster();
+  const down = new THREE.Vector3(0, -1, 0);
+  const out: THREE.Vector3[] = [];
+  for (const p of points) {
+    const v = sjtskToScene(p[0] ?? 0, p[1] ?? 0, fallbackZ);
+    if (!v) continue;
+    if (surfaces.length > 0) {
+      raycaster.set(new THREE.Vector3(v.x, 1e6, v.z), down);
+      const hit = raycaster.intersectObjects(surfaces, false)[0];
+      if (hit) v.y = hit.point.y;
+    }
+    out.push(v);
+  }
+  return out;
+}
+
+/** Počet viditelných načtených dílů terénu (změna = přepočítat výšky přehozů). */
+export function getVisibleTerrainCount(): number {
+  return state ? state.terrainMeshes.filter((g) => g.visible).length : 0;
+}
+
+/** Velikost vykreslovací plochy v px (pro tloušťku čar LineMaterial). */
+export function getThreeCanvasSize(): { width: number; height: number } | null {
+  if (!state) return null;
+  const c = state.renderer.domElement;
+  return { width: c.clientWidth, height: c.clientHeight };
 }

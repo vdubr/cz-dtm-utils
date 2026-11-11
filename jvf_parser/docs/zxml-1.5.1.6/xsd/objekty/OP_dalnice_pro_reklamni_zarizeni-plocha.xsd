@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:atr="atr" xmlns:atrsz="atrsz" xmlns:cmn="cmn" xmlns:gml="http://www.opengis.net/gml/3.2" targetNamespace="soppol" xmlns:soppol="soppol">
+  <xs:import schemaLocation="../common/atributy.xsd" namespace="atr"/>
+  <xs:import schemaLocation="../common/atributy_sz.xsd" namespace="atrsz"/>
+  <xs:import schemaLocation="../common/common.xsd" namespace="cmn"/>
+  <xs:import schemaLocation="../ext/gml/gml.xsd" namespace="http://www.opengis.net/gml/3.2"/>
+  <xs:element name="OPDalniceProReklamniZarizeni" type="soppol:OPDalniceProReklamniZarizeniType"/>
+  <xs:complexType name="OPDalniceProReklamniZarizeniType">
+    <xs:sequence>
+      <xs:element name="ObjektovyKod" type="xs:string" fixed="744"/>
+      <xs:element name="ObjektovyTypNazev" fixed="ochranné pásmo dálnice pro reklamní zařízení">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:string">
+              <xs:attribute name="code_base" type="xs:string" fixed="0100000388" use="required"/>
+              <xs:attribute name="code_suffix" type="xs:string" fixed="03" use="required"/>
+              <xs:attribute name="dim" type="xs:integer" fixed="2" use="prohibited"/>
+              <xs:attribute name="gia" type="xs:boolean" fixed="0" use="prohibited"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:sequence>
+        <xs:element name="KategorieObjektu" type="xs:string" fixed="Ochranná a bezpečnostní pásma">
+          <xs:annotation>
+            <xs:documentation>Kategorie objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="SkupinaObjektu" type="xs:string" fixed="Ochranné a bezpečnostní pásmo">
+          <xs:annotation>
+            <xs:documentation>Skupina objektu dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ObsahovaCast" type="xs:string" fixed="DI">
+          <xs:annotation>
+            <xs:documentation>Zařazení objektu do obsahové části dle Vyhlášky o DTM kraje</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="ZaznamyObjektu">
+          <xs:annotation>
+            <xs:documentation>Jednotlivé záznamy daného objektu</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="soppol:ZaznamObjektu" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ZaznamObjektu" abstract="true"/>
+  <xs:element name="ZaznamObjektuRefV" type="soppol:RefV" substitutionGroup="soppol:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuRefN" type="soppol:RefN" substitutionGroup="soppol:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuIns" type="soppol:Ins" substitutionGroup="soppol:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuUpd" type="soppol:Upd" substitutionGroup="soppol:ZaznamObjektu"/>
+  <xs:element name="ZaznamObjektuDel" type="soppol:Del" substitutionGroup="soppol:ZaznamObjektu"/>
+  <xs:complexType name="RefV">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuRefVType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZRefVType"/>
+            <xs:element name="SpolecneAtributyObjektuPasemDI" type="atr:SpolecneAtributyObjektuPasemDIRefVType"/>
+            <xs:element ref="atr:IDObjektuSilnicniStavby"/>
+            <xs:element ref="atr:CisloETahu"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuPlocha2DDTIType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RefN">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuRefNType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZRefNType"/>
+            <xs:element name="SpolecneAtributyObjektuPasemDI" type="atr:SpolecneAtributyObjektuPasemDIRefNType"/>
+            <xs:element ref="atr:IDObjektuSilnicniStavby"/>
+            <xs:element ref="atr:CisloETahu"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuPlocha2DDTIType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Ins">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuInsType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZInsType"/>
+            <xs:element name="SpolecneAtributyObjektuPasemDI" type="atr:SpolecneAtributyObjektuPasemDIInsType"/>
+            <xs:element ref="atr:IDObjektuSilnicniStavby"/>
+            <xs:element ref="atr:CisloETahu"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuPlocha2DDTIType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Upd">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuUpdType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZUpdType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuPasemDI" type="atr:SpolecneAtributyObjektuPasemDIUpdType" minOccurs="0"/>
+            <xs:element ref="atr:IDObjektuSilnicniStavby" minOccurs="0"/>
+            <xs:element ref="atr:CisloETahu" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuPlocha2DDTIType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Del">
+    <xs:sequence>
+      <xs:element name="AtributyObjektu">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="SpolecneAtributyVsechObjektu" type="atr:SpolecneAtributyVsechObjektuDelType"/>
+            <xs:element name="SpolecneAtributyObjektuDISZ" type="atrsz:SpolecneAtributyObjektuDISZDelType" minOccurs="0"/>
+            <xs:element name="SpolecneAtributyObjektuPasemDI" type="atr:SpolecneAtributyObjektuPasemDIDelType" minOccurs="0"/>
+            <xs:element ref="atr:IDObjektuSilnicniStavby" minOccurs="0"/>
+            <xs:element ref="atr:CisloETahu" minOccurs="0"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GeometrieObjektu" type="cmn:GeometrieObjektuPlocha2DDTIType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

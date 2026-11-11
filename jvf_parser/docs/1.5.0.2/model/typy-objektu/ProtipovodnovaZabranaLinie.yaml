@@ -1,0 +1,276 @@
+id: ProtipovodnovaZabranaLinie
+namespace: ppzlin
+nazev: protipovodňová zábrana
+skupinaPrvku: StavbaObjektAZarizeniKOchranePredPovodnemi
+obsahovaCast: ZPS
+typGeometrie: Linie
+code:
+  base: "0100000085"
+  suffix: "02"
+dim: 3
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuZPS
+   typ: sada
+   sada: SpolecneAtributyObjektuZPS
+ - id: ZpusobPorizeniZPS
+   typ: atribut
+   volitelny: false
+   atribut: ZpusobPorizeniZPS
+ - id: TypProtipovodnoveZabrany
+   typ: atribut
+   volitelny: false
+   atribut: TypProtipovodnoveZabrany
+ - id: HraniceJinehoObjektu
+   typ: atribut
+   volitelny: false
+   atribut: HraniceJinehoObjektu
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie3D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsZPS
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdZPS
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  PeIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  PeUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  PeDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Pe
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuZPS
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZpusobPorizeniZPS
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypProtipovodnoveZabrany
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: HraniceJinehoObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true

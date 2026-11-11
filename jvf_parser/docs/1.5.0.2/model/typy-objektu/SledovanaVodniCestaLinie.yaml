@@ -1,0 +1,364 @@
+id: SledovanaVodniCestaLinie
+namespace: svclin
+nazev: sledovaná vodní cesta
+skupinaPrvku: VodniDoprava
+obsahovaCast: DI
+typGeometrie: Linie
+code:
+  base: "0100000043"
+  suffix: "02"
+dim: 2
+gia: 0
+
+obsah:
+ - id: SpolecneAtributyVsechObjektu
+   typ: sada
+   sada: SpolecneAtributyVsechObjektu
+ - id: SpolecneAtributyObjektuDI
+   typ: sada
+   sada: SpolecneAtributyObjektuDI
+ - id: NazevSledovaneVodniCesty
+   typ: atribut
+   volitelny: false
+   atribut: NazevSledovaneVodniCesty
+ - id: ZarazeniSledovaneVodniCesty
+   typ: atribut
+   volitelny: false
+   atribut: ZarazeniSledovaneVodniCesty
+ - id: TridaDopravneVyznamneVodniCesty
+   typ: atribut
+   volitelny: false
+   atribut: TridaDopravneVyznamneVodniCesty
+ - id: TypSledovaneVodniCesty
+   typ: atribut
+   volitelny: false
+   atribut: TypSledovaneVodniCesty
+ - id: OznaceniObjektu
+   typ: atribut
+   volitelny: false
+   atribut: OznaceniObjektu
+ - id: GeometrieObjektu
+   typ: sada
+   sada: GeometrieObjektuLinie2D
+
+kontexty:
+  RefV:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefN:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  Ins:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: InsDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ins
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ins
+       volitelny: false
+
+  Upd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: UpdDTI
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Upd
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Upd
+       volitelny: true
+
+  Del:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Del
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Del
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: true
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Del
+       volitelny: true
+
+  RefVIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefVDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+
+  RefNIns:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNUpd:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: SpolecneAtributyObjektuDI
+       kontext: Ref
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: NazevSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: ZarazeniSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TridaDopravneVyznamneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: TypSledovaneVodniCesty
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: OznaceniObjektu
+       namespace: atr
+       volitelny: false
+       umisteni: AtributyObjektu
+     - id: GeometrieObjektu
+       kontext: Ref
+       volitelny: false
+
+  RefNDel:
+    obsah:
+     - id: SpolecneAtributyVsechObjektu
+       kontext: RefDel
+       volitelny: false
+       umisteni: AtributyObjektu
+

@@ -1,0 +1,27 @@
+id: TypPodpernehoZarizeni
+nazev: Typ podpěrného zařízení
+namespace: atr
+popis: Typ podpěrného zařízení
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: stožár příhradový
+ - hodnota: 4
+   popis: sloup trakčního vedení
+ - hodnota: 5
+   popis: nástěnná konzola
+ - hodnota: 6
+   popis: střešník
+ - hodnota: 7
+   popis: portál
+ - hodnota: 8
+   popis: hák
+ - hodnota: 9
+   popis: stožár jiný
+ - hodnota: 10
+   popis: sloup elektrického veřejného osvětlení
+ - hodnota: 11
+   popis: sloup plynového veřejného osvětlení
+ - hodnota: 12
+   popis: sloup jiný

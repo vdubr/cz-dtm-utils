@@ -53,11 +53,38 @@ export { ENUM_LABELS } from './generated/enum-labels.js';
 // ---------------------------------------------------------------------------
 
 export {
+  JVF_VERSIONS,
   SUPPORTED_VERSIONS,
   DEFAULT_VERSION,
+  LATEST_JVF_VERSION,
   isSupportedVersion,
+  isJvfBaseVersion,
+  allSupportedVersions,
+  baseJvfVersionOf,
+  formatVersionLabel,
+  DIALECTS,
+  getDialect,
+  dialectOf,
+  dialectVersionId,
+  rawDialectVersion,
+  isDialectVersion,
+  UDM_VERSIONS,
+  LATEST_UDM_VERSION,
+  isUdmVersion,
+  udmVersionId,
+  ZXML_VERSIONS,
+  LATEST_ZXML_VERSION,
+  isZxmlVersion,
 } from 'jvf-dtm-types';
-export type { JvfVersion } from 'jvf-dtm-types';
+export type {
+  JvfVersion,
+  JvfBaseVersion,
+  UdmVersion,
+  ZxmlVersion,
+  DialectVersion,
+  DialectId,
+  DialectDef,
+} from 'jvf-dtm-types';
 
 export type {
   SharedAttrsZPS,

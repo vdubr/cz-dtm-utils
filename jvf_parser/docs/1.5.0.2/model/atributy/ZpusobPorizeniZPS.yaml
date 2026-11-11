@@ -1,0 +1,21 @@
+id: ZpusobPorizeniZPS
+nazev: Způsob pořízení ZPS
+namespace: atr
+popis: Způsob pořízení objektu ZPS
+nillable: false
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: geodeticky - terestricky
+ - hodnota: 2
+   popis: geodeticky - fotogrammetricky
+ - hodnota: 3
+   popis: geodeticky - pozemním laserovým skenováním
+ - hodnota: 4
+   popis: přibližným zákresem
+ - hodnota: 5
+   popis: odvozením
+ - hodnota: 6
+   popis: geodeticky - technologií GNSS
+ - hodnota: 99
+   popis: nezjištěno

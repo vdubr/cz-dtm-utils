@@ -1,0 +1,21 @@
+id: TypObjektuVodovodniSite
+nazev: Typ objektu vodovodní sítě
+namespace: atr
+popis: Typ objektu vodovodní sítě
+nillable: true
+typ: Vycet
+polozky:
+ - hodnota: 1
+   popis: vodojem věžový
+ - hodnota: 2
+   popis: vodojem zemní
+ - hodnota: 3
+   popis: úpravna vody
+ - hodnota: 4
+   popis: čerpací stanice
+ - hodnota: 5
+   popis: šachta vodovodní sítě
+ - hodnota: 6
+   popis: pítko
+ - hodnota: 98
+   popis: jiný
