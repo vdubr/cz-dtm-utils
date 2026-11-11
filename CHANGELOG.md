@@ -116,7 +116,7 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 - **Přidat, nebo nahradit projekt** — jsou-li načtená data, nahrání souboru
   nebo ukázky se zeptá, zda ho přidat jako další projekt, nebo jím data
   nahradit; stejný soubor se podruhé nepřidá (upozornění).
-- **Značky v liniích v legendě a náhledech** — linie, které Katalog DTM ČR
+- **Symboly v liniích v legendě a náhledech** — linie, které Katalog DTM ČR
   prokládá značkou (blesk elektrického vedení NN / VN / VVN / ZVN, třídy
   silnic „D II", „S I", „MK II", plynovod, vodovod, kanalizace, teplovod,
   produktovod, zábradlí…), ji ukazují v legendě, panelu vrstev i Přehledu
@@ -126,13 +126,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   značky vynechají. Ve 3D scéně stejně: linie čárkovaná v metrech, značka
   ve vodorovné rovině v mezeře, vektorově (čára stejně tenká jako linie
   v každé vzdálenosti). Export do CAD zatím jen čárkování.
-- **Anonymní měření používání** (PostHog Cloud EU) — jen na produkční
-  adrese: použití funkcí (soubor / ukázka, režim, kontrola, Přehled
-  prvků, klik na prvek v mapě — jen typ objektu, měření, podklady,
-  překryvy, dotaz na parcelu, motiv, export do CAD, SVG symboly a terén
-  ve 3D, klik na LinkedIn autora), aktivní čas v aplikaci a doba ve 3D. Bez cookies a úložiště
-  prohlížeče, bez záznamu obrazovky; nikdy názvy souborů, souřadnice,
-  ID prvků, atributy ani údaje o parcelách. Popis v info modalu.
 - **Export do CAD (AutoCAD DXF)** — tlačítko v hlavičce vyexportuje načtený
   projekt do DXF ve stejném vzhledu jako mapa — podle Katalogu
   kartografických symbolů DTM ČR (ČÚZK): hladiny podle objektových typů
@@ -176,10 +169,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 - **Podpora JVF DTM 1.5.0.2** — opravná verze 1.5.0.1 (ČÚZK 9. 9. 2026),
   produkční verze IS DMVS od 18. 11. 2026. Výchozí verze aplikace; soubory
   1.4.3 a 1.5.0.1 se načtou dál.
-- **Hlídání nových verzí** — `npm run check:upstream` porovná verze JVF DTM
-  zveřejněné ČÚZK s podporovanými; týdenní GitHub Action při nálezu založí
-  issue. CI ověřuje, že generované typy odpovídají XSD
-  (`npm run check:generated`).
 
 ### Změněno
 - **Licence: proprietární, všechna práva vyhrazena** (dřív MIT) — viz
@@ -188,18 +177,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   2026.8.25 zůstávají pod MIT.
 - **Aplikace na kořeni domény** — https://cz-dtm-utils.vercel.app/ (dřív
   `/jvf_viewer/`); staré adresy se trvale přesměrují.
-- **Změny v souboru jako tlačítko „Změny" nad mapou** (tužka, vedle DTM
-  a Katastru, jen pro data se změnami) místo čtyř přepínačů v panelu
-  vrstev. V kartě přepínač **Obarvit změny** mění jen vzhled (barevný lem
-  pod prvkem) a zaškrtávátka **Nové / Editované / Mazané** s barevnou
-  tečkou a počtem záznamů filtrují — i bez obarvení (pak jsou tečky šedé).
-  Jsou-li všechny záznamy stejného typu (např. vše nové), filtr typů se
-  neukazuje — vypnutím by zmizel celý výkres.
-- **Posuvníky sytosti ve stylu Material 3** — dráha vlevo od palce
-  v barvě motivu, vpravo světlá s tečkou na konci (podklad, překryvy);
-  tečka je za koncem dráhy palce, vidět i na 100 %. Stahování překryvu
-  DTM / katastru ukazuje kolečko v tlačítku nad mapou (jako u podkladu),
-  ne vedle posuvníku.
 - **Filtr obsahových částí v Přehledu prvků s výběrem více částí** — klik
   na část ji přidá k výběru / odebere (např. ZPS + TI), „Vše" výběr
   zruší; souhrn ukazuje vybrané části a počty „z celkem".
