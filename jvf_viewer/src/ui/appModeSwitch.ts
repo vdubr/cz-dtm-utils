@@ -22,6 +22,7 @@ import {
   onAppModeChange,
   setAppMode,
   type AppMode,
+  isAppModeEnabled,
 } from '../state/appMode.js';
 import { getProjectCount } from '../state/projects.js';
 import { showConfirm } from './confirmModal.js';
@@ -102,6 +103,19 @@ export async function ensureAppModeForFile(data: JvfDtm, fileName: string): Prom
   const target = appModeForDtm(data);
   const current = getAppMode();
   if (target === current) return true;
+  // Nástroj vypnutý v tomto buildu (produkce zatím jen JVF) → soubor odmítnout.
+  if (!isAppModeEnabled(target)) {
+    await showConfirm({
+      title: 'Nepodporovaný formát',
+      bodyHtml: `
+        <p>Soubor <strong>${escapeHtml(fileName)}</strong> je ve formátu
+          <strong>${escapeHtml(appModeDef(target).title)}</strong>, který tato
+          verze aplikace zatím nepodporuje.</p>
+        <p>Aplikace načítá soubory JVF DTM.</p>`,
+      buttons: [{ label: 'Rozumím', variant: 'primary' }],
+    });
+    return false;
+  }
   const confirm = `Přepnout do ${appModeDef(target).label}`;
   const choice = await showConfirm({
     title: `Soubor patří do režimu ${appModeDef(target).label}`,
@@ -132,6 +146,15 @@ export function setupAppModeSwitch(): void {
     .map((id) => document.getElementById(id) as HTMLButtonElement | null)
     .filter((b): b is HTMLButtonElement => b !== null);
   const panel = document.getElementById('app-launcher');
+  // Jediný nástroj v buildu (produkce zatím jen JVF): spouštěč zůstává jako
+  // nabídka (popis aplikace, Legenda DTM, O aplikaci) — bez dlaždic nástrojů.
+  const single = APP_MODES.length < 2;
+  if (single) {
+    for (const b of buttons) {
+      b.title = 'Nabídka — Legenda DTM, O aplikaci a historie verzí';
+      b.setAttribute('aria-label', 'Nabídka');
+    }
+  }
   if (buttons.length > 0 && panel) {
     let opener: HTMLButtonElement | null = null;
     const close = (focusButton = false): void => {
@@ -144,7 +167,7 @@ export function setupAppModeSwitch(): void {
       opener = from;
       panel.hidden = false;
       from.setAttribute('aria-expanded', 'true');
-      panel.querySelector<HTMLElement>('.app-launcher-tile.active, .app-launcher-tile')?.focus();
+      panel.querySelector<HTMLElement>('.app-launcher-tile.active, .app-launcher-tile, .app-launcher-link')?.focus();
     };
     /** Výběr v mobilním panelu vrstev zavře i panel (jako tlačítka v něm). */
     const closeDrawer = (): void => {
@@ -217,7 +240,8 @@ export function setupAppModeSwitch(): void {
       });
       links.appendChild(link);
     }
-    panel.append(heading, grid, desc, links);
+    if (single) panel.append(desc, links);
+    else panel.append(heading, grid, desc, links);
 
     for (const button of buttons) {
       button.addEventListener('click', (e) => {

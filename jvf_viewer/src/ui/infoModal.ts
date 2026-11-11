@@ -3,19 +3,27 @@
 
 import { JVF_VERSIONS, UDM_VERSIONS, ZXML_VERSIONS, formatVersionLabel } from 'jvf-parser';
 import { buildChangelogHtml } from './changelog.js';
+import { isAppModeEnabled } from '../state/appMode.js';
 
 const VERSIONS_DISPLAY = JVF_VERSIONS.join(', ');
 const UDM_DISPLAY = UDM_VERSIONS.map(formatVersionLabel).join(', ');
 const ZXML_DISPLAY = ZXML_VERSIONS.map(formatVersionLabel).join(', ');
+
+// Texty o nástrojích UDM a JŽM jen v buildu, kde jsou zapnuté (produkce
+// zatím jen JVF — viz `__APP_MODES__` ve vite.config.ts).
+const UDM = isAppModeEnabled('udm');
+const JZM = isAppModeEnabled('jzm');
+const DIALECTS = UDM || JZM;
+const when = (on: boolean, html: string): string => (on ? html : '');
 
 const INFO_CONTENT_HTML = `
   <h3>Co to je</h3>
   <p>
     Webový prohlížeč souborů <strong>JVF DTM</strong> (Jednotný výměnný formát
     Digitální technické mapy ČR). Podporované verze specifikace:
-    <strong>${VERSIONS_DISPLAY}</strong> a rozšíření
-    <strong>${UDM_DISPLAY}</strong> (Univerzální datový model ČKZ) a
-    <strong>${ZXML_DISPLAY}</strong> (železniční data DTMŽ Správy železnic)
+    <strong>${VERSIONS_DISPLAY}</strong>${when(UDM, ` a rozšíření
+    <strong>${UDM_DISPLAY}</strong> (Univerzální datový model ČKZ)`)}${when(JZM, ` a
+    <strong>${ZXML_DISPLAY}</strong> (železniční data DTMŽ Správy železnic)`)}
     (verze se detekuje automaticky
     z načteného souboru; konkrétní verzi každého souboru ukáže tooltip
     názvu projektu v panelu „Projekty").
@@ -34,8 +42,8 @@ const INFO_CONTENT_HTML = `
       vodotisk uprostřed levého panelu; klik na jeho ikonu otevře výběr
       souboru stejně jako <em>Nahrát soubor</em>). Parsování probíhá v prohlížeči. Vedle
       tlačítka je šipka s rychlým výběrem přiložených
-      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL, UDM a ŽXML —
-      nabídka ukazuje ukázky aktivního režimu).
+      <strong>ukázkových souborů</strong> (ZPS, DI, KI, OPL${when(UDM, ', UDM')}${when(JZM, ', ŽXML')}${when(DIALECTS, ` —
+      nabídka ukazuje ukázky aktivního režimu`)}).
     </li>
     <li>
       <strong>Více projektů naráz</strong> — každý načtený soubor se přidá
@@ -57,7 +65,7 @@ const INFO_CONTENT_HTML = `
       odškrtnutý projekt se skryje v tabulce i ve 2D a 3D mapě.
       V detailu záznamu (rozbalený řádek v Přehledu prvků) je uvedeno,
       do kterého projektu patří. Verze každého souboru se detekuje automaticky
-      (podporované 1.4.3, 1.5.0.1 i UDM); topologická validace běží pro každý
+      (podporované ${VERSIONS_DISPLAY}${when(UDM, ' i UDM')}${when(JZM, ' i ŽXML')}); topologická validace běží pro každý
       projekt zvlášť dle jeho verze. 3D
       terén se při více projektech stahuje <strong>zvlášť kolem každého
       projektu</strong> (okolí 800&nbsp;m) — dva projekty daleko od sebe
@@ -130,9 +138,9 @@ const INFO_CONTENT_HTML = `
       a Přehledu prvků se zavírají křížkem v hlavičce nebo znovu tlačítkem
       v liště. Na úzké obrazovce (mobil, tablet na výšku) je levý panel
       vrstev <strong>výsuvný</strong> — otevře se ikonou nabídky vlevo
-      nahoře, zavře klepnutím vedle panelu nebo klávesou Esc; nahoře v panelu
+      nahoře, zavře klepnutím vedle panelu nebo klávesou Esc${when(DIALECTS, `; nahoře v panelu
       je aktuální nástroj, klepnutím se otevře spouštěč nástrojů (JVF / UDM /
-      JŽM) jako spodní panel.
+      JŽM) jako spodní panel`)}.
     </li>
     <li>
       <strong>Měření</strong> — tlačítko s pravítkem vlevo dole (ve 2D mapě
@@ -250,21 +258,21 @@ const INFO_CONTENT_HTML = `
       typu skryjí / zobrazí, i bez obarvení (bez obarvení je tečka šedá).
       Zaškrtávátko je jen pro typ obsažený v datech a chybí úplně, když jsou
       všechny záznamy stejného typu (skrytí by jen vyprázdnilo mapu).
-      Tlačítko svítí, když je zapnuté obarvení nebo filtr. U čistého JVF je
+      Tlačítko svítí, když je zapnuté obarvení nebo filtr. ${DIALECTS ? `U čistého JVF je
       obarvení ve výchozím stavu zapnuté, u souborů <strong>UDM</strong>
-      a <strong>ŽXML</strong> (data geodeta celá jako nová) vypnuté.
+      a <strong>ŽXML</strong> (data geodeta celá jako nová) vypnuté.` : 'Obarvení je ve výchozím stavu zapnuté.'}
     </li>
     <li>
-      <strong>Export do CAD</strong> (ve všech režimech — JVF, UDM i JŽM)
+      <strong>Export do CAD</strong>${when(DIALECTS, ' (ve všech režimech — JVF, UDM i JŽM)')}
       — tlačítko v hlavičce vyexportuje načtený projekt do
       <strong>AutoCAD DXF</strong> ve vzhledu datového modelu — stejném
       jako v mapě: hladiny podle objektových typů (barva, tloušťka, typ
       čáry), značky jako bloky (JVF podle Katalogu DTM ČR — značky
-      kartografického balíčku ČÚZK v jejich barvě, UDM z knihovny ČKZ, ŽXML
-      znaky SŽ ze stylů SLD v jejich barvě, natočené podle atributu
+      kartografického balíčku ČÚZK v jejich barvě${when(UDM, ', UDM z knihovny ČKZ')}${when(JZM, `, ŽXML
+      znaky SŽ ze stylů SLD v jejich barvě`)}, natočené podle atributu
       <code>Natoceni</code>), u JVF plochy
       vyplněné barvou Katalogu (lze vypnout), popisy a názvy jako texty
-      (výšky dle UDM pro 1:500) a atributy objektů v XDATA „UDM" (v AutoCADu
+      (výšky pro 1:500) a atributy objektů v XDATA (v AutoCADu
       příkaz <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy
       přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
       a 2D výkres. Souřadnice zůstávají v EPSG:5514. Typy čar mají
@@ -272,6 +280,7 @@ const INFO_CONTENT_HTML = `
       <strong>DWG</strong> získáte tak, že DXF otevřete
       v AutoCADu a uložíte jako DWG. Export běží lokálně v prohlížeči.
     </li>
+${when(DIALECTS, `
     <li>
       <strong>Legenda znaků</strong> (v režimech UDM a JŽM) — ikona vedle
       „Legendy DTM" v panelu vrstev otevře přehled všech znaků datového
@@ -280,6 +289,7 @@ const INFO_CONTENT_HTML = `
       v balíku ZIP (složka podle objektu) se seznamem
       <code>znaky.csv</code> (objekt, kód, atribut, hodnota, barva).
     </li>
+`)}
     <li>
       <strong>Přehled prvků</strong> — tlačítko v hlavičce otevře panel se
       seznamem všech načtených objektů seskupených podle typu. Hlavička
@@ -290,8 +300,8 @@ const INFO_CONTENT_HTML = `
       vrstev, tabulku, 2D mapu i 3D scénu (skrytá kategorie je ztlumená).
       Části skryté filtrem obsahové části se ztlumí i v panelu vrstev. Lze
       filtrovat podle obsahové části — nabízí se ty, které v datech jsou
-      (JVF: ZPS / TI / DI / GAD / OPL, UDM navíc ZPSUDM / DIUDM / OST,
-      ŽXML ZDT / ZDD / H3D / ODSZ / SKLEP); lze jich zaškrtnout více
+      (JVF: ZPS / TI / DI / GAD / OPL${when(UDM, ', UDM navíc ZPSUDM / DIUDM / OST')}${when(JZM, `,
+      ŽXML ZDT / ZDD / H3D / ODSZ / SKLEP`)}); lze jich zaškrtnout více
       (klik část přidá / odebere, „Vše" výběr zruší), souhrn pak ukazuje
       vybrané části a počty ve filtru — a hledat v názvu, <code>elementName</code> nebo ID. Řádek
       <em>Úroveň</em> ukazuje <em>úrovně umístění</em> přítomné v datech
@@ -394,6 +404,7 @@ const INFO_CONTENT_HTML = `
     (<code>ZaznamObjektuIns/Upd/Del</code>, referenční a přeshraniční věty);
     zrušeno rozlišení KI a objekt „průběh technologické konstrukce".
   </p>
+${when(UDM, `
   <p>
     <strong>UDM — Univerzální datový model ČKZ (${UDM_DISPLAY}):</strong>
     otevřený datový model České komory zeměměřičů, nadmnožina JVF DTM pro
@@ -420,6 +431,8 @@ const INFO_CONTENT_HTML = `
     mapou ani s vazbou definiční bod ↔ plocha. Ukázkové soubory UDM jsou
     v režimu UDM v nabídce vedle tlačítka „Nahrát soubor".
   </p>
+`)}
+${when(JZM, `
   <p>
     <strong>ŽXML — železniční data Správy železnic (${ZXML_DISPLAY}):</strong>
     výměnný formát Digitální technické mapy železnice (DTMŽ). Od 1. 7. 2024
@@ -456,6 +469,8 @@ const INFO_CONTENT_HTML = `
     schematické nádraží v Řevnicích a vzorník znaků SŽ se smyšlenými daty).
   </p>
 
+`)}
+${when(DIALECTS, `
   <h3>Nástroje JVF / UDM / JŽM</h3>
   <p>
     DTM Prohlížeč jsou tři nástroje na jedné adrese, každý pro jiný datový
@@ -478,12 +493,13 @@ const INFO_CONTENT_HTML = `
     <code>/udm</code>.
   </p>
 
+`)}
   <h3>Měření používání</h3>
   <p>
     Abychom věděli, které funkce se používají, aplikace na produkční adrese
     anonymně měří <strong>použití funkcí a čas v aplikaci</strong> (služba
     PostHog, data v EU — Frankfurt): načtení souboru nebo ukázky (režim, verze
-    JVF, velikost jen v hrubém pásmu), přepnutí režimu JVF / UDM / JŽM,
+    JVF, velikost jen v hrubém pásmu), ${when(DIALECTS, 'přepnutí režimu JVF / UDM / JŽM, ')}
     kontrolu, Přehled prvků, klik na prvek v mapě (jen typ objektu, např.
     „budova"), měření, podkladové mapy, překryvy DTM / katastru,
     dotaz na parcelu, dobu ve 3D, zapnutí SVG symbolů a terénu ve 3D, motiv,
@@ -517,10 +533,10 @@ const INFO_CONTENT_HTML = `
 
   <h3>Pro vývojáře</h3>
   <p>
-    Projekt je open-source pod licencí <strong>MIT</strong> a celý zdrojový
-    kód je k dispozici na GitHubu:
-    <a href="https://github.com/vdubr/cz-dtm-utils" target="_blank" rel="noopener noreferrer">github.com/vdubr/cz-dtm-utils</a>.
-    Repozitář je rozdělen do pěti npm workspace balíčků:
+    Software je autorským dílem — <strong>všechna práva vyhrazena</strong>
+    (© 2026 Vojtěch Dubrovský). Používání této webové aplikace pro vlastní
+    potřebu je dovoleno; kopírování, úpravy, šíření a další užití kódu jen
+    s písemným souhlasem autora. Aplikace se skládá z pěti balíčků:
   </p>
   <ul>
     <li>
@@ -531,8 +547,8 @@ const INFO_CONTENT_HTML = `
     <li>
       <strong>jvf-parser</strong> — parser JVF XML do typovaných objektů.
       Postavený nad <code>fast-xml-parser</code>, podporuje JVF DTM 1.4.3,
-      1.5.0.1 a 1.5.0.2 a dialekty UDM 2.1.1 (ČKZ) a ŽXML 1.4.2.1 / 1.5.1.6
-      (Správa železnic) — verzní router s registrem dialektů
+      1.5.0.1 a 1.5.0.2${when(DIALECTS, ` a dialekty UDM 2.1.1 (ČKZ) a ŽXML 1.4.2.1 / 1.5.1.6
+      (Správa železnic)`)} — verzní router${when(DIALECTS, ' s registrem dialektů')}
       a auto-detekcí — a samostatný parser protokolu chyb.
     </li>
     <li>
@@ -542,7 +558,7 @@ const INFO_CONTENT_HTML = `
       (rozsahy S-JTSK, duplicity, blízkost). Závisí pouze na typech.
     </li>
     <li>
-      <strong>jvf-cad</strong> — export JVF DTM, UDM a ŽXML do AutoCAD DXF
+      <strong>jvf-cad</strong> — export JVF DTM${when(DIALECTS, ', UDM a ŽXML')} do AutoCAD DXF
       (R2013 i R2000) ve vzhledu datového modelu, bez externích závislostí.
     </li>
     <li>
@@ -551,17 +567,15 @@ const INFO_CONTENT_HTML = `
     </li>
   </ul>
   <p>
-    Pull requesty, issue, návrhy i obecná zpětná vazba jsou vítány.
-    Nejjednodušší cesta je <strong>založit issue na GitHubu</strong>,
-    případně mě kontaktovat napřímo (viz patička levého panelu).
+    Návrhy i obecná zpětná vazba jsou vítány — kontakt najdete v patičce
+    levého panelu. Zájem o licenci nebo spolupráci řešte s autorem.
   </p>
 
   <h3>Autor</h3>
   <p>
     Aplikaci vyvíjí <strong>Vojtěch Dubrovský</strong>. Pro zpětnou vazbu,
     dotazy nebo nahlášení chyby mě můžete kontaktovat na LinkedInu
-    (odkaz najdete v patičce levého panelu) nebo
-    <a href="https://github.com/vdubr/cz-dtm-utils/issues" target="_blank" rel="noopener noreferrer">založit issue na GitHubu</a>.
+    (odkaz najdete v patičce levého panelu).
   </p>
 
   <h3>Historie verzí</h3>

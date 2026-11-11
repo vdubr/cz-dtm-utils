@@ -20,6 +20,7 @@ commitne. Po dokončení celého zadání pushne do `develop`.
 | 8 | **skolici-rezim** — průvodce aplikací (školicí režim) nad ukázkovými daty; až po #6, podobu před implementací upřesnit | ⬜ TODO | [README](./skolici-rezim/README.md) · [úkoly](./skolici-rezim/TASKS.md) |
 | 9 | **formular-zpetne-vazby** — formulář pro zpětnou vazbu v aplikaci (cíl odesílání před implementací upřesnit) | ⬜ TODO | [README](./formular-zpetne-vazby/README.md) · [úkoly](./formular-zpetne-vazby/TASKS.md) |
 | 10 | **pripominky-2026-11-06** — list připomínek po zavedení symbologie SŽ (vyhledávání ve vrstvách, legendy dialektů se všemi geometriemi, přidat / nahradit projekt, změny v datech, terén a nástroje 3D, tečky bez značky, tisk); lehké položky hotové, zbytek T5–T12 a otázky v README | 🔄 IN PROGRESS | [README](./pripominky-2026-11-06/README.md) · [úkoly](./pripominky-2026-11-06/TASKS.md) |
+| 11 | **vydani-udm-jzm** — vydat do produkce nástroje UDM a JŽM (ve verzi 2026.11.11 vypnuté přepínačem buildu `RELEASED_APP_MODES`; texty O aplikaci a CHANGELOG uložené, vrátí se zapnutím) — až na pokyn uživatele | ⬜ TODO | [README](./vydani-udm-jzm/README.md) · [úkoly](./vydani-udm-jzm/TASKS.md) |
 
 ## Ruční úkoly
 

@@ -225,6 +225,22 @@ test.describe('Načtení JVF souboru', () => {
     );
   });
 
+  test('soubor verze 1.5.0.2 (produkční IS DMVS od 18. 11. 2026) se načte, zkontroluje a exportuje', async ({ page }) => {
+    await page.setInputFiles('#file-input', fixturePath('test_verze_1.5.0.2.xml'));
+    await expect(page.locator('#confirm-modal')).toBeHidden();
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute('title', 'Verze JVF 1.5.0.2');
+    await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
+    // Kontrola topologie doběhne (panel chyb se otevře).
+    await page.locator('#btn-validate').click();
+    await expect(page.locator('#error-panel')).toBeVisible();
+    // Export do CAD.
+    await page.locator('#btn-export-cad').click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();
+    expect((await downloadPromise).suggestedFilename()).toMatch(/\.dxf$/);
+  });
+
   test('soubor UDM 2.1.1 se v režimu UDM načte bez modalu, s verzí UDM a skupinami UDM', async ({ page }) => {
     // VerzeJVFDTM 1.5.0.2 + VerzeJVFUDM 2.1.1 → UDM (ne odmítnutá verze 1.5.0.2).
     // Body souboru UDM se kreslí SVG symboly UDM (public/symboly/udm/).

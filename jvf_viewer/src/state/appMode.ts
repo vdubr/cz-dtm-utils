@@ -13,7 +13,11 @@
  * nabídka při načtení souboru jiného modelu); přepnutí zavře načtené
  * projekty. Starý tvar `?mode=udm` se při načtení převede na cestu. Režim
  * dialektu se váže na registr dialektů (`DIALECTS` v jvf-dtm-types) — další
- * režim = nová položka `APP_MODES`.
+ * režim = nová položka `ALL_APP_MODES`.
+ *
+ * Které nástroje build obsahuje, určuje `__APP_MODES__` (vite.config.ts) —
+ * produkce zatím jen JVF. Vypnutý nástroj chybí ve spouštěči, jeho adresa
+ * vede na JVF a jeho soubory se odmítnou (`isAppModeEnabled`).
  */
 import {
   JVF_VERSIONS,
@@ -64,7 +68,7 @@ function dialectMode(id: AppMode, label: string, title: string, dialect: Dialect
   return { id, label, title, ...tool, dialect, defaultVersion: getDialect(dialect).latest };
 }
 
-export const APP_MODES: readonly AppModeDef[] = [
+const ALL_APP_MODES: readonly AppModeDef[] = [
   {
     id: 'jvf',
     label: 'JVF',
@@ -101,18 +105,32 @@ export const APP_MODES: readonly AppModeDef[] = [
   }),
 ];
 
+/** Nástroje zapnuté v buildu (JVF vždy). */
+const ENABLED = new Set<string>(['jvf', ...(typeof __APP_MODES__ === 'undefined' ? ['udm', 'jzm'] : __APP_MODES__)]);
+
+/** Nástroje dostupné v tomto buildu (spouštěč, adresy). */
+export const APP_MODES: readonly AppModeDef[] = ALL_APP_MODES.filter((m) => ENABLED.has(m.id));
+
+/** Je nástroj v tomto buildu zapnutý? */
+export function isAppModeEnabled(mode: AppMode): boolean {
+  return ENABLED.has(mode);
+}
+
 export const DEFAULT_APP_MODE: AppMode = 'jvf';
 /** Starý tvar odkazu (`?mode=udm`) — při načtení se převede na cestu. */
 const LEGACY_PARAM = 'mode';
 
 export function appModeDef(mode: AppMode): AppModeDef {
-  return APP_MODES.find((m) => m.id === mode)!;
+  return ALL_APP_MODES.find((m) => m.id === mode)!;
 }
 
-/** Režim, do kterého patří verze datového modelu (dialekt → jeho režim, jinak `jvf`). */
+/**
+ * Režim, do kterého patří verze datového modelu (dialekt → jeho režim, jinak
+ * `jvf`) — i vypnutý, aby šel soubor vypnutého nástroje rozpoznat a odmítnout.
+ */
 export function appModeForVersion(version: string): AppMode {
   const dialect = dialectOf(version)?.id;
-  return APP_MODES.find((m) => m.dialect !== undefined && m.dialect === dialect)?.id ?? DEFAULT_APP_MODE;
+  return ALL_APP_MODES.find((m) => m.dialect !== undefined && m.dialect === dialect)?.id ?? DEFAULT_APP_MODE;
 }
 
 /** Režim, do kterého soubor patří. */
@@ -129,20 +147,21 @@ export function appModeHref(target: AppMode): string {
   return import.meta.env.BASE_URL + appModeDef(target).path;
 }
 
-/** Režim podle cesty (první segment za `BASE_URL`), nebo `null`. */
+/** Režim podle cesty (první segment za `BASE_URL`), nebo `null` — i vypnutý nástroj. */
 export function appModeFromPath(pathname: string): AppMode | null {
   const base = import.meta.env.BASE_URL;
   const rest = pathname.startsWith(base) ? pathname.slice(base.length) : pathname.replace(/^\//, '');
   const segment = rest.split('/').filter(Boolean)[0] ?? '';
-  return APP_MODES.find((m) => m.path !== '' && m.path === segment)?.id ?? null;
+  return ALL_APP_MODES.find((m) => m.path !== '' && m.path === segment)?.id ?? null;
 }
 
+/** Režim z URL; vypnutý nástroj (`/udm` v buildu jen s JVF) → JVF. */
 function readModeFromUrl(): AppMode {
   try {
     const fromPath = appModeFromPath(window.location.pathname);
-    if (fromPath) return fromPath;
     const legacy = new URLSearchParams(window.location.search).get(LEGACY_PARAM);
-    return isAppMode(legacy) ? legacy : DEFAULT_APP_MODE;
+    const wanted = fromPath ?? (isAppMode(legacy) ? legacy : DEFAULT_APP_MODE);
+    return isAppModeEnabled(wanted) ? wanted : DEFAULT_APP_MODE;
   } catch {
     return DEFAULT_APP_MODE;
   }
@@ -161,8 +180,11 @@ function writeModeToUrl(target: AppMode): void {
 }
 
 let mode: AppMode = typeof window === 'undefined' ? DEFAULT_APP_MODE : readModeFromUrl();
-// Starý odkaz `?mode=udm` → `/udm`.
-if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has(LEGACY_PARAM)) {
+// Starý odkaz `?mode=udm` → `/udm`; adresa vypnutého nástroje → `/`.
+if (
+  typeof window !== 'undefined' &&
+  (new URLSearchParams(window.location.search).has(LEGACY_PARAM) || appModeFromPath(window.location.pathname) !== (mode === DEFAULT_APP_MODE ? null : mode))
+) {
   writeModeToUrl(mode);
 }
 
