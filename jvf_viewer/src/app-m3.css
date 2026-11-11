@@ -838,20 +838,24 @@ html, body {
   letter-spacing: 0.25px;
 }
 .modal-dialog .modal-body h3 { font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
-/* Legendy: stálá výška (při hledání bez výsledků se modál nezmenší)
-   a viditelný posuvník — tenký šedý se na pozadí modálu ztrácel. */
+/* Legendy: stálá výška (při hledání bez výsledků se modál nezmenší).
+   Legendy a O aplikaci: viditelný posuvník — tenký šedý se na pozadí
+   modálu ztrácel (na macOS se schovával úplně). */
 #legend-modal .modal-dialog,
 #symbol-legend-modal .modal-dialog { height: min(85vh, 900px); }
 /* Firefox (bez ::-webkit-scrollbar); v Chrome by standardní vlastnosti
    přebily vlastní posuvník a na macOS by se schovával. */
 @supports not selector(::-webkit-scrollbar) {
   #legend-modal .modal-body,
-  #symbol-legend-modal .modal-body { scrollbar-color: var(--md-sys-color-outline) transparent; }
+  #symbol-legend-modal .modal-body,
+  #info-modal .modal-body { scrollbar-color: var(--md-sys-color-outline) transparent; }
 }
 #legend-modal .modal-body::-webkit-scrollbar,
-#symbol-legend-modal .modal-body::-webkit-scrollbar { width: 12px; }
+#symbol-legend-modal .modal-body::-webkit-scrollbar,
+#info-modal .modal-body::-webkit-scrollbar { width: 12px; }
 #legend-modal .modal-body::-webkit-scrollbar-thumb,
-#symbol-legend-modal .modal-body::-webkit-scrollbar-thumb {
+#symbol-legend-modal .modal-body::-webkit-scrollbar-thumb,
+#info-modal .modal-body::-webkit-scrollbar-thumb {
   background: var(--md-sys-color-outline);
   border: 3px solid transparent;
   border-radius: 6px;
