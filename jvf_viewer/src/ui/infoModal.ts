@@ -232,7 +232,12 @@ const INFO_CONTENT_HTML = `
       tenkou čarou jako linie; ve 2D se při oddálení nečitelné značky
       vynechají). Export do CAD kreslí zatím jen čárkování. Objekty, jejichž značka závisí na atributu (podpěrné zařízení
       podle typu, trasy sítí podle napětí, …), mají dlaždici pro každou
-      hodnotu — hledání najde i ji (např. „konzola"). Panel vrstev
+      hodnotu — hledání najde i ji (např. „konzola"). Lišta
+      <strong>obsahových částí</strong> nad legendou (ZPS, TI, DI, …, v UDM
+      a JŽM i jejich části) přeskočí na část a ukazuje, ve které jste;
+      výběr <em>Kategorie</em> v nadpisu části skočí na kategorii, nadpis
+      části a kategorie zůstávají při scrollování nahoře; klávesa
+      <kbd>/</kbd> přejde do hledání. Panel vrstev
       a Přehled prvků ukazují značku nejčastější hodnoty v načtených datech
       (výčet v tooltipu řádku vrstvy); vrstvy jsou seskupené podle obsahové
       části s celým názvem (např. „DI Dopravní infrastruktura") a pole

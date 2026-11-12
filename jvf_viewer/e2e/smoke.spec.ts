@@ -575,6 +575,28 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     expect(zip.toString('utf-8')).toContain('<svg');
   });
 
+  for (const mode of ['jvf', 'udm', 'jzm'] as const) {
+    test(`Legenda DTM (${mode}): lišta obsahových částí skočí na část a zvýrazní ji`, async ({ page }) => {
+      if (mode !== 'jvf') await switchMode(page, mode);
+      await page.locator('#btn-legend').click();
+      const chips = page.locator('#legend-modal-parts .legend-part-chip');
+      await expect(chips.first()).toHaveClass(/active/);
+      const all = await chips.count();
+      const target = mode === 'jvf' ? 'TI' : mode === 'udm' ? 'DIUDM' : 'ZDT';
+      await page.locator(`.legend-part-chip[data-part="${target}"]`).click();
+      await expect(page.locator(`.legend-part-chip[data-part="${target}"]`)).toHaveClass(/active/);
+      // Sekce části je nahoře v legendě.
+      await expect.poll(() => page.evaluate((part) => {
+        const body = document.getElementById('legend-modal-body')!;
+        const sec = body.querySelector(`.legend-cast-group[data-part="${part}"]`)!;
+        return Math.round(sec.getBoundingClientRect().top - body.getBoundingClientRect().top);
+      }, target)).toBeLessThanOrEqual(1);
+      // Hledání zúží lištu na části s výsledky.
+      await page.locator('#legend-modal-search').fill('budova');
+      await expect.poll(() => chips.count()).toBeLessThan(all);
+    });
+  }
+
   test('Legenda DTM v JVF: bez stažení SVG, titulek Legenda DTM', async ({ page }) => {
     await page.locator('#btn-legend').click();
     await expect(page.locator('#legend-modal-title')).toHaveText('Legenda DTM');
