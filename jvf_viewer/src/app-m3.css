@@ -1001,10 +1001,13 @@ html, body {
   color: var(--md-sys-color-on-secondary-container);
 }
 .legend-part-count { font: 400 12px/16px var(--md-sys-typescale-font); font-variant-numeric: tabular-nums; opacity: 0.8; }
-#legend-modal .legend-cast-header { top: 0; min-height: 48px; box-sizing: border-box; }
+/* Nadpis části nad nadpisy kategorií — odjíždějící nadpis kategorie
+   zajede pod něj; kategorie se drží pod nadpisem části (výšku nastavuje
+   ui/legendModal.ts do --legend-cast-h). */
+#legend-modal .legend-cast-header { top: 0; z-index: 2; min-height: 48px; box-sizing: border-box; }
 #legend-modal .legend-kat-header {
   position: sticky;
-  top: 48px;
+  top: var(--legend-cast-h, 56px);
   z-index: 1;
   background: var(--md-sys-color-surface-container-high);
 }

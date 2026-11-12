@@ -168,6 +168,15 @@ function renderPartChips(nav: HTMLElement, container: HTMLElement, parts: readon
 /** Část vybraná klikem na čip — aktivní do konce posunu (`scrollend`). */
 let pinnedPart: string | null = null;
 
+/**
+ * Výška přišpendleného nadpisu části → `--legend-cast-h` (pod ním se drží
+ * nadpis kategorie; s výběrem kategorie je nadpis vyšší). Až u otevřené legendy.
+ */
+function syncCastHeaderHeight(container: HTMLElement): void {
+  const h = container.querySelector<HTMLElement>('.legend-cast-header')?.offsetHeight;
+  if (h) container.style.setProperty('--legend-cast-h', `${h}px`);
+}
+
 /** Zvýrazní čip části, ve které je horní okraj legendy. */
 function syncActivePart(nav: HTMLElement, container: HTMLElement): void {
   if (pinnedPart) return;
@@ -371,6 +380,7 @@ export function setupLegendModal(): void {
     if (title) title.textContent = dialect ? `Legenda — ${formatVersionLabel(version)}` : 'Legenda DTM';
     if (dl) dl.hidden = !dialect;
     modal.style.display = 'flex';
+    syncCastHeaderHeight(body);
     if (nav) syncActivePart(nav, body);
   };
 
@@ -408,6 +418,7 @@ export function setupLegendModal(): void {
     attachSearchClear(search);
     search.addEventListener('input', () => {
       render();
+      syncCastHeaderHeight(body);
       body.scrollTop = 0;
     });
     // „/" skočí do hledání (mimo pole formuláře).
