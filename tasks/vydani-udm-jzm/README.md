@@ -4,10 +4,13 @@ Zapsáno 2026-11-11 při přípravě vydání 2026.11.11, které jde do produkce
 **jen s JVF**. Nástroje UDM (Univerzální datový model ČKZ) a JŽM (ŽXML
 Správy železnic) jsou hotové v kódu, ale v produkčním buildu vypnuté.
 
+**Aktualizace 2026-11-12:** JŽM zpřístupněné ve větvi `feat/dtmz`
+(`RELEASED_APP_MODES = ['jvf', 'jzm']`), čeká na vydání; UDM dál vypnuté.
+
 ## Kde je co uložené (nic se nemazalo)
 
 - **Přepínač buildu** — `jvf_viewer/vite.config.ts`: `RELEASED_APP_MODES`
-  (produkce = `['jvf']`), `releaseBuild` (Vercel produkce nebo
+  (vydané `['jvf']`, ve `feat/dtmz` `['jvf', 'jzm']`), `releaseBuild` (Vercel produkce nebo
   `VITE_RELEASE_BUILD=1`), ruční přepis `VITE_APP_MODES=jvf,udm,jzm`.
   Do aplikace jde jako `__APP_MODES__` / `__RELEASE_BUILD__`.
 - **Registr nástrojů** — `jvf_viewer/src/state/appMode.ts`: `ALL_APP_MODES`
