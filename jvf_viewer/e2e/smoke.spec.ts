@@ -426,14 +426,16 @@ test.describe('Načtení JVF souboru', () => {
 });
 
 test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
-  test('/jzm: ukázky ŽXML v nabídce, Export do CAD a Legenda znaků viditelné', async ({ page }) => {
+  test('/jzm: ukázky ŽXML v nabídce, Export do CAD a jediná legenda', async ({ page }) => {
     await page.goto('/jzm');
     await expect(page.locator('html')).toHaveAttribute('data-app', 'jzm');
     await page.locator('#btn-upload-menu').click();
     await expect(page.locator('.upload-menu-item:visible')).toHaveCount(4);
     await expect(page.locator('.upload-menu-item[data-sample="zxml_nadrazi.xml"]')).toBeVisible();
     await expect(page.locator('#btn-export-cad')).toBeVisible();
-    await expect(page.locator('#btn-symbol-legend')).toBeVisible();
+    // Jedna legenda pro všechny nástroje (samostatná Legenda znaků zrušena).
+    await expect(page.locator('#btn-legend')).toBeVisible();
+    await expect(page.locator('#btn-symbol-legend')).toHaveCount(0);
   });
 
   test('vzorník znaků SŽ: souběžné čáry, značky podél linie, rozšíření číselníků SŽ (2D, legenda, 3D)', async ({ page }) => {
@@ -468,12 +470,11 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     expect(info.zabradli).toBe(true);
     expect(info.elektro).toBeGreaterThan(3);
 
-    await page.locator('#btn-symbol-legend').click();
-    await page.locator('#symbol-legend-modal-search').fill('značka v linii');
-    await expect(page.locator('.symbol-legend-item').first()).toBeVisible();
-    await page.locator('#symbol-legend-modal-search').fill('kabelová rezerva');
-    await expect(page.locator('.symbol-legend-item', { hasText: 'zařízení elektrické sítě' }).first()).toBeVisible();
-    await page.locator('#symbol-legend-modal-close').click();
+    // Legenda DTM: varianty SŽ podle hodnot číselníku i rozšíření číselníků SŽ u objektů JVF.
+    await page.locator('#btn-legend').click();
+    await page.locator('#legend-modal-search').fill('kabelová rezerva');
+    await expect(page.locator('#legend-modal-body .legend-tile', { hasText: 'zařízení elektrické sítě' }).first()).toBeVisible();
+    await page.locator('#legend-modal-close').click();
 
     await page.locator('#btn-3d').click();
     await expect(page.locator('#three-canvas')).toBeVisible();
@@ -507,7 +508,6 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
   });
 
   test('soubor ŽXML v režimu JVF nabídne přepnutí do JŽM', async ({ page }) => {
-    await expect(page.locator('#btn-symbol-legend')).toBeHidden();
     await page.setInputFiles('#file-input', fixturePath('zxml-prvky-sz.xml'));
     await expect(page.locator('#confirm-modal-title')).toHaveText(/režimu JŽM/);
     await page.locator('#confirm-modal-footer button', { hasText: 'Přepnout do JŽM' }).click();
@@ -544,29 +544,28 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     expect(dxf).toMatch(/SZ_[0-9a-f]{8}/);
   });
 
-  test('Legenda znaků: po přepnutí do JVF je modal zavřený a tlačítko skryté', async ({ page }) => {
+  test('Legenda DTM v JŽM: dlaždice ve vzhledu SŽ podle hodnot číselníku, stažení SVG (ZIP)', async ({ page }) => {
     await switchMode(page, 'jzm');
-    await page.locator('#btn-symbol-legend').click();
-    await expect(page.locator('#symbol-legend-modal')).toBeVisible();
-    await page.locator('#symbol-legend-modal-close').click();
-    await switchMode(page, 'jvf');
-    // Tlačítko se řídí verzí (čisté JVF nemá vlastní znaky), modal je zavřený.
-    await expect(page.locator('#btn-symbol-legend')).toBeHidden();
-    await expect(page.locator('#symbol-legend-modal')).toBeHidden();
-  });
-
-  test('Legenda znaků JŽM stáhne SVG v balíku ZIP', async ({ page }) => {
-    await switchMode(page, 'jzm');
-    await page.locator('#btn-symbol-legend').click();
-    await expect(page.locator('#symbol-legend-modal')).toBeVisible();
-    await expect(page.locator('#symbol-legend-modal-title')).toHaveText(/ŽXML 1\.5\.1\.6/);
-    await expect(page.locator('.symbol-legend-item').first()).toBeVisible();
-    await page.locator('#symbol-legend-modal-search').fill('balíza');
-    await expect(page.locator('.symbol-legend-item').first()).toContainText(/Balíza/);
-    await page.locator('#symbol-legend-modal-search').fill('');
+    await page.locator('#btn-legend').click();
+    await expect(page.locator('#legend-modal-title')).toHaveText(/ŽXML 1\.5\.1\.6/);
+    // Brzda: varianty podle typu (jednostranná / oboustranná) — souběžné čáry.
+    await page.locator('#legend-modal-search').fill('brzda');
+    const brzda = page.locator('#legend-modal-body .legend-tile', { hasText: 'oboustranná' });
+    await expect(brzda).toHaveCount(1);
+    expect(await brzda.locator('svg path').count()).toBeGreaterThan(1);
+    // Balíza: značka SŽ pro každý typ.
+    await page.locator('#legend-modal-search').fill('balíza');
+    const prepinatelna = page.locator('#legend-modal-body .legend-tile').filter({
+      has: page.locator('.legend-variant', { hasText: /^přepínatelná$/ }),
+    });
+    await expect(prepinatelna.locator('image')).toHaveCount(1);
+    // Plot (objekt JVF): Katalog jako „ostatní hodnoty" + rozšíření SŽ.
+    await page.locator('#legend-modal-search').fill('plot');
+    await expect(page.locator('#legend-modal-body .legend-tile', { hasText: 'ostatní hodnoty' })).toHaveCount(1);
+    await page.locator('#legend-modal-search').fill('');
 
     const downloadPromise = page.waitForEvent('download');
-    await page.locator('#symbol-legend-download').click();
+    await page.locator('#legend-download-svg').click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('znaky-zxml-1.5.1.6.zip');
     const { readFile } = await import('node:fs/promises');
@@ -576,11 +575,18 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     expect(zip.toString('utf-8')).toContain('<svg');
   });
 
-  test('Legenda znaků UDM ukáže knihovnu znaků ČKZ', async ({ page }) => {
+  test('Legenda DTM v JVF: bez stažení SVG, titulek Legenda DTM', async ({ page }) => {
+    await page.locator('#btn-legend').click();
+    await expect(page.locator('#legend-modal-title')).toHaveText('Legenda DTM');
+    await expect(page.locator('#legend-download-svg')).toBeHidden();
+  });
+
+  test('Legenda DTM v UDM: vzhledy z knihovny ČKZ', async ({ page }) => {
     await switchMode(page, 'udm');
-    await page.locator('#btn-symbol-legend').click();
-    await expect(page.locator('#symbol-legend-modal-title')).toHaveText(/UDM 2\.1\.1/);
-    expect(await page.locator('.symbol-legend-item').count()).toBeGreaterThan(100);
+    await page.locator('#btn-legend').click();
+    await expect(page.locator('#legend-modal-title')).toHaveText(/UDM 2\.1\.1/);
+    await expect(page.locator('#legend-download-svg')).toBeVisible();
+    expect(await page.locator('#legend-modal-body .legend-tile').count()).toBeGreaterThan(100);
   });
 });
 

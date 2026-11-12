@@ -291,12 +291,17 @@ const INFO_CONTENT_HTML = `
     </li>
 ${when(DIALECTS, `
     <li>
-      <strong>Legenda znaků</strong> (v ${DIALECT_TOOLS.length > 1 ? 'režimech' : 'režimu'} ${joinCs(DIALECT_TOOLS)}) — ikona vedle
-      „Legendy DTM" v panelu vrstev otevře přehled všech znaků datového
-      modelu po objektech a hodnotách číselníků (s hledáním). Tlačítkem
-      <strong>Stáhnout SVG (ZIP)</strong> získáte znaky jako SVG soubory
-      v balíku ZIP (složka podle objektu) se seznamem
-      <code>znaky.csv</code> (objekt, kód, atribut, hodnota, barva).
+      <strong>Legenda v ${DIALECT_TOOLS.length > 1 ? 'nástrojích' : 'nástroji'} ${joinCs(DIALECT_TOOLS)}</strong>
+      — stejná <em>Legenda DTM</em> (jedna legenda ve všech nástrojích)
+      ukazuje objekty datového modelu ve vzhledu jeho stylů, přesně jako mapa:
+      ${joinCs(only([
+        [JZM, 'objekty SŽ podle stylů SLD (souběžné čáry brzdy, spojky izolované kolejnice, značky opakované podél plotu, značky bodů podle hodnot číselníků — balíza, návěstidla…) a u objektů JVF i hodnoty z rozšíření číselníků SŽ (kabelová rezerva…)'],
+        [UDM, 'objekty UDM podle knihovny ČKZ'],
+      ]))}; dlaždice pro každou hodnotu číselníku s českým popiskem
+      (hledání najde i ji). Tlačítkem <strong>Stáhnout SVG (ZIP)</strong>
+      v hlavičce legendy získáte znaky jako SVG soubory v balíku ZIP
+      (složka podle objektu) se seznamem <code>znaky.csv</code> (objekt, kód,
+      atribut, hodnota, barva).
     </li>
 `)}
     <li>
@@ -492,8 +497,8 @@ ${when(DIALECTS, `
       [JZM, `<strong>JŽM Prohlížeč</strong> (oranžový jako Správa
     železnic, <code>/jzm</code> — Jednotná železniční
     mapa, data ŽXML Správy železnic se znaky SŽ)`],
-    ]))}. ${joinCs(DIALECT_TOOLS)} ${DIALECT_TOOLS.length > 1 ? 'mají' : 'má'} vlastní ukázkové soubory a <em>Legendu
-    znaků</em>; <em>Export do CAD</em> je ve všech nástrojích. Mezi nástroji
+    ]))}. ${joinCs(DIALECT_TOOLS)} ${DIALECT_TOOLS.length > 1 ? 'mají' : 'má'} vlastní ukázkové soubory; <em>Legenda DTM</em>
+    a <em>Export do CAD</em> jsou ve všech nástrojích (ve vzhledu datového modelu). Mezi nástroji
     se přepíná <strong>spouštěčem</strong> (ikona mřížky vlevo v hlavičce,
     na mobilu nahoře v panelu vrstev) — pod dlaždicemi je stručný popis
     nástroje a formátu (aktivního, nebo toho pod kurzorem); dlaždice jsou odkazy, takže nástroj

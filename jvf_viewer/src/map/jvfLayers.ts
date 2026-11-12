@@ -30,6 +30,7 @@ import {
   isDialectStyled,
   resolveDialectLook,
   resolveDialectRepresentativeLook,
+  resolveDialectVariantLooks,
   type DialectLook,
 } from './dialectStyle.js';
 import {
@@ -403,12 +404,17 @@ export interface VariantStyle {
 }
 
 /**
- * Styly objektu podle hodnoty atributu (Katalog DTM ČR) — legenda ukáže
- * dlaždici pro každou, aby odpovídala mapě. Prázdné u objektů s jedním
- * vzhledem a u dialektů (UDM, ŽXML mají vlastní symbologii).
+ * Styly objektu podle hodnoty atributu — legenda ukáže dlaždici pro každou,
+ * aby odpovídala mapě: Katalog DTM ČR, u dialektů (UDM, ŽXML) pravidla
+ * stylů dialektu; u objektů JVF v souboru ŽXML navíc hodnoty z rozšíření
+ * číselníků SŽ. Prázdné u objektů s jedním vzhledem.
  */
 export function resolveVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
-  if (isDialectStyled(ot)) return [];
+  const dialect = resolveDialectVariantLooks(ot).map((v) => ({
+    value: v.value,
+    style: buildDialectResolvedStyle(v.look),
+  }));
+  if (isDialectStyled(ot)) return dialect;
   // Katalog je statický — styly variant stačí spočítat jednou na kód.
   const key = `${ot.codeBase}-${ot.codeSuffix}-${ot.obsahovaCast}`;
   let styles = variantStyleCache.get(key);
@@ -419,7 +425,11 @@ export function resolveVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
     }));
     variantStyleCache.set(key, styles);
   }
-  return styles;
+  // Rozšíření číselníků SŽ (jen v souboru ŽXML) za variantami Katalogu;
+  // objekt s jediným vzhledem Katalogu ho má jako „ostatní hodnoty".
+  if (dialect.length === 0) return styles;
+  const katalog = styles.length > 0 ? styles : [{ value: 'ostatní hodnoty', style: resolveRepresentativeStyle(ot) }];
+  return [...katalog, ...dialect];
 }
 const variantStyleCache = new Map<string, VariantStyle[]>();
 
@@ -449,8 +459,9 @@ export function resolveDataStyle(ot: ObjektovyTyp): DataStyle {
 const dataStyleCache = new WeakMap<ObjektovyTyp, DataStyle>();
 
 function computeDataStyle(ot: ObjektovyTyp): DataStyle {
-  // Jen objekty, které mají v Katalogu víc vzhledů (jako dlaždice legendy).
-  if (ot.zaznamy.length > 0 && resolveVariantStyles(ot).length > 0) {
+  // Jen objekty, které mají v Katalogu víc vzhledů (jako dlaždice legendy);
+  // hodnoty podle Katalogu — u dialektů reprezentativní styl.
+  if (ot.zaznamy.length > 0 && !isDialectStyled(ot) && resolveVariantStyles(ot).length > 0) {
     const counts = new Map<string, { count: number; first: ZaznamObjektu }>();
     for (const z of ot.zaznamy) {
       const value = resolveKatalogVariantValue(ot, z);

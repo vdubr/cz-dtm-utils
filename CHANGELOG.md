@@ -41,9 +41,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 - **Vzorník znaků SŽ** (`zxml_vzornik.xml`, nabídka u „Nahrát soubor"
   v JŽM) — každý objekt SŽ ve všech vzhledech a objekty JVF s rozšířením
   číselníků SŽ.
-- **Legenda znaků (JŽM)** — přehled všech znaků SŽ po objektech
-  a hodnotách číselníků s hledáním; tlačítko **Stáhnout SVG (ZIP)**
-  zabalí znaky jako SVG do složek podle objektů se seznamem `znaky.csv`.
+- **Jedna legenda ve vzhledu SŽ** — Legenda DTM v JŽM kreslí objekty SŽ
+  přesně jako mapa: dlaždice pro každou hodnotu číselníku s českým popiskem
+  (brzda jednostranná / oboustranná souběžnými čarami, izolovaná kolejnice
+  se spojkami, balíza podle typu, návěstidla…) a u objektů JVF i hodnoty
+  z rozšíření číselníků SŽ (plot, kabelová rezerva…). Tlačítko **Stáhnout
+  SVG (ZIP)** v hlavičce legendy zabalí znaky jako SVG do složek podle
+  objektů se seznamem `znaky.csv`.
 - **Ukázkové soubory ŽXML** — oficiální ukázka SŽ (1.4.2.1), minimální
   změnové věty a schematické nádraží v místě stanice Řevnice (1.5.1.6,
   smyšlená data, validní proti XSD SŽ).
@@ -70,8 +74,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ### Opraveno
 - **Široké značky SŽ ve 3D** (tabulky návěstidel s ramenem) mají velikost
   podle šířky (`Size type="width"` v SLD), ne 5× větší.
-- **Legenda znaků jen v JŽM** — při přepnutí nástroje nebo verze se
-  zavře a v JVF se neotevře (JVF má jednu legendu, Legendu DTM).
 - **JŽM: objekty JVF podle Katalogu ČÚZK i v exportu do CAD** — DXF ze
   souboru ŽXML kreslil objekty JVF jen barvou obsahové části, viewer je
   přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
@@ -105,8 +107,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   reálná ukázka ČKZ, minimální testovací soubor a samostatná ukázka
   **pontonového mostu** (obvod mostu typu „jiný" s upřesněním, komunikace
   s dřevěným povrchem).
-- **Legenda znaků a export do CAD i v UDM** — symboly UDM z knihovny ČKZ
-  jako bloky, popisy a názvy jako texty (výšky dle UDM pro 1:500)
+- **Legenda a export do CAD i v UDM** — legenda ve vzhledu UDM (dlaždice
+  podle hodnot číselníků `ckz_*`), symboly UDM z knihovny ČKZ jako bloky, popisy a názvy jako texty (výšky dle UDM pro 1:500)
   a atributy objektů v XDATA „UDM".
 - Meziobjektová topologie se pro soubory UDM nespouští (UDM nepracuje
   s plošnou mapou ani s vazbou definiční bod ↔ plocha); kontrola rozsahu

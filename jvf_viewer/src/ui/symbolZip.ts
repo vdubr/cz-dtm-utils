@@ -1,25 +1,17 @@
 /**
- * Legenda znaků — všechny symboly dialektu aktivní verze (UDM: knihovna
- * znaků ČKZ, ŽXML: znaky SŽ ze stylů SLD datového modelu DTMŽ) po objektech
- * a hodnotách číselníků. Znaky lze stáhnout jako SVG v balíku (ZIP) se
- * seznamem `znaky.csv`.
- *
- * Tlačítko je v panelu vrstev vedle „Legendy DTM" a je vidět jen pro verzi
- * dialektu s vlastními znaky (`getStyleTable`) — čisté JVF má jednu legendu.
+ * Znaky dialektu aktivní verze (UDM: knihovna znaků ČKZ, ŽXML: znaky SŽ ze
+ * stylů SLD datového modelu DTMŽ) jako SVG v balíku ZIP se seznamem
+ * `znaky.csv` — akce „Stáhnout SVG (ZIP)" v Legendě DTM (ui/legendModal.ts).
  */
 import {
   dialectOf,
-  formatVersionLabel,
   getEntityCatalog,
   getExtensionTable,
   getStyleTable,
   labelForAttribute,
   type Appearance,
 } from 'jvf-parser';
-import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import { createZip, type ZipEntry } from '../util/zip.js';
-import { attachSearchClear, matchesSearch, normalizeSearch } from './searchField.js';
-import { symbolPreviewUrl } from './symbolSwatch.js';
 
 const SVG_BASE = `${import.meta.env.BASE_URL}symboly/`;
 
@@ -137,7 +129,7 @@ export async function buildSymbolZip(entries: readonly SymbolEntry[]): Promise<U
   return createZip(files);
 }
 
-function download(bytes: Uint8Array<ArrayBuffer>, fileName: string): void {
+function downloadBytes(bytes: Uint8Array<ArrayBuffer>, fileName: string): void {
   const blob = new Blob([bytes], { type: 'application/zip' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -149,106 +141,10 @@ function download(bytes: Uint8Array<ArrayBuffer>, fileName: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function render(body: HTMLElement, entries: readonly SymbolEntry[], filter: string): void {
-  const q = normalizeSearch(filter.trim());
-  const shown = q
-    ? entries.filter((e) => matchesSearch(q, e.objectName, e.elementName, e.code, e.valueLabel, e.value, e.symbol))
-    : entries;
-  body.replaceChildren();
-  if (shown.length === 0) {
-    const empty = document.createElement('p');
-    empty.className = 'empty-hint';
-    empty.textContent = entries.length === 0 ? 'Aktivní datový model nemá vlastní znaky.' : 'Nic nenalezeno.';
-    body.appendChild(empty);
-    return;
-  }
-  const grid = document.createElement('div');
-  grid.className = 'symbol-legend-grid';
-  for (const e of shown) {
-    const card = document.createElement('figure');
-    card.className = 'symbol-legend-item';
-    card.title = `${e.elementName} · kód ${e.code}${e.attr ? ` · ${e.attr}=${e.value}` : ''} · znak ${e.symbol}`;
-    const img = document.createElement('img');
-    img.src = symbolPreviewUrl(e.path);
-    img.alt = e.symbol;
-    img.loading = 'lazy';
-    const cap = document.createElement('figcaption');
-    const name = document.createElement('span');
-    name.className = 'legend-name';
-    name.textContent = e.objectName;
-    const meta = document.createElement('span');
-    meta.className = 'legend-meta';
-    meta.textContent = e.valueLabel ?? (e.value ? `${e.attr} = ${e.value}` : 'základní znak');
-    cap.append(name, meta);
-    card.append(img, cap);
-    grid.appendChild(card);
-  }
-  body.appendChild(grid);
-}
-
-export function setupSymbolLegendModal(): void {
-  const btn = document.getElementById('btn-symbol-legend');
-  const modal = document.getElementById('symbol-legend-modal');
-  const closeBtn = document.getElementById('symbol-legend-modal-close');
-  const body = document.getElementById('symbol-legend-modal-body');
-  const title = document.getElementById('symbol-legend-modal-title');
-  const search = document.getElementById('symbol-legend-modal-search') as HTMLInputElement | null;
-  const dl = document.getElementById('symbol-legend-download') as HTMLButtonElement | null;
-  if (!btn || !modal || !closeBtn || !body || !title || !dl) {
-    console.warn('[symbolLegendModal] chybí některý DOM prvek');
-    return;
-  }
-
-  let entries: SymbolEntry[] | null = null;
-  const close = (): void => {
-    modal.style.display = 'none';
-  };
-  // Tlačítko i obsah podle téže podmínky — verze s vlastními znaky dialektu.
-  const syncButton = (): void => {
-    btn.hidden = !getStyleTable(getActiveVersion());
-  };
-  syncButton();
-  // Změna verze / režimu: legenda patří jen k dialektu, ve kterém se otevřela.
-  onActiveVersionChange(() => {
-    entries = null;
-    close();
-    syncButton();
-  });
-
-  const open = (): void => {
-    const version = getActiveVersion();
-    entries ??= collectSymbols(version);
-    title.textContent = `Legenda znaků — ${formatVersionLabel(version)}`;
-    dl.disabled = entries.length === 0;
-    dl.textContent = `Stáhnout SVG (ZIP, ${entries.length})`;
-    render(body, entries, search?.value ?? '');
-    modal.style.display = 'flex';
-  };
-
-  btn.addEventListener('click', open);
-  closeBtn.addEventListener('click', close);
-  modal.addEventListener('click', (ev) => {
-    if (ev.target === modal) close();
-  });
-  document.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape' && modal.style.display !== 'none') close();
-  });
-  if (search) attachSearchClear(search);
-  search?.addEventListener('input', () => render(body, entries ?? [], search.value));
-  dl.addEventListener('click', () => {
-    void (async () => {
-      const version = getActiveVersion();
-      const list = entries ?? collectSymbols(version);
-      dl.disabled = true;
-      const label = dl.textContent;
-      dl.textContent = 'Připravuji…';
-      try {
-        const zip = await buildSymbolZip(list);
-        download(zip, `znaky-${version}.zip`);
-      } finally {
-        dl.disabled = false;
-        dl.textContent = label;
-      }
-    })();
-  });
+/** Stáhne znaky dialektu dané verze jako `znaky-<verze>.zip`; vrací počet znaků. */
+export async function downloadSymbolZip(version: string): Promise<number> {
+  const entries = collectSymbols(version);
+  if (entries.length === 0) return 0;
+  downloadBytes(await buildSymbolZip(entries), `znaky-${version}.zip`);
+  return entries.length;
 }

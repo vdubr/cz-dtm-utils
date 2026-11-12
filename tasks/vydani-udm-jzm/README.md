@@ -22,12 +22,12 @@ Správy železnic) jsou hotové v kódu, ale v produkčním buildu vypnuté.
   o UDM a JŽM zůstávají v `INFO_CONTENT_HTML`, jen obalené
   `when(UDM | JZM | DIALECTS, …)`. Zapnutím nástroje se vrátí samy
   (úvod, ukázky, verze projektů, mobilní spouštěč, Změny, Export do CAD,
-  Legenda znaků, obsahové části, odstavce UDM a ŽXML, sekce „Nástroje
+  legenda dialektu, obsahové části, odstavce UDM a ŽXML, sekce „Nástroje
   JVF / UDM / JŽM", měření používání, balíčky jvf-parser / jvf-cad).
 - **CHANGELOG** — položky o UDM a JŽM zůstaly v `[Unreleased]` (s poznámkou
   „Hotové, zatím nevydané"); vydaná verze `[Unreleased]` v historii verzí
   nevypisuje (`ui/changelog.ts`, `__RELEASE_BUILD__`).
-- Ukázky, Legenda znaků a další prvky s `data-mode="udm jzm"` se řídí
+- Ukázky a další prvky s `data-mode="udm jzm"` se řídí
   aktivním režimem — beze změny.
 
 ## Postup vydání

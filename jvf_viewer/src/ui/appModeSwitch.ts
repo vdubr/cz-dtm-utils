@@ -43,7 +43,7 @@ function closingNote(): string {
 /**
  * Promítne nástroj do UI: barevné schéma (`data-app`), název a odznak
  * v hlavičce, titulek stránky, aktivní dlaždici spouštěče a prvky patřící
- * jen některým nástrojům (`data-mode="udm jzm"` — ukázky, Legenda znaků, …).
+ * jen některým nástrojům (`data-mode="udm jzm"` — ukázky, …).
  */
 export function applyAppModeToUi(mode: AppMode = getAppMode()): void {
   const def = appModeDef(mode);
