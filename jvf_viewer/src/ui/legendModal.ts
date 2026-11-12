@@ -105,8 +105,95 @@ function pluralTypes(n: number): string {
   return n >= 2 && n <= 4 ? 'typy' : 'typů';
 }
 
-/** Render kompletní legendy do `#legend-modal-body`. */
-function renderLegendContent(container: HTMLElement, filter: string = ''): void {
+/** Obsahová část v legendě — sekce a počet typů (lišta čipů nad legendou). */
+interface LegendPart {
+  cast: string;
+  count: number;
+  section: HTMLElement;
+}
+
+/** Poloha prvku v obsahu legendy (px od začátku scrollovaného obsahu). */
+function legendOffset(container: HTMLElement, el: HTMLElement): number {
+  return el.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+}
+
+/**
+ * Posune legendu na prvek (sekce části / kategorie) uvnitř `container`;
+ * kategorie pod přišpendlený nadpis části (`stickyOffset`).
+ */
+function scrollLegendTo(container: HTMLElement, el: HTMLElement, stickyOffset = 0): void {
+  const top = Math.max(0, legendOffset(container, el) - stickyOffset);
+  // Dlouhý skok (víc než 2 obrazovky) hned, krátký plynule.
+  const far = Math.abs(top - container.scrollTop) > container.clientHeight * 2;
+  container.scrollTo({ top, behavior: far ? 'instant' : 'smooth' });
+  // Okamžitý skok nevyvolá `scrollend` vždy — aktivní čip uvolnit hned.
+  if (far) pinnedPart = null;
+}
+
+/**
+ * Lišta čipů obsahových částí nad legendou (ve všech nástrojích — JVF,
+ * UDM, ŽXML): podtržení barvou části a počet typů v aktuálním výsledku
+ * hledání; klik posune legendu na část, aktivní čip sleduje scrollování
+ * (`syncActivePart`).
+ */
+function renderPartChips(nav: HTMLElement, container: HTMLElement, parts: readonly LegendPart[]): void {
+  nav.replaceChildren();
+  nav.hidden = parts.length < 2;
+  for (const { cast, count, section } of parts) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'legend-part-chip';
+    chip.dataset['part'] = cast;
+    chip.title = `${contentPartTitle(cast)} — ${count} ${pluralTypes(count)}`;
+    const name = document.createElement('span');
+    name.className = 'part-underline';
+    name.style.setProperty('--part-color', LAYER_COLORS[cast] ?? '#90a4ae');
+    name.textContent = cast;
+    const n = document.createElement('span');
+    n.className = 'legend-part-count';
+    n.textContent = String(count);
+    chip.append(name, n);
+    chip.addEventListener('click', () => {
+      // Vybraná část zůstane aktivní, dokud posun nedoběhne (krátká poslední
+      // část se nahoru doscrollovat nedá).
+      pinnedPart = cast;
+      setActivePart(nav, cast);
+      scrollLegendTo(container, section);
+    });
+    nav.appendChild(chip);
+  }
+  syncActivePart(nav, container);
+}
+
+/** Část vybraná klikem na čip — aktivní do konce posunu (`scrollend`). */
+let pinnedPart: string | null = null;
+
+/** Zvýrazní čip části, ve které je horní okraj legendy. */
+function syncActivePart(nav: HTMLElement, container: HTMLElement): void {
+  if (pinnedPart) return;
+  const sections = [...container.querySelectorAll<HTMLElement>('.legend-cast-group')];
+  const top = container.scrollTop + 8;
+  let active = sections[0]?.dataset['part'];
+  for (const s of sections) if (legendOffset(container, s) <= top) active = s.dataset['part'];
+  // Dole v legendě (poslední krátká část) aktivní poslední — jen u otevřené legendy.
+  const scrolled = container.scrollTop > 0 && container.clientHeight > 0;
+  if (scrolled && container.scrollTop + container.clientHeight >= container.scrollHeight - 2) {
+    active = sections[sections.length - 1]?.dataset['part'] ?? active;
+  }
+  if (active) setActivePart(nav, active);
+}
+
+function setActivePart(nav: HTMLElement, active: string): void {
+  for (const chip of nav.querySelectorAll<HTMLElement>('.legend-part-chip')) {
+    const on = chip.dataset['part'] === active;
+    chip.classList.toggle('active', on);
+    if (on) chip.setAttribute('aria-current', 'true');
+    else chip.removeAttribute('aria-current');
+  }
+}
+
+/** Render kompletní legendy do `#legend-modal-body`; vrací obsahové části (lišta čipů). */
+function renderLegendContent(container: HTMLElement, filter: string = ''): LegendPart[] {
   container.innerHTML = '';
 
   // Seskup katalog aktivní verze podle obsahovaCast → kategorieObjektu →
@@ -130,7 +217,7 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
 
   if (filtered.length === 0) {
     container.innerHTML = '<div class="empty-hint">Nic neodpovídá hledanému výrazu.</div>';
-    return;
+    return [];
   }
 
   // Mapa: obsahovaCast → kategorieObjektu → LegendEntry[]
@@ -146,6 +233,7 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
 
   // Stabilní pořadí: JVF, UDM, ŽXML, ostatní (alfa) — viz state/contentParts.ts.
   const sortedCasts = [...groups.keys()].sort(compareContentParts);
+  const parts: LegendPart[] = [];
 
   for (const cast of sortedCasts) {
     const catMap = groups.get(cast)!;
@@ -153,6 +241,8 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
 
     const groupEl = document.createElement('section');
     groupEl.className = 'legend-cast-group';
+    groupEl.dataset['part'] = cast;
+    parts.push({ cast, count: total, section: groupEl });
 
     const groupHeader = document.createElement('header');
     groupHeader.className = 'legend-cast-header';
@@ -164,12 +254,29 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
     groupEl.appendChild(groupHeader);
 
     const sortedKats = [...catMap.keys()].sort((a, b) => a.localeCompare(b, 'cs'));
+    // Skok na kategorii části (víc kategorií): výběr v nadpisu části.
+    const katEls = new Map<string, HTMLElement>();
+    if (sortedKats.length > 1) {
+      const select = document.createElement('select');
+      select.className = 'legend-kat-jump';
+      select.setAttribute('aria-label', `Kategorie — ${contentPartTitle(cast)}`);
+      select.title = 'Přejít na kategorii';
+      select.append(new Option(`Kategorie (${sortedKats.length})`, ''));
+      for (const kat of sortedKats) select.append(new Option(kat, kat));
+      select.addEventListener('change', () => {
+        const target = katEls.get(select.value);
+        if (target) scrollLegendTo(container, target, groupHeader.offsetHeight);
+        select.value = '';
+      });
+      groupHeader.appendChild(select);
+    }
     for (const kat of sortedKats) {
       const items = catMap.get(kat)!;
       items.sort((a, b) => a.meta.nazev.localeCompare(b.meta.nazev, 'cs'));
 
       const katEl = document.createElement('div');
       katEl.className = 'legend-kat-group';
+      katEls.set(kat, katEl);
 
       const katHeader = document.createElement('div');
       katHeader.className = 'legend-kat-header';
@@ -217,6 +324,7 @@ function renderLegendContent(container: HTMLElement, filter: string = ''): void 
 
     container.appendChild(groupEl);
   }
+  return parts;
 }
 
 export function setupLegendModal(): void {
@@ -227,6 +335,7 @@ export function setupLegendModal(): void {
   const search = document.getElementById('legend-modal-search') as HTMLInputElement | null;
   const title = document.getElementById('legend-modal-title');
   const dl = document.getElementById('legend-download-svg') as HTMLButtonElement | null;
+  const nav = document.getElementById('legend-modal-parts');
 
   if (!btn || !modal || !closeBtn || !body) {
     console.warn('[legendModal] chybí některý DOM prvek');
@@ -234,6 +343,17 @@ export function setupLegendModal(): void {
   }
 
   let rendered = false;
+  /** Vykreslí legendu a lištu částí podle aktuálního hledání. */
+  const render = (): void => {
+    const parts = renderLegendContent(body, search?.value ?? '');
+    if (nav) renderPartChips(nav, body, parts);
+  };
+  if (nav) {
+    body.addEventListener('scroll', () => syncActivePart(nav, body), { passive: true });
+    // Po doběhnutí posunu z čipu zase sledovat scrollování (wheel = uživatel převzal).
+    body.addEventListener('scrollend', () => { pinnedPart = null; });
+    body.addEventListener('wheel', () => { pinnedPart = null; }, { passive: true });
+  }
   // Legenda je katalogová podle aktivní verze — po načtení souboru jiné verze
   // (např. UDM) ji při dalším otevření překresli.
   onActiveVersionChange(() => {
@@ -242,7 +362,7 @@ export function setupLegendModal(): void {
 
   const open = (): void => {
     if (!rendered) {
-      renderLegendContent(body, search?.value ?? '');
+      render();
       rendered = true;
     }
     // Dialekt (UDM, ŽXML): verze v titulku a stažení znaků jako SVG.
@@ -251,6 +371,7 @@ export function setupLegendModal(): void {
     if (title) title.textContent = dialect ? `Legenda — ${formatVersionLabel(version)}` : 'Legenda DTM';
     if (dl) dl.hidden = !dialect;
     modal.style.display = 'flex';
+    if (nav) syncActivePart(nav, body);
   };
 
   dl?.addEventListener('click', () => {
@@ -286,7 +407,15 @@ export function setupLegendModal(): void {
   if (search) {
     attachSearchClear(search);
     search.addEventListener('input', () => {
-      renderLegendContent(body, search.value);
+      render();
+      body.scrollTop = 0;
+    });
+    // „/" skočí do hledání (mimo pole formuláře).
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== '/' || modal.style.display === 'none') return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      e.preventDefault();
+      search.focus();
     });
   }
 }

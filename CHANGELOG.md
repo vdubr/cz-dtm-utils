@@ -8,6 +8,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ## [Unreleased]
 
 ### Přidáno
+- **Rychlá navigace v legendě** (JVF, UDM i JŽM) — lišta obsahových částí
+  s počty typů nad legendou: klik přeskočí na část, aktivní část se při
+  scrollování zvýrazní, při hledání zůstanou jen části s výsledky; výběr
+  kategorie v nadpisu části a nadpisy části i kategorie přišpendlené
+  nahoře; klávesa `/` skočí do hledání.
 - **Nástroj JŽM — Jednotná železniční mapa** (`/jzm`) vedle JVF (`/`)
   — vlastní název v hlavičce (JŽM Prohlížeč), titulek stránky a barevné
   schéma Material 3 (oranžová jako Správa železnic; světlý i tmavý motiv).
