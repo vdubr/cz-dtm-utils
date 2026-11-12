@@ -265,8 +265,8 @@ const INFO_CONTENT_HTML = `
       <strong>Editované</strong> · <strong>Mazané</strong> (s barevnou
       tečkou a počtem záznamů) jsou <strong>filtr</strong> — záznamy daného
       typu skryjí / zobrazí, i bez obarvení (bez obarvení je tečka šedá).
-      Zaškrtávátko je jen pro typ obsažený v datech a chybí úplně, když jsou
-      všechny záznamy stejného typu (skrytí by jen vyprázdnilo mapu).
+      Zaškrtávátko je pro každý typ obsažený v datech (i když jsou všechny
+      záznamy stejného typu — pak jeho vypnutí skryje všechny změny).
       Tlačítko svítí, když je zapnuté obarvení nebo filtr. ${DIALECTS ? `U čistého JVF je
       obarvení ve výchozím stavu zapnuté, u souborů ${joinCs(DIALECT_FORMATS.map((f) => `<strong>${f}</strong>`))}
       (data geodeta celá jako nová) vypnuté.` : 'Obarvení je ve výchozím stavu zapnuté.'}
