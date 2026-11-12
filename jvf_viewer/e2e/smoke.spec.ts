@@ -1939,12 +1939,14 @@ test.describe('Připomínky 2026-11-06', () => {
     await expect(dot).not.toHaveCSS('background-color', 'rgb(45, 164, 78)');
   });
 
-  test('změny v souboru: vše nové → bez filtru typů, jen obarvení', async ({ page }) => {
+  test('změny v souboru: vše nové → zaškrtávátko Nové i obarvení', async ({ page }) => {
     await expect(page.locator('#changes-control')).toBeHidden();
     await loadSample(page, 'ukazka_DI.xml');
     await page.locator('#btn-changes-menu').click();
     await expect(page.locator('#changes-card')).toBeVisible();
-    await expect(page.locator('#changeset-rows')).toBeHidden();
+    // I jediný typ má zaškrtávátko (filtr), nápověda řekne, že je vše nové.
+    await expect(page.locator('#row-show-inserted')).toBeVisible();
+    await expect(page.locator('#row-show-updated')).toBeHidden();
     await expect(page.locator('#toggle-highlight-zapis')).toBeChecked();
     await expect(page.locator('#changeset-hint')).toContainText('Všechny záznamy jsou nové (7)');
     await expect(page.locator('#btn-changes-menu')).toHaveClass(/is-on/);

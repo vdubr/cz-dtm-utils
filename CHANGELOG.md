@@ -52,6 +52,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   DTM ČR, atributy objektů v XDATA.
 
 ### Změněno
+- **Filtr změn i u souborů s jediným typem záznamů** — karta „Změny" nabízí
+  zaškrtávátko i tehdy, když jsou všechny záznamy např. editované (dřív jen
+  „Obarvit změny"); nápověda řekne, že jsou všechny stejného typu.
 - **Dialekty JVF DTM jako registr** — ŽXML (a připravené UDM) jsou
   položky jednoho registru (`DIALECTS` v `jvf-dtm-types`, `PARSER_DIALECTS`
   v parseru); router, topologie, export do CAD i viewer se řídí registrem.

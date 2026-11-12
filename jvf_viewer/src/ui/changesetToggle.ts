@@ -22,9 +22,8 @@ import { closeMapCard, setupMapCard } from './mapCard.js';
  * Tlačítko `#changes-control` se zobrazuje jen pokud načtená data
  * obsahují aspoň jeden záznam se `ZapisObjektu` ∈ {i, u, d} — typicky
  * changeset, ale i nově vytvořené soubory DI/TI (kompletní zápis se samými
- * `i` záznamy bez DTM ID). Zaškrtávátko je jen pro typ, který se
- * v datech vyskytuje; zaškrtávátka typů se neukazují vůbec, když jsou všechny
- * záznamy stejného typu (skrytí by jen vyprázdnilo mapu — to umí oko u projektu).
+ * `i` záznamy bez DTM ID). Zaškrtávátko je pro každý typ, který se v datech
+ * vyskytuje — i když je jediný (např. vše editované).
  *
  * Při změně flagů modul:
  *   1. zavolá `layer.changed()` na všech 2D OL vrstvách → style fn se
@@ -113,8 +112,8 @@ export function setupChangesetToggle(getLayers: () => JvfVectorLayer[]): void {
  *  - aspoň jeden záznam i/u/d → tlačítko viditelné, přítomné typy zobrazené,
  *  - typ v datech chybí → řádek skrytý a flag resetovaný na `false`,
  *    aby nezůstal aktivní z předchozích dat,
- *  - jediná skupina záznamů (např. vše nové) → zaškrtávátka typů skrytá,
- *    zbude obarvení.
+ *  - jsou-li všechny záznamy stejného typu, nápověda to řekne (zaškrtávátko
+ *    zůstává — jeho vypnutí skryje změněné záznamy).
  */
 export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
   const control = document.getElementById('changes-control');
@@ -151,16 +150,15 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
     if (count) count.textContent = counts[type].toLocaleString('cs-CZ');
   }
   const single = present.length + (hasUnchanged ? 1 : 0) < 2;
-  const rows = document.getElementById('changeset-rows');
-  if (rows) rows.hidden = single;
   const hint = document.getElementById('changeset-hint');
   if (hint) {
+    const filter = 'Zaškrtávátka filtrují — záznamy typu zobrazí / skryjí.';
     const style = 'Obarvení mění jen vzhled — pod prvek přidá lem barvy změny, nic neskryje.';
     const only = present[0];
     hint.textContent =
       single && only
-        ? `Všechny záznamy jsou ${ONLY_LABEL[only]} (${counts[only].toLocaleString('cs-CZ')}). ${style}`
-        : `Zaškrtávátka filtrují — záznamy typu zobrazí / skryjí. ${style}`;
+        ? `Všechny záznamy jsou ${ONLY_LABEL[only]} (${counts[only].toLocaleString('cs-CZ')}). ${filter} ${style}`
+        : `${filter} ${style}`;
   }
   control.hidden = present.length === 0;
   if (control.hidden) closeMapCard('changes-card');
