@@ -12,11 +12,12 @@ const buildTime = new Date().toISOString();
 const releaseBuild = process.env['VERCEL_ENV'] === 'production' || process.env['VITE_RELEASE_BUILD'] === '1';
 
 /**
- * Nástroje (režimy aplikace) zapnuté v buildu. Vydané zatím jen JVF — UDM
- * a JŽM jsou hotové, ale nevydané. Ručně přepsat: `VITE_APP_MODES=jvf,udm`.
- * Vydání dalšího nástroje = přidat ho do `RELEASED_APP_MODES`.
+ * Nástroje (režimy aplikace) zapnuté v buildu. Vydané JVF a JŽM (ŽXML
+ * Správy železnic); UDM je hotové, ale nevydané. Ručně přepsat:
+ * `VITE_APP_MODES=jvf,udm`. Vydání dalšího nástroje = přidat ho do
+ * `RELEASED_APP_MODES`.
  */
-const RELEASED_APP_MODES = ['jvf'];
+const RELEASED_APP_MODES = ['jvf', 'jzm'];
 const ALL_APP_MODES = ['jvf', 'udm', 'jzm'];
 const appModes = process.env['VITE_APP_MODES']
   ? process.env['VITE_APP_MODES'].split(',').map((m) => m.trim()).filter(Boolean)

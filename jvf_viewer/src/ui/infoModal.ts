@@ -10,11 +10,20 @@ const UDM_DISPLAY = UDM_VERSIONS.map(formatVersionLabel).join(', ');
 const ZXML_DISPLAY = ZXML_VERSIONS.map(formatVersionLabel).join(', ');
 
 // Texty o nástrojích UDM a JŽM jen v buildu, kde jsou zapnuté (produkce
-// zatím jen JVF — viz `__APP_MODES__` ve vite.config.ts).
+// JVF a JŽM, UDM zatím ne — viz `__APP_MODES__` ve vite.config.ts).
 const UDM = isAppModeEnabled('udm');
 const JZM = isAppModeEnabled('jzm');
 const DIALECTS = UDM || JZM;
 const when = (on: boolean, html: string): string => (on ? html : '');
+/** Výčet česky: „A a B", „A, B a C" (spojka posledního členu volitelná). */
+const joinCs = (items: readonly string[], last = ' a '): string =>
+  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')}${last}${items[items.length - 1]}`;
+const only = (pairs: readonly [boolean, string][]): string[] => pairs.filter(([on]) => on).map(([, t]) => t);
+/** Zapnuté nástroje (JVF vždy) a nástroje / formáty dialektů. */
+const TOOLS = only([[true, 'JVF'], [UDM, 'UDM'], [JZM, 'JŽM']]);
+const DIALECT_TOOLS = only([[UDM, 'UDM'], [JZM, 'JŽM']]);
+const DIALECT_FORMATS = only([[UDM, 'UDM'], [JZM, 'ŽXML']]);
+const TOOLS_SLASH = TOOLS.join(' / ');
 
 const INFO_CONTENT_HTML = `
   <h3>Co to je</h3>
@@ -139,8 +148,8 @@ const INFO_CONTENT_HTML = `
       v liště. Na úzké obrazovce (mobil, tablet na výšku) je levý panel
       vrstev <strong>výsuvný</strong> — otevře se ikonou nabídky vlevo
       nahoře, zavře klepnutím vedle panelu nebo klávesou Esc${when(DIALECTS, `; nahoře v panelu
-      je aktuální nástroj, klepnutím se otevře spouštěč nástrojů (JVF / UDM /
-      JŽM) jako spodní panel`)}.
+      je aktuální nástroj, klepnutím se otevře spouštěč nástrojů (${TOOLS_SLASH})
+      jako spodní panel`)}.
     </li>
     <li>
       <strong>Měření</strong> — tlačítko s pravítkem vlevo dole (ve 2D mapě
@@ -259,11 +268,11 @@ const INFO_CONTENT_HTML = `
       Zaškrtávátko je jen pro typ obsažený v datech a chybí úplně, když jsou
       všechny záznamy stejného typu (skrytí by jen vyprázdnilo mapu).
       Tlačítko svítí, když je zapnuté obarvení nebo filtr. ${DIALECTS ? `U čistého JVF je
-      obarvení ve výchozím stavu zapnuté, u souborů <strong>UDM</strong>
-      a <strong>ŽXML</strong> (data geodeta celá jako nová) vypnuté.` : 'Obarvení je ve výchozím stavu zapnuté.'}
+      obarvení ve výchozím stavu zapnuté, u souborů ${joinCs(DIALECT_FORMATS.map((f) => `<strong>${f}</strong>`))}
+      (data geodeta celá jako nová) vypnuté.` : 'Obarvení je ve výchozím stavu zapnuté.'}
     </li>
     <li>
-      <strong>Export do CAD</strong>${when(DIALECTS, ' (ve všech režimech — JVF, UDM i JŽM)')}
+      <strong>Export do CAD</strong>${when(DIALECTS, ` (ve všech režimech — ${joinCs(TOOLS, ' i ')})`)}
       — tlačítko v hlavičce vyexportuje načtený projekt do
       <strong>AutoCAD DXF</strong> ve vzhledu datového modelu — stejném
       jako v mapě: hladiny podle objektových typů (barva, tloušťka, typ
@@ -282,7 +291,7 @@ const INFO_CONTENT_HTML = `
     </li>
 ${when(DIALECTS, `
     <li>
-      <strong>Legenda znaků</strong> (v režimech UDM a JŽM) — ikona vedle
+      <strong>Legenda znaků</strong> (v ${DIALECT_TOOLS.length > 1 ? 'režimech' : 'režimu'} ${joinCs(DIALECT_TOOLS)}) — ikona vedle
       „Legendy DTM" v panelu vrstev otevře přehled všech znaků datového
       modelu po objektech a hodnotách číselníků (s hledáním). Tlačítkem
       <strong>Stáhnout SVG (ZIP)</strong> získáte znaky jako SVG soubory
@@ -471,26 +480,29 @@ ${when(JZM, `
 
 `)}
 ${when(DIALECTS, `
-  <h3>Nástroje JVF / UDM / JŽM</h3>
+  <h3>Nástroje ${TOOLS_SLASH}</h3>
   <p>
-    DTM Prohlížeč jsou tři nástroje na jedné adrese, každý pro jiný datový
+    DTM Prohlížeč jsou ${TOOLS.length > 2 ? 'tři' : 'dva'} nástroje na jedné adrese, každý pro jiný datový
     model, s vlastním názvem a <strong>barevným schématem</strong> (ve světlém
-    i tmavém motivu): <strong>JVF Prohlížeč</strong> (modrý, výchozí, na
-    <code>/</code> — JVF DTM, symbologie dle Katalogu ČÚZK),
-    <strong>UDM Prohlížeč</strong> (zelený, <code>/udm</code> — Univerzální
-    datový model ČKZ) a <strong>JŽM Prohlížeč</strong> (oranžový jako Správa
+    i tmavém motivu): ${joinCs(only([
+      [true, `<strong>JVF Prohlížeč</strong> (modrý, výchozí, na
+    <code>/</code> — JVF DTM, symbologie dle Katalogu ČÚZK)`],
+      [UDM, `<strong>UDM Prohlížeč</strong> (zelený, <code>/udm</code> — Univerzální
+    datový model ČKZ)`],
+      [JZM, `<strong>JŽM Prohlížeč</strong> (oranžový jako Správa
     železnic, <code>/jzm</code> — Jednotná železniční
-    mapa, data ŽXML Správy železnic se znaky SŽ). UDM a JŽM mají vlastní ukázkové soubory a <em>Legendu
+    mapa, data ŽXML Správy železnic se znaky SŽ)`],
+    ]))}. ${joinCs(DIALECT_TOOLS)} ${DIALECT_TOOLS.length > 1 ? 'mají' : 'má'} vlastní ukázkové soubory a <em>Legendu
     znaků</em>; <em>Export do CAD</em> je ve všech nástrojích. Mezi nástroji
     se přepíná <strong>spouštěčem</strong> (ikona mřížky vlevo v hlavičce,
     na mobilu nahoře v panelu vrstev) — pod dlaždicemi je stručný popis
     nástroje a formátu (aktivního, nebo toho pod kurzorem); dlaždice jsou odkazy, takže nástroj
     jde otevřít i v nové záložce (prostřední klik, Ctrl+klik). Přepnutí
     v místě zavře načtené soubory (při načtených datech se aplikace nejdřív
-    zeptá). Načtete-li soubor jiného modelu (např. ŽXML v JVF), aplikace
+    zeptá). Načtete-li soubor jiného modelu (např. ${DIALECT_FORMATS[0] ?? 'ŽXML'} v JVF), aplikace
     nabídne přepnutí — bez něj se soubor nenačte. Adresu nástroje lze
-    sdílet; starší odkazy <code>?mode=udm</code> se převedou na
-    <code>/udm</code>.
+    sdílet${when(UDM, `; starší odkazy <code>?mode=udm</code> se převedou na
+    <code>/udm</code>`)}.
   </p>
 
 `)}
@@ -499,7 +511,7 @@ ${when(DIALECTS, `
     Abychom věděli, které funkce se používají, aplikace na produkční adrese
     anonymně měří <strong>použití funkcí a čas v aplikaci</strong> (služba
     PostHog, data v EU — Frankfurt): načtení souboru nebo ukázky (režim, verze
-    JVF, velikost jen v hrubém pásmu), ${when(DIALECTS, 'přepnutí režimu JVF / UDM / JŽM, ')}
+    JVF, velikost jen v hrubém pásmu), ${when(DIALECTS, `přepnutí režimu ${TOOLS_SLASH}, `)}
     kontrolu, Přehled prvků, klik na prvek v mapě (jen typ objektu, např.
     „budova"), měření, podkladové mapy, překryvy DTM / katastru,
     dotaz na parcelu, dobu ve 3D, zapnutí SVG symbolů a terénu ve 3D, motiv,
@@ -547,8 +559,10 @@ ${when(DIALECTS, `
     <li>
       <strong>jvf-parser</strong> — parser JVF XML do typovaných objektů.
       Postavený nad <code>fast-xml-parser</code>, podporuje JVF DTM 1.4.3,
-      1.5.0.1 a 1.5.0.2${when(DIALECTS, ` a dialekty UDM 2.1.1 (ČKZ) a ŽXML 1.4.2.1 / 1.5.1.6
-      (Správa železnic)`)} — verzní router${when(DIALECTS, ' s registrem dialektů')}
+      1.5.0.1 a 1.5.0.2${when(DIALECTS, ` a ${DIALECT_TOOLS.length > 1 ? 'dialekty' : 'dialekt'} ${joinCs(only([
+      [UDM, 'UDM 2.1.1 (ČKZ)'],
+      [JZM, 'ŽXML 1.4.2.1 / 1.5.1.6 (Správa železnic)'],
+    ]))}`)} — verzní router${when(DIALECTS, ' s registrem dialektů')}
       a auto-detekcí — a samostatný parser protokolu chyb.
     </li>
     <li>
@@ -558,7 +572,7 @@ ${when(DIALECTS, `
       (rozsahy S-JTSK, duplicity, blízkost). Závisí pouze na typech.
     </li>
     <li>
-      <strong>jvf-cad</strong> — export JVF DTM${when(DIALECTS, ', UDM a ŽXML')} do AutoCAD DXF
+      <strong>jvf-cad</strong> — export ${joinCs(['JVF DTM', ...DIALECT_FORMATS])} do AutoCAD DXF
       (R2013 i R2000) ve vzhledu datového modelu, bez externích závislostí.
     </li>
     <li>

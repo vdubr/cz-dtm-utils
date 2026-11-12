@@ -103,7 +103,7 @@ export async function ensureAppModeForFile(data: JvfDtm, fileName: string): Prom
   const target = appModeForDtm(data);
   const current = getAppMode();
   if (target === current) return true;
-  // Nástroj vypnutý v tomto buildu (produkce zatím jen JVF) → soubor odmítnout.
+  // Nástroj vypnutý v tomto buildu (produkce zatím bez UDM) → soubor odmítnout.
   if (!isAppModeEnabled(target)) {
     await showConfirm({
       title: 'Nepodporovaný formát',
@@ -111,7 +111,7 @@ export async function ensureAppModeForFile(data: JvfDtm, fileName: string): Prom
         <p>Soubor <strong>${escapeHtml(fileName)}</strong> je ve formátu
           <strong>${escapeHtml(appModeDef(target).title)}</strong>, který tato
           verze aplikace zatím nepodporuje.</p>
-        <p>Aplikace načítá soubory JVF DTM.</p>`,
+        <p>Aplikace načítá soubory ${escapeHtml(APP_MODES.map((m) => m.dataFormat).join(', ').replace(/, ([^,]+)$/, ' a $1'))}.</p>`,
       buttons: [{ label: 'Rozumím', variant: 'primary' }],
     });
     return false;
@@ -146,13 +146,21 @@ export function setupAppModeSwitch(): void {
     .map((id) => document.getElementById(id) as HTMLButtonElement | null)
     .filter((b): b is HTMLButtonElement => b !== null);
   const panel = document.getElementById('app-launcher');
-  // Jediný nástroj v buildu (produkce zatím jen JVF): spouštěč zůstává jako
+  // Jediný nástroj v buildu (např. VITE_APP_MODES=jvf): spouštěč zůstává jako
   // nabídka (popis aplikace, Legenda DTM, O aplikaci) — bez dlaždic nástrojů.
   const single = APP_MODES.length < 2;
   if (single) {
     for (const b of buttons) {
       b.title = 'Nabídka — Legenda DTM, O aplikaci a historie verzí';
       b.setAttribute('aria-label', 'Nabídka');
+    }
+  } else {
+    // Popisky podle nástrojů zapnutých v buildu (index.html má všechny).
+    const labels = APP_MODES.map((m) => m.label).join(', ');
+    for (const b of buttons) {
+      const drawer = b.id === 'btn-app-launcher-drawer';
+      b.title = drawer ? `Přepnout nástroj (${labels})` : `Nástroje DTM — ${labels}`;
+      if (!drawer) b.setAttribute('aria-label', `Nástroje DTM (${labels})`);
     }
   }
   if (buttons.length > 0 && panel) {

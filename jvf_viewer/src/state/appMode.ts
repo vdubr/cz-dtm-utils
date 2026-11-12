@@ -16,7 +16,7 @@
  * režim = nová položka `ALL_APP_MODES`.
  *
  * Které nástroje build obsahuje, určuje `__APP_MODES__` (vite.config.ts) —
- * produkce zatím jen JVF. Vypnutý nástroj chybí ve spouštěči, jeho adresa
+ * produkce JVF a JŽM (UDM zatím ne). Vypnutý nástroj chybí ve spouštěči, jeho adresa
  * vede na JVF a jeho soubory se odmítnou (`isAppModeEnabled`).
  */
 import {
