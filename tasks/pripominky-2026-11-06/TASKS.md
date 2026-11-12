@@ -26,7 +26,7 @@ Stav: ✅ hotovo (připraveno 2026-11-06 na `feat/redesign-m3`) · ⬜ TODO ·
 
 ## TODO
 
-- [ ] **T5 — Jedna legenda pro všechny aplikace, se všemi geometriemi** (P2, P3) — rozhodnuto 2026-11-09 („1 typ").
+- [x] **T5 — Jedna legenda pro všechny aplikace, se všemi geometriemi** (P2, P3) — rozhodnuto 2026-11-09 („1 typ").
   - Legenda znaků → legenda stylů UDM / ŽXML: dlaždice `buildGeometryIcon`
     pro body, linie (čárkování, souběžné čáry, značky podél linie) i plochy,
     varianty podle `rules` / `cases` s popisky číselníků.
@@ -34,6 +34,11 @@ Stav: ✅ hotovo (připraveno 2026-11-06 na `feat/redesign-m3`) · ⬜ TODO ·
     SVG (ZIP) jako akce legendy dialektu.
   - Akceptace: v JŽM legenda ukáže brzdu, izolovanou kolejnici, plot SŽ…;
     e2e: v UDM i JŽM legenda obsahuje dlaždici linie a plochy.
+  - **Hotovo (2026-11-12, větev `feat/dtmz`):** Legenda DTM kreslí u dialektů
+    varianty podle `rules` / `cases` (`resolveDialectVariantLooks`,
+    `map/dialectStyle.ts`) a u objektů JVF v ŽXML i rozšíření číselníků SŽ;
+    Legenda znaků zrušena, „Stáhnout SVG (ZIP)" v hlavičce legendy
+    (`ui/symbolZip.ts`).
 - [ ] **T6 — Více stylů ve vrstvě: mini legenda po kliku na znak** (P15).
   - Klik na znak řádku vrstvy (ne na řádek — ten přepíná viditelnost) →
     popover s dlaždicemi všech vzhledů vrstvy v datech (`DataStyle.variants`

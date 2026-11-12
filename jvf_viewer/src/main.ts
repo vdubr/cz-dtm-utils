@@ -49,7 +49,6 @@ import { setupParcelQuery, isParcelQueryActive } from './map/parcelQuery.js';
 import { getParcel3dRingCount } from './viewer3d/parcel3d.js';
 import { setupInfoModal } from './ui/infoModal.js';
 import { setupLegendModal } from './ui/legendModal.js';
-import { setupSymbolLegendModal } from './ui/symbolLegendModal.js';
 import { showErrorProtocol } from './ui/errorProtocolModal.js';
 import { setupM3Sliders } from './ui/m3Slider.js';
 import {
@@ -207,7 +206,6 @@ setup3dToggle(olMap, () => currentObjekty);
 // Setup info modal (footer)
 setupInfoModal();
 setupLegendModal();
-setupSymbolLegendModal();
 
 // Posuvníky M3: výplň aktivní části dráhy (Chrome / Safari).
 setupM3Sliders();

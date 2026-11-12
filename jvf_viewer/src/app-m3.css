@@ -841,20 +841,16 @@ html, body {
 /* Legendy: stálá výška (při hledání bez výsledků se modál nezmenší).
    Legendy a O aplikaci: viditelný posuvník — tenký šedý se na pozadí
    modálu ztrácel (na macOS se schovával úplně). */
-#legend-modal .modal-dialog,
-#symbol-legend-modal .modal-dialog { height: min(85vh, 900px); }
+#legend-modal .modal-dialog { height: min(85vh, 900px); }
 /* Firefox (bez ::-webkit-scrollbar); v Chrome by standardní vlastnosti
    přebily vlastní posuvník a na macOS by se schovával. */
 @supports not selector(::-webkit-scrollbar) {
   #legend-modal .modal-body,
-  #symbol-legend-modal .modal-body,
   #info-modal .modal-body { scrollbar-color: var(--md-sys-color-outline) transparent; }
 }
 #legend-modal .modal-body::-webkit-scrollbar,
-#symbol-legend-modal .modal-body::-webkit-scrollbar,
 #info-modal .modal-body::-webkit-scrollbar { width: 12px; }
 #legend-modal .modal-body::-webkit-scrollbar-thumb,
-#symbol-legend-modal .modal-body::-webkit-scrollbar-thumb,
 #info-modal .modal-body::-webkit-scrollbar-thumb {
   background: var(--md-sys-color-outline);
   border: 3px solid transparent;
@@ -971,14 +967,6 @@ html, body {
   color: var(--md-sys-color-on-surface-variant);
 }
 #legend-modal .legend-kat-header { padding: 12px 0 8px; }
-.symbol-legend-item {
-  border-radius: var(--app-radius);
-  border: 1px solid var(--md-sys-color-outline-variant);
-  /* Znaky jsou kreslené pro světlý podklad mapy — karta zůstává světlá. */
-  background: #ffffff;
-}
-.symbol-legend-item .legend-name { color: #1a1b20; font: 500 12px/16px var(--md-sys-typescale-font); }
-.symbol-legend-item .legend-meta { color: #44464f; }
 
 /* Vodotisk uprostřed prázdného panelu vrstev — ikona a „Přetáhněte data
    ve formátu …" (index.html, ui/layerPanel.ts). */

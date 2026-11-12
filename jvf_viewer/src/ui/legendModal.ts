@@ -1,8 +1,11 @@
-// Legend modal — zobrazí kompletní legendu všech objektových typů z ENTITY_CATALOG
-// jako mřížku dlaždic: velký náhled ve tvaru geometrie (bod / linie / plocha)
-// podle reprezentativního stylu z Katalogu DTM, pod ním název a typ geometrie.
+// Legend modal — jediná legenda aplikace: všechny objektové typy katalogu
+// aktivní verze jako mřížka dlaždic — velký náhled ve tvaru geometrie (bod /
+// linie / plocha) ve vzhledu mapy, pod ním název a typ geometrie. Objekt se
+// vzhledem podle hodnot číselníku má dlaždici pro každou hodnotu (Katalog DTM
+// ČR, u dialektů UDM / ŽXML pravidla jejich stylů). U dialektu s vlastními
+// znaky je v hlavičce „Stáhnout SVG (ZIP)" (ui/symbolZip.ts).
 
-import { getEntityCatalog } from 'jvf-parser';
+import { formatVersionLabel, getEntityCatalog, getStyleTable } from 'jvf-parser';
 import type { ObjektovyTyp } from 'jvf-dtm-types';
 import { getActiveVersion, onActiveVersionChange } from '../state/activeVersion.js';
 import {
@@ -16,6 +19,7 @@ import { markDialectObjekty } from '../map/dialectStyle.js';
 import { compareContentParts, contentPartTitle } from '../state/contentParts.js';
 import { attachSearchClear, matchesSearch, normalizeSearch } from './searchField.js';
 import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
+import { downloadSymbolZip } from './symbolZip.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -221,6 +225,8 @@ export function setupLegendModal(): void {
   const closeBtn = document.getElementById('legend-modal-close');
   const body = document.getElementById('legend-modal-body');
   const search = document.getElementById('legend-modal-search') as HTMLInputElement | null;
+  const title = document.getElementById('legend-modal-title');
+  const dl = document.getElementById('legend-download-svg') as HTMLButtonElement | null;
 
   if (!btn || !modal || !closeBtn || !body) {
     console.warn('[legendModal] chybí některý DOM prvek');
@@ -239,8 +245,27 @@ export function setupLegendModal(): void {
       renderLegendContent(body, search?.value ?? '');
       rendered = true;
     }
+    // Dialekt (UDM, ŽXML): verze v titulku a stažení znaků jako SVG.
+    const version = getActiveVersion();
+    const dialect = Boolean(getStyleTable(version));
+    if (title) title.textContent = dialect ? `Legenda — ${formatVersionLabel(version)}` : 'Legenda DTM';
+    if (dl) dl.hidden = !dialect;
     modal.style.display = 'flex';
   };
+
+  dl?.addEventListener('click', () => {
+    void (async () => {
+      const label = dl.textContent;
+      dl.disabled = true;
+      dl.textContent = 'Připravuji…';
+      try {
+        await downloadSymbolZip(getActiveVersion());
+      } finally {
+        dl.disabled = false;
+        dl.textContent = label;
+      }
+    })();
+  });
 
   const close = (): void => {
     modal.style.display = 'none';
