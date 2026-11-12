@@ -971,7 +971,7 @@ html, body {
 /* Rychlá navigace v legendě (ui/legendModal.ts) — lišta čipů obsahových
    částí nad seznamem (skok na část, aktivní = část nahoře v seznamu);
    nadpis části a pod ním kategorie zůstávají při scrollování nahoře. */
-#legend-modal-body { position: relative; }
+#legend-modal-body { position: relative; padding-top: 0; }
 .legend-parts {
   display: flex;
   gap: 8px;
