@@ -26,6 +26,7 @@ import {
 } from '../state/appMode.js';
 import { getProjectCount } from '../state/projects.js';
 import { showConfirm } from './confirmModal.js';
+import { joinCs } from '../util/text.js';
 import { openInfoModal } from './infoModal.js';
 
 function escapeHtml(s: string): string {
@@ -111,7 +112,7 @@ export async function ensureAppModeForFile(data: JvfDtm, fileName: string): Prom
         <p>Soubor <strong>${escapeHtml(fileName)}</strong> je ve formátu
           <strong>${escapeHtml(appModeDef(target).title)}</strong>, který tato
           verze aplikace zatím nepodporuje.</p>
-        <p>Aplikace načítá soubory ${escapeHtml(APP_MODES.map((m) => m.dataFormat).join(', ').replace(/, ([^,]+)$/, ' a $1'))}.</p>`,
+        <p>Aplikace načítá soubory ${escapeHtml(joinCs(APP_MODES.map((m) => m.dataFormat)))}.</p>`,
       buttons: [{ label: 'Rozumím', variant: 'primary' }],
     });
     return false;

@@ -24,6 +24,7 @@ import {
   resolveRotationDeg,
   usesDialectStyle,
   type Appearance,
+  type ObjectStyle,
   type ObjektovyTyp,
   type StyleTable,
   type ZaznamObjektu,
@@ -109,9 +110,50 @@ export function resolveDialectRepresentativeLook(ot: ObjektovyTyp): DialectLook 
   return b ? look(b, resolveRepresentativeAppearance(b.styles, ot)) : undefined;
 }
 
+/** Popisek dlaždice se vzhledem pro hodnoty bez vlastního pravidla (legenda). */
+export const OTHER_VALUES_LABEL = 'ostatní hodnoty';
+
+/** Jedna hodnota (nebo kombinace hodnot) číselníku ve stylu dialektu. */
+export interface StyleVariant {
+  /** Atribut(y) — u složených pravidel spojené „ + ". */
+  attr: string;
+  /** Kód hodnoty — u složených pravidel spojené „ + ". */
+  value: string;
+  /** Český popisek z číselníku (u složených „ · "), chybí-li v číselníku, `undefined`. */
+  label: string | undefined;
+  /** Vzhled hodnoty — u stylu dialektu sloučený se základem, u rozšíření sám. */
+  app: Appearance;
+}
+
+/**
+ * Varianty stylu objektu podle hodnot číselníků (pravidla `rules` a složená
+ * `cases`) — jediný výčet pro Legendu DTM i balík znaků (ui/symbolZip.ts).
+ * Rozšíření číselníků (`mergeBase: false`) se se základem neslučuje — stejně
+ * jako v mapě (`resolveExtensionAppearance`).
+ */
+export function listStyleVariants(style: ObjectStyle, version: string, mergeBase: boolean): StyleVariant[] {
+  const merge = (app: Appearance): Appearance => (mergeBase ? { ...style.base, ...app } : app);
+  const out: StyleVariant[] = [];
+  for (const rule of style.rules ?? []) {
+    for (const [value, app] of Object.entries(rule.values)) {
+      out.push({ attr: rule.attr, value, label: labelForAttribute(rule.attr, value, version), app: merge(app) });
+    }
+  }
+  for (const c of style.cases ?? []) {
+    const when = Object.entries(c.when);
+    out.push({
+      attr: when.map(([attr]) => attr).join(' + '),
+      value: when.map(([, value]) => value).join(' + '),
+      label: when.map(([attr, value]) => labelForAttribute(attr, value, version) ?? value).join(' · '),
+      app: merge(c.app),
+    });
+  }
+  return out;
+}
+
 /** Vzhled jedné hodnoty (nebo kombinace hodnot) číselníku — dlaždice legendy. */
 export interface DialectVariantLook {
-  /** Popisek hodnoty („balíza přepínatelná", „kolej · hlavní"…). */
+  /** Popisek hodnoty („přepínatelná", „sdělovací · kabelová rezerva"…). */
   value: string;
   look: DialectLook;
 }
@@ -121,39 +163,39 @@ function hasOwnDrawing(app: Appearance): boolean {
   return Boolean(app.symbol || app.lineSymbol || app.lines?.length || app.axis === false || app.ticksMm);
 }
 
+/** Varianty jsou statické (styly dialektu) — výpočet jednou na verzi a kód. */
+const variantLookCache = new Map<string, DialectVariantLook[]>();
+
 /**
- * Vzhledy objektového typu podle hodnot číselníků dle stylů dialektu
- * (pravidla `rules` a složená `cases`) — Legenda DTM ukáže dlaždici pro
- * každou, stejně jako mapa. Základní vzhled jen s vlastní kresbou (značka,
- * souběžné čáry), jinak by legendu zaplnily obecné tečky a čáry.
+ * Vzhledy objektového typu podle hodnot číselníků dle stylů dialektu —
+ * Legenda DTM ukáže dlaždici pro každou, stejně jako mapa. Základní vzhled
+ * jen s vlastní kresbou (značka, souběžné čáry), jinak by legendu zaplnily
+ * obecné tečky a čáry.
  *
  * U objektů JVF v souboru dialektu jen hodnoty z rozšíření číselníků
  * (ostatní hodnoty kreslí Katalog DTM ČR). Prázdné = jediný vzhled.
  */
 export function resolveDialectVariantLooks(ot: ObjektovyTyp): DialectVariantLook[] {
-  const binding = bindings.get(ot);
-  const extension = binding ? undefined : extensionBindings.get(ot);
-  const b = binding ?? extension;
-  const style = b && getObjectStyle(b.styles, ot);
-  if (!b || !style) return [];
-  const merge = (app: Appearance): Appearance => (extension ? { ...app } : { ...style.base, ...app });
-  const label = (attr: string, value: string): string => labelForAttribute(attr, value, b.version) ?? value;
-  const out: DialectVariantLook[] = [];
-  const add = (value: string, app: Appearance): void => {
-    const l = look(b, app);
-    if (l) out.push({ value, look: l });
-  };
-  for (const rule of style.rules ?? []) {
-    for (const [value, app] of Object.entries(rule.values)) add(label(rule.attr, value), merge(app));
+  const extension = !bindings.has(ot);
+  const b = bindings.get(ot) ?? extensionBindings.get(ot);
+  if (!b) return [];
+  const key = `${b.version}|${extension ? 'ext' : 'style'}|${ot.codeBase}-${ot.codeSuffix}`;
+  let looks = variantLookCache.get(key);
+  if (!looks) {
+    looks = computeVariantLooks(b, getObjectStyle(b.styles, ot), extension);
+    variantLookCache.set(key, looks);
   }
-  for (const c of style.cases ?? []) {
-    add(Object.entries(c.when).map(([attr, value]) => label(attr, value)).join(' · '), merge(c.app));
-  }
+  return looks;
+}
+
+function computeVariantLooks(b: DialectBinding, style: ObjectStyle | undefined, extension: boolean): DialectVariantLook[] {
+  if (!style) return [];
+  const out = listStyleVariants(style, b.version, !extension).flatMap((v) => {
+    const l = look(b, v.app);
+    return l ? [{ value: v.label ?? v.value, look: l }] : [];
+  });
   if (out.length === 0) return [];
   // Základ (ostatní hodnoty) první, má-li vlastní kresbu.
-  if (!extension && hasOwnDrawing(style.base)) {
-    const base = look(b, { ...style.base });
-    if (base) out.unshift({ value: 'ostatní hodnoty', look: base });
-  }
-  return out;
+  const base = !extension && hasOwnDrawing(style.base) ? look(b, style.base) : undefined;
+  return base ? [{ value: OTHER_VALUES_LABEL, look: base }, ...out] : out;
 }

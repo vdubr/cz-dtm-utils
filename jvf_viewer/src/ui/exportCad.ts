@@ -9,6 +9,7 @@
  */
 import type { JvfProject } from '../state/projects.js';
 import { showConfirm } from './confirmModal.js';
+import { downloadBlob } from '../util/download.js';
 import { getAppMode } from '../state/appMode.js';
 import { track } from '../analytics.js';
 
@@ -65,18 +66,6 @@ function bodyHtml(projects: readonly JvfProject[]): string {
     </div>`;
 }
 
-function download(content: string, fileName: string): void {
-  const blob = new Blob([content], { type: 'application/dxf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 /** Otevře dialog exportu do CAD a po potvrzení stáhne výkres. */
 export async function openExportCadDialog(projects: readonly JvfProject[]): Promise<void> {
   if (projects.length === 0) return;
@@ -102,7 +91,7 @@ export async function openExportCadDialog(projects: readonly JvfProject[]): Prom
     const { exportDxf } = await import('jvf-cad');
     const { dxf } = exportDxf(project.dtm, { version, includeDeleted, flatten2D, fillAreas });
     const base = project.nazev.replace(/\.(jvf\.)?(xml|jvf)$/i, '');
-    download(dxf, `${base}${version === 'R2000' ? '_R2000' : ''}.dxf`);
+    downloadBlob(dxf, 'application/dxf', `${base}${version === 'R2000' ? '_R2000' : ''}.dxf`);
     track('export_dxf', { mode: getAppMode(), format: version, fill: fillAreas });
   } catch (err) {
     console.error('Export do CAD selhal:', err);
