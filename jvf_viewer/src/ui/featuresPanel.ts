@@ -3,7 +3,7 @@ import { labelForAttribute } from 'jvf-parser';
 import { getActiveVersion } from '../state/activeVersion.js';
 import type OlMap from 'ol/Map.js';
 import type { JvfVectorLayer } from '../map/jvfLayers.js';
-import { findFeature, LAYER_COLORS } from '../map/jvfLayers.js';
+import { findFeature } from '../map/jvfLayers.js';
 import { highlightFeature, clearHighlight, zoomToFeature } from '../map/highlight.js';
 import { highlightThreeFeature, clearThreeHighlight, zoomToThreeFeature, applyFeatureFilter } from '../viewer3d/threeScene.js';
 import { getIs3dActive, notifyMapAreaResized } from './toggle3d.js';
@@ -35,6 +35,7 @@ import {
   resolveLayerKey,
   resolveProjectKey,
 } from '../state/projects.js';
+import { buildPartLabel } from './partLabel.js';
 
 /** Filtr obsahové části: `'all'` nebo kód části (ZPS, ZPSUDM, ZDT, …). */
 type ContentFilter = 'all' | string;
@@ -656,11 +657,7 @@ function renderContentFilterChips(): void {
       btn.textContent = label;
     } else {
       // Obsahová část = název tlustě podtržený barvou části (jako ve vrstvách a legendě).
-      const name = document.createElement('span');
-      name.className = 'part-underline';
-      name.style.setProperty('--part-color', LAYER_COLORS[filter] ?? '#90a4ae');
-      name.textContent = label;
-      btn.appendChild(name);
+      btn.appendChild(buildPartLabel(filter, label));
     }
     btn.title = title;
     btn.addEventListener('click', () => setFilter(filter, parts));

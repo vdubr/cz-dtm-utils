@@ -3,7 +3,8 @@
 
 import { JVF_VERSIONS, UDM_VERSIONS, ZXML_VERSIONS, formatVersionLabel } from 'jvf-parser';
 import { buildChangelogHtml } from './changelog.js';
-import { isAppModeEnabled } from '../state/appMode.js';
+import { APP_MODES, isAppModeEnabled, type AppMode } from '../state/appMode.js';
+import { joinCs } from '../util/text.js';
 
 const VERSIONS_DISPLAY = JVF_VERSIONS.join(', ');
 const UDM_DISPLAY = UDM_VERSIONS.map(formatVersionLabel).join(', ');
@@ -15,15 +16,35 @@ const UDM = isAppModeEnabled('udm');
 const JZM = isAppModeEnabled('jzm');
 const DIALECTS = UDM || JZM;
 const when = (on: boolean, html: string): string => (on ? html : '');
-/** Výčet česky: „A a B", „A, B a C" (spojka posledního členu volitelná). */
-const joinCs = (items: readonly string[], last = ' a '): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')}${last}${items[items.length - 1]}`;
-const only = (pairs: readonly [boolean, string][]): string[] => pairs.filter(([on]) => on).map(([, t]) => t);
-/** Zapnuté nástroje (JVF vždy) a nástroje / formáty dialektů. */
-const TOOLS = only([[true, 'JVF'], [UDM, 'UDM'], [JZM, 'JŽM']]);
-const DIALECT_TOOLS = only([[UDM, 'UDM'], [JZM, 'JŽM']]);
-const DIALECT_FORMATS = only([[UDM, 'UDM'], [JZM, 'ŽXML']]);
+/** Zapnuté nástroje (z `APP_MODES`) a nástroje / formáty dialektů. */
+const TOOLS = APP_MODES.map((m) => m.label);
+const DIALECT_MODES = APP_MODES.filter((m) => m.dialect);
+const DIALECT_TOOLS = DIALECT_MODES.map((m) => m.label);
+const DIALECT_FORMATS = DIALECT_MODES.map((m) => m.dataFormat);
 const TOOLS_SLASH = TOOLS.join(' / ');
+/** Víc dialektů zároveň (množné číslo v textu). */
+const MANY = DIALECT_TOOLS.length > 1;
+/** Text nástroje podle zapnutých nástrojů (pořadí `APP_MODES`). */
+const perTool = (texts: Partial<Record<AppMode, string>>): string[] =>
+  APP_MODES.flatMap((m) => (texts[m.id] ? [texts[m.id]!] : []));
+
+const TOOL_DESCRIPTIONS = joinCs(perTool({
+  jvf: `<strong>JVF Prohlížeč</strong> (modrý, výchozí, na
+    <code>/</code> — JVF DTM, symbologie dle Katalogu ČÚZK)`,
+  udm: `<strong>UDM Prohlížeč</strong> (zelený, <code>/udm</code> — Univerzální
+    datový model ČKZ)`,
+  jzm: `<strong>JŽM Prohlížeč</strong> (oranžový jako Správa
+    železnic, <code>/jzm</code> — Jednotná železniční
+    mapa, data ŽXML Správy železnic se znaky SŽ)`,
+}));
+const LEGEND_DESCRIPTIONS = joinCs(perTool({
+  jzm: 'objekty SŽ podle stylů SLD (souběžné čáry brzdy, spojky izolované kolejnice, značky opakované podél plotu, značky bodů podle hodnot číselníků — balíza, návěstidla…) a u objektů JVF i hodnoty z rozšíření číselníků SŽ (kabelová rezerva…)',
+  udm: 'objekty UDM podle knihovny ČKZ',
+}));
+const PARSER_DIALECTS = joinCs(perTool({
+  udm: 'UDM 2.1.1 (ČKZ)',
+  jzm: 'ŽXML 1.4.2.1 / 1.5.1.6 (Správa železnic)',
+}));
 
 const INFO_CONTENT_HTML = `
   <h3>Co to je</h3>
@@ -296,13 +317,10 @@ const INFO_CONTENT_HTML = `
     </li>
 ${when(DIALECTS, `
     <li>
-      <strong>Legenda v ${DIALECT_TOOLS.length > 1 ? 'nástrojích' : 'nástroji'} ${joinCs(DIALECT_TOOLS)}</strong>
+      <strong>Legenda v ${MANY ? 'nástrojích' : 'nástroji'} ${joinCs(DIALECT_TOOLS)}</strong>
       — stejná <em>Legenda DTM</em> (jedna legenda ve všech nástrojích)
       ukazuje objekty datového modelu ve vzhledu jeho stylů, přesně jako mapa:
-      ${joinCs(only([
-        [JZM, 'objekty SŽ podle stylů SLD (souběžné čáry brzdy, spojky izolované kolejnice, značky opakované podél plotu, značky bodů podle hodnot číselníků — balíza, návěstidla…) a u objektů JVF i hodnoty z rozšíření číselníků SŽ (kabelová rezerva…)'],
-        [UDM, 'objekty UDM podle knihovny ČKZ'],
-      ]))}; dlaždice pro každou hodnotu číselníku s českým popiskem
+      ${LEGEND_DESCRIPTIONS}; dlaždice pro každou hodnotu číselníku s českým popiskem
       (hledání najde i ji). Tlačítkem <strong>Stáhnout SVG (ZIP)</strong>
       v hlavičce legendy získáte znaky jako SVG soubory v balíku ZIP
       (složka podle objektu) se seznamem <code>znaky.csv</code> (objekt, kód,
@@ -494,22 +512,14 @@ ${when(DIALECTS, `
   <p>
     DTM Prohlížeč jsou ${TOOLS.length > 2 ? 'tři' : 'dva'} nástroje na jedné adrese, každý pro jiný datový
     model, s vlastním názvem a <strong>barevným schématem</strong> (ve světlém
-    i tmavém motivu): ${joinCs(only([
-      [true, `<strong>JVF Prohlížeč</strong> (modrý, výchozí, na
-    <code>/</code> — JVF DTM, symbologie dle Katalogu ČÚZK)`],
-      [UDM, `<strong>UDM Prohlížeč</strong> (zelený, <code>/udm</code> — Univerzální
-    datový model ČKZ)`],
-      [JZM, `<strong>JŽM Prohlížeč</strong> (oranžový jako Správa
-    železnic, <code>/jzm</code> — Jednotná železniční
-    mapa, data ŽXML Správy železnic se znaky SŽ)`],
-    ]))}. ${joinCs(DIALECT_TOOLS)} ${DIALECT_TOOLS.length > 1 ? 'mají' : 'má'} vlastní ukázkové soubory; <em>Legenda DTM</em>
+    i tmavém motivu): ${TOOL_DESCRIPTIONS}. ${joinCs(DIALECT_TOOLS)} ${MANY ? 'mají' : 'má'} vlastní ukázkové soubory; <em>Legenda DTM</em>
     a <em>Export do CAD</em> jsou ve všech nástrojích (ve vzhledu datového modelu). Mezi nástroji
     se přepíná <strong>spouštěčem</strong> (ikona mřížky vlevo v hlavičce,
     na mobilu nahoře v panelu vrstev) — pod dlaždicemi je stručný popis
     nástroje a formátu (aktivního, nebo toho pod kurzorem); dlaždice jsou odkazy, takže nástroj
     jde otevřít i v nové záložce (prostřední klik, Ctrl+klik). Přepnutí
     v místě zavře načtené soubory (při načtených datech se aplikace nejdřív
-    zeptá). Načtete-li soubor jiného modelu (např. ${DIALECT_FORMATS[0] ?? 'ŽXML'} v JVF), aplikace
+    zeptá). Načtete-li soubor jiného modelu (např. ${DIALECT_FORMATS[0]} v JVF), aplikace
     nabídne přepnutí — bez něj se soubor nenačte. Adresu nástroje lze
     sdílet${when(UDM, `; starší odkazy <code>?mode=udm</code> se převedou na
     <code>/udm</code>`)}.
@@ -569,10 +579,7 @@ ${when(DIALECTS, `
     <li>
       <strong>jvf-parser</strong> — parser JVF XML do typovaných objektů.
       Postavený nad <code>fast-xml-parser</code>, podporuje JVF DTM 1.4.3,
-      1.5.0.1 a 1.5.0.2${when(DIALECTS, ` a ${DIALECT_TOOLS.length > 1 ? 'dialekty' : 'dialekt'} ${joinCs(only([
-      [UDM, 'UDM 2.1.1 (ČKZ)'],
-      [JZM, 'ŽXML 1.4.2.1 / 1.5.1.6 (Správa železnic)'],
-    ]))}`)} — verzní router${when(DIALECTS, ' s registrem dialektů')}
+      1.5.0.1 a 1.5.0.2${when(DIALECTS, ` a ${MANY ? 'dialekty' : 'dialekt'} ${PARSER_DIALECTS}`)} — verzní router${when(DIALECTS, ' s registrem dialektů')}
       a auto-detekcí — a samostatný parser protokolu chyb.
     </li>
     <li>

@@ -149,16 +149,15 @@ export function updateChangesetToggleVisibility(dtms: readonly JvfDtm[]): void {
     const count = row.querySelector('.changeset-count');
     if (count) count.textContent = counts[type].toLocaleString('cs-CZ');
   }
-  const single = present.length + (hasUnchanged ? 1 : 0) < 2;
   const hint = document.getElementById('changeset-hint');
   if (hint) {
     const filter = 'Zaškrtávátka filtrují — záznamy typu zobrazí / skryjí.';
     const style = 'Obarvení mění jen vzhled — pod prvek přidá lem barvy změny, nic neskryje.';
-    const only = present[0];
-    hint.textContent =
-      single && only
-        ? `Všechny záznamy jsou ${ONLY_LABEL[only]} (${counts[only].toLocaleString('cs-CZ')}). ${filter} ${style}`
-        : `${filter} ${style}`;
+    // Jediný typ změny a žádné nezměněné záznamy → „Všechny záznamy jsou …".
+    const only = present.length === 1 && !hasUnchanged ? present[0] : undefined;
+    hint.textContent = only
+      ? `Všechny záznamy jsou ${ONLY_LABEL[only]} (${counts[only].toLocaleString('cs-CZ')}). ${filter} ${style}`
+      : `${filter} ${style}`;
   }
   control.hidden = present.length === 0;
   if (control.hidden) closeMapCard('changes-card');

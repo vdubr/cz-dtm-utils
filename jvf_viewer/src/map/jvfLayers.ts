@@ -31,7 +31,9 @@ import {
   resolveDialectLook,
   resolveDialectRepresentativeLook,
   resolveDialectVariantLooks,
+  OTHER_VALUES_LABEL,
   type DialectLook,
+  type DialectVariantLook,
 } from './dialectStyle.js';
 import {
   isShowZapis,
@@ -410,12 +412,18 @@ export interface VariantStyle {
  * číselníků SŽ. Prázdné u objektů s jedním vzhledem.
  */
 export function resolveVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
-  const dialect = resolveDialectVariantLooks(ot).map((v) => ({
-    value: v.value,
-    style: buildDialectResolvedStyle(v.look),
-  }));
+  const dialect = dialectVariantStyles(resolveDialectVariantLooks(ot));
   if (isDialectStyled(ot)) return dialect;
-  // Katalog je statický — styly variant stačí spočítat jednou na kód.
+  const katalog = katalogVariantStyles(ot);
+  // Rozšíření číselníků SŽ (jen v souboru ŽXML) za variantami Katalogu;
+  // objekt s jediným vzhledem Katalogu ho má jako „ostatní hodnoty".
+  if (dialect.length === 0) return katalog;
+  const base = katalog.length > 0 ? katalog : [{ value: OTHER_VALUES_LABEL, style: resolveRepresentativeStyle(ot) }];
+  return [...base, ...dialect];
+}
+
+/** Varianty Katalogu DTM ČR — statické, jednou na kód. */
+function katalogVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
   const key = `${ot.codeBase}-${ot.codeSuffix}-${ot.obsahovaCast}`;
   let styles = variantStyleCache.get(key);
   if (!styles) {
@@ -425,13 +433,20 @@ export function resolveVariantStyles(ot: ObjektovyTyp): VariantStyle[] {
     }));
     variantStyleCache.set(key, styles);
   }
-  // Rozšíření číselníků SŽ (jen v souboru ŽXML) za variantami Katalogu;
-  // objekt s jediným vzhledem Katalogu ho má jako „ostatní hodnoty".
-  if (dialect.length === 0) return styles;
-  const katalog = styles.length > 0 ? styles : [{ value: 'ostatní hodnoty', style: resolveRepresentativeStyle(ot) }];
-  return [...katalog, ...dialect];
+  return styles;
 }
 const variantStyleCache = new Map<string, VariantStyle[]>();
+
+/** Styly variant dialektu — vzhledy jsou v mezipaměti (`dialectStyle.ts`), styly k nim taky. */
+function dialectVariantStyles(looks: DialectVariantLook[]): VariantStyle[] {
+  let styles = dialectVariantStyleCache.get(looks);
+  if (!styles) {
+    styles = looks.map((v) => ({ value: v.value, style: buildDialectResolvedStyle(v.look) }));
+    dialectVariantStyleCache.set(looks, styles);
+  }
+  return styles;
+}
+const dialectVariantStyleCache = new WeakMap<DialectVariantLook[], VariantStyle[]>();
 
 /** Styl podle načtených dat a počty hodnot atributu, podle kterých se vzhled liší. */
 export interface DataStyle {
@@ -461,7 +476,7 @@ const dataStyleCache = new WeakMap<ObjektovyTyp, DataStyle>();
 function computeDataStyle(ot: ObjektovyTyp): DataStyle {
   // Jen objekty, které mají v Katalogu víc vzhledů (jako dlaždice legendy);
   // hodnoty podle Katalogu — u dialektů reprezentativní styl.
-  if (ot.zaznamy.length > 0 && !isDialectStyled(ot) && resolveVariantStyles(ot).length > 0) {
+  if (ot.zaznamy.length > 0 && !isDialectStyled(ot) && katalogVariantStyles(ot).length > 0) {
     const counts = new Map<string, { count: number; first: ZaznamObjektu }>();
     for (const z of ot.zaznamy) {
       const value = resolveKatalogVariantValue(ot, z);

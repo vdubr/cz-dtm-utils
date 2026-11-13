@@ -20,6 +20,7 @@ import { compareContentParts, contentPartTitle } from '../state/contentParts.js'
 import { attachSearchClear, matchesSearch, normalizeSearch } from './searchField.js';
 import { buildGeometryIcon, type SwatchKind } from './symbolSwatch.js';
 import { downloadSymbolZip } from './symbolZip.js';
+import { buildPartLabel } from './partLabel.js';
 
 /**
  * Metadata entity z katalogu aktivní verze (širší varianta — 1.5.0.1 zahrnuje
@@ -112,22 +113,13 @@ interface LegendPart {
   section: HTMLElement;
 }
 
-/** Poloha prvku v obsahu legendy (px od začátku scrollovaného obsahu). */
-function legendOffset(container: HTMLElement, el: HTMLElement): number {
-  return el.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
-}
-
 /**
- * Posune legendu na prvek (sekce části / kategorie) uvnitř `container`;
- * kategorie pod přišpendlený nadpis části (`stickyOffset`).
+ * Skočí v legendě na prvek (sekce části / kategorie) — okamžitě, legenda je
+ * dlouhá; kategorie pod přišpendlený nadpis části (`stickyOffset`).
+ * `offsetTop` je vůči obsahu legendy (`#legend-modal-body` je `position: relative`).
  */
 function scrollLegendTo(container: HTMLElement, el: HTMLElement, stickyOffset = 0): void {
-  const top = Math.max(0, legendOffset(container, el) - stickyOffset);
-  // Dlouhý skok (víc než 2 obrazovky) hned, krátký plynule.
-  const far = Math.abs(top - container.scrollTop) > container.clientHeight * 2;
-  container.scrollTo({ top, behavior: far ? 'instant' : 'smooth' });
-  // Okamžitý skok nevyvolá `scrollend` vždy — aktivní čip uvolnit hned.
-  if (far) pinnedPart = null;
+  container.scrollTop = Math.max(0, el.offsetTop - stickyOffset);
 }
 
 /**
@@ -138,6 +130,7 @@ function scrollLegendTo(container: HTMLElement, el: HTMLElement, stickyOffset = 
  */
 function renderPartChips(nav: HTMLElement, container: HTMLElement, parts: readonly LegendPart[]): void {
   nav.replaceChildren();
+  delete nav.dataset['active'];
   nav.hidden = parts.length < 2;
   for (const { cast, count, section } of parts) {
     const chip = document.createElement('button');
@@ -145,45 +138,26 @@ function renderPartChips(nav: HTMLElement, container: HTMLElement, parts: readon
     chip.className = 'legend-part-chip';
     chip.dataset['part'] = cast;
     chip.title = `${contentPartTitle(cast)} — ${count} ${pluralTypes(count)}`;
-    const name = document.createElement('span');
-    name.className = 'part-underline';
-    name.style.setProperty('--part-color', LAYER_COLORS[cast] ?? '#90a4ae');
-    name.textContent = cast;
     const n = document.createElement('span');
     n.className = 'legend-part-count';
     n.textContent = String(count);
-    chip.append(name, n);
+    chip.append(buildPartLabel(cast), n);
     chip.addEventListener('click', () => {
-      // Vybraná část zůstane aktivní, dokud posun nedoběhne (krátká poslední
-      // část se nahoru doscrollovat nedá).
-      pinnedPart = cast;
-      setActivePart(nav, cast);
       scrollLegendTo(container, section);
+      // Krátká poslední část se nahoru doscrollovat nedá — aktivní je vybraná.
+      setActivePart(nav, cast);
     });
     nav.appendChild(chip);
   }
   syncActivePart(nav, container);
 }
 
-/** Část vybraná klikem na čip — aktivní do konce posunu (`scrollend`). */
-let pinnedPart: string | null = null;
-
-/**
- * Výška přišpendleného nadpisu části → `--legend-cast-h` (pod ním se drží
- * nadpis kategorie; s výběrem kategorie je nadpis vyšší). Až u otevřené legendy.
- */
-function syncCastHeaderHeight(container: HTMLElement): void {
-  const h = container.querySelector<HTMLElement>('.legend-cast-header')?.offsetHeight;
-  if (h) container.style.setProperty('--legend-cast-h', `${h}px`);
-}
-
 /** Zvýrazní čip části, ve které je horní okraj legendy. */
 function syncActivePart(nav: HTMLElement, container: HTMLElement): void {
-  if (pinnedPart) return;
   const sections = [...container.querySelectorAll<HTMLElement>('.legend-cast-group')];
   const top = container.scrollTop + 8;
   let active = sections[0]?.dataset['part'];
-  for (const s of sections) if (legendOffset(container, s) <= top) active = s.dataset['part'];
+  for (const s of sections) if (s.offsetTop <= top) active = s.dataset['part'];
   // Dole v legendě (poslední krátká část) aktivní poslední — jen u otevřené legendy.
   const scrolled = container.scrollTop > 0 && container.clientHeight > 0;
   if (scrolled && container.scrollTop + container.clientHeight >= container.scrollHeight - 2) {
@@ -193,6 +167,8 @@ function syncActivePart(nav: HTMLElement, container: HTMLElement): void {
 }
 
 function setActivePart(nav: HTMLElement, active: string): void {
+  if (nav.dataset['active'] === active) return;
+  nav.dataset['active'] = active;
   for (const chip of nav.querySelectorAll<HTMLElement>('.legend-part-chip')) {
     const on = chip.dataset['part'] === active;
     chip.classList.toggle('active', on);
@@ -358,10 +334,14 @@ export function setupLegendModal(): void {
     if (nav) renderPartChips(nav, body, parts);
   };
   if (nav) {
-    body.addEventListener('scroll', () => syncActivePart(nav, body), { passive: true });
-    // Po doběhnutí posunu z čipu zase sledovat scrollování (wheel = uživatel převzal).
-    body.addEventListener('scrollend', () => { pinnedPart = null; });
-    body.addEventListener('wheel', () => { pinnedPart = null; }, { passive: true });
+    // Aktivní čip nejvýš jednou za snímek.
+    let frame = 0;
+    body.addEventListener('scroll', () => {
+      frame ||= requestAnimationFrame(() => {
+        frame = 0;
+        syncActivePart(nav, body);
+      });
+    }, { passive: true });
   }
   // Legenda je katalogová podle aktivní verze — po načtení souboru jiné verze
   // (např. UDM) ji při dalším otevření překresli.
@@ -380,7 +360,6 @@ export function setupLegendModal(): void {
     if (title) title.textContent = dialect ? `Legenda — ${formatVersionLabel(version)}` : 'Legenda DTM';
     if (dl) dl.hidden = !dialect;
     modal.style.display = 'flex';
-    syncCastHeaderHeight(body);
     if (nav) syncActivePart(nav, body);
   };
 
@@ -416,10 +395,14 @@ export function setupLegendModal(): void {
   // Inkrementální filtrování (debounce by tu bylo overkill — 358 položek).
   if (search) {
     attachSearchClear(search);
+    // Překreslit až po krátké pauze v psaní (legenda má i přes 1 000 dlaždic).
+    let timer = 0;
     search.addEventListener('input', () => {
-      render();
-      syncCastHeaderHeight(body);
-      body.scrollTop = 0;
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        body.scrollTop = 0;
+        render();
+      }, 120);
     });
     // „/" skočí do hledání (mimo pole formuláře).
     document.addEventListener('keydown', (e) => {

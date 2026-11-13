@@ -690,7 +690,8 @@ html, body {
 .features-level-filter { gap: 8px; flex-wrap: wrap; }
 .filter-btn,
 .features-filter-btn,
-.level-chip {
+.level-chip,
+.legend-part-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -705,7 +706,8 @@ html, body {
 }
 .filter-btn:hover,
 .features-filter-btn:hover,
-.level-chip:hover {
+.level-chip:hover,
+.legend-part-chip:hover {
   background: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 8%, transparent);
   border-color: var(--md-sys-color-outline-variant);
 }
@@ -838,8 +840,8 @@ html, body {
   letter-spacing: 0.25px;
 }
 .modal-dialog .modal-body h3 { font: 500 16px/24px var(--md-sys-typescale-font); letter-spacing: 0.15px; }
-/* Legendy: stálá výška (při hledání bez výsledků se modál nezmenší).
-   Legendy a O aplikaci: viditelný posuvník — tenký šedý se na pozadí
+/* Legenda: stálá výška (při hledání bez výsledků se modál nezmenší).
+   Legenda a O aplikaci: viditelný posuvník — tenký šedý se na pozadí
    modálu ztrácel (na macOS se schovával úplně). */
 #legend-modal .modal-dialog { height: min(85vh, 900px); }
 /* Firefox (bez ::-webkit-scrollbar); v Chrome by standardní vlastnosti
@@ -944,17 +946,23 @@ html, body {
 .legend-tile .legend-variant { color: #3a3b42; font-weight: 500; white-space: normal; }
 .legend-tile .legend-name + .legend-meta { margin-top: 2px; }
 
-/* Nadpis obsahové části (ZPS, TI, …) v legendě DTM — jen typografie:
-   tečka barvy části, název a počet typů; přilepený nahoře s pozadím
-   dialogu, bez pruhu, rámečku a čipu. */
+/* Nadpis obsahové části (ZPS, TI, …) v legendě — jen typografie: název
+   podtržený barvou části, počet typů a výběr kategorie; přišpendlený nahoře
+   s pozadím dialogu v pevné výšce (pod ním se drží nadpis kategorie). Nadpis
+   části je nad nadpisy kategorií — odjíždějící nadpis kategorie zajede pod něj. */
+#legend-modal { --legend-cast-h: 56px; }
 #legend-modal .legend-cast-header {
+  top: 0;
+  z-index: 2;
+  box-sizing: border-box;
+  height: var(--legend-cast-h);
   gap: 10px;
-  padding: 12px 0 8px;
+  padding: 0;
   margin-bottom: 4px;
   border: none;
   border-radius: 0;
   background: var(--md-sys-color-surface-container-high);
-  align-items: baseline;
+  align-items: center;
 }
 #legend-modal .legend-cast-name { font: 500 20px/28px var(--md-sys-typescale-font); letter-spacing: 0; }
 #legend-modal .legend-cast-count {
@@ -966,54 +974,15 @@ html, body {
   font: 400 14px/20px var(--md-sys-typescale-font);
   color: var(--md-sys-color-on-surface-variant);
 }
-#legend-modal .legend-kat-header { padding: 12px 0 8px; }
-
-/* Rychlá navigace v legendě (ui/legendModal.ts) — lišta čipů obsahových
-   částí nad seznamem (skok na část, aktivní = část nahoře v seznamu);
-   nadpis části a pod ním kategorie zůstávají při scrollování nahoře. */
-#legend-modal-body { position: relative; padding-top: 0; }
-.legend-parts {
-  display: flex;
-  gap: 8px;
-  padding: 0 24px 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.legend-parts[hidden] { display: none; }
-.legend-part-chip {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: var(--md-sys-shape-corner-small);
-  background: transparent;
-  color: var(--md-sys-color-on-surface-variant);
-  font: 500 14px/20px var(--md-sys-typescale-font);
-  cursor: pointer;
-}
-.legend-part-chip:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 8%, transparent); }
-.legend-part-chip.active {
-  border-color: transparent;
-  background: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
-}
-.legend-part-count { font: 400 12px/16px var(--md-sys-typescale-font); font-variant-numeric: tabular-nums; opacity: 0.8; }
-/* Nadpis části nad nadpisy kategorií — odjíždějící nadpis kategorie
-   zajede pod něj; kategorie se drží pod nadpisem části (výšku nastavuje
-   ui/legendModal.ts do --legend-cast-h). */
-#legend-modal .legend-cast-header { top: 0; z-index: 2; min-height: 48px; box-sizing: border-box; }
 #legend-modal .legend-kat-header {
   position: sticky;
-  top: var(--legend-cast-h, 56px);
+  top: var(--legend-cast-h);
   z-index: 1;
+  padding: 12px 0 8px;
   background: var(--md-sys-color-surface-container-high);
 }
 .legend-kat-jump {
   margin-left: auto;
-  align-self: center;
   max-width: 45%;
   height: 32px;
   padding: 0 8px;
@@ -1023,6 +992,26 @@ html, body {
   color: var(--md-sys-color-on-surface);
   font: 400 14px/20px var(--md-sys-typescale-font);
 }
+
+/* Rychlá navigace v legendě (ui/legendModal.ts) — lišta čipů obsahových
+   částí nad seznamem (skok na část, aktivní = část nahoře v seznamu).
+   `position: relative` = `offsetTop` sekcí vůči obsahu legendy; bez
+   horního odsazení, aby nad přišpendleným nadpisem nic neprosvítalo. */
+#legend-modal-body { position: relative; padding-top: 0; }
+.legend-parts {
+  display: flex;
+  gap: 8px;
+  padding: 0 24px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.legend-part-chip { flex: none; cursor: pointer; }
+.legend-part-chip.active {
+  border-color: transparent;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+.legend-part-count { font: 400 12px/16px var(--md-sys-typescale-font); font-variant-numeric: tabular-nums; opacity: 0.8; }
 
 /* Vodotisk uprostřed prázdného panelu vrstev — ikona a „Přetáhněte data
    ve formátu …" (index.html, ui/layerPanel.ts). */
