@@ -14,7 +14,7 @@ import { parseGeometrieObjektu1501 } from './geometry.js';
 import { parseAtributyObjektu1501 } from './attributes.js';
 import { isRecordElementName, resolveRecordKind } from './records.js';
 import { parseDoprovodneInformace1501 } from './doprovodne-informace.js';
-import { extractText, keepIdentifierText } from '../1.4.3/xml-helpers.js';
+import { extractText, keepIdentifierText, XML_ENTITY_OPTIONS } from '../1.4.3/xml-helpers.js';
 const VALID_TYP_ZAPISU = ['kompletní zápis', 'změnové věty'];
 function createParser() {
     return new XMLParser({
@@ -28,6 +28,7 @@ function createParser() {
         tagValueProcessor: keepIdentifierText,
         parseAttributeValue: true,
         trimValues: true,
+        processEntities: XML_ENTITY_OPTIONS,
     });
 }
 function parseZaznamObjektu1501(kindKey, zaznamEl, parseAttributes) {

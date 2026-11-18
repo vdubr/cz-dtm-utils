@@ -35,6 +35,20 @@ export function extractText(val) {
 /** Identifikátory (`ID`, `IDZmeny`, `IDObjektu`, `IDRDTI`, …) — vždy text. */
 const IDENTIFIER_TAG = /^ID(?:[A-Z]|$)/;
 /**
+ * Zpracování entit pro `XMLParser` (všechny parsery JVF / dialektů / protokolu).
+ *
+ * `fast-xml-parser` ve výchozím stavu povolí nejvýš 1 000 rozbalení entit
+ * na soubor — počítá i standardní entity XML (`&quot;`, `&amp;`, `&lt;`…).
+ * Reálné soubory jich mají víc (ŽXML: JSON v atributu SŽ `KonsolidacniText`
+ * s tisíci `&quot;`) a načítání by spadlo. Standardní entity jsou neškodné,
+ * počet se proto neomezuje; entity z DTD (útok „billion laughs") dál hlídají
+ * limity délky, hloubky a počtu definic knihovny.
+ */
+export const XML_ENTITY_OPTIONS = {
+    enabled: true,
+    maxTotalExpansions: Number.MAX_SAFE_INTEGER,
+};
+/**
  * `tagValueProcessor` pro `XMLParser`: hodnoty identifikátorů se nepřevádějí
  * na čísla (`parseTagValue`), ale zůstávají doslova jako text. Jinak by
  * `00123` ztratilo úvodní nuly a `1e5` se změnilo na `100000` — ID by pak

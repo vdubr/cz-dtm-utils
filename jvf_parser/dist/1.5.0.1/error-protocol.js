@@ -9,7 +9,7 @@
  * XSD: `docs/1.5.0.1/xsd/common/servis.xsd`.
  */
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
-import { extractText, extractAttributeValue, keepIdentifierText } from '../1.4.3/xml-helpers.js';
+import { extractText, extractAttributeValue, keepIdentifierText, XML_ENTITY_OPTIONS } from '../1.4.3/xml-helpers.js';
 function createParser() {
     return new XMLParser({
         ignoreAttributes: false,
@@ -21,6 +21,7 @@ function createParser() {
         tagValueProcessor: keepIdentifierText,
         parseAttributeValue: true,
         trimValues: true,
+        processEntities: XML_ENTITY_OPTIONS,
     });
 }
 /** Posbírá skalární potomky do attributes, s výjimkou `skip` klíčů. */

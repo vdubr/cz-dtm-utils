@@ -10,7 +10,7 @@
  */
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import type { ErrorProtocol, ProtokolChyba, ProtokolKontrola } from './types.js';
-import { extractText, extractAttributeValue, keepIdentifierText } from '../1.4.3/xml-helpers.js';
+import { extractText, extractAttributeValue, keepIdentifierText, XML_ENTITY_OPTIONS } from '../1.4.3/xml-helpers.js';
 
 function createParser(): XMLParser {
   return new XMLParser({
@@ -23,6 +23,7 @@ function createParser(): XMLParser {
     tagValueProcessor: keepIdentifierText,
     parseAttributeValue: true,
     trimValues: true,
+    processEntities: XML_ENTITY_OPTIONS,
   });
 }
 

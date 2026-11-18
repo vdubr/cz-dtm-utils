@@ -170,3 +170,14 @@ describe('ŽXML 1.5.1.6 — ukázky', () => {
     expect(dtm.ext?.staniceni).toHaveLength(3);
   });
 });
+
+describe('Entity XML — reálné soubory s tisíci &quot;', () => {
+  it('soubor s víc než 1 000 standardními entitami se načte (JSON v KonsolidacniText)', () => {
+    // fast-xml-parser ve výchozím stavu povolí jen 1 000 rozbalení entit
+    // na soubor — testovací data SŽ (TEST_Ukazkova_data) jich mají 1 652.
+    const xml = OFFICIAL_1421.replace('<objtyp:JVFDTM ', `<objtyp:JVFDTM data-test="${'&quot;'.repeat(2000)}" `);
+    const dtm = parseJvfDtm(xml);
+    expect(dtm.verze).toBe('zxml-1.4.2.1');
+    expect(dtm.objekty.length).toBeGreaterThan(0);
+  });
+});

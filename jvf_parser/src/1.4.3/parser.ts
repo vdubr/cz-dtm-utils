@@ -3,7 +3,7 @@ import { isSupportedVersion } from 'jvf-dtm-types';
 import { parseGeometrieObjektu, parseOblastObjektuKI } from './geometry.js';
 import { parseAtributyObjektu } from './attributes.js';
 import { parseDoprovodneInformace } from './doprovodne-informace.js';
-import { extractText, keepIdentifierText } from './xml-helpers.js';
+import { extractText, keepIdentifierText, XML_ENTITY_OPTIONS } from './xml-helpers.js';
 import type {
   JvfDtm,
   ObjektovyTyp,
@@ -27,6 +27,7 @@ function createParser(): XMLParser {
     tagValueProcessor: keepIdentifierText,
     parseAttributeValue: true,
     trimValues: true,
+    processEntities: XML_ENTITY_OPTIONS,
   });
 }
 
