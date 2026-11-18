@@ -502,8 +502,9 @@ ${when(JZM, `
     Všechny znaky ukazuje vzorník <code>zxml_vzornik.xml</code> v nabídce
     ukázek. Meziobjektová topologie se pro ŽXML spouští jako pro podkladovou
     verzi JVF (objekty SŽ do párů nevstupují). Ukázky ŽXML jsou v režimu JŽM
-    v nabídce vedle tlačítka „Nahrát soubor" (oficiální ukázka SŽ,
-    schematické nádraží v Řevnicích a vzorník znaků SŽ se smyšlenými daty).
+    v nabídce vedle tlačítka „Nahrát soubor" (testovací ukázková data
+    s téměř 10 000 záznamy, oficiální ukázka SŽ, schematické nádraží
+    v Řevnicích a vzorník znaků SŽ se smyšlenými daty).
   </p>
 
 `)}

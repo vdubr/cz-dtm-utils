@@ -8,6 +8,8 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ## [Unreleased]
 
 ### Přidáno
+- **Testovací ukázková data ŽXML** jako první ukázka JŽM
+  (`zxml_ukazkova_data.xml`, ŽXML 1.4.2.1, 9 915 záznamů, 98 typů objektů).
 - **Rychlá navigace v legendě** (JVF, UDM i JŽM) — lišta obsahových částí
   s počty typů nad legendou: klik přeskočí na část, aktivní část se při
   scrollování zvýrazní, při hledání zůstanou jen části s výsledky; výběr
@@ -77,6 +79,10 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   i na objekty H3D.
 
 ### Opraveno
+- **Soubory s tisíci entitami XML se načtou** — parser odmítal soubor, který
+  obsahoval víc než 1 000 entit jako `&quot;` nebo `&amp;` (např. JSON
+  v atributu SŽ `KonsolidacniText`); limit se už nevztahuje na standardní
+  entity, ochrana proti entitám z DTD zůstává. Týká se JVF, UDM i ŽXML.
 - **Široké značky SŽ ve 3D** (tabulky návěstidel s ramenem) mají velikost
   podle šířky (`Size type="width"` v SLD), ne 5× větší.
 - **JŽM: objekty JVF podle Katalogu ČÚZK i v exportu do CAD** — DXF ze

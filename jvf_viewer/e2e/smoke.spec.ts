@@ -430,7 +430,7 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     await page.goto('/jzm');
     await expect(page.locator('html')).toHaveAttribute('data-app', 'jzm');
     await page.locator('#btn-upload-menu').click();
-    await expect(page.locator('.upload-menu-item:visible')).toHaveCount(4);
+    await expect(page.locator('.upload-menu-item:visible')).toHaveCount(5);
     await expect(page.locator('.upload-menu-item[data-sample="zxml_nadrazi.xml"]')).toBeVisible();
     await expect(page.locator('#btn-export-cad')).toBeVisible();
     // Jedna legenda pro všechny nástroje (samostatná Legenda znaků zrušena).
@@ -505,6 +505,17 @@ test.describe('Režim JŽM (ŽXML Správy železnic)', () => {
     const st = (await stats())!;
     expect(st.spritesVisible + st.dotsVisible).toBe(st.sprites);
     expect(webglErrors).toEqual([]);
+  });
+
+  test('testovací data SŽ (ŽXML 1.4.2.1, 15 MB, tisíce &quot;) se načtou jako první ukázka', async ({ page }) => {
+    await switchMode(page, 'jzm');
+    await page.locator('#btn-upload-menu').click();
+    const first = page.locator('.upload-menu-item:visible').first();
+    await expect(first).toHaveAttribute('data-sample', 'zxml_ukazkova_data.xml');
+    await first.click();
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute('title', /ŽXML 1\.4\.2\.1/, { timeout: 60_000 });
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await expect(page.locator('#jvf-layers-list .layer-item').first()).toBeVisible();
   });
 
   test('soubor ŽXML v režimu JVF nabídne přepnutí do JŽM', async ({ page }) => {
