@@ -86,16 +86,14 @@ import {
   getScene3dStats,
 } from './viewer3d/threeScene.js';
 import { isEmpty, extend } from 'ol/extent.js';
-import type { Extent } from 'ol/extent.js';
 import { createEmpty } from 'ol/extent.js';
+import { projectExtents } from './state/projectExtents.js';  // extenty projektů (zoom, měření)
 
 // Current state — odvozený stav z kolekce projektů (state/projects.ts).
 // Zdrojem pravdy je kolekce projektů; tyto proměnné se přepočítávají
 // v `rebuildAll()` po každé změně (přidání / odebrání projektu).
 let currentJvfLayers: JvfVectorLayer[] = [];
 let currentObjekty: ObjektovyTyp[] = [];
-// Extenty jednotlivých projektů (S-JTSK) pro zoom kliknutím v sekci Projekty.
-const projectExtents = new Map<string, Extent>();
 
 /** Přiblíží pohled (2D i 3D podle aktivního zobrazení) na extent projektu. */
 function zoomToProjectExtent(projectId: string): void {

@@ -7,7 +7,10 @@
  *   načtení stránky je nový anonymní návštěvník), proto bez souhlasové lišty,
  * - bez autocapture, záznamu relací, heatmap a průzkumů — odesílají se jen
  *   události z katalogu níže s agregovanými vlastnostmi; nikdy názvy
- *   vlastních souborů, souřadnice, ID prvků, atributy ani údaje o parcelách.
+ *   vlastních souborů, ID prvků, atributy ani údaje o parcelách. Jediná
+ *   souřadnicová data jsou extent načtených dat (ohraničující obdélník,
+ *   S-JTSK, celé metry) u `file_load` (jen vlastní data, ne ukázky) — žádné jednotlivé
+ *   body ani geometrie.
  *
  * Aktivní jen v produkčním buildu s klíčem projektu `VITE_POSTHOG_KEY`
  * (`.env.production`; klíč projektu je veřejný) a jen na produkčním hostu
@@ -24,9 +27,9 @@ export type View = '2d' | '3d';
 export interface AnalyticsEvents {
   /** Aktivní čas (viditelná stránka) od posledního odeslání, v sekundách. */
   active_time: { seconds: number };
-  /** Načtení vlastního souboru (bez názvu). */
-  file_load: { mode: string; version: string; size: string };
-  /** Načtení ukázky z nabídky (název ukázky je veřejný). */
+  /** Načtení vlastního souboru (bez názvu); `ExtentProps` = extent načtených dat v S-JTSK. */
+  file_load: { mode: string; version: string; size: string } & Partial<ExtentProps>;
+  /** Načtení ukázky z nabídky (název ukázky je veřejný, extent se neposílá). */
   sample_load: { sample: string; mode: string };
   mode_change: { mode: string };
   topology_check: { mode: string; result: 'ok' | 'warnings' | 'errors' };
@@ -47,6 +50,25 @@ export interface AnalyticsEvents {
   export_dxf: { mode: string; format: string; fill: boolean };
   /** Klik na odkaz autora (LinkedIn) v patičce panelu. */
   linkedin_click: Record<string, never>;
+}
+
+/** Extent načtených dat (ohraničující obdélník) v S-JTSK, v celých metrech. */
+export interface ExtentProps {
+  min_x: number;
+  min_y: number;
+  max_x: number;
+  max_y: number;
+}
+
+/** Extent z OpenLayers (`[minX, minY, maxX, maxY]`) → vlastnosti události; bez extentu `{}`. */
+export function extentProps(extent: readonly number[] | undefined): Partial<ExtentProps> {
+  if (!extent || extent.length < 4 || !extent.every((v) => Number.isFinite(v))) return {};
+  return {
+    min_x: Math.round(extent[0]!),
+    min_y: Math.round(extent[1]!),
+    max_x: Math.round(extent[2]!),
+    max_y: Math.round(extent[3]!),
+  };
 }
 
 type EventName = keyof AnalyticsEvents;
