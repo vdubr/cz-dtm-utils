@@ -12,7 +12,8 @@ import { showConfirm } from './confirmModal.js';
 import { ensureAppModeForFile } from './appModeSwitch.js';
 import { getAppMode } from '../state/appMode.js';
 import { clearProjects, getProjects } from '../state/projects.js';
-import { sizeBucket, track } from '../analytics.js';
+import { extentProps, sizeBucket, track } from '../analytics.js';
+import { projectExtents } from '../state/projectExtents.js';
 
 /**
  * Validace verze souboru (1.5.0.1+ chování):
@@ -71,6 +72,16 @@ function escapeHtml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/**
+ * Extent právě načtených dat pro měření — `rebuildAll()` ho spočítá už v
+ * `onLoad`, takže je k dispozici hned po `ingestXml`. Bez extentu (např. data
+ * bez geometrií) `{}`.
+ */
+function loadedExtent(data: JvfDtm): ReturnType<typeof extentProps> {
+  const project = getProjects().find((p) => p.dtm === data);
+  return extentProps(project ? projectExtents.get(project.id) : undefined);
 }
 
 /** Přidat soubor k načteným projektům, nebo jimi nahradit všechny načtené. */
@@ -164,8 +175,13 @@ export function loadJvfFile(
         const res = await ingestXml(e.target?.result as string, file.name, mode, onLoad, onErrorProtocol);
         if (!res) return;
         used = res.mode;
-        // Bez názvu souboru — jen režim, verze a hrubá velikost.
-        track('file_load', { mode: getAppMode(), version: res.data.verze, size: sizeBucket(file.size) });
+        // Bez názvu souboru — režim, verze, hrubá velikost a extent dat (S-JTSK, metry).
+        track('file_load', {
+          mode: getAppMode(),
+          version: res.data.verze,
+          size: sizeBucket(file.size),
+          ...loadedExtent(res.data),
+        });
       } catch (err) {
         console.error('Failed to parse JVF file:', err);
         alert(`Soubor „${file.name}“ se nepodařilo načíst. Zkontrolujte, že jde o platný JVF DTM soubor.`);
@@ -291,6 +307,7 @@ async function loadSample(
       throw new Error(`HTTP ${resp.status} — soubor nenalezen`);
     }
     if (await ingestXml(await resp.text(), name, undefined, onLoad, onErrorProtocol)) {
+      // Ukázky jsou veřejná demo data — extent se neposílá (jen uživatelské projekty).
       track('sample_load', { sample: name, mode: getAppMode() });
     }
   } catch (err) {

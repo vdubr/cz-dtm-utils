@@ -15,6 +15,8 @@ dialect symbology, a symbol legend with SVG download and DXF export.
 > **Live demo:** https://cz-dtm-utils.vercel.app/
 >
 > Files are processed entirely in the browser — nothing is uploaded to a server.
+> The production deployment collects anonymous usage statistics, see
+> [Usage analytics](#usage-analytics).
 
 ---
 
@@ -26,6 +28,7 @@ dialect symbology, a symbol legend with SVG download and DXF export.
 - [Project structure](#project-structure)
 - [Development workflow](#development-workflow)
 - [Releases & versioning](#releases--versioning)
+- [Usage analytics](#usage-analytics)
 - [Project character](#project-character)
 - [License](#license)
 
@@ -216,6 +219,35 @@ the single source of truth — it is:
 2. Used verbatim as the body of the corresponding GitHub Release.
 
 See [`CLAUDE.md`](./CLAUDE.md) for the full release procedure.
+
+---
+
+## Usage analytics
+
+The production deployment of the viewer anonymously measures **which features
+are used and how long the app is open**, using [PostHog](https://posthog.com)
+Cloud EU (data stored in Frankfurt) next to Vercel Web Analytics:
+
+- **What is sent:** a fixed catalogue of events (file/sample load with mode and
+  coarse size bucket, mode switch, topology check result, feature panel, map
+  feature click — object *type* only, measuring, basemap/overlay toggles,
+  parcel query, time in 3D, terrain, SVG symbols, theme, CAD export, active
+  time). The catalogue is typed in
+  [`jvf_viewer/src/analytics.ts`](./jvf_viewer/src/analytics.ts).
+- **What is never sent:** file names, feature IDs, attributes or parcel data.
+  Files themselves never leave the browser. The only location data is the
+  **extent of the user's own loaded data** (bounding box in S-JTSK, whole
+  metres: `min_x`, `min_y`, `max_x`, `max_y` on `file_load`; not sent for the
+  built-in demo samples) — no individual points or geometries.
+- **Privacy:** no cookies and no browser storage (every page load is a new
+  anonymous visitor), no autocapture, no session recording — hence no consent
+  banner.
+- **Where it runs:** only on the production host (`VITE_POSTHOG_HOSTS`), not on
+  Vercel previews, localhost or in e2e tests. Without the public project key
+  (`VITE_POSTHOG_KEY`, set in `jvf_viewer/.env.production`) everything is a
+  no-op.
+
+The same description is shown to users in the app's info modal.
 
 ---
 

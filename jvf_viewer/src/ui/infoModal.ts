@@ -499,13 +499,16 @@ ${when(DIALECTS, `
     Abychom věděli, které funkce se používají, aplikace na produkční adrese
     anonymně měří <strong>použití funkcí a čas v aplikaci</strong> (služba
     PostHog, data v EU — Frankfurt): načtení souboru nebo ukázky (režim, verze
-    JVF, velikost jen v hrubém pásmu), ${when(DIALECTS, 'přepnutí režimu JVF / UDM / JŽM, ')}
+    JVF, velikost jen v hrubém pásmu, u vlastních souborů i extent dat), ${when(DIALECTS, 'přepnutí režimu JVF / UDM / JŽM, ')}
     kontrolu, Přehled prvků, klik na prvek v mapě (jen typ objektu, např.
     „budova"), měření, podkladové mapy, překryvy DTM / katastru,
     dotaz na parcelu, dobu ve 3D, zapnutí SVG symbolů a terénu ve 3D, motiv,
     export do CAD a klik na odkaz autora (LinkedIn) v patičce.
-    <strong>Nikdy</strong> se neodesílají názvy vašich souborů, souřadnice,
-    ID prvků, atributy ani údaje o parcelách. Měření nepoužívá cookies ani
+    <strong>Nikdy</strong> se neodesílají názvy vašich souborů, ID prvků,
+    atributy ani údaje o parcelách. Jediný údaj o poloze je
+    <strong>extent vlastních načtených dat</strong> (ne ukázek) — ohraničující
+    obdélník v S-JTSK zaokrouhlený na metry (žádné jednotlivé body ani geometrie). Měření
+    nepoužívá cookies ani
     úložiště prohlížeče (každé otevření stránky je nový anonymní návštěvník),
     nenahrává obrazovku ani kliknutí. Návštěvnost stránky měří i Vercel Web
     Analytics (bez cookies).
