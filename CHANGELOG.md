@@ -11,10 +11,6 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 > buildu vypnuté — `RELEASED_APP_MODES` ve `jvf_viewer/vite.config.ts`).
 
 ### Přidáno
-- **Měření: extent vlastních dat** — událost `file_load` (ne ukázky)
-  nově nese ohraničující obdélník načtených dat v S-JTSK (`min_x`, `min_y`,
-  `max_x`, `max_y`, celé metry). Žádné jednotlivé body ani geometrie; popis
-  v info modalu aktualizován (dosud platilo „nikdy souřadnice“).
 - **Tři nástroje na jedné doméně: JVF (`/`), UDM (`/udm`), JŽM (`/jzm`)**
   — každý s vlastním názvem v hlavičce (JVF / UDM / JŽM Prohlížeč),
   titulkem stránky a barevným schématem Material 3 (JVF modrá, UDM
@@ -108,6 +104,14 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   souboru ŽXML kreslil objekty JVF jen barvou obsahové části, viewer je
   přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
   (`usesDialectStyle`).
+
+## [2026.11.19] - 2026-11-19
+
+### Přidáno
+- **Měření: extent vlastních dat** — událost `file_load` (ne ukázky)
+  nově nese ohraničující obdélník načtených dat v S-JTSK (`min_x`, `min_y`,
+  `max_x`, `max_y`, celé metry). Žádné jednotlivé body ani geometrie; popis
+  v info modalu aktualizován (dosud platilo „nikdy souřadnice“).
 
 ## [2026.11.11] - 2026-11-11
 
