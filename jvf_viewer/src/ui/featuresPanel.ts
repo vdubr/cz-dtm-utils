@@ -15,7 +15,11 @@ import { attachSearchClear, matchesSearch as matchesQuery, normalizeSearch } fro
 import { buildLegendSwatchFor } from './symbolSwatch.js';
 import {
   LEVEL_NONE,
+  clearAttributeFilter,
+  countFilteredRecords,
   getContentPartFilter,
+  isAttributeVisible,
+  isFeatureFilterActive,
   isContentPartVisible,
   setContentPartFilter,
   isLevelVisible,
@@ -36,6 +40,7 @@ import {
   resolveProjectKey,
 } from '../state/projects.js';
 import { buildPartLabel } from './partLabel.js';
+import { initAttributeFilter, renderAttributeFilter, setAttributeFilterData } from './attributeFilter.js';
 
 /** Filtr obsahové části: `'all'` nebo kód části (ZPS, ZPSUDM, ZDT, …). */
 type ContentFilter = 'all' | string;
@@ -208,14 +213,15 @@ function renderSummary(): void {
   const typy = (n: number): string => (n === 1 ? 'typ' : n > 1 && n < 5 ? 'typy' : 'typů');
   const zaznamu = (n: number): string => (n === 1 ? 'záznam' : n > 1 && n < 5 ? 'záznamy' : 'záznamů');
   const currentFilter = getContentPartFilter();
-  if (currentFilter.size === 0) {
+  if (!isFeatureFilterActive()) {
     summaryEl.textContent = `${totalTypes} ${typy(totalTypes)}, ${totalRecords} ${zaznamu(totalRecords)}`;
   } else {
-    // Aktivní filtr obsahové části → počty ve filtru „z celkem".
-    const shown = currentObjekty.filter(matchesFilter);
-    const shownRecords = shown.reduce((sum, ot) => sum + ot.zaznamy.length, 0);
+    // Aktivní filtr (část, úroveň, projekt, atribut) → počty ve filtru „z celkem".
+    const shownTypes = currentObjekty.filter((ot) => matchesFilter(ot) && ot.zaznamy.some(matchesFeatureFilter)).length;
+    const shownRecords = countFilteredRecords(currentObjekty);
+    const prefix = currentFilter.size > 0 ? `${[...currentFilter].sort(compareContentParts).join(' + ')}: ` : '';
     summaryEl.textContent =
-      `${[...currentFilter].sort(compareContentParts).join(' + ')}: ${shown.length} z ${totalTypes} ${typy(totalTypes)}, ` +
+      `${prefix}${shownTypes} z ${totalTypes} ${typy(totalTypes)}, ` +
       `${shownRecords} z ${totalRecords} ${zaznamu(totalRecords)}`;
   }
   summaryEl.className = 'features-summary summary-ok';
@@ -673,6 +679,7 @@ function renderContentFilterChips(): void {
 // ── Panel open/close ──────────────────────────────────────────────────────────
 export function showFeatures(objekty: ObjektovyTyp[]): void {
   currentObjekty = objekty;
+  setAttributeFilterData(objekty);
   if (!expandedGroups.size && objekty.length > 0 && objekty.length <= 8) {
     // Auto-expand u malých souborů
     for (const ot of objekty) expandedGroups.add(groupKey(ot));
@@ -681,6 +688,7 @@ export function showFeatures(objekty: ObjektovyTyp[]): void {
   renderSummary();
   renderLevelChips();
   renderProjectChips();
+  renderAttributeFilter();
   renderRows();
   panel.style.display = '';
   notifyMapAreaResized();
@@ -766,6 +774,7 @@ export function selectFeatureInPanel(elementName: string, objectId: string): voi
       if (projectKey && !isProjectVisible(projectKey)) {
         setProjectVisible(projectKey, true);
       }
+      if (!isAttributeVisible(z.attributes)) clearAttributeFilter();
       needsRender = true;
     }
   }
@@ -806,6 +815,7 @@ export function initFeaturesPanel(
   olMap = map;
   getJvfLayers = getLayers;
   onHideCallback = opts.onHide ?? null;
+  initAttributeFilter(map, getLayers);
 
   // Escape — zavřít
   document.addEventListener('keydown', (e) => {
@@ -819,7 +829,7 @@ export function initFeaturesPanel(
     renderRows();
   });
 
-  // Filtr prvků (obsahová část, úroveň umístění, projekt) — při každé
+  // Filtr prvků (obsahová část, úroveň umístění, projekt, atribut) — při každé
   // změně promítnout do:
   //   1. chips UI (sync active tříd),
   //   2. tabulky Přehledu prvků,
@@ -836,6 +846,7 @@ export function initFeaturesPanel(
     renderSummary();
     renderLevelChips();
     renderProjectChips();
+    renderAttributeFilter();
     renderRows();
     if (getJvfLayers) {
       for (const { olLayer } of getJvfLayers()) olLayer.changed();

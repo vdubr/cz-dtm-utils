@@ -1,4 +1,4 @@
-import type { ZaznamObjektu } from 'jvf-parser';
+import type { ObjektovyTyp, ZaznamObjektu } from 'jvf-parser';
 import { resolveProjectKey } from './projects.js';
 
 /**
@@ -17,6 +17,10 @@ import { resolveProjectKey } from './projects.js';
  *     tlačítky v Přehledu prvků; `null` = všechny. Část je vlastnost
  *     objektového typu (`ObjektovyTyp.obsahovaCast`), proto ji 2D/3D nesou
  *     per prvek (`jvfPart`) a tabulka filtruje celé skupiny.
+ *   - **hodnota atributu** — jeden zvolený atribut (např. `CisStaOb`, číslo
+ *     stavebního objektu / provozního souboru SŽ) a množina zobrazených
+ *     hodnot; `null` = dimenze neaktivní. 2D/3D nesou per prvek odkaz na
+ *     `ZaznamObjektu.attributes` (`jvfAttrs`), ne kopii.
  *
  * Architektura: filtr je průnik (AND) dimenzí, `matchesFeatureFilter` je
  * jediné místo, kde se dimenze vyhodnocují. Nové dimenze přidají vlastní
@@ -54,6 +58,21 @@ const hiddenProjects = new Set<string>();
 
 /** Zobrazené obsahové části (lze jich vybrat více); prázdná = všechny (dimenze neaktivní). */
 const contentParts = new Set<string>();
+
+/** Atributy záznamu tak, jak je drží `ZaznamObjektu.attributes`. */
+export type RecordAttributes = ZaznamObjektu['attributes'];
+
+/** Filtr podle hodnoty atributu: atribut + zobrazené hodnoty (klíče `attrValueKey`). */
+export interface AttributeFilter {
+  readonly name: string;
+  readonly values: ReadonlySet<string>;
+}
+
+/** Aktivní filtr podle atributu, `null` = dimenze neaktivní. */
+let attributeFilter: AttributeFilter | null = null;
+
+/** Klíč hodnoty pro záznamy, které atribut nemají nebo ho mají prázdný. */
+export const ATTR_EMPTY = '';
 
 const listeners = new Set<FeatureFilterListener>();
 
@@ -148,21 +167,88 @@ export function isContentPartVisible(part: string | null | undefined): boolean {
 }
 
 /**
- * Prochází záznam všemi dimenzemi filtru? Jediné místo vyhodnocení —
- * 2D style fn i 3D visibility používají per-feature uložené klíče
- * (viz `isLevelVisible` / `isProjectVisible`), tabulka Přehledu prvků
- * volá tuto funkci.
+ * Klíč hodnoty atributu pro filtr. Parser převádí čistě číselné hodnoty na
+ * `number` (`1021193`), ostatní nechává jako text (`'PS 02-01-71'`) — u
+ * téhož atributu se typy mohou míchat, proto se porovnává textově.
+ * Chybějící / prázdná hodnota → `ATTR_EMPTY`.
+ */
+export function attrValueKey(value: RecordAttributes[string] | undefined): string {
+  if (value === undefined || value === null) return ATTR_EMPTY;
+  return String(value).trim();
+}
+
+/** Aktivní filtr podle atributu (`null` = neaktivní). */
+export function getAttributeFilter(): AttributeFilter | null {
+  return attributeFilter;
+}
+
+/**
+ * Nastaví filtr podle atributu: zobrazit jen záznamy, jejichž hodnota
+ * atributu `name` (klíč `attrValueKey`) je v `values`. Notifikuje jen při změně.
+ */
+export function setAttributeFilter(name: string, values: Iterable<string>): void {
+  const next = new Set(values);
+  const prev = attributeFilter;
+  if (prev && prev.name === name && prev.values.size === next.size && [...next].every((v) => prev.values.has(v))) return;
+  attributeFilter = { name, values: next };
+  notify();
+}
+
+/** Zruší filtr podle atributu. */
+export function clearAttributeFilter(): void {
+  if (!attributeFilter) return;
+  attributeFilter = null;
+  notify();
+}
+
+/** Prochází záznam (jeho atributy) filtrem podle atributu? Bez filtru vždy. */
+export function isAttributeVisible(attrs: RecordAttributes | null | undefined): boolean {
+  if (!attributeFilter) return true;
+  return attributeFilter.values.has(attrValueKey(attrs?.[attributeFilter.name]));
+}
+
+/**
+ * Prochází záznam všemi dimenzemi filtru vázanými na záznam (úroveň,
+ * projekt, atribut)? 2D style fn i 3D visibility používají per-feature
+ * uložené klíče (`jvfLevel`, `jvfProjectId`, `jvfAttrs`), tabulka Přehledu
+ * prvků volá tuto funkci. Obsahová část je vlastnost typu — viz
+ * `isContentPartVisible`.
  */
 export function matchesFeatureFilter(zaznam: ZaznamObjektu): boolean {
   return (
     isLevelVisible(resolveLevelKey(zaznam)) &&
-    isProjectVisible(resolveProjectKey(zaznam))
+    isProjectVisible(resolveProjectKey(zaznam)) &&
+    isAttributeVisible(zaznam.attributes)
   );
 }
 
 /** Je filtr aktivní (aspoň jedna hodnota skrytá)? */
 export function isFeatureFilterActive(): boolean {
-  return hiddenLevels.size > 0 || hiddenProjects.size > 0 || contentParts.size > 0;
+  return hiddenLevels.size > 0 || hiddenProjects.size > 0 || contentParts.size > 0 || attributeFilter !== null;
+}
+
+/**
+ * Kopie dat jen se záznamy, které projdou filtrem Přehledu prvků (včetně
+ * obsahové části); typy bez záznamů vynechá. Pro export „jen podle filtru“.
+ */
+export function filterDtmForExport<T extends { objekty: ObjektovyTyp[] }>(dtm: T): T {
+  const objekty: ObjektovyTyp[] = [];
+  for (const ot of dtm.objekty) {
+    if (!isContentPartVisible(String(ot.obsahovaCast))) continue;
+    const zaznamy = ot.zaznamy.filter(matchesFeatureFilter);
+    if (zaznamy.length > 0) objekty.push({ ...ot, zaznamy });
+  }
+  return { ...dtm, objekty };
+}
+
+/** Počet záznamů, které projdou filtrem (včetně obsahové části). */
+export function countFilteredRecords(objekty: readonly ObjektovyTyp[]): number {
+  let n = 0;
+  for (const ot of objekty) {
+    if (!isContentPartVisible(String(ot.obsahovaCast))) continue;
+    for (const z of ot.zaznamy) if (matchesFeatureFilter(z)) n++;
+  }
+  return n;
 }
 
 /**
@@ -171,10 +257,11 @@ export function isFeatureFilterActive(): boolean {
  * nemá nová data ovlivňovat.
  */
 export function resetFeatureFilter(): void {
-  if (hiddenLevels.size === 0 && hiddenProjects.size === 0 && contentParts.size === 0) return;
+  if (!isFeatureFilterActive()) return;
   hiddenLevels.clear();
   hiddenProjects.clear();
   contentParts.clear();
+  attributeFilter = null;
   notify();
 }
 

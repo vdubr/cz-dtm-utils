@@ -8,6 +8,13 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
 ## [Unreleased]
 
 ### Přidáno
+- **Filtr podle hodnoty atributu** v Přehledu prvků — výběr atributu
+  přítomného v datech a zaškrtnutí hodnot (počty záznamů, hledání,
+  „jen tato“); platí pro tabulku, 2D mapu i 3D scénu, čip aktivního filtru
+  a přiblížení na vybrané prvky. U ŽXML předvolba **Stavba (PS/SO)**
+  (`CisStaOb` s názvem z `NazStaOb`) — např. zobrazit jen jedno PS stavby.
+  Export do CAD nabízí volbu **jen prvky podle filtru**; souhrn Přehledu
+  prvků ukazuje počty „z celkem“ při jakémkoli filtru.
 - **Testovací ukázková data ŽXML** jako první ukázka JŽM
   (`zxml_ukazkova_data.xml`, ŽXML 1.4.2.1, 9 915 záznamů, 98 typů objektů).
 - **Rychlá navigace v legendě** (JVF, UDM i JŽM) — lišta obsahových částí

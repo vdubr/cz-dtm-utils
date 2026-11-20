@@ -13,11 +13,13 @@ import {
 } from '../state/changesetToggle.js';
 import { dtmIdOf, resolveZaznamId } from '../state/zaznamId.js';
 import {
+  isAttributeVisible,
   isContentPartVisible,
   isLevelVisible,
   isProjectVisible,
   resolveLevelKey,
   type LevelKey,
+  type RecordAttributes,
 } from '../state/featureFilter.js';
 import { resolveLayerKey, resolveProjectKey, getProjects } from '../state/projects.js';
 import {
@@ -262,6 +264,7 @@ function computeObjectVisibility(obj: THREE.Object3D): boolean {
   const projectKey = obj.userData['jvfProjectId'] as string | null | undefined;
   if (!isProjectVisible(projectKey)) return false;
   if (!isContentPartVisible(obj.userData['jvfPart'] as string | undefined)) return false;
+  if (!isAttributeVisible(obj.userData['jvfAttrs'] as RecordAttributes | undefined)) return false;
   return true;
 }
 
@@ -813,6 +816,7 @@ function buildSceneObjects(
                 lineObj.userData['jvfLevel'] = levelKey;
                 lineObj.userData['jvfProjectId'] = projectKey;
                 lineObj.userData['jvfPart'] = part;
+                lineObj.userData['jvfAttrs'] = zaz.attributes;
                 lineObj.visible = computeObjectVisibility(lineObj);
                 if (isChangesetZapis(zapisObjektu)) addZapisHalo(lineObj, zapisObjektu);
                 scene.add(lineObj);
@@ -831,6 +835,8 @@ function buildSceneObjects(
           obj.userData['jvfLevel'] = levelKey;
           obj.userData['jvfProjectId'] = projectKey;
           obj.userData['jvfPart'] = part;
+          // Odkaz (ne kopie) na atributy záznamu — filtr podle hodnoty atributu.
+          obj.userData['jvfAttrs'] = zaz.attributes;
           obj.visible = computeObjectVisibility(obj) && lodVisible(obj);
           if (isChangesetZapis(zapisObjektu)) addZapisHalo(obj, zapisObjektu);
           scene.add(obj);
@@ -838,7 +844,7 @@ function buildSceneObjects(
           const dot = obj.userData['jvfDot'] as THREE.Object3D | undefined;
           if (dot) {
             // Puntík nese identitu záznamu (výběr kliknutím, filtry, vrstvy).
-            for (const k of [DATA_TAG, LAYER_KEY_TAG, 'jvfObjectId', 'jvfDtmId', 'jvfZapisObjektu', 'jvfLevel', 'jvfProjectId', 'jvfPart']) {
+            for (const k of [DATA_TAG, LAYER_KEY_TAG, 'jvfObjectId', 'jvfDtmId', 'jvfZapisObjektu', 'jvfLevel', 'jvfProjectId', 'jvfPart', 'jvfAttrs']) {
               dot.userData[k] = obj.userData[k];
             }
             dot.visible = computeObjectVisibility(dot) && lodVisible(dot);
@@ -1879,6 +1885,20 @@ export function getScene3dStats(): {
     if (map && svgSizeOf(map) && (map.image as HTMLCanvasElement).width > 1) spritesLoaded++;
   });
   return { objects, drawCalls: state.renderer.info.render.calls, sprites, spritesLoaded, spritesVisible, dotsVisible };
+}
+
+/**
+ * Viditelné záznamy ve 3D scéně: klíč `vrstva::id` → atributy záznamu
+ * (pro e2e kontrolu filtrů přes `__jvfDebug`). `null` bez scény.
+ */
+export function getVisibleRecords3d(): Map<string, Record<string, unknown> | undefined> | null {
+  if (!state) return null;
+  const out = new Map<string, Record<string, unknown> | undefined>();
+  state.scene.traverse((o) => {
+    if (o.userData[DATA_TAG] === undefined || !o.visible) return;
+    out.set(`${o.userData[DATA_TAG]}::${o.userData['jvfObjectId']}`, o.userData['jvfAttrs'] as Record<string, unknown> | undefined);
+  });
+  return out;
 }
 
 export function zoomToThreeFeature(elementName: string, objectId: string): void {

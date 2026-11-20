@@ -309,8 +309,9 @@ const INFO_CONTENT_HTML = `
       vyplněné barvou Katalogu (lze vypnout), popisy a názvy jako texty
       (výšky pro 1:500) a atributy objektů v XDATA (v AutoCADu
       příkaz <code>XDLIST</code>). Na výběr je DXF pro AutoCAD 2013+ (barvy
-      přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy
-      a 2D výkres. Souřadnice zůstávají v EPSG:5514. Typy čar mají
+      přesně) nebo DXF R2000 pro starší CAD; volitelně i mazané záznamy,
+      2D výkres a — je-li v Přehledu prvků aktivní filtr — jen prvky podle
+      filtru (např. jedno PS stavby). Souřadnice zůstávají v EPSG:5514. Typy čar mají
       čárkování dle vzoru (bez vložených značek).
       <strong>DWG</strong> získáte tak, že DXF otevřete
       v AutoCADu a uložíte jako DWG. Export běží lokálně v prohlížeči.
@@ -344,7 +345,13 @@ ${when(DIALECTS, `
       <em>Úroveň</em> ukazuje <em>úrovně umístění</em> přítomné v datech
       (LEVEL −3 až +3 z atributů <code>UrovenUmisteniObjektu*</code>, případně
       „bez úrovně") s přepínatelnými chipy — odškrtnuté úrovně se skryjí.
-      Filtr obsahové části i úrovní platí pro tabulku i pro 2D a 3D mapu
+      Řádek <em>Atribut</em> filtruje podle <strong>hodnoty atributu</strong>:
+      vyberte atribut přítomný v datech, zaškrtněte hodnoty (s počtem záznamů
+      a hledáním; „jen tato" jedním klikem) a zobrazí se jen odpovídající
+      prvky; čip filtru ho křížkem zruší, lupa přiblíží na vybrané prvky.${when(JZM, ` U ŽXML je
+      nahoře předvolba <em>Stavba (PS/SO)</em> — číslo stavebního objektu nebo
+      provozního souboru <code>CisStaOb</code> s názvem z <code>NazStaOb</code>.`)}
+      Filtr obsahové části, úrovní i atributu platí pro tabulku i pro 2D a 3D mapu
       (kombinuje se s viditelností vrstev a filtrem Změny) a resetuje
       se při načtení nového souboru.
       Klik na záznam zoomuje

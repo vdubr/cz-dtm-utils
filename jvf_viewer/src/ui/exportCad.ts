@@ -12,11 +12,23 @@ import { showConfirm } from './confirmModal.js';
 import { downloadBlob } from '../util/download.js';
 import { getAppMode } from '../state/appMode.js';
 import { track } from '../analytics.js';
+import { countFilteredRecords, filterDtmForExport, isFeatureFilterActive } from '../state/featureFilter.js';
 
 const EXPORT_LABEL = 'Exportovat';
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
+
+/**
+ * Volba „jen podle filtru“ — jen když je v Přehledu prvků aktivní filtr
+ * (obsahová část, úroveň, projekt, hodnota atributu). Výchozí vypnuto.
+ */
+function filteredOption(projects: readonly JvfProject[]): string {
+  if (!isFeatureFilterActive()) return '';
+  const count = projects.length === 1 ? ` (${countFilteredRecords(projects[0]!.dtm.objekty)} záznamů)` : '';
+  return `<label class="cad-row"><input type="checkbox" id="cad-filtered">
+        Jen prvky podle filtru v Přehledu prvků${count}</label>`;
 }
 
 function bodyHtml(projects: readonly JvfProject[]): string {
@@ -44,6 +56,7 @@ function bodyHtml(projects: readonly JvfProject[]): string {
         <strong>DWG:</strong> DXF otevřete v AutoCADu a uložte jako DWG
         (Uložit jako → Výkres AutoCADu *.dwg).
       </p>
+      ${filteredOption(projects)}
       <label class="cad-row"><input type="checkbox" id="cad-deleted">
         Zahrnout mazané záznamy (na hladiny <code>…_DEL</code>)</label>
       <label class="cad-row"><input type="checkbox" id="cad-flat">
@@ -86,12 +99,14 @@ export async function openExportCadDialog(projects: readonly JvfProject[]): Prom
   const includeDeleted = (document.getElementById('cad-deleted') as HTMLInputElement | null)?.checked ?? false;
   const flatten2D = (document.getElementById('cad-flat') as HTMLInputElement | null)?.checked ?? false;
   const fillAreas = (document.getElementById('cad-fill') as HTMLInputElement | null)?.checked ?? true;
+  const onlyFiltered = (document.getElementById('cad-filtered') as HTMLInputElement | null)?.checked ?? false;
 
   try {
     const { exportDxf } = await import('jvf-cad');
-    const { dxf } = exportDxf(project.dtm, { version, includeDeleted, flatten2D, fillAreas });
+    const dtm = onlyFiltered ? filterDtmForExport(project.dtm) : project.dtm;
+    const { dxf } = exportDxf(dtm, { version, includeDeleted, flatten2D, fillAreas });
     const base = project.nazev.replace(/\.(jvf\.)?(xml|jvf)$/i, '');
-    downloadBlob(dxf, 'application/dxf', `${base}${version === 'R2000' ? '_R2000' : ''}.dxf`);
+    downloadBlob(dxf, 'application/dxf', `${base}${onlyFiltered ? '_filtr' : ''}${version === 'R2000' ? '_R2000' : ''}.dxf`);
     track('export_dxf', { mode: getAppMode(), format: version, fill: fillAreas });
   } catch (err) {
     console.error('Export do CAD selhal:', err);

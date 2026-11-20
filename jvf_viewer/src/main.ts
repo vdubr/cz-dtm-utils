@@ -83,6 +83,7 @@ import {
   projectSceneToClient,
   getLineSymbol3dCount,
   getScene3dStats,
+  getVisibleRecords3d,
 } from './viewer3d/threeScene.js';
 import { isEmpty, extend } from 'ol/extent.js';
 import { createEmpty } from 'ol/extent.js';
@@ -133,6 +134,11 @@ if (import.meta.env.DEV) {
     parcel3dRings: () => getParcel3dRingCount(),
     lineSymbols3d: () => getLineSymbol3dCount(),
     scene3dStats: () => getScene3dStats(),
+    // Hodnoty atributu `attr` u záznamů viditelných ve 3D (kontrola filtrů).
+    visibleRecords3d: (attr: string) => {
+      const m = getVisibleRecords3d();
+      return m ? [...m.values()].map((a) => (a ? String(a[attr] ?? '') : '')) : null;
+    },
     project3d: (x: number, y: number, z: number) => {
       const v = sjtskToScene(x, y, z);
       return v ? projectSceneToClient(v) : null;

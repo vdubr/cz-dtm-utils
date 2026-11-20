@@ -728,6 +728,89 @@ html, body {
   line-height: 1;
 }
 
+/* Filtr podle hodnoty atributu (ui/attributeFilter.ts) — řádek „Atribut:“,
+   čip aktivního filtru a rozbalovací seznam hodnot. */
+.attr-filter-select {
+  flex: 1 1 160px;
+  min-width: 0;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
+  font: 400 14px/20px var(--md-sys-typescale-font);
+}
+.attr-filter-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+.attr-filter-icon-btn:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface-variant) 8%, transparent); }
+.attr-filter-icon-btn .material-symbols-outlined { font-size: 20px; }
+/* Čip aktivního filtru: text se zkracuje, místo zaškrtnutí křížek vpravo. */
+.level-chip.attr-filter-chip { max-width: 100%; min-width: 0; padding: 0 8px 0 12px; }
+.level-chip.attr-filter-chip::before { content: none; }
+.attr-filter-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.attr-filter-chip .material-symbols-outlined { font-size: 18px; }
+.attr-filter-values {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+.attr-filter-search { width: 100%; height: 36px; }
+.attr-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 12px/16px var(--md-sys-typescale-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+.attr-filter-count { flex: 1; min-width: 0; }
+.attr-filter-link {
+  border: none;
+  background: none;
+  padding: 2px 4px;
+  color: var(--md-sys-color-primary);
+  font: 500 12px/16px var(--md-sys-typescale-font);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.attr-filter-link:disabled { color: var(--md-sys-color-on-surface-variant); opacity: 0.5; cursor: default; }
+.attr-filter-list { max-height: 240px; overflow-y: auto; }
+.attr-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 4px;
+  border-radius: var(--md-sys-shape-corner-small);
+  font: 400 13px/18px var(--md-sys-typescale-font);
+  color: var(--md-sys-color-on-surface);
+  cursor: pointer;
+}
+.attr-filter-row:hover { background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent); }
+.attr-filter-row input.m3-checkbox { margin: 0 4px 0 0; flex: none; }
+.attr-filter-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attr-filter-value-count { color: var(--md-sys-color-on-surface-variant); font-size: 12px; font-variant-numeric: tabular-nums; }
+.attr-filter-only { visibility: hidden; }
+.attr-filter-row:hover .attr-filter-only,
+.attr-filter-only:focus-visible { visibility: visible; }
+.attr-filter-more { padding: 6px 4px; font: italic 400 12px/16px var(--md-sys-typescale-font); color: var(--md-sys-color-on-surface-variant); }
+
 /* Vyhledávání. */
 .features-search,
 .legend-search {

@@ -945,6 +945,99 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('.features-filter-btn')).toHaveText(['Vše', 'ZPS']);
   });
 
+  test('filtr podle atributu: stavba PS/SO u ŽXML filtruje tabulku, 2D, 3D i export', async ({ page }) => {
+    test.setTimeout(180_000);
+    // Hodnoty atributu u prvků, které 2D mapa kreslí.
+    const drawnValues = (attr: string): Promise<string[]> => page.evaluate((attr) => {
+      const d = (window as unknown as { __jvfDebug: {
+        olMap: import('ol/Map').default;
+        getJvfLayers: () => Array<{ olLayer: import('ol/layer/Vector').default }>;
+      } }).__jvfDebug;
+      const res = d.olMap.getView().getResolution() ?? 1;
+      const out: string[] = [];
+      for (const { olLayer } of d.getJvfLayers()) {
+        if (!olLayer.getVisible()) continue;
+        const fn = olLayer.getStyleFunction()!;
+        for (const f of olLayer.getSource()!.getFeatures()) {
+          const style = fn(f, res);
+          if (Array.isArray(style) ? style.length > 0 : !!style) {
+            out.push(String((f.get('jvfAttrs') as Record<string, unknown> | undefined)?.[attr] ?? ''));
+          }
+        }
+      }
+      return out;
+    }, attr);
+
+    await switchMode(page, 'jzm');
+    await page.locator('#btn-upload-menu').click();
+    await page.locator('.upload-menu-item[data-sample="zxml_ukazkova_data.xml"]').click();
+    await expect(page.locator('.project-item .project-name')).toHaveAttribute('title', /ŽXML 1\.4\.2\.1/, { timeout: 60_000 });
+    await expect(page.locator('#loading-overlay')).toBeHidden();
+    await page.locator('#btn-features').click();
+    const summary = page.locator('#features-summary');
+    await expect(summary).toHaveText('98 typů, 9915 záznamů');
+
+    // Předvolba stavby je první atribut ve výběru.
+    const select = page.locator('#features-attr-filter .attr-filter-select');
+    await select.focus();
+    await expect(select.locator('option').nth(1)).toHaveText(/^Stavba \(PS\/SO\) · CisStaOb/);
+    await select.selectOption('CisStaOb');
+    const row = page.locator('.attr-filter-row', { hasText: 'PS 02-01-71 — ŽST HÝSKOV, ETCS' });
+    await expect(row.locator('.attr-filter-value-count')).toHaveText('85');
+
+    // „jen tato“ → jen PS 02-01-71 v tabulce i v mapě.
+    await row.hover();
+    await row.locator('.attr-filter-only').click();
+    await expect(page.locator('.attr-filter-chip')).toContainText('CisStaOb: PS 02-01-71 — ŽST HÝSKOV, ETCS');
+    await expect(summary).toContainText('85 z 9915 záznamů');
+    const drawn = await drawnValues('CisStaOb');
+    expect(drawn.length).toBeGreaterThan(0);
+    expect(new Set(drawn)).toEqual(new Set(['PS 02-01-71']));
+
+    // Přidat SO01 → dvě hodnoty.
+    await page.locator('.attr-filter-row', { hasText: /^SO01 — / }).locator('input[type=checkbox]').check();
+    await expect(summary).toContainText('161 z 9915 záznamů');
+    expect(new Set(await drawnValues('CisStaOb'))).toEqual(new Set(['PS 02-01-71', 'SO01']));
+
+    // 3D: viditelné jen vybrané záznamy.
+    await page.locator('#btn-3d').click();
+    await expect.poll(() => page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { visibleRecords3d: (a: string) => string[] | null } }).__jvfDebug
+        .visibleRecords3d('CisStaOb')?.length ?? 0), { timeout: 60_000 }).toBeGreaterThan(0);
+    const vis3d = await page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { visibleRecords3d: (a: string) => string[] | null } }).__jvfDebug
+        .visibleRecords3d('CisStaOb'));
+    expect(new Set(vis3d)).toEqual(new Set(['PS 02-01-71', 'SO01']));
+
+    // Export do CAD: volba „jen podle filtru“ s počtem záznamů → soubor *_filtr.dxf.
+    await page.locator('#btn-export-cad').click();
+    await expect(page.locator('label', { has: page.locator('#cad-filtered') })).toContainText('(161 záznamů)');
+    await page.locator('#cad-filtered').check();
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#confirm-modal-footer button', { hasText: 'Exportovat' }).click();
+    expect((await downloadPromise).suggestedFilename()).toMatch(/_filtr\.dxf$/);
+
+    // Čip filtr zruší.
+    await page.locator('.attr-filter-chip').click();
+    await expect(summary).toHaveText('98 typů, 9915 záznamů');
+    await expect(page.locator('.attr-filter-chip')).toHaveCount(0);
+  });
+
+  test('filtr podle atributu funguje i u JVF (bez předvolby stavby)', async ({ page }) => {
+    await loadSample(page, 'ukazka_ZPS.xml');
+    await page.locator('#btn-features').click();
+    const select = page.locator('#features-attr-filter .attr-filter-select');
+    await select.focus();
+    await expect.poll(() => select.locator('option').count()).toBeGreaterThan(1);
+    await expect(select.locator('option', { hasText: 'Stavba (PS/SO)' })).toHaveCount(0);
+    await select.selectOption({ index: 1 });
+    const first = page.locator('.attr-filter-row').first();
+    await first.hover();
+    await first.locator('.attr-filter-only').click();
+    await expect(page.locator('.attr-filter-chip')).toBeVisible();
+    await expect(page.locator('#features-summary')).toContainText(' z ');
+  });
+
   test('filtr úrovní umístění je vidět i s jedinou úrovní a filtruje tabulku i mapu', async ({ page }) => {
     // Ukázka ZPS: vše na úrovni 0 → řádek úrovní je vidět s jediným čipem.
     await loadSample(page, 'ukazka_ZPS.xml');

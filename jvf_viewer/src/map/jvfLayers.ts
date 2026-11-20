@@ -46,11 +46,13 @@ import { getLineSymbol, loadLineSymbol } from './lineSymbolShapes.js';
 import { drawLineSymbols } from './lineSymbolRenderer.js';
 import { drawRepeatSymbols, getRepeatImage, loadRepeatImage } from './repeatSymbol.js';
 import {
+  isAttributeVisible,
   isContentPartVisible,
   isLevelVisible,
   isProjectVisible,
   resolveLevelKey,
   type LevelKey,
+  type RecordAttributes,
 } from '../state/featureFilter.js';
 import { resolveProjectKey } from '../state/projects.js';
 
@@ -624,6 +626,7 @@ export function isJvfFeatureDisplayed(feature: FeatureLike): boolean {
   if (!isLevelVisible(feature.get('jvfLevel') as LevelKey | undefined)) return false;
   if (!isProjectVisible(feature.get('jvfProjectId') as string | null | undefined)) return false;
   if (!isContentPartVisible(feature.get('jvfPart') as string | undefined)) return false;
+  if (!isAttributeVisible(feature.get('jvfAttrs') as RecordAttributes | undefined)) return false;
   const zo = feature.get('jvfZapisObjektu') as string | undefined;
   return !isChangesetZapis(zo) || isShowZapis(zo);
 }
@@ -699,6 +702,7 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
                 mcFeature.set('jvfLevel', levelKey);
                 mcFeature.set('jvfProjectId', projectId);
                 mcFeature.set('jvfPart', part);
+                mcFeature.set('jvfAttrs', zaznam.attributes);
                 features.push(mcFeature);
               }
             }
@@ -716,6 +720,8 @@ export function buildJvfLayers(objekty: ObjektovyTyp[]): {
           feature.set('jvfLevel', levelKey);
           feature.set('jvfProjectId', projectId);
           feature.set('jvfPart', part);
+          // Odkaz (ne kopie) na atributy záznamu — filtr podle hodnoty atributu.
+          feature.set('jvfAttrs', zaznam.attributes);
           features.push(feature);
         }
       }
