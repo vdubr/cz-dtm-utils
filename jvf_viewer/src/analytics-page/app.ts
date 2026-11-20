@@ -33,6 +33,8 @@ interface Visit {
   ev: Ev[];
   /** Nástroje, ve kterých přístup probíhal (z cesty u `pv` a z režimu u načtení / přepnutí). */
   tools: Set<string>;
+  /** Odkud uživatel přišel: doména (`$referring_domain`), `$direct` = přímo, `''` = neznámo. */
+  ref: string;
 }
 
 interface Row {
@@ -129,11 +131,15 @@ function toVisits(data: StoredData): Visit[] {
       return { t: h * 3600 + m * 60 + s + plus * 86400, clock: ts.slice(11, 16), plus, code: p[0], a: p.slice(1) };
     });
     const d = new Date(d0);
-    visits.push({ id, dayIso: sv.day, day: `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`, tag: sv.tag, ev, tools: toolsOf(ev) });
+    visits.push({ id, dayIso: sv.day, day: `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`, tag: sv.tag, ev, tools: toolsOf(ev), ref: ev.find((e) => e.code === 'pv')?.a[1] ?? '' });
   }
   // podle prvního času
   return visits.sort((x, y) => x.dayIso.localeCompare(y.dayIso) || x.ev[0].t - y.ev[0].t);
 }
+
+/** Popisek zdroje přístupu (`$direct` → „přímý přístup“). */
+const DIRECT = 'přímý přístup';
+const refLabel = (ref: string): string => (ref === '$direct' ? DIRECT : ref);
 
 /** Nástroj podle cesty stránky (`/jzm` → jzm, `/udm` → udm, jinak jvf). */
 const toolOfPath = (path: string | undefined): string => {
@@ -174,7 +180,10 @@ function describe(v: Visit): Row[] {
     let label: string, small = '';
     let bar: Row['bar'] = null;
     switch (e.code) {
-      case 'pv': label = 'Načtení stránky'; small = a[0] && a[0] !== '/' ? a[0] : ''; break;
+      case 'pv':
+        label = 'Načtení stránky';
+        small = [a[0] && a[0] !== '/' ? a[0] : '', a[1] ? (a[1] === '$direct' ? DIRECT : 'z ' + a[1]) : ''].filter(Boolean).join(' · ');
+        break;
       case 'sl': label = 'Načtena ukázka'; small = a[0] ?? ''; break;
       case 'fl': {
         label = 'Načten vlastní soubor';
@@ -290,13 +299,14 @@ function renderDays(visits: Visit[]): Stats {
 }
 
 /* ── Stav: vybrané období ───────────────────────────────────── */
-const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran; typ: Set<Typ>; tool: Set<Tool> } = {
+const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran; typ: Set<Typ>; tool: Set<Tool>; zdroj: string } = {
   data: null,
   visits: [],
   sel: null, // půlnoc UTC dnů, včetně
   gran: 'den',
   typ: new Set(), // výchozí nic = všechny přístupy
   tool: new Set(), // výchozí nic = všechny nástroje
+  zdroj: '', // text filtru „odkud přišli“ (část domény), prázdný = bez filtru
 };
 
 const visitDay = (v: Visit): number => parseIso(v.dayIso);
@@ -304,12 +314,22 @@ const inSel = (t: number): boolean => !state.sel || (t >= state.sel.from && t <=
 const isTyp = (v: Visit): boolean => !state.typ.size || [...state.typ].some((t) => v.ev.some((e) => e.code === TYP_CODE[t]));
 /** Popis filtru do textů: „přístupů s ukázkou“, … (bez filtru prázdný). */
 const isTool = (v: Visit): boolean => !state.tool.size || [...state.tool].some((t) => v.tools.has(t));
-/** Přístup projde oběma filtry (typ i nástroj). */
-const matches = (v: Visit): boolean => isTyp(v) && isTool(v);
-const anyFilter = (): boolean => state.typ.size > 0 || state.tool.size > 0;
+/** Zdroj: přesně „přímý přístup“, jinak část domény (bez ohledu na velikost písmen). */
+const isZdroj = (v: Visit): boolean => {
+  const q = state.zdroj.trim().toLowerCase();
+  if (!q) return true;
+  return q === DIRECT ? v.ref === '$direct' : refLabel(v.ref).toLowerCase().includes(q);
+};
+/** Přístup projde všemi filtry (typ, nástroj, zdroj). */
+const matches = (v: Visit): boolean => isTyp(v) && isTool(v) && isZdroj(v);
+const anyFilter = (): boolean => state.typ.size > 0 || state.tool.size > 0 || state.zdroj.trim() !== '';
 /** Popis filtru nástroje: „v JVF“, „v JVF nebo ŽXML“ (bez filtru prázdný). */
 const toolDesc = (): string => (state.tool.size ? 'v ' + TOOLS.filter((t) => state.tool.has(t)).map((t) => TOOL_LABEL[t]).join(' nebo ') : '');
-const filterDesc = (): string => [typDesc(), toolDesc()].filter(Boolean).join(' ');
+const zdrojDesc = (): string => {
+  const q = state.zdroj.trim();
+  return !q ? '' : q.toLowerCase() === DIRECT ? 'přímo (bez odkazu)' : `z „${q}“`;
+};
+const filterDesc = (): string => [typDesc(), toolDesc(), zdrojDesc()].filter(Boolean).join(' ');
 const typDesc = (): string =>
   state.typ.size === 2 ? 's ukázkou nebo vlastními daty' : state.typ.has('ukazka') ? 's ukázkou' : state.typ.has('vlastni') ? 's vlastními daty' : '';
 const yearOf = (t: number): number => new Date(t).getUTCFullYear();
@@ -421,7 +441,7 @@ function renderChart(): void {
     's ukázkou nebo vlastními daty': 's načtenou ukázkou nebo vlastním souborem',
   }[typDesc()];
   $('chart-cap').textContent =
-    [`${total} ${plural(total, 'přístup', 'přístupy', 'přístupů')}`, what, toolDesc(), state.typ.size ? '' : '(i bez načtení dat)'].filter(Boolean).join(' ') +
+    [`${total} ${plural(total, 'přístup', 'přístupy', 'přístupů')}`, what, toolDesc(), zdrojDesc(), state.typ.size ? '' : '(i bez načtení dat)'].filter(Boolean).join(' ') +
     (selTotal !== null ? `, z toho ${selTotal} ve vybraném období.` : '.');
   $('chart-h').textContent = `Přístupy ${filterDesc()}`.trim();
   renderSelInfo();
@@ -500,6 +520,7 @@ function writeHash(): void {
   if (state.gran !== 'den') parts.push(`po=${state.gran}`);
   if (state.typ.size) parts.push(`typ=${TYPY.filter((t) => state.typ.has(t)).join(',')}`);
   if (state.tool.size) parts.push(`nastroj=${TOOLS.filter((t) => state.tool.has(t)).join(',')}`);
+  if (state.zdroj.trim()) parts.push(`zdroj=${encodeURIComponent(state.zdroj.trim())}`);
   try {
     history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search);
   } catch {
@@ -548,6 +569,14 @@ function readHash(): Sel | null {
   state.typ = new Set((t ? t[1].split(',') : []).filter((x): x is Typ => TYPY.includes(x as Typ)));
   const n = /nastroj=([a-z,]+)/.exec(h);
   state.tool = new Set((n ? n[1].split(',') : []).filter((x): x is Tool => TOOLS.includes(x as Tool)));
+  const z = /zdroj=([^&]*)/.exec(h);
+  try {
+    state.zdroj = z ? decodeURIComponent(z[1]) : '';
+  } catch {
+    state.zdroj = '';
+  }
+  const input = document.getElementById('zdroj') as HTMLInputElement | null;
+  if (input && input.value !== state.zdroj) input.value = state.zdroj;
   const m = /od=(\d{4}-\d\d-\d\d)&do=(\d{4}-\d\d-\d\d)/.exec(h);
   if (!m) return null;
   const from = parseIso(m[1]), to = parseIso(m[2]);
@@ -759,11 +788,34 @@ export function renderApp(data: StoredData): void {
     document.querySelectorAll<HTMLButtonElement>('#gran button').forEach((b) => b.addEventListener('click', () => setGran(b.dataset.g)));
     document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.addEventListener('click', () => toggleTyp(b.dataset.t)));
     document.querySelectorAll<HTMLButtonElement>('#tool button').forEach((b) => b.addEventListener('click', () => toggleTool(b.dataset.n)));
+    let zid: ReturnType<typeof setTimeout> | undefined;
+    $('zdroj').addEventListener('input', (e) => {
+      clearTimeout(zid);
+      const value = (e.target as HTMLInputElement).value;
+      zid = setTimeout(() => {
+        state.zdroj = value;
+        writeHash();
+        renderAll();
+      }, 150);
+    });
     let tid: ReturnType<typeof setTimeout> | undefined;
     window.addEventListener('resize', () => {
       clearTimeout(tid);
       tid = setTimeout(renderChart, 120);
     });
   }
+  renderZdrojList();
   renderAll();
+}
+
+/** Našeptávač zdrojů: domény podle počtu přístupů (všech, bez ohledu na filtry). */
+function renderZdrojList(): void {
+  const counts = new Map<string, number>();
+  state.visits.forEach((v) => {
+    if (v.ref) counts.set(refLabel(v.ref), (counts.get(refLabel(v.ref)) ?? 0) + 1);
+  });
+  $('zdroj-list').innerHTML = [...counts]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([r, n]) => `<option value="${esc(r)}" label="${n} ${plural(n, 'přístup', 'přístupy', 'přístupů')}"></option>`)
+    .join('');
 }

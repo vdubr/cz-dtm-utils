@@ -43,6 +43,8 @@
       <div class="chart-head">
         <h2 id="chart-h">Přístupy s vlastními daty</h2>
         <div class="controls">
+          <input id="zdroj" class="zdroj" type="search" list="zdroj-list" placeholder="Odkud přišli…" autocomplete="off" spellcheck="false" aria-label="Filtr: odkud uživatel přišel (část domény, např. google; nebo „přímý přístup“)" />
+          <datalist id="zdroj-list"></datalist>
           <div class="gran" id="tool" role="group" aria-label="Filtr nástroje (lze zapnout oba, nic = všechny nástroje)">
             <button type="button" data-n="jvf" aria-pressed="false">JVF</button><button type="button" data-n="jzm" aria-pressed="false">ŽXML</button>
           </div>
