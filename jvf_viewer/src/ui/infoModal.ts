@@ -348,7 +348,9 @@ ${when(DIALECTS, `
       Řádek <em>Atribut</em> filtruje podle <strong>hodnoty atributu</strong>:
       vyberte atribut přítomný v datech, zaškrtněte hodnoty (s počtem záznamů
       a hledáním; „jen tato" jedním klikem) a zobrazí se jen odpovídající
-      prvky; čip filtru ho křížkem zruší, lupa přiblíží na vybrané prvky.${when(JZM, ` U ŽXML je
+      prvky; čip filtru ho křížkem zruší, lupa přiblíží na vybrané prvky.
+      Při jakémkoli aktivním filtru má tlačítko <em>Přehled prvků</em>
+      vpravo dole odznak s ikonou filtru (i se zavřeným panelem).${when(JZM, ` U ŽXML je
       nahoře předvolba <em>Stavba (PS/SO)</em> — číslo stavebního objektu nebo
       provozního souboru <code>CisStaOb</code> s názvem z <code>NazStaOb</code>.`)}
       Filtr obsahové části, úrovní i atributu platí pro tabulku i pro 2D a 3D mapu

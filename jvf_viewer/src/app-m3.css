@@ -728,6 +728,34 @@ html, body {
   line-height: 1;
 }
 
+/* Odznak aktivního filtru na tlačítku „Přehled prvků“ — ikona filtru
+   v kolečku vpravo dole (ui/featuresPanel.ts). */
+.btn-filter-badge {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  box-shadow: 0 0 0 2px var(--md-sys-color-surface-container);
+  pointer-events: none;
+}
+.btn-filter-badge[hidden] { display: none; }
+/* Bez posunu ikon tlačítka (`.btn .material-symbols-outlined` má margin-left −8 px). */
+.btn .btn-filter-badge .material-symbols-outlined {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 14px;
+}
+
 /* Filtr podle hodnoty atributu (ui/attributeFilter.ts) — řádek „Atribut:“,
    čip aktivního filtru a rozbalovací seznam hodnot. */
 .attr-filter-select {

@@ -989,6 +989,8 @@ test.describe('Modály a ovládání', () => {
     await row.hover();
     await row.locator('.attr-filter-only').click();
     await expect(page.locator('.attr-filter-chip')).toContainText('CisStaOb: PS 02-01-71 — ŽST HÝSKOV, ETCS');
+    // Odznak aktivního filtru na tlačítku „Přehled prvků“.
+    await expect(page.locator('#features-filter-badge')).toBeVisible();
     await expect(summary).toContainText('85 z 9915 záznamů');
     const drawn = await drawnValues('CisStaOb');
     expect(drawn.length).toBeGreaterThan(0);
@@ -1021,6 +1023,7 @@ test.describe('Modály a ovládání', () => {
     await page.locator('.attr-filter-chip').click();
     await expect(summary).toHaveText('98 typů, 9915 záznamů');
     await expect(page.locator('.attr-filter-chip')).toHaveCount(0);
+    await expect(page.locator('#features-filter-badge')).toBeHidden();
   });
 
   test('filtr podle atributu funguje i u JVF (bez předvolby stavby)', async ({ page }) => {

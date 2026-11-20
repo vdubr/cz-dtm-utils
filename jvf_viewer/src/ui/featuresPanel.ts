@@ -54,6 +54,7 @@ const searchInput  = document.getElementById('features-search')        as HTMLIn
 const levelFilterEl = document.getElementById('features-level-filter') as HTMLDivElement;
 const projectFilterEl = document.getElementById('features-project-filter') as HTMLDivElement;
 const filtersEl    = panel.querySelector('.features-filters')          as HTMLDivElement;
+const filterBadgeEl = document.getElementById('features-filter-badge') as HTMLElement | null;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentObjekty: ObjektovyTyp[] = [];
@@ -842,6 +843,9 @@ export function initFeaturesPanel(
   });
 
   subscribeFeatureFilter(() => {
+    // Odznak na tlačítku „Přehled prvků“ — filtr je aktivní, i když je panel zavřený.
+    const active = isFeatureFilterActive();
+    if (filterBadgeEl) filterBadgeEl.hidden = !active;
     renderContentFilterChips();
     renderSummary();
     renderLevelChips();

@@ -109,6 +109,10 @@
         </button>
         <button id="btn-features" class="btn btn-secondary" disabled title="Nejprve nahrajte JVF soubor">
           <span class="material-symbols-outlined">list</span><span class="btn-label">Přehled prvků</span>
+          <!-- Odznak aktivního filtru Přehledu prvků (ui/featuresPanel.ts) -->
+          <span id="features-filter-badge" class="btn-filter-badge" role="img" aria-label="aktivní filtr" hidden>
+            <span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>
+          </span>
         </button>
         <button id="btn-export-cad" class="btn btn-outlined" data-mode="jvf udm jzm" disabled title="Nejprve nahrajte JVF soubor">
           <span class="material-symbols-outlined">download</span><span class="btn-label">Export do CAD</span>
