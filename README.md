@@ -249,6 +249,26 @@ Cloud EU (data stored in Frankfurt) next to Vercel Web Analytics:
 
 The same description is shown to users in the app's info modal.
 
+### Usage overview (`/analytics`)
+
+An internal page at **`/analytics`** (`jvf_viewer/analytics.html`,
+`jvf_viewer/src/analytics-page/`) shows the collected events per visit
+(timeline of each page load that loaded a sample or own data), a chart of
+visits with own data per day/week/month and a map of the centres of loaded
+data extents. It is a separate Vite entry with its own bundle; it does not load
+the viewer or its measurement.
+
+- On first open it shows only a field for a **PostHog personal API key**
+  (create one in PostHog → Settings → Personal API keys with the `query:read`
+  scope limited to the viewer project). The page queries the PostHog Query API
+  (HogQL) directly from the browser — PostHog allows CORS, no proxy is needed.
+- The key and the downloaded data are kept in the browser's `localStorage`
+  only. The next visit renders the stored data immediately and downloads just
+  the new events (window from the last stored event minus one hour; duplicates
+  are dropped). *Log out* removes both.
+- No data is committed to the repository. Locally: `npm run dev -w jvf-viewer`
+  → `http://localhost:5173/analytics`.
+
 ---
 
 ## Project character

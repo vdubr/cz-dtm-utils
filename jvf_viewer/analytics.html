@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Průchod aplikací · DTM Prohlížeč</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
+</head>
+<body>
+  <!-- Brána: osobní API klíč PostHogu (uloží se jen v tomto prohlížeči). -->
+  <main id="gate" class="gate" hidden>
+    <form id="gate-form" class="gate-card" autocomplete="off">
+      <h1>Průchod aplikací</h1>
+      <p>Přehled používání JVF vieweru z dat PostHogu. Pro načtení dat vložte osobní API klíč PostHogu.</p>
+      <label for="gate-key">Osobní API klíč PostHogu</label>
+      <input id="gate-key" type="password" placeholder="phx_…" spellcheck="false" autocomplete="off" required />
+      <p class="gate-error" id="gate-error" role="alert" hidden></p>
+      <div><button class="btn" id="gate-submit" type="submit">Načíst</button></div>
+      <p class="cap">
+        Klíč vytvoříte v <a id="gate-link" href="https://eu.posthog.com/settings/user-api-keys" target="_blank" rel="noopener">nastavení PostHogu</a>.
+        Stačí oprávnění <code>query:read</code> omezené na projekt Default. Klíč i stažená data zůstanou jen v tomto prohlížeči
+        (localStorage), nikam jinam se neposílají.
+      </p>
+    </form>
+  </main>
+
+  <div id="app" class="wrap" hidden>
+    <header class="topbar">
+      <div>
+        <h1>Průchod aplikací</h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <div class="tools">
+        <span class="status" id="status" role="status" aria-live="polite"></span>
+        <button class="btn" id="btn-refresh" type="button">Aktualizovat</button>
+        <button class="btn ghost" id="btn-logout" type="button" title="Smaže klíč i stažená data z tohoto prohlížeče">Odhlásit</button>
+      </div>
+    </header>
+
+    <section class="block chart" aria-labelledby="chart-h">
+      <div class="chart-head">
+        <h2 id="chart-h">Přístupy s vlastními daty</h2>
+        <div class="gran" role="group" aria-label="Seskupení grafu">
+          <button type="button" data-g="den" aria-pressed="true">Den</button><button type="button" data-g="tyden" aria-pressed="false">Týden</button><button type="button" data-g="mesic" aria-pressed="false">Měsíc</button>
+        </div>
+      </div>
+      <div id="chart"></div>
+      <div class="selinfo" id="sel-info"></div>
+      <p class="cap" id="chart-cap"></p>
+    </section>
+
+    <div class="stats" id="stats"></div>
+
+    <section class="block" aria-labelledby="map-h">
+      <h2 id="map-h">Střed extentu projektů s vlastními daty</h2>
+      <div id="map"></div>
+      <p class="cap" id="map-cap"></p>
+    </section>
+
+    <div class="legend">
+      <span><i style="background:var(--c-soubor)"></i>soubor, ukázka, kontrola, export</span>
+      <span><i style="background:var(--c-mapa)"></i>mapa, měření, panel prvků</span>
+      <span><i style="background:var(--c-podklad)"></i>podklady, překryvy, terén</span>
+      <span><i style="background:var(--c-3d)"></i>3D</span>
+      <span><i style="background:var(--c-ui)"></i>vzhled, symboly</span>
+      <span><i style="background:var(--c-pv)"></i>načtení stránky</span>
+      <span><i class="bar" style="background:var(--active)"></i>aktivní čas</span>
+      <span><i class="bar" style="background:var(--c-3d)"></i>čas ve 3D</span>
+    </div>
+
+    <div id="days" class="wrap" style="gap:32px"></div>
+
+    <p class="note" id="skipped"></p>
+    <p class="note">Osy jsou zhuštěné: mezery delší než minuta jsou zkrácené a označené značkou ⋯, takže vzdálenost bodů neodpovídá přesně času (ten je v seznamu událostí). Události <code>active_time</code> a <code>view_3d</code> se odesílají dávkově, pruh proto končí v okamžiku odeslání a začíná o uvedený počet sekund dříve. Přípona „+1“ u času značí událost o den později v téže otevřené kartě.</p>
+  </div>
+
+  <script type="module" src="/src/analytics-page/main.ts"></script>
+</body>
+</html>
