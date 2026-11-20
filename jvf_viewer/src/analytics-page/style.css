@@ -168,3 +168,4 @@ ol.ev li.gap .txt { font-style: italic; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px 10px; }
 .zdroj { font: inherit; font-size: 12.5px; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 0 12px; width: 190px; height: 30px; }
 .zdroj:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.envtag { font-size: 11px; font-weight: 600; color: var(--c-podklad); border: 1px solid currentColor; border-radius: 999px; padding: 0 7px; line-height: 16px; align-self: center; }

@@ -266,9 +266,11 @@ the viewer or its measurement.
   only. The next visit renders the stored data immediately and downloads just
   the new events (window from the last stored event minus one hour; duplicates
   are dropped). *Log out* removes both.
-- Only events from the production hosts are shown (`PRODUCTION_HOSTS` in
-  `analytics-page/posthog.ts`, mirrors `VITE_POSTHOG_HOSTS` in
-  `.env.production`); previews measured into the same project are skipped.
+- By default only visits from the production hosts are shown
+  (`PRODUCTION_HOSTS` in `analytics-page/posthog.ts`, mirrors
+  `VITE_POSTHOG_HOSTS` in `.env.production`); the *Preview* toggle adds
+  visits from previews / localhost measured into the same project (marked
+  „preview“ on the visit card).
 - No data is committed to the repository. Locally: `npm run dev -w jvf-viewer`
   → `http://localhost:5173/analytics`.
 
