@@ -66,17 +66,23 @@ const LINE_SQL = `multiIf(
   event = 'mode_change', concat('mc ', ifNull(toString(properties.mode), '?')),
   replaceAll(event, ' ', '_'))`;
 
-function eventsSql(sinceU: number, offset: number): string {
+/**
+ * Události přístupů aktivních od `sinceU`. Stránkování kurzorem podle času
+ * (`timestamp >= cursorU`) — OFFSET PostHog s osobním API klíčem nedovoluje.
+ * Řádky ze sekundy na hranici stránek přijdou dvakrát, zahodí je deduplikace.
+ */
+function eventsSql(sinceU: number, cursorU: number, pageSize: number): string {
   return `SELECT distinct_id,
     formatDateTime(toTimeZone(timestamp, 'Europe/Prague'), '%Y-%m-%dT%H:%i:%S') AS ts,
     toUnixTimestamp(timestamp) AS u,
     ${LINE_SQL} AS line
   FROM events
   WHERE timestamp >= toDateTime('${DATA_START} 00:00:00')
+    ${cursorU > 0 ? `AND timestamp >= fromUnixTimestamp(${Math.floor(cursorU)})` : ''}
     AND distinct_id IN (SELECT distinct_id FROM events WHERE timestamp >= fromUnixTimestamp(${Math.floor(sinceU)}))
     AND distinct_id IN (SELECT distinct_id FROM events WHERE event IN ('sample_load', 'file_load'))
-  ORDER BY distinct_id, timestamp
-  LIMIT ${PAGE} OFFSET ${offset}`;
+  ORDER BY timestamp, distinct_id
+  LIMIT ${pageSize}`;
 }
 
 /** Počty všech přístupů po dnech (podle první události), od dne `fromDay`. */
@@ -110,7 +116,12 @@ export interface SyncResult {
  * Stáhne novinky od `prev.lastU − OVERLAP` (bez `prev` vše od začátku měření)
  * a vrátí sloučená data. `prev` se nemění.
  */
-export async function syncData(key: string, prev: StoredData | null, onProgress?: (msg: string) => void): Promise<SyncResult> {
+export async function syncData(
+  key: string,
+  prev: StoredData | null,
+  onProgress?: (msg: string) => void,
+  pageSize = PAGE,
+): Promise<SyncResult> {
   const data: StoredData = prev
     ? structuredClone(prev)
     : { version: 1, lastU: 0, lastEvent: '', totalByDay: {}, visits: {} };
@@ -118,15 +129,19 @@ export async function syncData(key: string, prev: StoredData | null, onProgress?
 
   // ── události (stránkování) ─────────────────────────────────
   const rows: [string, string, number, string][] = [];
-  for (let offset = 0; ; offset += PAGE) {
-    onProgress?.(offset ? `Stahuji události (${offset}+)…` : 'Stahuji události…');
-    const page = await hogql(key, eventsSql(sinceU, offset));
+  for (let cursor = 0; ; ) {
+    onProgress?.(rows.length ? `Stahuji události (${rows.length}+)…` : 'Stahuji události…');
+    const page = await hogql(key, eventsSql(sinceU, cursor, pageSize));
+    let last = cursor;
     for (const r of page) {
       const [id, ts, u, line] = r;
       if (typeof id !== 'string' || typeof ts !== 'string' || !TS.test(ts) || typeof line !== 'string') continue;
       rows.push([id, ts, Number(u), line.trim().replace(/\s+/g, ' ')]);
+      if (Number(u) > last) last = Number(u);
     }
-    if (page.length < PAGE) break;
+    if (page.length < pageSize) break;
+    // celá stránka v jedné sekundě → kurzor by se nepohnul; posun o sekundu (nereálný případ)
+    cursor = last > cursor ? last : cursor + 1;
   }
 
   // ── sloučení podle distinct_id, deduplikace ────────────────
