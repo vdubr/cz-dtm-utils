@@ -3,7 +3,7 @@ import { Line2 } from 'three/examples/jsm/lines/Line2.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { endConnectors, offsetPolyline, type ObjektovyTyp, type Geometry } from 'jvf-parser';
-import { resolveStyleForZaznam, type ResolvedLineStroke, type ResolvedStyle } from '../map/jvfLayers.js';
+import { MAX_SYMBOL_PX, resolveStyleForZaznam, type ResolvedLineStroke, type ResolvedStyle } from '../map/jvfLayers.js';
 import { addLineSymbols3d, addRepeatSymbols3d, countLineSymbols3d, lineSymbolDash3d } from './lineSymbols3d.js';
 import {
   isShowZapis,
@@ -317,6 +317,15 @@ const MAX_SPRITE_TEXTURE_PX = 256;
 /** Sprity podle SVG — po načtení textury dostanou fyzickou velikost (bez procházení scény). */
 const spritesByTexture = new Map<string, Set<THREE.Sprite>>();
 
+/**
+ * Skutečná (fyzická, 1:500) velikost spritu v metrech. `scale` spritu se
+ * z ní odvozuje v `updateSpriteVisibility` se stropem `MAX_SYMBOL_PX`.
+ */
+function setSpriteRealSize(sprite: THREE.Sprite, w: number, h: number): void {
+  sprite.userData['jvfRealSize'] = [w, h];
+  sprite.scale.set(w, h, 1);
+}
+
 /** Nativní rozměry SVG (jednotky 0,01 mm) načtené textury, jinak `undefined`. */
 function svgSizeOf(tex: THREE.Texture): [number, number] | undefined {
   return tex.userData['svgSize'] as [number, number] | undefined;
@@ -355,8 +364,10 @@ function getSvgTexture(svgFile: string): THREE.Texture {
     tex.userData['svgSize'] = [w, h];
     tex.needsUpdate = true;
     for (const sprite of spritesByTexture.get(svgFile) ?? []) {
-      sprite.scale.set(w * SVG_PX_TO_METERS, h * SVG_PX_TO_METERS, 1);
+      setSpriteRealSize(sprite, w * SVG_PX_TO_METERS, h * SVG_PX_TO_METERS);
     }
+    // Strop velikosti na obrazovce i bez pohybu kamery.
+    if (state) updateSpriteVisibility(state.spriteObjects, state.camera, state.renderer.domElement.clientHeight);
   };
   img.src = SVG_BASE + svgFile;
   svgTextureCache.set(svgFile, tex);
@@ -461,7 +472,12 @@ function updateSpriteVisibility(spriteObjects: THREE.Object3D[], camera: THREE.P
   const pxPerMeter = (viewportPx || 600) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
   for (const obj of spriteObjects) {
     const dist = camera.position.distanceTo(obj.position) || 1;
-    const big = (obj.scale.y * pxPerMeter) / dist >= MIN_SPRITE_PX;
+    const pxPerUnit = pxPerMeter / dist;
+    const [realW, realH] = (obj.userData['jvfRealSize'] as [number, number] | undefined) ?? [obj.scale.x, obj.scale.y];
+    // Puntík podle skutečné velikosti, strop `MAX_SYMBOL_PX` při přiblížení.
+    const big = realH * pxPerUnit >= MIN_SPRITE_PX;
+    const f = Math.min(1, MAX_SYMBOL_PX / (Math.max(realW, realH) * pxPerUnit));
+    obj.scale.set(realW * f, realH * f, 1);
     obj.userData['jvfSpriteBig'] = big;
     // AND s ostatními přepínači (vrstvy / changeset / filtr prvků) —
     // oddálení a přiblížení kamery nesmí od-skrýt jinak skrytý bod.
@@ -743,9 +759,9 @@ function buildSceneObjects(
               sprite.position.set(x, y3, z3);
               const size = svgSizeOf(tex);
               if (size) {
-                sprite.scale.set(size[0] * SVG_PX_TO_METERS, size[1] * SVG_PX_TO_METERS, 1);
+                setSpriteRealSize(sprite, size[0] * SVG_PX_TO_METERS, size[1] * SVG_PX_TO_METERS);
               } else {
-                sprite.scale.set(0.5, 0.5, 1); // placeholder, přepíše se po načtení
+                setSpriteRealSize(sprite, 0.5, 0.5); // placeholder, přepíše se po načtení
               }
               let registered = spritesByTexture.get(s.pointSvg);
               if (!registered) spritesByTexture.set(s.pointSvg, (registered = new Set()));
@@ -1868,8 +1884,12 @@ export function getLineSymbol3dCount(): number {
  */
 export function getScene3dStats(): {
   objects: number; drawCalls: number; sprites: number; spritesLoaded: number; spritesVisible: number; dotsVisible: number;
+  maxSpritePx: number;
 } | null {
   if (!state) return null;
+  const { camera } = state;
+  const pxPerMeter = (state.renderer.domElement.clientHeight || 600) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+  let maxSpritePx = 0;
   let objects = 0;
   let sprites = 0;
   let spritesLoaded = 0;
@@ -1880,11 +1900,15 @@ export function getScene3dStats(): {
     if (o.userData['jvfDotFor'] && o.visible) dotsVisible++;
     if (!(o instanceof THREE.Sprite)) return;
     sprites++;
-    if (o.visible) spritesVisible++;
+    if (o.visible) {
+      spritesVisible++;
+      const dist = camera.position.distanceTo(o.position) || 1;
+      maxSpritePx = Math.max(maxSpritePx, (Math.max(o.scale.x, o.scale.y) * pxPerMeter) / dist);
+    }
     const map = (o.material as THREE.SpriteMaterial).map;
     if (map && svgSizeOf(map) && (map.image as HTMLCanvasElement).width > 1) spritesLoaded++;
   });
-  return { objects, drawCalls: state.renderer.info.render.calls, sprites, spritesLoaded, spritesVisible, dotsVisible };
+  return { objects, drawCalls: state.renderer.info.render.calls, sprites, spritesLoaded, spritesVisible, dotsVisible, maxSpritePx };
 }
 
 /**

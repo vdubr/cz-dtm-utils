@@ -159,7 +159,9 @@ const INFO_CONTENT_HTML = `
       1 SVG-pixel odpovídá 0,5 cm v terénu (referenční měřítko 1:500), takže
       se s mapou přibližují a oddalují stejně jako linie a polygony.
       Při velkém oddálení (zhruba nad 4 m/pixel) se symbol nahradí malou
-      barevnou tečkou, jinak by byl menší než pixel obrazovky.
+      barevnou tečkou, jinak by byl menší než pixel obrazovky; při velkém
+      přiblížení se nezvětšuje nad <strong>20 px</strong>, aby se značky
+      nepřekrývaly.
     </li>
     <li>
       <strong>Ovládání</strong> — rozhraní používá standardní komponenty
@@ -213,7 +215,7 @@ const INFO_CONTENT_HTML = `
       otáčení (pivot)</em> na zvolené místo. Volitelné převýšení výšky
       (1× / 2× / 5× / 10×) a možnost renderovat
       body jako SVG symboly (shodné s 2D; ikona menší než pár pixelů se při
-      oddálení nahradí puntíkem, jako ve 2D). Viditelnost vrstev se zachovává
+      oddálení nahradí puntíkem a při přiblížení nepřeroste 20 px, jako ve 2D). Viditelnost vrstev se zachovává
       mezi 2D a 3D režimem.
     </li>
     <li>

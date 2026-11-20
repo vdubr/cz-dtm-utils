@@ -71,6 +71,9 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   DTM ČR, atributy objektů v XDATA.
 
 ### Změněno
+- **Bodové značky při přiblížení nejvýš 20 px** (2D i 3D) — do 20 px se
+  značka zvětšuje se zoomem jako reálný objekt (1:500), pak už ne, aby se
+  husté značky nepřekrývaly; při oddálení beze změny (tečka / puntík).
 - **Filtr změn i u souborů s jediným typem záznamů** — karta „Změny" nabízí
   zaškrtávátko i tehdy, když jsou všechny záznamy např. editované (dřív jen
   „Obarvit změny"); nápověda řekne, že jsou všechny stejného typu.

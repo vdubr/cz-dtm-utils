@@ -945,6 +945,63 @@ test.describe('Modály a ovládání', () => {
     await expect(page.locator('.features-filter-btn')).toHaveText(['Vše', 'ZPS']);
   });
 
+  test('znaky bodů se při přiblížení nezvětšují nad 20 px (2D i 3D)', async ({ page }) => {
+    test.setTimeout(120_000);
+    await loadSample(page, 'ukazka_ZPS.xml');
+    // Velikosti SVG ikon bodů na obrazovce při dané resolution: [px, scale, nativní max].
+    const iconSizes = (res: number): Promise<{ px: number; scale: number; native: number }[]> =>
+      page.evaluate((res) => {
+        const d = (window as unknown as { __jvfDebug: {
+          olMap: import('ol/Map').default;
+          getJvfLayers: () => Array<{ olLayer: import('ol/layer/Vector').default }>;
+        } }).__jvfDebug;
+        d.olMap.getView().setResolution(res);
+        const out: { px: number; scale: number; native: number }[] = [];
+        for (const { olLayer } of d.getJvfLayers()) {
+          const fn = olLayer.getStyleFunction()!;
+          for (const f of olLayer.getSource()!.getFeatures()) {
+            const st = fn(f, res);
+            for (const one of Array.isArray(st) ? st : st ? [st] : []) {
+              const img = one.getImage();
+              if (!img || !('getSrc' in img)) continue; // jen SVG ikony (ne tečky)
+              const size = img.getSize();
+              if (!size) { img.load(); continue; } // mimo výřez se obrázek načte až teď
+              const scale = img.getScale() as number;
+              const native = Math.max(size[0]!, size[1]!);
+              out.push({ px: scale * native, scale, native });
+            }
+          }
+        }
+        return out;
+      }, res);
+
+    // Velké přiblížení: žádná ikona nad 20 px.
+    await expect.poll(async () => (await iconSizes(0.01)).length, { timeout: 20_000 }).toBeGreaterThan(0);
+    const near = await iconSizes(0.01);
+    expect(Math.max(...near.map((i) => i.px))).toBeLessThanOrEqual(20.001);
+    // Oddálení: ikony pod stropem mají skutečnou velikost 1:500 (scale = 0,005 / res).
+    const far = await iconSizes(1);
+    expect(far.length).toBeGreaterThan(0);
+    for (const i of far.filter((x) => 0.005 * x.native < 20)) expect(i.scale).toBeCloseTo(0.005, 6);
+
+    // 3D se SVG značkami: přiblížit kameru, největší viditelná značka ≤ 20 px.
+    await page.locator('#btn-3d').click();
+    await expect(page.locator('#three-canvas')).toBeVisible();
+    await page.locator('#toggle-svg-symbols').check({ force: true });
+    type Stats = { sprites: number; spritesLoaded: number; spritesVisible: number; maxSpritePx: number } | null;
+    const stats = () => page.evaluate(() =>
+      (window as unknown as { __jvfDebug: { scene3dStats: () => Stats } }).__jvfDebug.scene3dStats());
+    await expect.poll(async () => { const st = await stats(); return !!st && st.sprites > 0 && st.spritesLoaded === st.sprites; }).toBe(true);
+    for (let i = 0; i < 12 && ((await stats())?.spritesVisible ?? 0) === 0; i++) {
+      await page.locator('[data-nav="zoom-in"]').click();
+    }
+    for (let i = 0; i < 6; i++) await page.locator('[data-nav="zoom-in"]').click();
+    await page.waitForTimeout(500);
+    const st = (await stats())!;
+    expect(st.spritesVisible).toBeGreaterThan(0);
+    expect(st.maxSpritePx).toBeLessThanOrEqual(20.5);
+  });
+
   test('filtr podle atributu: stavba PS/SO u ŽXML filtruje tabulku, 2D, 3D i export', async ({ page }) => {
     test.setTimeout(180_000);
     // Hodnoty atributu u prvků, které 2D mapa kreslí.

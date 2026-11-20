@@ -104,6 +104,13 @@ const MM_TO_MAP_METERS = MM_TO_METERS * REFERENCE_SCALE;
 const SVG_PX_TO_METERS = 0.005;
 
 /**
+ * Strop velikosti bodové značky na obrazovce (delší strana, px). Do něj se
+ * značka při přiblížení zvětšuje jako reálný objekt (1:500), nad ním už ne —
+ * při velkém přiblížení by se značky překrývaly (2D i 3D, `threeScene.ts`).
+ */
+export const MAX_SYMBOL_PX = 20;
+
+/**
  * Nad touto resolution mapy se SVG symboly nahrazují malou barevnou tečkou
  * (CircleStyle). Důvod: při velkém oddálení by symbol byl menší než pixel
  * a nečitelný; jednotná tečka je rozeznatelnější.
@@ -529,14 +536,19 @@ function createStyleForGeom(
       // jinak se symboly překrývají a mapa je nepřehledná.
       const iconScale = s.pointSvg ? adaptiveIconScale(resolution) : null;
       if (s.pointSvg && iconScale !== null) {
-        return new Style({
-          image: new IconStyle({
-            src: SVG_BASE + s.pointSvg,
-            scale: iconScale,
-            // OL otáčí po směru hodinových ručiček, natočení v DTM je proti.
-            ...(s.pointRotationDeg ? { rotation: (-s.pointRotationDeg * Math.PI) / 180 } : {}),
-          }),
+        const icon = new IconStyle({
+          src: SVG_BASE + s.pointSvg,
+          scale: iconScale,
+          // OL otáčí po směru hodinových ručiček, natočení v DTM je proti.
+          ...(s.pointRotationDeg ? { rotation: (-s.pointRotationDeg * Math.PI) / 180 } : {}),
         });
+        // Strop `MAX_SYMBOL_PX` — rozměr SVG je známý až po načtení obrázku
+        // (sdílená cache OL podle `src`); OL po načtení vrstvu překreslí.
+        const size = icon.getSize();
+        if (size && size[0] > 0 && size[1] > 0) {
+          icon.setScale(Math.min(iconScale, MAX_SYMBOL_PX / Math.max(size[0], size[1])));
+        }
+        return new Style({ image: icon });
       }
       // Tečka — buď fallback (žádné SVG), nebo příliš oddálené.
       const dotRadius = s.pointSvg ? 2 : 4;
