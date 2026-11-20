@@ -2,8 +2,8 @@
  * Inkrementální stažení přístupů z PostHogu a jejich sloučení s uloženými daty.
  *
  * Přístup = jeden `distinct_id` (viewer měří bez cookies, každé načtení stránky je nový
- * anonymní návštěvník). Ukládají se jen přístupy, ve kterých se načetla ukázka
- * (`sample_load`) nebo vlastní data (`file_load`); ostatní se jen počítají po dnech.
+ * anonymní návštěvník). Ukládají se všechny přístupy, i bez načtení ukázky nebo
+ * vlastních dat — co zobrazit, rozhoduje filtr typu přístupu v `app.ts`.
  *
  * Událost se ukládá jako dvojice [čas, řádek]: český čas `YYYY-MM-DDTHH:MM:SS`
  * a řádek `kód argumenty` (kódy viz `app.ts`). Stahuje se okno od poslední známé
@@ -25,13 +25,12 @@ export interface StoredVisit {
 }
 
 export interface StoredData {
-  version: 1;
+  /** v2: všechny přístupy (v1 měla jen přístupy s daty + počty po dnech). */
+  version: 2;
   /** Unixový čas (s) poslední stažené události — začátek dalšího okna. */
   lastU: number;
   /** Poslední událost v českém čase (`YYYY-MM-DD HH:MM`), pro zobrazení. */
   lastEvent: string;
-  /** Všechny přístupy (i bez dat) po dnech podle první události (`YYYY-MM-DD` → počet). */
-  totalByDay: Record<string, number>;
   visits: Record<string, StoredVisit>;
 }
 
@@ -80,18 +79,8 @@ function eventsSql(sinceU: number, cursorU: number, pageSize: number): string {
   WHERE timestamp >= toDateTime('${DATA_START} 00:00:00')
     ${cursorU > 0 ? `AND timestamp >= fromUnixTimestamp(${Math.floor(cursorU)})` : ''}
     AND distinct_id IN (SELECT distinct_id FROM events WHERE timestamp >= fromUnixTimestamp(${Math.floor(sinceU)}))
-    AND distinct_id IN (SELECT distinct_id FROM events WHERE event IN ('sample_load', 'file_load'))
   ORDER BY timestamp, distinct_id
   LIMIT ${pageSize}`;
-}
-
-/** Počty všech přístupů po dnech (podle první události), od dne `fromDay`. */
-function totalsSql(fromDay: string): string {
-  return `SELECT toString(d) AS den, count() AS n
-  FROM (SELECT distinct_id, toDate(toTimeZone(min(timestamp), 'Europe/Prague')) AS d
-        FROM events WHERE timestamp >= toDateTime('${DATA_START} 00:00:00') GROUP BY distinct_id)
-  WHERE d >= toDate('${fromDay}')
-  GROUP BY d ORDER BY d`;
 }
 
 /** Štítky A … Z, AA … ZZ. */
@@ -101,14 +90,13 @@ function* labelSeq(): Generator<string> {
   for (const a of abc) for (const c of abc) yield a + c;
 }
 
-const ISO_DAY = /^\d{4}-\d\d-\d\d$/;
 const TS = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$/;
 
 export interface SyncResult {
   data: StoredData;
   /** Nově přidané události (bez duplicit z překryvu). */
   added: number;
-  /** Nové přístupy s daty. */
+  /** Nové přístupy. */
   newVisits: number;
 }
 
@@ -124,7 +112,7 @@ export async function syncData(
 ): Promise<SyncResult> {
   const data: StoredData = prev
     ? structuredClone(prev)
-    : { version: 1, lastU: 0, lastEvent: '', totalByDay: {}, visits: {} };
+    : { version: 2, lastU: 0, lastEvent: '', visits: {} };
   const sinceU = prev && prev.lastU > 0 ? prev.lastU - OVERLAP : DATA_START_U;
 
   // ── události (stránkování) ─────────────────────────────────
@@ -194,15 +182,6 @@ export async function syncData(
         break;
       }
     }
-  }
-
-  // ── počty všech přístupů po dnech (jen dny od posledního známého) ──
-  onProgress?.('Stahuji počty přístupů…');
-  const known = Object.keys(data.totalByDay).sort();
-  const fromDay = known.length ? known[known.length - 1] : DATA_START;
-  for (const d of known) if (d >= fromDay) delete data.totalByDay[d];
-  for (const [den, n] of await hogql(key, totalsSql(fromDay))) {
-    if (typeof den === 'string' && ISO_DAY.test(den)) data.totalByDay[den] = Number(n) || 0;
   }
 
   data.lastU = maxU;

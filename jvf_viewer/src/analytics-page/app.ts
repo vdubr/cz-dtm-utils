@@ -57,7 +57,10 @@ interface Stats {
 }
 
 type Gran = 'den' | 'tyden' | 'mesic';
-/** Typ přístupu: s načtenou ukázkou / s načtenými vlastními daty (přístup může mít obojí; filtr = sjednocení zapnutých). */
+/**
+ * Typ přístupu: s načtenou ukázkou / s načtenými vlastními daty. Filtr = sjednocení
+ * zapnutých (přístup může mít obojí); nic zapnuté = všechny přístupy, i bez načtení dat.
+ */
 type Typ = 'ukazka' | 'vlastni';
 interface Sel {
   from: number;
@@ -265,28 +268,28 @@ const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: 
   visits: [],
   sel: null, // půlnoc UTC dnů, včetně
   gran: 'den',
-  typ: new Set(TYPY), // výchozí obojí = všechny přístupy
+  typ: new Set(), // výchozí nic = všechny přístupy
 };
 
 const visitDay = (v: Visit): number => parseIso(v.dayIso);
 const inSel = (t: number): boolean => !state.sel || (t >= state.sel.from && t <= state.sel.to);
-const allTypes = (): boolean => TYPY.every((t) => state.typ.has(t));
-const isTyp = (v: Visit): boolean => [...state.typ].some((t) => v.ev.some((e) => e.code === TYP_CODE[t]));
+const isTyp = (v: Visit): boolean => !state.typ.size || [...state.typ].some((t) => v.ev.some((e) => e.code === TYP_CODE[t]));
+/** Popis filtru do textů: „přístupů s ukázkou“, … (bez filtru prázdný). */
+const typDesc = (): string =>
+  state.typ.size === 2 ? 's ukázkou nebo vlastními daty' : state.typ.has('ukazka') ? 's ukázkou' : state.typ.has('vlastni') ? 's vlastními daty' : '';
 const yearOf = (t: number): number => new Date(t).getUTCFullYear();
 
 /* ── Přehledová lišta ───────────────────────────────────────── */
-function renderStats(stats: Stats, withData: number): void {
-  const data = state.data!;
+function renderStats(stats: Stats, inPeriod: number): void {
   const s = (n: number | string, l: string): string => `<div class="stat"><b>${n}</b><span>${l}</span></div>`;
-  const label = allTypes() ? 'přístupů s daty' : state.typ.has('ukazka') ? 'přístupů s ukázkou' : 'přístupů s vlastními daty';
   $('stats').innerHTML =
-    s(stats.visits, label) + s(stats.own, 'vlastních souborů') + s(stats.sample, 'načtených ukázek') +
+    s(stats.visits, `${plural(stats.visits, 'přístup', 'přístupy', 'přístupů')} ${typDesc()}`.trim()) + s(stats.own, 'vlastních souborů') + s(stats.sample, 'načtených ukázek') +
     s(stats.ext, 'projektů s extentem') + s(stats.clicks, 'kliků na prvek') + s(Math.round(stats.active / 60) + ' min', 'aktivního času celkem');
-  // Všechny přístupy (i bez dat) po dnech; „vynecháno“ nezávisí na filtru typu.
-  const total = Object.entries(data.totalByDay).filter(([d]) => inSel(parseIso(d))).reduce((a, [, n]) => a + n, 0);
-  $('skipped').textContent =
-    `Vynecháno ${Math.max(0, total - withData)} přístupů${state.sel ? ' ve vybraném období' : ''} bez načtení ukázky nebo vlastních dat ` +
-    '(jen otevření stránky, motiv, překryvy apod.).';
+  const hidden = inPeriod - stats.visits;
+  $('skipped').textContent = state.typ.size
+    ? `Filtr skrývá ${hidden} ${plural(hidden, 'přístup', 'přístupy', 'přístupů')}${state.sel ? ' ve vybraném období' : ''}. ` +
+      'Bez zapnutého filtru se zobrazí všechny přístupy, i ty bez načtení ukázky nebo vlastních dat.'
+    : 'Zobrazeny jsou všechny přístupy, i bez načtení ukázky nebo vlastních dat (jen otevření stránky, boti, náhledy odkazů apod.).';
 }
 
 /* ── Graf: přístupy s vlastním souborem po dnech + výběr období ─ */
@@ -301,13 +304,14 @@ let chartDays: Bucket[] = []; // kbelíky grafu (vždy celé období, výběr je
 
 function chartData(): Bucket[] {
   const data = state.data!;
+  // počty přístupů po dnech podle filtru typu (osa vždy přes celé období dat)
   const own = new Map<number, number>();
   state.visits.forEach((v) => {
-    if (!v.ev.some((e) => e.code === 'fl')) return;
+    if (!isTyp(v)) return;
     const k = visitDay(v);
     own.set(k, (own.get(k) || 0) + 1);
   });
-  const known = [...Object.keys(data.totalByDay), ...state.visits.map((v) => v.dayIso)].sort();
+  const known = state.visits.map((v) => v.dayIso).sort();
   const from0 = parseIso(known[0] ?? isoDay(Date.now()));
   const to0 = Math.max(data.lastEvent ? parseIso(data.lastEvent.slice(0, 10)) : 0, parseIso(known[known.length - 1] ?? isoDay(Date.now())), ...own.keys());
   const buckets: Bucket[] = [];
@@ -359,7 +363,7 @@ function renderChart(): void {
       ? `<rect class="bar" x="${x}" y="${y(d.v)}" width="${w}" height="${(ph * d.v) / ymax}" rx="2"/><text class="val" x="${cx}" y="${y(d.v) - 6}" text-anchor="middle">${d.v}</text>`
       : `<line class="zero" x1="${x}" x2="${x + w}" y1="${y(0)}" y2="${y(0)}"/>`;
     if (i % labelEvery === 0) cols += `<text class="dlab" x="${cx}" y="${H - B + 17}" text-anchor="middle">${d.label}</text>`;
-    cols += `<title>${d.title}: ${d.v} ${plural(d.v, 'přístup', 'přístupy', 'přístupů')} s vlastními daty</title></g>`;
+    cols += `<title>${d.title}: ${d.v} ${plural(d.v, 'přístup', 'přístupy', 'přístupů')} ${typDesc()}</title></g>`;
   });
   const years = [...new Set(days.map((d) => yearOf(d.from)))].join('–');
   const months = [...new Set(days.map((d) => MONTHS[new Date(d.from).getUTCMonth()]))];
@@ -370,14 +374,20 @@ function renderChart(): void {
     const a = days.findIndex(hitsSel), b = days.length - 1 - [...days].reverse().findIndex(hitsSel);
     if (a >= 0 && b >= 0 && b < days.length) selbg = `<rect class="selbg" x="${L + a * bw}" y="${T - 6}" width="${(b - a + 1) * bw}" height="${ph + 6}" rx="4"/>`;
   }
-  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sloupcový graf přístupů s vlastními daty podle dne; klik nebo tažení vybere období">${g}<g class="selwrap">${selbg}</g>${cols}${axis}</svg>`;
+  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sloupcový graf přístupů ${typDesc()} podle dne; klik nebo tažení vybere období">${g}<g class="selwrap">${selbg}</g>${cols}${axis}</svg>`;
   bindChart(el.querySelector('svg')!, { L, T, ph, bw, n });
 
   const total = days.reduce((a, d) => a + d.v, 0);
-  const selTotal = state.sel ? state.visits.filter((v) => inSel(visitDay(v)) && v.ev.some((e) => e.code === 'fl')).length : null;
+  const selTotal = state.sel ? state.visits.filter((v) => inSel(visitDay(v)) && isTyp(v)).length : null;
+  const what = {
+    '': 'celkem (všechny, i bez načtení dat)',
+    's ukázkou': 's načtenou ukázkou',
+    's vlastními daty': 's načteným vlastním souborem',
+    's ukázkou nebo vlastními daty': 's načtenou ukázkou nebo vlastním souborem',
+  }[typDesc()];
   $('chart-cap').textContent =
-    `Celkem ${total} přístupů, ve kterých uživatel načetl vlastní soubor (ukázky se nepočítají)` +
-    (selTotal !== null ? `, z toho ${selTotal} ve vybraném období.` : '.');
+    `${total} ${plural(total, 'přístup', 'přístupy', 'přístupů')} ${what}` + (selTotal !== null ? `, z toho ${selTotal} ve vybraném období.` : '.');
+  $('chart-h').textContent = `Přístupy ${typDesc()}`.trim();
   renderSelInfo();
   document.querySelectorAll<HTMLButtonElement>('#gran button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.g === state.gran)));
 }
@@ -452,7 +462,7 @@ function writeHash(): void {
   const parts: string[] = [];
   if (state.sel) parts.push(`od=${isoDay(state.sel.from)}`, `do=${isoDay(state.sel.to)}`);
   if (state.gran !== 'den') parts.push(`po=${state.gran}`);
-  if (!allTypes()) parts.push(`typ=${[...state.typ].join(',')}`);
+  if (state.typ.size) parts.push(`typ=${TYPY.filter((t) => state.typ.has(t)).join(',')}`);
   try {
     history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search);
   } catch {
@@ -473,16 +483,12 @@ function setGran(g: string | undefined): void {
   renderChart(); // výběr (dny) zůstává, jen se jinak seskupí graf
 }
 
-/** Zapne/vypne typ přístupu; poslední zapnutý vypnout nejde (prázdný přehled nedává smysl). */
+/** Zapne/vypne typ přístupu (vypnuté všechny = bez filtru). */
 function toggleTyp(t: string | undefined): void {
   if (!TYPY.includes(t as Typ)) return;
   const typ = t as Typ;
-  if (state.typ.has(typ)) {
-    if (state.typ.size === 1) return;
-    state.typ.delete(typ);
-  } else {
-    state.typ.add(typ);
-  }
+  if (state.typ.has(typ)) state.typ.delete(typ);
+  else state.typ.add(typ);
   writeHash();
   renderAll();
 }
@@ -492,8 +498,7 @@ function readHash(): Sel | null {
   const g = /po=(den|tyden|mesic)/.exec(h);
   state.gran = g ? (g[1] as Gran) : 'den';
   const t = /typ=([a-z,]+)/.exec(h);
-  const typ = new Set((t ? t[1].split(',') : TYPY).filter((x): x is Typ => TYPY.includes(x as Typ)));
-  state.typ = typ.size ? typ : new Set(TYPY);
+  state.typ = new Set((t ? t[1].split(',') : []).filter((x): x is Typ => TYPY.includes(x as Typ)));
   const m = /od=(\d{4}-\d\d-\d\d)&do=(\d{4}-\d\d-\d\d)/.exec(h);
   if (!m) return null;
   const from = parseIso(m[1]), to = parseIso(m[2]);

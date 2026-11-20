@@ -41,7 +41,7 @@ function setStatus(text: string, isError = false): void {
 function renderSub(): void {
   $('sub').textContent =
     'Události z PostHogu (JVF viewer, produkce) po jednotlivých přístupech. Jeden přístup je jedno načtení stránky, ' +
-    'tedy jeden anonymní návštěvník. Zobrazeny jsou jen přístupy, ve kterých uživatel načetl ukázku nebo vlastní data. ' +
+    'tedy jeden anonymní návštěvník. Filtrem u grafu lze zobrazit jen přístupy, ve kterých uživatel načetl ukázku nebo vlastní data. ' +
     `Časy jsou v českém čase.${data?.lastEvent ? ` Data aktuální k ${data.lastEvent}.` : ''}`;
 }
 
