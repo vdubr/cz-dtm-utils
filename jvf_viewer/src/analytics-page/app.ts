@@ -288,7 +288,10 @@ function renderDays(visits: Visit[]): Stats {
   });
 
   if (!visits.length) {
-    $('days').innerHTML = '<p class="note">Ve vybraném období nejsou žádné přístupy s načtenou ukázkou ani vlastními daty.</p>';
+    const where = state.sel ? ' ve vybraném období' : '';
+    $('days').innerHTML = anyFilter()
+      ? `<p class="note">Žádné přístupy ${esc(filterDesc())}${where}. Přehled bere jen produkční weby (ne preview ani localhost).</p>`
+      : `<p class="note">Žádné přístupy${where}.</p>`;
     return stats;
   }
   $('days').innerHTML = Object.entries(days)
