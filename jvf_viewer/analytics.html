@@ -42,7 +42,7 @@
     <section class="block chart" aria-labelledby="chart-h">
       <div class="chart-head">
         <h2 id="chart-h">Přístupy s vlastními daty</h2>
-        <div class="gran" role="group" aria-label="Seskupení grafu">
+        <div class="gran" id="gran" role="group" aria-label="Seskupení grafu">
           <button type="button" data-g="den" aria-pressed="true">Den</button><button type="button" data-g="tyden" aria-pressed="false">Týden</button><button type="button" data-g="mesic" aria-pressed="false">Měsíc</button>
         </div>
       </div>
@@ -50,6 +50,13 @@
       <div class="selinfo" id="sel-info"></div>
       <p class="cap" id="chart-cap"></p>
     </section>
+
+    <div class="chart-head">
+      <h2 id="typ-h">Typ přístupu</h2>
+      <div class="gran" id="typ" role="group" aria-labelledby="typ-h">
+        <button type="button" data-t="vse" aria-pressed="true">Všechny</button><button type="button" data-t="ukazka" aria-pressed="false">Načtení ukázky</button><button type="button" data-t="vlastni" aria-pressed="false">Načtení vlastních dat</button>
+      </div>
+    </div>
 
     <div class="stats" id="stats"></div>
 
