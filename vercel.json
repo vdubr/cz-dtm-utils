@@ -83,6 +83,14 @@
     {
       "source": "/jzm/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/analytics",
+      "destination": "/analytics.html"
+    },
+    {
+      "source": "/analytics/",
+      "destination": "/analytics.html"
     }
   ]
 }

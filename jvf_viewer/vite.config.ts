@@ -1,5 +1,21 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Connect, type Plugin } from 'vite';
 import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+/**
+ * Interní přehled používání `/analytics` = samostatná stránka `analytics.html`
+ * (vlastní bundle, bez měření vieweru). Na Vercelu ji obslouží přepis ve
+ * `vercel.json`, tady stejné přepsání cesty pro `vite dev` a `vite preview`.
+ */
+const analyticsRewrite: Connect.NextHandleFunction = (req, _res, next) => {
+  if (req.url && /^\/analytics\/?(?:[?#]|$)/.test(req.url)) req.url = req.url.replace(/^\/analytics\/?/, '/analytics.html');
+  next();
+};
+const analyticsPage: Plugin = {
+  name: 'analytics-page-rewrite',
+  configureServer: (server) => void server.middlewares.use(analyticsRewrite),
+  configurePreviewServer: (server) => void server.middlewares.use(analyticsRewrite),
+};
 
 const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
 const buildTime = new Date().toISOString();
@@ -37,9 +53,16 @@ export default defineConfig({
     include: ['ol', 'proj4', 'three'],
     exclude: ['jvf-parser', 'jvf-cad', 'geotiff'],
   },
+  plugins: [analyticsPage],
   build: {
     target: 'es2022',
     sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        analytics: fileURLToPath(new URL('./analytics.html', import.meta.url)),
+      },
+    },
   },
   resolve: {
     alias: {},
