@@ -165,3 +165,6 @@ ol.ev li.gap .txt { font-style: italic; }
 .status { color: var(--muted); font-size: 12.5px; }
 #days { width: 100%; max-width: 760px; }
 #days .grid { grid-template-columns: 1fr; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+.zdroj { font: inherit; font-size: 12.5px; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 0 12px; width: 190px; height: 30px; }
+.zdroj:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }

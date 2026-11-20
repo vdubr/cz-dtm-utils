@@ -42,8 +42,18 @@
     <section class="block chart" aria-labelledby="chart-h">
       <div class="chart-head">
         <h2 id="chart-h">Přístupy s vlastními daty</h2>
-        <div class="gran" role="group" aria-label="Seskupení grafu">
-          <button type="button" data-g="den" aria-pressed="true">Den</button><button type="button" data-g="tyden" aria-pressed="false">Týden</button><button type="button" data-g="mesic" aria-pressed="false">Měsíc</button>
+        <div class="controls">
+          <input id="zdroj" class="zdroj" type="search" list="zdroj-list" placeholder="Odkud přišli…" autocomplete="off" spellcheck="false" aria-label="Filtr: odkud uživatel přišel (část domény, např. google; nebo „přímý přístup“)" />
+          <datalist id="zdroj-list"></datalist>
+          <div class="gran" id="tool" role="group" aria-label="Filtr nástroje (lze zapnout oba, nic = všechny nástroje)">
+            <button type="button" data-n="jvf" aria-pressed="false">JVF</button><button type="button" data-n="jzm" aria-pressed="false">ŽXML</button>
+          </div>
+          <div class="gran" id="typ" role="group" aria-label="Filtr typu přístupu (lze zapnout oba, nic = všechny přístupy)">
+            <button type="button" data-t="ukazka" aria-pressed="false">Načtení ukázky</button><button type="button" data-t="vlastni" aria-pressed="false">Načtení vlastních dat</button>
+          </div>
+          <div class="gran" id="gran" role="group" aria-label="Seskupení grafu">
+            <button type="button" data-g="den" aria-pressed="true">Den</button><button type="button" data-g="tyden" aria-pressed="false">Týden</button><button type="button" data-g="mesic" aria-pressed="false">Měsíc</button>
+          </div>
         </div>
       </div>
       <div id="chart"></div>

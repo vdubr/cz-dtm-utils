@@ -9,6 +9,14 @@
 export const POSTHOG_APP = 'https://eu.posthog.com';
 export const PROJECT_ID = 335266;
 
+/**
+ * Produkční hosty vieweru — přehled bere jen jejich události. Do stejného projektu
+ * měří i preview (např. větev `feat/dtmz`) a dřív localhost; ty se vynechají.
+ * Musí odpovídat `VITE_POSTHOG_HOSTS` v `jvf_viewer/.env.production` (proměnnou
+ * prostředí použít nejde — Vercel ji pro preview builds přepisuje).
+ */
+export const PRODUCTION_HOSTS = ['superjvf.cz', 'www.superjvf.cz', 'cz-dtm-utils.vercel.app'];
+
 /** Neplatný, zrušený nebo nedostatečně oprávněný klíč (HTTP 401/403). */
 export class PostHogAuthError extends Error {}
 

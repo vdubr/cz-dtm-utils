@@ -41,7 +41,10 @@ nasazení nové verze — nikdy ne průběžně.
 
 Formát **`YYYY.M.D`** (bez leading zeros, např. `2026.4.29`, `2026.11.3`).
 Důvod: npm/semver leading zeros nedovoluje. Pokud v jednom dni vyjde víc
-verzí, suffix `.N`: `2026.4.29.2`. Git tagy s prefixem `v`: `v2026.4.29`.
+verzí, suffix `-N`: `2026.4.29-2` (čtyřdílné `2026.4.29.2` není platné semver —
+npm ho v `package.json` odmítne; semver `-N` formálně řadí jako pre-release,
+což nevadí, balíčky se nepublikují). Git tagy s prefixem `v`: `v2026.4.29`,
+`v2026.4.29-2`.
 
 Verze se synchronizuje napříč všemi 5 workspace `package.json` (root nemá
 `version` field, jen `private: true`).
