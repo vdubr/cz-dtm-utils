@@ -10,6 +10,7 @@
  */
 import proj4 from 'proj4';
 import { KRAJE } from './kraje.js';
+import { PRODUCTION_HOSTS } from './posthog.js';
 import type { StoredData } from './sync.js';
 
 type Extent = [number, number, number, number];
@@ -35,6 +36,9 @@ interface Visit {
   tools: Set<string>;
   /** Odkud uživatel přišel: doména (`$referring_domain`), `$direct` = přímo, `''` = neznámo. */
   ref: string;
+  /** Host stránky; `prod` = jeden z produkčních hostů (jinak preview / localhost). */
+  host: string;
+  prod: boolean;
 }
 
 interface Row {
@@ -89,6 +93,9 @@ const DAY = 86400000;
 const GRANS: Gran[] = ['den', 'tyden', 'mesic'];
 const TYPY: Typ[] = ['ukazka', 'vlastni'];
 const TYP_CODE: Record<Typ, string> = { ukazka: 'sl', vlastni: 'fl' };
+/** Prostředí: produkční hosty (`PRODUCTION_HOSTS`) / preview a localhost. */
+type Env = 'prod' | 'preview';
+const ENVS: Env[] = ['prod', 'preview'];
 /** Filtr nástroje (JŽM = data ŽXML). */
 type Tool = 'jvf' | 'jzm';
 const TOOLS: Tool[] = ['jvf', 'jzm'];
@@ -131,7 +138,7 @@ function toVisits(data: StoredData): Visit[] {
       return { t: h * 3600 + m * 60 + s + plus * 86400, clock: ts.slice(11, 16), plus, code: p[0], a: p.slice(1) };
     });
     const d = new Date(d0);
-    visits.push({ id, dayIso: sv.day, day: `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`, tag: sv.tag, ev, tools: toolsOf(ev), ref: ev.find((e) => e.code === 'pv')?.a[1] ?? '' });
+    visits.push({ id, dayIso: sv.day, day: `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`, tag: sv.tag, ev, tools: toolsOf(ev), ref: ev.find((e) => e.code === 'pv')?.a[1] ?? '', host: sv.host ?? '', prod: PRODUCTION_HOSTS.includes(sv.host ?? '') });
   }
   // podle prvního času
   return visits.sort((x, y) => x.dayIso.localeCompare(y.dayIso) || x.ev[0].t - y.ev[0].t);
@@ -277,7 +284,7 @@ function renderDays(visits: Visit[]): Stats {
           .join(' · ');
     const exts = v.ev.filter((e) => extentOf(e)).map((e) => ({ x: extentOf(e)!, t: e.clock + (e.plus ? ` (+${e.plus} d)` : '') }));
     const html = `<details class="card" data-vid="${esc(v.id)}">
-      <summary class="head"><span class="chev" aria-hidden="true"></span><span class="tag">${esc(v.day)} ${esc(v.tag)}</span><span class="when">${esc(v.ev[0].clock)}</span>${exts.length ? '<span class="pin" title="Má extent">◆</span>' : ''}<span class="meta">${meta} · ${rows.length} událostí</span></summary>
+      <summary class="head"><span class="chev" aria-hidden="true"></span><span class="tag">${esc(v.day)} ${esc(v.tag)}</span>${v.prod ? '' : `<span class="envtag" title="${esc(v.host || 'neznámý host')}">preview</span>`}<span class="when">${esc(v.ev[0].clock)}</span>${exts.length ? '<span class="pin" title="Má extent">◆</span>' : ''}<span class="meta">${meta} · ${rows.length} událostí</span></summary>
       <div class="cbody">
         ${only ? '' : `<div><div class="strip">${buildStrip(rows, t0)}</div><div class="ends"><span>+0:00</span><span>+${mmss(total)}</span></div></div>`}
         <ol class="ev">${list}</ol>
@@ -288,7 +295,10 @@ function renderDays(visits: Visit[]): Stats {
   });
 
   if (!visits.length) {
-    $('days').innerHTML = '<p class="note">Ve vybraném období nejsou žádné přístupy s načtenou ukázkou ani vlastními daty.</p>';
+    const where = state.sel ? ' ve vybraném období' : '';
+    $('days').innerHTML = anyFilter()
+      ? `<p class="note">Žádné přístupy ${esc(filterDesc())}${where}.${state.env.has('preview') ? '' : ' Přístupy z preview a localhostu ukáže přepínač Preview.'}</p>`
+      : `<p class="note">Žádné přístupy${where}.</p>`;
     return stats;
   }
   $('days').innerHTML = Object.entries(days)
@@ -299,7 +309,7 @@ function renderDays(visits: Visit[]): Stats {
 }
 
 /* ── Stav: vybrané období ───────────────────────────────────── */
-const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran; typ: Set<Typ>; tool: Set<Tool>; zdroj: string } = {
+const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran; typ: Set<Typ>; tool: Set<Tool>; zdroj: string; env: Set<Env> } = {
   data: null,
   visits: [],
   sel: null, // půlnoc UTC dnů, včetně
@@ -307,6 +317,7 @@ const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: 
   typ: new Set(), // výchozí nic = všechny přístupy
   tool: new Set(), // výchozí nic = všechny nástroje
   zdroj: '', // text filtru „odkud přišli“ (část domény), prázdný = bez filtru
+  env: new Set(['prod']), // výchozí jen produkce; aspoň jedno zapnuté
 };
 
 const visitDay = (v: Visit): number => parseIso(v.dayIso);
@@ -320,16 +331,20 @@ const isZdroj = (v: Visit): boolean => {
   if (!q) return true;
   return q === DIRECT ? v.ref === '$direct' : refLabel(v.ref).toLowerCase().includes(q);
 };
-/** Přístup projde všemi filtry (typ, nástroj, zdroj). */
-const matches = (v: Visit): boolean => isTyp(v) && isTool(v) && isZdroj(v);
-const anyFilter = (): boolean => state.typ.size > 0 || state.tool.size > 0 || state.zdroj.trim() !== '';
+const isEnv = (v: Visit): boolean => state.env.has(v.prod ? 'prod' : 'preview');
+const envDefault = (): boolean => state.env.size === 1 && state.env.has('prod');
+/** Přístup projde všemi filtry (prostředí, typ, nástroj, zdroj). */
+const matches = (v: Visit): boolean => isEnv(v) && isTyp(v) && isTool(v) && isZdroj(v);
+const anyFilter = (): boolean => state.typ.size > 0 || state.tool.size > 0 || state.zdroj.trim() !== '' || !envDefault();
+/** Popis prostředí: výchozí (jen produkce) prázdný. */
+const envDesc = (): string => (envDefault() ? '' : state.env.has('prod') ? 'včetně preview' : 'jen z preview');
 /** Popis filtru nástroje: „v JVF“, „v JVF nebo ŽXML“ (bez filtru prázdný). */
 const toolDesc = (): string => (state.tool.size ? 'v ' + TOOLS.filter((t) => state.tool.has(t)).map((t) => TOOL_LABEL[t]).join(' nebo ') : '');
 const zdrojDesc = (): string => {
   const q = state.zdroj.trim();
   return !q ? '' : q.toLowerCase() === DIRECT ? 'přímo (bez odkazu)' : `z „${q}“`;
 };
-const filterDesc = (): string => [typDesc(), toolDesc(), zdrojDesc()].filter(Boolean).join(' ');
+const filterDesc = (): string => [typDesc(), toolDesc(), zdrojDesc(), envDesc()].filter(Boolean).join(' ');
 const typDesc = (): string =>
   state.typ.size === 2 ? 's ukázkou nebo vlastními daty' : state.typ.has('ukazka') ? 's ukázkou' : state.typ.has('vlastni') ? 's vlastními daty' : '';
 const yearOf = (t: number): number => new Date(t).getUTCFullYear();
@@ -341,10 +356,11 @@ function renderStats(stats: Stats, inPeriod: number): void {
     s(stats.visits, `${plural(stats.visits, 'přístup', 'přístupy', 'přístupů')} ${filterDesc()}`.trim()) + s(stats.own, 'vlastních souborů') + s(stats.sample, 'načtených ukázek') +
     s(stats.ext, 'projektů s extentem') + s(stats.clicks, 'kliků na prvek') + s(Math.round(stats.active / 60) + ' min', 'aktivního času celkem');
   const hidden = inPeriod - stats.visits;
-  $('skipped').textContent = anyFilter()
-    ? `Filtr skrývá ${hidden} ${plural(hidden, 'přístup', 'přístupy', 'přístupů')}${state.sel ? ' ve vybraném období' : ''}. ` +
-      'Bez zapnutého filtru se zobrazí všechny přístupy, i ty bez načtení ukázky nebo vlastních dat.'
-    : 'Zobrazeny jsou všechny přístupy, i bez načtení ukázky nebo vlastních dat (jen otevření stránky, boti, náhledy odkazů apod.).';
+  const notes: string[] = [];
+  if (hidden > 0) notes.push(`Filtry skrývají ${hidden} ${plural(hidden, 'přístup', 'přístupy', 'přístupů')}${state.sel ? ' ve vybraném období' : ''}.`);
+  if (!state.typ.size) notes.push('Zobrazeny jsou i přístupy bez načtení ukázky nebo vlastních dat (jen otevření stránky, boti, náhledy odkazů apod.).');
+  if (!state.env.has('preview')) notes.push('Přístupy z preview a localhostu ukáže přepínač Preview.');
+  $('skipped').textContent = notes.join(' ');
 }
 
 /* ── Graf: přístupy s vlastním souborem po dnech + výběr období ─ */
@@ -520,6 +536,7 @@ function writeHash(): void {
   if (state.gran !== 'den') parts.push(`po=${state.gran}`);
   if (state.typ.size) parts.push(`typ=${TYPY.filter((t) => state.typ.has(t)).join(',')}`);
   if (state.tool.size) parts.push(`nastroj=${TOOLS.filter((t) => state.tool.has(t)).join(',')}`);
+  if (!envDefault()) parts.push(`prostredi=${ENVS.filter((e) => state.env.has(e)).join(',')}`);
   if (state.zdroj.trim()) parts.push(`zdroj=${encodeURIComponent(state.zdroj.trim())}`);
   try {
     history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search);
@@ -543,6 +560,20 @@ function setGran(g: string | undefined): void {
 
 /** Zapne/vypne typ přístupu (vypnuté všechny = bez filtru). */
 /** Zapne/vypne nástroj (vypnuté všechny = bez filtru). */
+/** Zapne/vypne prostředí; poslední zapnuté vypnout nejde. */
+function toggleEnv(t: string | undefined): void {
+  if (!ENVS.includes(t as Env)) return;
+  const env = t as Env;
+  if (state.env.has(env)) {
+    if (state.env.size === 1) return;
+    state.env.delete(env);
+  } else {
+    state.env.add(env);
+  }
+  writeHash();
+  renderAll();
+}
+
 function toggleTool(t: string | undefined): void {
   if (!TOOLS.includes(t as Tool)) return;
   const tool = t as Tool;
@@ -569,6 +600,9 @@ function readHash(): Sel | null {
   state.typ = new Set((t ? t[1].split(',') : []).filter((x): x is Typ => TYPY.includes(x as Typ)));
   const n = /nastroj=([a-z,]+)/.exec(h);
   state.tool = new Set((n ? n[1].split(',') : []).filter((x): x is Tool => TOOLS.includes(x as Tool)));
+  const pe = /prostredi=([a-z,]+)/.exec(h);
+  const env = new Set((pe ? pe[1].split(',') : []).filter((x): x is Env => ENVS.includes(x as Env)));
+  state.env = env.size ? env : new Set(['prod']);
   const z = /zdroj=([^&]*)/.exec(h);
   try {
     state.zdroj = z ? decodeURIComponent(z[1]) : '';
@@ -592,6 +626,7 @@ function renderAll(): void {
   renderChart();
   document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.setAttribute('aria-pressed', String(state.typ.has(b.dataset.t as Typ))));
   document.querySelectorAll<HTMLButtonElement>('#tool button').forEach((b) => b.setAttribute('aria-pressed', String(state.tool.has(b.dataset.n as Tool))));
+  document.querySelectorAll<HTMLButtonElement>('#env button').forEach((b) => b.setAttribute('aria-pressed', String(state.env.has(b.dataset.e as Env))));
 }
 
 /* ── Mapa: střed extentu projektů (SVG kraje, bez dlaždic) ──── */
@@ -788,6 +823,7 @@ export function renderApp(data: StoredData): void {
     document.querySelectorAll<HTMLButtonElement>('#gran button').forEach((b) => b.addEventListener('click', () => setGran(b.dataset.g)));
     document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.addEventListener('click', () => toggleTyp(b.dataset.t)));
     document.querySelectorAll<HTMLButtonElement>('#tool button').forEach((b) => b.addEventListener('click', () => toggleTool(b.dataset.n)));
+    document.querySelectorAll<HTMLButtonElement>('#env button').forEach((b) => b.addEventListener('click', () => toggleEnv(b.dataset.e)));
     let zid: ReturnType<typeof setTimeout> | undefined;
     $('zdroj').addEventListener('input', (e) => {
       clearTimeout(zid);
