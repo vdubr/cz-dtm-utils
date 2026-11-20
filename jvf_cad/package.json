@@ -1,6 +1,6 @@
 {
   "name": "jvf-cad",
-  "version": "2026.11.20-2",
+  "version": "2026.11.20-3",
   "description": "Export JVF DTM / UDM (Univerzální datový model ČKZ) to AutoCAD DXF",
   "license": "UNLICENSED",
   "private": true,

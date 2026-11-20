@@ -11,10 +11,7 @@
  * přístupu, který v okně má událost — doplní se tak i dozvuky starších přístupů.
  * Duplicity z překryvu oken se zahodí (stejný čas + stejný řádek).
  */
-import { PRODUCTION_HOSTS, hogql } from './posthog.js';
-
-/** Jen události z produkčních hostů (ne preview / localhost). */
-const HOST_SQL = `toString(properties.$host) IN (${PRODUCTION_HOSTS.map((h) => `'${h}'`).join(', ')})`;
+import { hogql } from './posthog.js';
 
 /** Události jednoho přístupu: [český čas `YYYY-MM-DDTHH:MM:SS`, `kód argumenty`]. */
 export type StoredEvent = [string, string];
@@ -24,12 +21,14 @@ export interface StoredVisit {
   day: string;
   /** Štítek v rámci dne (A, B, …, AA, …). */
   tag: string;
+  /** Host stránky (`$host`, např. `superjvf.cz`) — rozlišení produkce a preview v `app.ts`. */
+  host: string;
   ev: StoredEvent[];
 }
 
 export interface StoredData {
-  /** v5: všechny přístupy z produkčních hostů, `pv <cesta> <odkud>` (v1–v4 starší formáty / i preview). */
-  version: 5;
+  /** v6: všechny přístupy ze všech hostů (s `host`), `pv <cesta> <odkud>` (v1–v5 starší formáty). */
+  version: 6;
   /** Unixový čas (s) poslední stažené události — začátek dalšího okna. */
   lastU: number;
   /** Poslední událost v českém čase (`YYYY-MM-DD HH:MM`), pro zobrazení. */
@@ -78,12 +77,12 @@ function eventsSql(sinceU: number, cursorU: number, pageSize: number): string {
   return `SELECT distinct_id,
     formatDateTime(toTimeZone(timestamp, 'Europe/Prague'), '%Y-%m-%dT%H:%i:%S') AS ts,
     toUnixTimestamp(timestamp) AS u,
-    ${LINE_SQL} AS line
+    ${LINE_SQL} AS line,
+    ifNull(toString(properties.$host), '') AS host
   FROM events
   WHERE timestamp >= toDateTime('${DATA_START} 00:00:00')
-    AND ${HOST_SQL}
     ${cursorU > 0 ? `AND timestamp >= fromUnixTimestamp(${Math.floor(cursorU)})` : ''}
-    AND distinct_id IN (SELECT distinct_id FROM events WHERE timestamp >= fromUnixTimestamp(${Math.floor(sinceU)}) AND ${HOST_SQL})
+    AND distinct_id IN (SELECT distinct_id FROM events WHERE timestamp >= fromUnixTimestamp(${Math.floor(sinceU)}))
   ORDER BY timestamp, distinct_id
   LIMIT ${pageSize}`;
 }
@@ -117,19 +116,19 @@ export async function syncData(
 ): Promise<SyncResult> {
   const data: StoredData = prev
     ? structuredClone(prev)
-    : { version: 5, lastU: 0, lastEvent: '', visits: {} };
+    : { version: 6, lastU: 0, lastEvent: '', visits: {} };
   const sinceU = prev && prev.lastU > 0 ? prev.lastU - OVERLAP : DATA_START_U;
 
   // ── události (stránkování) ─────────────────────────────────
-  const rows: [string, string, number, string][] = [];
+  const rows: [string, string, number, string, string][] = [];
   for (let cursor = 0; ; ) {
     onProgress?.(rows.length ? `Stahuji události (${rows.length}+)…` : 'Stahuji události…');
     const page = await hogql(key, eventsSql(sinceU, cursor, pageSize));
     let last = cursor;
     for (const r of page) {
-      const [id, ts, u, line] = r;
+      const [id, ts, u, line, host] = r;
       if (typeof id !== 'string' || typeof ts !== 'string' || !TS.test(ts) || typeof line !== 'string') continue;
-      rows.push([id, ts, Number(u), line.trim().replace(/\s+/g, ' ')]);
+      rows.push([id, ts, Number(u), line.trim().replace(/\s+/g, ' '), typeof host === 'string' ? host : '']);
       if (Number(u) > last) last = Number(u);
     }
     if (page.length < pageSize) break;
@@ -144,12 +143,13 @@ export async function syncData(
   let maxTs = '';
   const touched = new Set<string>();
   const seen = new Map<string, Set<string>>();
-  for (const [id, ts, u, line] of rows) {
+  for (const [id, ts, u, line, host] of rows) {
     let v = data.visits[id];
     if (!v) {
-      v = data.visits[id] = { day: '', tag: '', ev: [] };
+      v = data.visits[id] = { day: '', tag: '', host: '', ev: [] };
       newVisits++;
     }
+    if (!v.host && host) v.host = host;
     let s = seen.get(id);
     if (!s) seen.set(id, (s = new Set(v.ev.map(([t, l]) => `${t}|${l}`))));
     if (Number.isFinite(u) && u > maxU) maxU = u;
