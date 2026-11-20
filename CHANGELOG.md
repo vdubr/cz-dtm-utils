@@ -105,6 +105,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
   (`usesDialectStyle`).
 
+## [2026.11.20-2] - 2026-11-20
+
+### Změněno
+- Interní údržba bez změn pro uživatele.
+
 ## [2026.11.20] - 2026-11-20
 
 ### Změněno
