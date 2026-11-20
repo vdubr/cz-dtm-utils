@@ -165,3 +165,4 @@ ol.ev li.gap .txt { font-style: italic; }
 .status { color: var(--muted); font-size: 12.5px; }
 #days { width: 100%; max-width: 760px; }
 #days .grid { grid-template-columns: 1fr; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 10px; }
