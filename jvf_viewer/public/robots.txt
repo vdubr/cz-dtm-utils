@@ -4,5 +4,7 @@ Allow: /
 # Fixtures, symbols a další buildtime assets nejsou pro indexaci relevantní
 Disallow: /fixtures/
 Disallow: /symboly/
+# Interní přehled používání (vyžaduje klíč)
+Disallow: /analytics
 
 Sitemap: https://cz-dtm-utils.vercel.app/jvf_viewer/sitemap.xml
