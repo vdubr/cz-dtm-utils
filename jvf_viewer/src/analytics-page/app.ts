@@ -57,8 +57,8 @@ interface Stats {
 }
 
 type Gran = 'den' | 'tyden' | 'mesic';
-/** Typ přístupu: všechny / s načtenou ukázkou / s načtenými vlastními daty (přístup může mít obojí). */
-type Typ = 'vse' | 'ukazka' | 'vlastni';
+/** Typ přístupu: s načtenou ukázkou / s načtenými vlastními daty (přístup může mít obojí; filtr = sjednocení zapnutých). */
+type Typ = 'ukazka' | 'vlastni';
 interface Sel {
   from: number;
   to: number;
@@ -80,8 +80,8 @@ const KROVAK =
 const MONTHS = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
 const DAY = 86400000;
 const GRANS: Gran[] = ['den', 'tyden', 'mesic'];
-const TYPY: Typ[] = ['vse', 'ukazka', 'vlastni'];
-const TYP_CODE: Record<Exclude<Typ, 'vse'>, string> = { ukazka: 'sl', vlastni: 'fl' };
+const TYPY: Typ[] = ['ukazka', 'vlastni'];
+const TYP_CODE: Record<Typ, string> = { ukazka: 'sl', vlastni: 'fl' };
 
 const $ = (id: string): HTMLElement => document.getElementById(id)!;
 const esc = (s: unknown): string =>
@@ -260,24 +260,25 @@ function renderDays(visits: Visit[]): Stats {
 }
 
 /* ── Stav: vybrané období ───────────────────────────────────── */
-const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran; typ: Typ } = {
+const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran; typ: Set<Typ> } = {
   data: null,
   visits: [],
   sel: null, // půlnoc UTC dnů, včetně
   gran: 'den',
-  typ: 'vse',
+  typ: new Set(TYPY), // výchozí obojí = všechny přístupy
 };
 
 const visitDay = (v: Visit): number => parseIso(v.dayIso);
 const inSel = (t: number): boolean => !state.sel || (t >= state.sel.from && t <= state.sel.to);
-const isTyp = (v: Visit): boolean => state.typ === 'vse' || v.ev.some((e) => e.code === TYP_CODE[state.typ as Exclude<Typ, 'vse'>]);
+const allTypes = (): boolean => TYPY.every((t) => state.typ.has(t));
+const isTyp = (v: Visit): boolean => [...state.typ].some((t) => v.ev.some((e) => e.code === TYP_CODE[t]));
 const yearOf = (t: number): number => new Date(t).getUTCFullYear();
 
 /* ── Přehledová lišta ───────────────────────────────────────── */
 function renderStats(stats: Stats, withData: number): void {
   const data = state.data!;
   const s = (n: number | string, l: string): string => `<div class="stat"><b>${n}</b><span>${l}</span></div>`;
-  const label = { vse: 'přístupů s daty', ukazka: 'přístupů s ukázkou', vlastni: 'přístupů s vlastními daty' }[state.typ];
+  const label = allTypes() ? 'přístupů s daty' : state.typ.has('ukazka') ? 'přístupů s ukázkou' : 'přístupů s vlastními daty';
   $('stats').innerHTML =
     s(stats.visits, label) + s(stats.own, 'vlastních souborů') + s(stats.sample, 'načtených ukázek') +
     s(stats.ext, 'projektů s extentem') + s(stats.clicks, 'kliků na prvek') + s(Math.round(stats.active / 60) + ' min', 'aktivního času celkem');
@@ -451,7 +452,7 @@ function writeHash(): void {
   const parts: string[] = [];
   if (state.sel) parts.push(`od=${isoDay(state.sel.from)}`, `do=${isoDay(state.sel.to)}`);
   if (state.gran !== 'den') parts.push(`po=${state.gran}`);
-  if (state.typ !== 'vse') parts.push(`typ=${state.typ}`);
+  if (!allTypes()) parts.push(`typ=${[...state.typ].join(',')}`);
   try {
     history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search);
   } catch {
@@ -472,9 +473,16 @@ function setGran(g: string | undefined): void {
   renderChart(); // výběr (dny) zůstává, jen se jinak seskupí graf
 }
 
-function setTyp(t: string | undefined): void {
-  if (!TYPY.includes(t as Typ) || t === state.typ) return;
-  state.typ = t as Typ;
+/** Zapne/vypne typ přístupu; poslední zapnutý vypnout nejde (prázdný přehled nedává smysl). */
+function toggleTyp(t: string | undefined): void {
+  if (!TYPY.includes(t as Typ)) return;
+  const typ = t as Typ;
+  if (state.typ.has(typ)) {
+    if (state.typ.size === 1) return;
+    state.typ.delete(typ);
+  } else {
+    state.typ.add(typ);
+  }
   writeHash();
   renderAll();
 }
@@ -483,8 +491,9 @@ function readHash(): Sel | null {
   const h = location.hash;
   const g = /po=(den|tyden|mesic)/.exec(h);
   state.gran = g ? (g[1] as Gran) : 'den';
-  const t = /typ=(ukazka|vlastni)/.exec(h);
-  state.typ = t ? (t[1] as Typ) : 'vse';
+  const t = /typ=([a-z,]+)/.exec(h);
+  const typ = new Set((t ? t[1].split(',') : TYPY).filter((x): x is Typ => TYPY.includes(x as Typ)));
+  state.typ = typ.size ? typ : new Set(TYPY);
   const m = /od=(\d{4}-\d\d-\d\d)&do=(\d{4}-\d\d-\d\d)/.exec(h);
   if (!m) return null;
   const from = parseIso(m[1]), to = parseIso(m[2]);
@@ -498,7 +507,7 @@ function renderAll(): void {
   renderStats(stats, inPeriod.length);
   renderMap(vis);
   renderChart();
-  document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === state.typ)));
+  document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.setAttribute('aria-pressed', String(state.typ.has(b.dataset.t as Typ))));
 }
 
 /* ── Mapa: střed extentu projektů (SVG kraje, bez dlaždic) ──── */
@@ -693,7 +702,7 @@ export function renderApp(data: StoredData): void {
       renderAll();
     });
     document.querySelectorAll<HTMLButtonElement>('#gran button').forEach((b) => b.addEventListener('click', () => setGran(b.dataset.g)));
-    document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.addEventListener('click', () => setTyp(b.dataset.t)));
+    document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.addEventListener('click', () => toggleTyp(b.dataset.t)));
     let tid: ReturnType<typeof setTimeout> | undefined;
     window.addEventListener('resize', () => {
       clearTimeout(tid);
