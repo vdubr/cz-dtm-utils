@@ -31,6 +31,10 @@ interface Visit {
   day: string;
   tag: string;
   ev: Ev[];
+  /** Nástroje, ve kterých přístup probíhal (z cesty u `pv` a z režimu u načtení / přepnutí). */
+  tools: Set<string>;
+  /** Odkud uživatel přišel: doména (`$referring_domain`), `$direct` = přímo, `''` = neznámo. */
+  ref: string;
 }
 
 interface Row {
@@ -57,6 +61,11 @@ interface Stats {
 }
 
 type Gran = 'den' | 'tyden' | 'mesic';
+/**
+ * Typ přístupu: s načtenou ukázkou / s načtenými vlastními daty. Filtr = sjednocení
+ * zapnutých (přístup může mít obojí); nic zapnuté = všechny přístupy, i bez načtení dat.
+ */
+type Typ = 'ukazka' | 'vlastni';
 interface Sel {
   from: number;
   to: number;
@@ -78,6 +87,12 @@ const KROVAK =
 const MONTHS = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
 const DAY = 86400000;
 const GRANS: Gran[] = ['den', 'tyden', 'mesic'];
+const TYPY: Typ[] = ['ukazka', 'vlastni'];
+const TYP_CODE: Record<Typ, string> = { ukazka: 'sl', vlastni: 'fl' };
+/** Filtr nástroje (JŽM = data ŽXML). */
+type Tool = 'jvf' | 'jzm';
+const TOOLS: Tool[] = ['jvf', 'jzm'];
+const TOOL_LABEL: Record<Tool, string> = { jvf: 'JVF', jzm: 'ŽXML' };
 
 const $ = (id: string): HTMLElement => document.getElementById(id)!;
 const esc = (s: unknown): string =>
@@ -116,10 +131,35 @@ function toVisits(data: StoredData): Visit[] {
       return { t: h * 3600 + m * 60 + s + plus * 86400, clock: ts.slice(11, 16), plus, code: p[0], a: p.slice(1) };
     });
     const d = new Date(d0);
-    visits.push({ id, dayIso: sv.day, day: `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`, tag: sv.tag, ev });
+    visits.push({ id, dayIso: sv.day, day: `${d.getUTCDate()}.${d.getUTCMonth() + 1}.`, tag: sv.tag, ev, tools: toolsOf(ev), ref: ev.find((e) => e.code === 'pv')?.a[1] ?? '' });
   }
   // podle prvního času
   return visits.sort((x, y) => x.dayIso.localeCompare(y.dayIso) || x.ev[0].t - y.ev[0].t);
+}
+
+/** Popisek zdroje přístupu (`$direct` → „přímý přístup“). */
+const DIRECT = 'přímý přístup';
+const refLabel = (ref: string): string => (ref === '$direct' ? DIRECT : ref);
+
+/** Nástroj podle cesty stránky (`/jzm` → jzm, `/udm` → udm, jinak jvf). */
+const toolOfPath = (path: string | undefined): string => {
+  const seg = (path ?? '/').split('/').filter(Boolean)[0] ?? '';
+  return seg === 'jzm' || seg === 'udm' ? seg : 'jvf';
+};
+
+/**
+ * Nástroje přístupu: cesta u načtení stránky (`pv /jzm`) a režim u načtení souboru / ukázky,
+ * kontroly, exportu a přepnutí nástroje (`fl jzm …`, `mc udm`). V produkci jsou zatím
+ * vydané jen JVF — adresa nevydaného nástroje se přesměruje na `/` dřív, než se měří.
+ */
+function toolsOf(ev: Ev[]): Set<string> {
+  const tools = new Set<string>();
+  for (const e of ev) {
+    if (e.code === 'pv') tools.add(toolOfPath(e.a[0]));
+    else if (['fl', 'sl', 'tc', 'ex', 'mc'].includes(e.code) && /^(jvf|udm|jzm)$/.test(e.a[0] ?? '')) tools.add(e.a[0]);
+  }
+  if (!tools.size) tools.add('jvf');
+  return tools;
 }
 
 /** Extent z argumentů události `fl` (`fl jvf minX minY maxX maxY`), jinak null. */
@@ -140,7 +180,10 @@ function describe(v: Visit): Row[] {
     let label: string, small = '';
     let bar: Row['bar'] = null;
     switch (e.code) {
-      case 'pv': label = 'Načtení stránky'; break;
+      case 'pv':
+        label = 'Načtení stránky';
+        small = [a[0] && a[0] !== '/' ? a[0] : '', a[1] ? (a[1] === '$direct' ? DIRECT : 'z ' + a[1]) : ''].filter(Boolean).join(' · ');
+        break;
       case 'sl': label = 'Načtena ukázka'; small = a[0] ?? ''; break;
       case 'fl': {
         label = 'Načten vlastní soubor';
@@ -256,29 +299,52 @@ function renderDays(visits: Visit[]): Stats {
 }
 
 /* ── Stav: vybrané období ───────────────────────────────────── */
-const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran } = {
+const state: { data: StoredData | null; visits: Visit[]; sel: Sel | null; gran: Gran; typ: Set<Typ>; tool: Set<Tool>; zdroj: string } = {
   data: null,
   visits: [],
   sel: null, // půlnoc UTC dnů, včetně
   gran: 'den',
+  typ: new Set(), // výchozí nic = všechny přístupy
+  tool: new Set(), // výchozí nic = všechny nástroje
+  zdroj: '', // text filtru „odkud přišli“ (část domény), prázdný = bez filtru
 };
 
 const visitDay = (v: Visit): number => parseIso(v.dayIso);
 const inSel = (t: number): boolean => !state.sel || (t >= state.sel.from && t <= state.sel.to);
+const isTyp = (v: Visit): boolean => !state.typ.size || [...state.typ].some((t) => v.ev.some((e) => e.code === TYP_CODE[t]));
+/** Popis filtru do textů: „přístupů s ukázkou“, … (bez filtru prázdný). */
+const isTool = (v: Visit): boolean => !state.tool.size || [...state.tool].some((t) => v.tools.has(t));
+/** Zdroj: přesně „přímý přístup“, jinak část domény (bez ohledu na velikost písmen). */
+const isZdroj = (v: Visit): boolean => {
+  const q = state.zdroj.trim().toLowerCase();
+  if (!q) return true;
+  return q === DIRECT ? v.ref === '$direct' : refLabel(v.ref).toLowerCase().includes(q);
+};
+/** Přístup projde všemi filtry (typ, nástroj, zdroj). */
+const matches = (v: Visit): boolean => isTyp(v) && isTool(v) && isZdroj(v);
+const anyFilter = (): boolean => state.typ.size > 0 || state.tool.size > 0 || state.zdroj.trim() !== '';
+/** Popis filtru nástroje: „v JVF“, „v JVF nebo ŽXML“ (bez filtru prázdný). */
+const toolDesc = (): string => (state.tool.size ? 'v ' + TOOLS.filter((t) => state.tool.has(t)).map((t) => TOOL_LABEL[t]).join(' nebo ') : '');
+const zdrojDesc = (): string => {
+  const q = state.zdroj.trim();
+  return !q ? '' : q.toLowerCase() === DIRECT ? 'přímo (bez odkazu)' : `z „${q}“`;
+};
+const filterDesc = (): string => [typDesc(), toolDesc(), zdrojDesc()].filter(Boolean).join(' ');
+const typDesc = (): string =>
+  state.typ.size === 2 ? 's ukázkou nebo vlastními daty' : state.typ.has('ukazka') ? 's ukázkou' : state.typ.has('vlastni') ? 's vlastními daty' : '';
 const yearOf = (t: number): number => new Date(t).getUTCFullYear();
 
 /* ── Přehledová lišta ───────────────────────────────────────── */
-function renderStats(stats: Stats): void {
-  const data = state.data!;
+function renderStats(stats: Stats, inPeriod: number): void {
   const s = (n: number | string, l: string): string => `<div class="stat"><b>${n}</b><span>${l}</span></div>`;
   $('stats').innerHTML =
-    s(stats.visits, 'přístupů s daty') + s(stats.own, 'vlastních souborů') + s(stats.sample, 'načtených ukázek') +
+    s(stats.visits, `${plural(stats.visits, 'přístup', 'přístupy', 'přístupů')} ${filterDesc()}`.trim()) + s(stats.own, 'vlastních souborů') + s(stats.sample, 'načtených ukázek') +
     s(stats.ext, 'projektů s extentem') + s(stats.clicks, 'kliků na prvek') + s(Math.round(stats.active / 60) + ' min', 'aktivního času celkem');
-  // Všechny přístupy (i bez dat) po dnech.
-  const total = Object.entries(data.totalByDay).filter(([d]) => inSel(parseIso(d))).reduce((a, [, n]) => a + n, 0);
-  $('skipped').textContent =
-    `Vynecháno ${Math.max(0, total - stats.visits)} přístupů${state.sel ? ' ve vybraném období' : ''} bez načtení ukázky nebo vlastních dat ` +
-    '(jen otevření stránky, motiv, překryvy apod.).';
+  const hidden = inPeriod - stats.visits;
+  $('skipped').textContent = anyFilter()
+    ? `Filtr skrývá ${hidden} ${plural(hidden, 'přístup', 'přístupy', 'přístupů')}${state.sel ? ' ve vybraném období' : ''}. ` +
+      'Bez zapnutého filtru se zobrazí všechny přístupy, i ty bez načtení ukázky nebo vlastních dat.'
+    : 'Zobrazeny jsou všechny přístupy, i bez načtení ukázky nebo vlastních dat (jen otevření stránky, boti, náhledy odkazů apod.).';
 }
 
 /* ── Graf: přístupy s vlastním souborem po dnech + výběr období ─ */
@@ -293,13 +359,14 @@ let chartDays: Bucket[] = []; // kbelíky grafu (vždy celé období, výběr je
 
 function chartData(): Bucket[] {
   const data = state.data!;
+  // počty přístupů po dnech podle filtru typu (osa vždy přes celé období dat)
   const own = new Map<number, number>();
   state.visits.forEach((v) => {
-    if (!v.ev.some((e) => e.code === 'fl')) return;
+    if (!matches(v)) return;
     const k = visitDay(v);
     own.set(k, (own.get(k) || 0) + 1);
   });
-  const known = [...Object.keys(data.totalByDay), ...state.visits.map((v) => v.dayIso)].sort();
+  const known = state.visits.map((v) => v.dayIso).sort();
   const from0 = parseIso(known[0] ?? isoDay(Date.now()));
   const to0 = Math.max(data.lastEvent ? parseIso(data.lastEvent.slice(0, 10)) : 0, parseIso(known[known.length - 1] ?? isoDay(Date.now())), ...own.keys());
   const buckets: Bucket[] = [];
@@ -351,7 +418,7 @@ function renderChart(): void {
       ? `<rect class="bar" x="${x}" y="${y(d.v)}" width="${w}" height="${(ph * d.v) / ymax}" rx="2"/><text class="val" x="${cx}" y="${y(d.v) - 6}" text-anchor="middle">${d.v}</text>`
       : `<line class="zero" x1="${x}" x2="${x + w}" y1="${y(0)}" y2="${y(0)}"/>`;
     if (i % labelEvery === 0) cols += `<text class="dlab" x="${cx}" y="${H - B + 17}" text-anchor="middle">${d.label}</text>`;
-    cols += `<title>${d.title}: ${d.v} ${plural(d.v, 'přístup', 'přístupy', 'přístupů')} s vlastními daty</title></g>`;
+    cols += `<title>${d.title}: ${d.v} ${plural(d.v, 'přístup', 'přístupy', 'přístupů')} ${filterDesc()}</title></g>`;
   });
   const years = [...new Set(days.map((d) => yearOf(d.from)))].join('–');
   const months = [...new Set(days.map((d) => MONTHS[new Date(d.from).getUTCMonth()]))];
@@ -362,16 +429,23 @@ function renderChart(): void {
     const a = days.findIndex(hitsSel), b = days.length - 1 - [...days].reverse().findIndex(hitsSel);
     if (a >= 0 && b >= 0 && b < days.length) selbg = `<rect class="selbg" x="${L + a * bw}" y="${T - 6}" width="${(b - a + 1) * bw}" height="${ph + 6}" rx="4"/>`;
   }
-  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sloupcový graf přístupů s vlastními daty podle dne; klik nebo tažení vybere období">${g}<g class="selwrap">${selbg}</g>${cols}${axis}</svg>`;
+  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sloupcový graf přístupů ${filterDesc()} podle dne; klik nebo tažení vybere období">${g}<g class="selwrap">${selbg}</g>${cols}${axis}</svg>`;
   bindChart(el.querySelector('svg')!, { L, T, ph, bw, n });
 
   const total = days.reduce((a, d) => a + d.v, 0);
-  const selTotal = state.sel ? state.visits.filter((v) => inSel(visitDay(v)) && v.ev.some((e) => e.code === 'fl')).length : null;
+  const selTotal = state.sel ? state.visits.filter((v) => inSel(visitDay(v)) && matches(v)).length : null;
+  const what = {
+    '': '',
+    's ukázkou': 's načtenou ukázkou',
+    's vlastními daty': 's načteným vlastním souborem',
+    's ukázkou nebo vlastními daty': 's načtenou ukázkou nebo vlastním souborem',
+  }[typDesc()];
   $('chart-cap').textContent =
-    `Celkem ${total} přístupů, ve kterých uživatel načetl vlastní soubor (ukázky se nepočítají)` +
+    [`${total} ${plural(total, 'přístup', 'přístupy', 'přístupů')}`, what, toolDesc(), zdrojDesc(), state.typ.size ? '' : '(i bez načtení dat)'].filter(Boolean).join(' ') +
     (selTotal !== null ? `, z toho ${selTotal} ve vybraném období.` : '.');
+  $('chart-h').textContent = `Přístupy ${filterDesc()}`.trim();
   renderSelInfo();
-  document.querySelectorAll<HTMLButtonElement>('.gran button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.g === state.gran)));
+  document.querySelectorAll<HTMLButtonElement>('#gran button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.g === state.gran)));
 }
 
 function renderSelInfo(): void {
@@ -444,6 +518,9 @@ function writeHash(): void {
   const parts: string[] = [];
   if (state.sel) parts.push(`od=${isoDay(state.sel.from)}`, `do=${isoDay(state.sel.to)}`);
   if (state.gran !== 'den') parts.push(`po=${state.gran}`);
+  if (state.typ.size) parts.push(`typ=${TYPY.filter((t) => state.typ.has(t)).join(',')}`);
+  if (state.tool.size) parts.push(`nastroj=${TOOLS.filter((t) => state.tool.has(t)).join(',')}`);
+  if (state.zdroj.trim()) parts.push(`zdroj=${encodeURIComponent(state.zdroj.trim())}`);
   try {
     history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search);
   } catch {
@@ -464,10 +541,42 @@ function setGran(g: string | undefined): void {
   renderChart(); // výběr (dny) zůstává, jen se jinak seskupí graf
 }
 
+/** Zapne/vypne typ přístupu (vypnuté všechny = bez filtru). */
+/** Zapne/vypne nástroj (vypnuté všechny = bez filtru). */
+function toggleTool(t: string | undefined): void {
+  if (!TOOLS.includes(t as Tool)) return;
+  const tool = t as Tool;
+  if (state.tool.has(tool)) state.tool.delete(tool);
+  else state.tool.add(tool);
+  writeHash();
+  renderAll();
+}
+
+function toggleTyp(t: string | undefined): void {
+  if (!TYPY.includes(t as Typ)) return;
+  const typ = t as Typ;
+  if (state.typ.has(typ)) state.typ.delete(typ);
+  else state.typ.add(typ);
+  writeHash();
+  renderAll();
+}
+
 function readHash(): Sel | null {
   const h = location.hash;
   const g = /po=(den|tyden|mesic)/.exec(h);
   state.gran = g ? (g[1] as Gran) : 'den';
+  const t = /typ=([a-z,]+)/.exec(h);
+  state.typ = new Set((t ? t[1].split(',') : []).filter((x): x is Typ => TYPY.includes(x as Typ)));
+  const n = /nastroj=([a-z,]+)/.exec(h);
+  state.tool = new Set((n ? n[1].split(',') : []).filter((x): x is Tool => TOOLS.includes(x as Tool)));
+  const z = /zdroj=([^&]*)/.exec(h);
+  try {
+    state.zdroj = z ? decodeURIComponent(z[1]) : '';
+  } catch {
+    state.zdroj = '';
+  }
+  const input = document.getElementById('zdroj') as HTMLInputElement | null;
+  if (input && input.value !== state.zdroj) input.value = state.zdroj;
   const m = /od=(\d{4}-\d\d-\d\d)&do=(\d{4}-\d\d-\d\d)/.exec(h);
   if (!m) return null;
   const from = parseIso(m[1]), to = parseIso(m[2]);
@@ -475,11 +584,14 @@ function readHash(): Sel | null {
 }
 
 function renderAll(): void {
-  const vis = state.visits.filter((v) => inSel(visitDay(v)));
+  const inPeriod = state.visits.filter((v) => inSel(visitDay(v)));
+  const vis = inPeriod.filter(matches);
   const stats = renderDays(vis);
-  renderStats(stats);
+  renderStats(stats, inPeriod.length);
   renderMap(vis);
   renderChart();
+  document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.setAttribute('aria-pressed', String(state.typ.has(b.dataset.t as Typ))));
+  document.querySelectorAll<HTMLButtonElement>('#tool button').forEach((b) => b.setAttribute('aria-pressed', String(state.tool.has(b.dataset.n as Tool))));
 }
 
 /* ── Mapa: střed extentu projektů (SVG kraje, bez dlaždic) ──── */
@@ -673,12 +785,37 @@ export function renderApp(data: StoredData): void {
       state.sel = readHash();
       renderAll();
     });
-    document.querySelectorAll<HTMLButtonElement>('.gran button').forEach((b) => b.addEventListener('click', () => setGran(b.dataset.g)));
+    document.querySelectorAll<HTMLButtonElement>('#gran button').forEach((b) => b.addEventListener('click', () => setGran(b.dataset.g)));
+    document.querySelectorAll<HTMLButtonElement>('#typ button').forEach((b) => b.addEventListener('click', () => toggleTyp(b.dataset.t)));
+    document.querySelectorAll<HTMLButtonElement>('#tool button').forEach((b) => b.addEventListener('click', () => toggleTool(b.dataset.n)));
+    let zid: ReturnType<typeof setTimeout> | undefined;
+    $('zdroj').addEventListener('input', (e) => {
+      clearTimeout(zid);
+      const value = (e.target as HTMLInputElement).value;
+      zid = setTimeout(() => {
+        state.zdroj = value;
+        writeHash();
+        renderAll();
+      }, 150);
+    });
     let tid: ReturnType<typeof setTimeout> | undefined;
     window.addEventListener('resize', () => {
       clearTimeout(tid);
       tid = setTimeout(renderChart, 120);
     });
   }
+  renderZdrojList();
   renderAll();
+}
+
+/** Našeptávač zdrojů: domény podle počtu přístupů (všech, bez ohledu na filtry). */
+function renderZdrojList(): void {
+  const counts = new Map<string, number>();
+  state.visits.forEach((v) => {
+    if (v.ref) counts.set(refLabel(v.ref), (counts.get(refLabel(v.ref)) ?? 0) + 1);
+  });
+  $('zdroj-list').innerHTML = [...counts]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([r, n]) => `<option value="${esc(r)}" label="${n} ${plural(n, 'přístup', 'přístupy', 'přístupů')}"></option>`)
+    .join('');
 }

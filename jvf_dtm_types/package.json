@@ -1,6 +1,6 @@
 {
   "name": "jvf-dtm-types",
-  "version": "2026.11.20",
+  "version": "2026.11.20-2",
   "description": "Shared TypeScript domain types for JVF DTM (Jednotný Výměnný Formát - Digital Technical Map)",
   "license": "UNLICENSED",
   "private": true,
