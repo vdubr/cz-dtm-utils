@@ -11,7 +11,10 @@
  * přístupu, který v okně má událost — doplní se tak i dozvuky starších přístupů.
  * Duplicity z překryvu oken se zahodí (stejný čas + stejný řádek).
  */
-import { hogql } from './posthog.js';
+import { PRODUCTION_HOSTS, hogql } from './posthog.js';
+
+/** Jen události z produkčních hostů (ne preview / localhost). */
+const HOST_SQL = `toString(properties.$host) IN (${PRODUCTION_HOSTS.map((h) => `'${h}'`).join(', ')})`;
 
 /** Události jednoho přístupu: [český čas `YYYY-MM-DDTHH:MM:SS`, `kód argumenty`]. */
 export type StoredEvent = [string, string];
@@ -25,8 +28,8 @@ export interface StoredVisit {
 }
 
 export interface StoredData {
-  /** v4: všechny přístupy, `pv <cesta> <odkud>` (v1: jen přístupy s daty, v2: `pv` bez cesty, v3: bez odkud). */
-  version: 4;
+  /** v5: všechny přístupy z produkčních hostů, `pv <cesta> <odkud>` (v1–v4 starší formáty / i preview). */
+  version: 5;
   /** Unixový čas (s) poslední stažené události — začátek dalšího okna. */
   lastU: number;
   /** Poslední událost v českém čase (`YYYY-MM-DD HH:MM`), pro zobrazení. */
@@ -78,8 +81,9 @@ function eventsSql(sinceU: number, cursorU: number, pageSize: number): string {
     ${LINE_SQL} AS line
   FROM events
   WHERE timestamp >= toDateTime('${DATA_START} 00:00:00')
+    AND ${HOST_SQL}
     ${cursorU > 0 ? `AND timestamp >= fromUnixTimestamp(${Math.floor(cursorU)})` : ''}
-    AND distinct_id IN (SELECT distinct_id FROM events WHERE timestamp >= fromUnixTimestamp(${Math.floor(sinceU)}))
+    AND distinct_id IN (SELECT distinct_id FROM events WHERE timestamp >= fromUnixTimestamp(${Math.floor(sinceU)}) AND ${HOST_SQL})
   ORDER BY timestamp, distinct_id
   LIMIT ${pageSize}`;
 }
@@ -113,7 +117,7 @@ export async function syncData(
 ): Promise<SyncResult> {
   const data: StoredData = prev
     ? structuredClone(prev)
-    : { version: 4, lastU: 0, lastEvent: '', visits: {} };
+    : { version: 5, lastU: 0, lastEvent: '', visits: {} };
   const sinceU = prev && prev.lastU > 0 ? prev.lastU - OVERLAP : DATA_START_U;
 
   // ── události (stránkování) ─────────────────────────────────
