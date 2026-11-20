@@ -25,8 +25,8 @@ export interface StoredVisit {
 }
 
 export interface StoredData {
-  /** v2: všechny přístupy (v1 měla jen přístupy s daty + počty po dnech). */
-  version: 2;
+  /** v3: všechny přístupy, `pv` s cestou (v1: jen přístupy s daty, v2: `pv` bez cesty). */
+  version: 3;
   /** Unixový čas (s) poslední stažené události — začátek dalšího okna. */
   lastU: number;
   /** Poslední událost v českém čase (`YYYY-MM-DD HH:MM`), pro zobrazení. */
@@ -43,7 +43,7 @@ const PAGE = 5000;
 
 /** Událost → řádek `kód argumenty` (stejné kódy jako dřívější `visits.txt`). */
 const LINE_SQL = `multiIf(
-  event = '$pageview', 'pv',
+  event = '$pageview', concat('pv ', ifNull(toString(properties.$pathname), '/')),
   event = 'active_time', concat('at ', ifNull(toString(properties.seconds), '0')),
   event = 'view_3d', concat('v3 ', ifNull(toString(properties.seconds), '0')),
   event = 'sample_load', concat('sl ', ifNull(toString(properties.sample), '?')),
@@ -112,7 +112,7 @@ export async function syncData(
 ): Promise<SyncResult> {
   const data: StoredData = prev
     ? structuredClone(prev)
-    : { version: 2, lastU: 0, lastEvent: '', visits: {} };
+    : { version: 3, lastU: 0, lastEvent: '', visits: {} };
   const sinceU = prev && prev.lastU > 0 ? prev.lastU - OVERLAP : DATA_START_U;
 
   // ── události (stránkování) ─────────────────────────────────

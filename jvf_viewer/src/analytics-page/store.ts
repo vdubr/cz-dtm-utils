@@ -5,9 +5,9 @@
 import type { StoredData } from './sync.js';
 
 const KEY = 'cz-dtm-analytics:key';
-const DATA = 'cz-dtm-analytics:data:v2';
-/** Starší formát (jen přístupy s daty) — při načtení se smaže, data se stáhnou znovu. */
-const DATA_V1 = 'cz-dtm-analytics:data:v1';
+const DATA = 'cz-dtm-analytics:data:v3';
+/** Starší formáty — při načtení se smažou, data se stáhnou znovu (klíč zůstává). */
+const OLD_DATA = ['cz-dtm-analytics:data:v1', 'cz-dtm-analytics:data:v2'];
 
 export function loadKey(): string | null {
   try {
@@ -27,11 +27,11 @@ export function saveKey(key: string): void {
 
 export function loadData(): StoredData | null {
   try {
-    localStorage.removeItem(DATA_V1);
+    OLD_DATA.forEach((k) => localStorage.removeItem(k));
     const raw = localStorage.getItem(DATA);
     if (!raw) return null;
     const data = JSON.parse(raw) as StoredData;
-    return data && data.version === 2 && data.visits ? data : null;
+    return data && data.version === 3 && data.visits ? data : null;
   } catch {
     return null;
   }
@@ -52,7 +52,7 @@ export function clearAll(): void {
   try {
     localStorage.removeItem(KEY);
     localStorage.removeItem(DATA);
-    localStorage.removeItem(DATA_V1);
+    OLD_DATA.forEach((k) => localStorage.removeItem(k));
   } catch {
     // nic k mazání
   }
