@@ -27,6 +27,7 @@ import {
 import { getProjectCount } from '../state/projects.js';
 import { showConfirm } from './confirmModal.js';
 import { openInfoModal } from './infoModal.js';
+import { track } from '../analytics.js';
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -105,6 +106,7 @@ export async function ensureAppModeForFile(data: JvfDtm, fileName: string): Prom
   if (target === current) return true;
   // Nástroj vypnutý v tomto buildu (produkce zatím jen JVF) → soubor odmítnout.
   if (!isAppModeEnabled(target)) {
+    track('file_rejected', { mode: current, reason: 'tool', target });
     await showConfirm({
       title: 'Nepodporovaný formát',
       bodyHtml: `

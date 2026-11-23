@@ -503,7 +503,10 @@ ${when(DIALECTS, `
     kontrolu, Přehled prvků, klik na prvek v mapě (jen typ objektu, např.
     „budova"), měření, podkladové mapy, překryvy DTM / katastru,
     dotaz na parcelu, dobu ve 3D, zapnutí SVG symbolů a terénu ve 3D, motiv,
-    export do CAD a klik na odkaz autora (LinkedIn) v patičce.
+    export do CAD, klik na odkaz autora (LinkedIn) v patičce, zapnutí a vypnutí
+    vrstvy (jen typ objektu), počet posunů mapy (bez polohy) a soubor, který se
+    nepodařilo načíst nebo ho aplikace odmítla (jen režim, druh chyby, případně
+    verze datového modelu).
     <strong>Nikdy</strong> se neodesílají názvy vašich souborů, ID prvků,
     atributy ani údaje o parcelách. Jediný údaj o poloze je
     <strong>extent vlastních načtených dat</strong> (ne ukázek) — ohraničující

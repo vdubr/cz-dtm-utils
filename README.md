@@ -232,7 +232,9 @@ Cloud EU (data stored in Frankfurt) next to Vercel Web Analytics:
   coarse size bucket, mode switch, topology check result, feature panel, map
   feature click — object *type* only, measuring, basemap/overlay toggles,
   parcel query, time in 3D, terrain, SVG symbols, theme, CAD export, active
-  time). The catalogue is typed in
+  time, layer on/off — object *type* only, number of map pan/zoom gestures —
+  no position, and files that failed to load or were rejected — mode, error
+  kind or data model version only). The catalogue is typed in
   [`jvf_viewer/src/analytics.ts`](./jvf_viewer/src/analytics.ts).
 - **What is never sent:** file names, feature IDs, attributes or parcel data.
   Files themselves never leave the browser. The only location data is the

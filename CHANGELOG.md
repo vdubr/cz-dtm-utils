@@ -105,6 +105,15 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   přitom kreslil podle Katalogu; teď jedno sdílené pravidlo
   (`usesDialectStyle`).
 
+## [2026.11.23] - 2026-11-23
+
+### Změněno
+- **Měření používání: nové události** — zapnutí / vypnutí vrstvy (jen typ
+  objektu), počet posunů mapy ve 2D a 3D (dávkově, bez polohy) a soubor, který
+  se nepodařilo načíst nebo který aplikace odmítla (nevydaný nástroj UDM /
+  JŽM, nepodporovaná verze) — bez názvu souboru. Popis v O aplikaci
+  aktualizován.
+
 ## [2026.11.20-3] - 2026-11-20
 
 ### Změněno
