@@ -50,6 +50,22 @@ export interface AnalyticsEvents {
   export_dxf: { mode: string; format: string; fill: boolean };
   /** Klik na odkaz autora (LinkedIn) v patičce panelu. */
   linkedin_click: Record<string, never>;
+  /** Soubor se nepodařilo načíst (chyba čtení / parsování) — bez názvu i obsahu. */
+  file_error: { mode: string; size: string; stage: 'read' | 'parse' };
+  /**
+   * Soubor odmítnutý aplikací: formát nevydaného nástroje (`reason: 'tool'`,
+   * `target` = jeho režim, např. `jzm`) nebo nepodporovaná verze datového
+   * modelu (`reason: 'version'`, `target` = verze z hlavičky souboru).
+   */
+  file_rejected: { mode: string; reason: 'tool' | 'version'; target: string };
+  /**
+   * Posun / otočení / zoom mapy uživatelem — odesílá se dávkově s aktivním
+   * časem: `count` = počet gest od posledního odeslání (gesto = souvislé
+   * tažení nebo kolečko, pauza nad `MOVE_GESTURE_GAP_MS` začne nové).
+   */
+  map_move: { view: View; count: number };
+  /** Zapnutí / vypnutí vrstvy (objektového typu z katalogu, např. `BudovaPlocha`) — ne ID. */
+  layer_toggle: { type: string; visible: boolean; via: 'layers' | 'features' };
 }
 
 /** Extent načtených dat (ohraničující obdélník) v S-JTSK, v celých metrech. */
@@ -135,11 +151,38 @@ function flushTime(): void {
   }
   if (activeMs >= 1000) track('active_time', { seconds: Math.round(activeMs / 1000) }, true);
   if (view3dMs >= 1000) track('view_3d', { seconds: Math.round(view3dMs / 1000) }, true);
+  flushMoves();
   activeMs = 0;
   view3dMs = 0;
 }
 
 let in3d = false;
+
+// ── Posun mapy (dávkově) ────────────────────────────────────────────────────
+
+/** Pauza mezi dvěma událostmi pohybu, po které začíná nové gesto (ms). */
+const MOVE_GESTURE_GAP_MS = 800;
+const moveCount: Record<View, number> = { '2d': 0, '3d': 0 };
+const lastMove: Record<View, number> = { '2d': -Infinity, '3d': -Infinity };
+
+/**
+ * Pohyb mapy uživatelem (tažení, kolečko, pinch) — volat z posluchačů vstupu,
+ * klidně při každém pohybu myši: souvislá série se počítá jako jedno gesto.
+ * Odesílá se dávkově (`map_move`) spolu s aktivním časem.
+ */
+export function trackMapMove(view: View): void {
+  if (!enabled) return;
+  const t = now();
+  if (t - lastMove[view] > MOVE_GESTURE_GAP_MS) moveCount[view]++;
+  lastMove[view] = t;
+}
+
+function flushMoves(): void {
+  for (const view of ['2d', '3d'] as const) {
+    if (moveCount[view] > 0) track('map_move', { view, count: moveCount[view] }, true);
+    moveCount[view] = 0;
+  }
+}
 
 /** Přepnutí 2D ↔ 3D — doba ve 3D se odešle při odchodu ze 3D. */
 export function trackViewMode(is3d: boolean): void {

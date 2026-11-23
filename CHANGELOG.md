@@ -81,6 +81,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   „UDM".
 
 ### Změněno
+- **Měření používání: nové události** — zapnutí / vypnutí vrstvy (jen typ
+  objektu), počet posunů mapy ve 2D a 3D (dávkově, bez polohy) a soubor, který
+  se nepodařilo načíst nebo který aplikace odmítla (nevydaný nástroj UDM /
+  JŽM, nepodporovaná verze) — bez názvu souboru. Popis v O aplikaci
+  aktualizován.
 - **Dialekty JVF DTM jako registr** (revize UDM / DTM) — UDM i ŽXML jsou
   položky jednoho registru (`DIALECTS` v `jvf-dtm-types`, `PARSER_DIALECTS`
   v parseru); router, topologie, export do CAD i viewer se řídí registrem

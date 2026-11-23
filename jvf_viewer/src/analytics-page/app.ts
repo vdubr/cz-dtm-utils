@@ -4,7 +4,9 @@
  * Řádek události = `kód argumenty`. Kódy: pv, at <s>, v3 <s>, sl <ukázka>,
  * fl <režim> [minX minY maxX maxY], svg, ov <dtm|kn>, tl <overlay|toggle|basemap>,
  * bm <none|ortofoto|zm>, fc <typ> <2d|3d>, fp <map_click|button>, th <dark|light>,
- * tc <režim>, ms <2d|3d>, li, ex <režim> [formát], kq <2d|3d>, mc <režim>.
+ * tc <režim>, ms <2d|3d>, li, ex <režim> [formát], kq <2d|3d>, mc <režim>,
+ * fe <režim> <read|parse>, fr <tool|version> <režim|verze>, mm <2d|3d> <počet gest>,
+ * lt <typ objektu> <on|off> <layers|features>.
  *
  * Časy jsou český čas; událost o N dní později v téže otevřené kartě má u času „+N“.
  */
@@ -78,9 +80,12 @@ interface Sel {
 const OVERLAY: Record<string, string> = { dtm: 'DTM', kn: 'katastr nemovitostí' };
 const TERRAIN: Record<string, string> = { overlay: 'přes překryv', toggle: 'přepínačem', basemap: 'kvůli podkladu' };
 const BASEMAP: Record<string, string> = { none: 'bez podkladu', ortofoto: 'ortofoto', zm: 'základní mapa' };
+/** Název formátu podle režimu (odmítnuté soubory). */
+const TOOL_NAME: Record<string, string> = { jvf: 'JVF', udm: 'UDM', jzm: 'ŽXML' };
 const CAT: Record<string, string> = {
   ex: 'soubor', tc: 'soubor', mc: 'soubor', ms: 'mapa', kq: 'mapa', li: 'ui', pv: 'pv', sl: 'soubor', fl: 'soubor',
   fc: 'mapa', fp: 'mapa', ov: 'podklad', bm: 'podklad', tl: 'podklad', v3: '3d', th: 'ui', svg: 'ui', at: 'pv',
+  fe: 'soubor', fr: 'soubor', mm: 'mapa', lt: 'mapa',
 };
 const COLOR: Record<string, string> = {
   pv: 'var(--c-pv)', soubor: 'var(--c-soubor)', mapa: 'var(--c-mapa)', podklad: 'var(--c-podklad)', '3d': 'var(--c-3d)', ui: 'var(--c-ui)',
@@ -163,7 +168,9 @@ function toolsOf(ev: Ev[]): Set<string> {
   const tools = new Set<string>();
   for (const e of ev) {
     if (e.code === 'pv') tools.add(toolOfPath(e.a[0]));
-    else if (['fl', 'sl', 'tc', 'ex', 'mc'].includes(e.code) && /^(jvf|udm|jzm)$/.test(e.a[0] ?? '')) tools.add(e.a[0]);
+    else if (['fl', 'sl', 'tc', 'ex', 'mc', 'fe'].includes(e.code) && /^(jvf|udm|jzm)$/.test(e.a[0] ?? '')) tools.add(e.a[0]);
+    // odmítnutý soubor nevydaného nástroje — uživatel zkoušel jeho data
+    else if (e.code === 'fr' && e.a[0] === 'tool' && /^(udm|jzm)$/.test(e.a[1] ?? '')) tools.add(e.a[1]);
   }
   if (!tools.size) tools.add('jvf');
   return tools;
@@ -210,6 +217,13 @@ function describe(v: Visit): Row[] {
       case 'ms': label = 'Zapnuto měření'; small = (a[0] ?? '').toUpperCase(); break;
       case 'kq': label = 'Dotaz do katastru'; small = (a[0] ?? '').toUpperCase(); break;
       case 'mc': label = 'Přepnut nástroj'; small = (a[0] ?? '').toUpperCase(); break;
+      case 'fe': label = 'Soubor se nepodařilo načíst'; small = a[1] === 'read' ? 'chyba čtení' : 'chyba zpracování'; break;
+      case 'fr':
+        label = 'Soubor odmítnut';
+        small = a[0] === 'tool' ? `formát ${TOOL_NAME[a[1] ?? ''] ?? a[1]} (nevydaný nástroj)` : `nepodporovaná verze ${a[1] ?? ''}`;
+        break;
+      case 'mm': label = 'Posun mapy'; small = `${a[1] ?? '?'}× · ${(a[0] ?? '').toUpperCase()}`; break;
+      case 'lt': label = a[1] === 'on' ? 'Zapnuta vrstva' : 'Vypnuta vrstva'; small = `${a[0] ?? '?'} · ${a[2] === 'features' ? 'Přehled prvků' : 'panel vrstev'}`; break;
       case 'li': label = 'Klik na odkaz autora'; small = 'LinkedIn'; break;
       case 'ex': label = 'Export do CAD (DXF)'; small = a[1] && a[1] !== '?' ? 'DXF ' + a[1] : (a[0] ?? 'jvf').toUpperCase(); break;
       case 'at': label = 'Aktivní čas'; small = a[0] + ' s'; bar = { s: Math.max(t0, e.t - +a[0]), e: e.t, kind: 'act' }; break;

@@ -3,6 +3,7 @@ import { register } from 'ol/proj/proj4.js';
 import { get as getProjection } from 'ol/proj.js';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
+import { trackMapMove } from '../analytics.js';
 
 // S-JTSK bez towgs84 — shodné s ESRI:102067, jak ČÚZK AGS server renderuje tiles
 // towgs84 záměrně vynecháno: ČÚZK tiles neprošly datum shiftem, vektorová data
@@ -33,6 +34,11 @@ export function createOlMap(targetId: string): Map {
     layers: [],
     controls: [],
   });
+
+  // Měření: posun / zoom uživatelem (tažení, pinch, kolečko) — ne programové
+  // přiblížení po načtení dat. Souvislá série = jedno gesto (analytics.ts).
+  map.on('pointerdrag', () => trackMapMove('2d'));
+  map.getViewport().addEventListener('wheel', () => trackMapMove('2d'), { passive: true });
 
   return map;
 }
