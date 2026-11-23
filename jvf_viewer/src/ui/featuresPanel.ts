@@ -13,6 +13,7 @@ import { compareContentParts, contentPartTitle } from '../state/contentParts.js'
 import { isLayerVisible, subscribeLayerVisibility, toggleLayerVisible } from '../state/layerVisibility.js';
 import { attachSearchClear, matchesSearch as matchesQuery, normalizeSearch } from './searchField.js';
 import { buildLegendSwatchFor } from './symbolSwatch.js';
+import { track } from '../analytics.js';
 import {
   LEVEL_NONE,
   getContentPartFilter,
@@ -536,6 +537,7 @@ function renderRowsContent(): void {
     eyeBtn.addEventListener('click', (ev) => {
       ev.stopPropagation(); // nerozbalovat skupinu
       toggleLayerVisible(layerKey);
+      track('layer_toggle', { type: ot.elementName, visible: isLayerVisible(layerKey), via: 'features' });
     });
 
     // Projekt se v řádcích neukazuje (ani barevně) — je v detailu záznamu.

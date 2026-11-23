@@ -42,6 +42,7 @@ import {
 } from './basemapTexture.js';
 import { themedLayerNames } from '../map/overlayCatalog.js';
 import { getOverlayStates } from '../state/overlays.js';
+import { trackMapMove } from '../analytics.js';
 
 // Tag for scene objects that can be rebuilt/toggled (excludes lights, grid, etc.)
 const DATA_TAG = 'jvfData';
@@ -536,6 +537,7 @@ function attachOrbitControls(
 
   canvas.addEventListener('mousemove', (e) => {
     if (orbit.dragMode === 'none') return;
+    trackMapMove('3d');
     const dx = e.clientX - orbit.prevMouse.x;
     const dy = e.clientY - orbit.prevMouse.y;
     if (orbit.dragMode === 'orbit') {
@@ -554,6 +556,7 @@ function attachOrbitControls(
 
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
+    trackMapMove('3d');
     orbit.spherical.radius *= 1 + e.deltaY * 0.001;
     orbit.spherical.radius = Math.max(1, orbit.spherical.radius);
     updateCamera(camera, orbit);

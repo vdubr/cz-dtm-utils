@@ -46,6 +46,7 @@ async function validateFileVersion(data: JvfDtm, sourceLabel: string): Promise<b
   if (fileVersion === '') return true;
 
   // Nepodporovaná verze → blokující modal.
+  track('file_rejected', { mode: getAppMode(), reason: 'version', target: fileVersion });
   await showConfirm({
     title: 'Nepodporovaná verze datového modelu',
     bodyHtml: `
@@ -184,6 +185,7 @@ export function loadJvfFile(
         });
       } catch (err) {
         console.error('Failed to parse JVF file:', err);
+        track('file_error', { mode: getAppMode(), size: sizeBucket(file.size), stage: 'parse' });
         alert(`Soubor „${file.name}“ se nepodařilo načíst. Zkontrolujte, že jde o platný JVF DTM soubor.`);
       } finally {
         loadingOverlay.style.display = 'none';
@@ -192,6 +194,7 @@ export function loadJvfFile(
     };
 
     reader.onerror = () => {
+      track('file_error', { mode: getAppMode(), size: sizeBucket(file.size), stage: 'read' });
       loadingOverlay.style.display = 'none';
       alert('Chyba při čtení souboru.');
       resolve(null);

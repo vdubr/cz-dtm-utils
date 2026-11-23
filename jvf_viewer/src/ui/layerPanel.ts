@@ -11,6 +11,7 @@ import { contentPartTitle } from '../state/contentParts.js';
 import { appModeDef, getAppMode } from '../state/appMode.js';
 import { attachSearchClear, normalizeSearch } from './searchField.js';
 import { buildStyleSwatch, swatchKindForObjektovyTyp } from './symbolSwatch.js';
+import { track } from '../analytics.js';
 
 /** Tooltip s použitými variantami značky („nástěnná konzola 3×, …"). */
 function variantsNote({ variants }: DataStyle): string {
@@ -177,7 +178,10 @@ export function renderLayerPanel(layers: JvfVectorLayer[]): void {
 
       // Viditelnost je společný stav — 2D, 3D, panel i Přehled prvků se
       // srovnají přes posluchače (main.ts, syncLayerPanel, featuresPanel).
-      item.addEventListener('click', () => toggleLayerVisible(layerKey));
+      item.addEventListener('click', () => {
+        toggleLayerVisible(layerKey);
+        track('layer_toggle', { type: layer.objektovyTyp.elementName, visible: isLayerVisible(layerKey), via: 'layers' });
+      });
 
       groupEl.appendChild(item);
     }

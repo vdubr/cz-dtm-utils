@@ -66,6 +66,12 @@ const LINE_SQL = `multiIf(
   event = 'export_dxf', concat('ex ', ifNull(toString(properties.mode), '?'), ' ', ifNull(toString(properties.format), '?')),
   event = 'kn_query', concat('kq ', ifNull(toString(properties.view), '?')),
   event = 'mode_change', concat('mc ', ifNull(toString(properties.mode), '?')),
+  event = 'file_error', concat('fe ', ifNull(toString(properties.mode), '?'), ' ', ifNull(toString(properties.stage), '?')),
+  event = 'file_rejected', concat('fr ', ifNull(toString(properties.reason), '?'), ' ',
+    replaceAll(ifNull(toString(properties.target), '?'), ' ', '_')),
+  event = 'map_move', concat('mm ', ifNull(toString(properties.view), '?'), ' ', ifNull(toString(properties.count), '1')),
+  event = 'layer_toggle', concat('lt ', ifNull(toString(properties.type), '?'), ' ',
+    if(toString(properties.visible) IN ('true', '1'), 'on', 'off'), ' ', ifNull(toString(properties.via), '?')),
   replaceAll(event, ' ', '_'))`;
 
 /**
