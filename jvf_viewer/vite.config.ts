@@ -1,6 +1,7 @@
 import { defineConfig, type Connect, type Plugin } from 'vite';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { aboutPage } from './aboutPage';
 
 /**
  * Interní přehled používání `/analytics` = samostatná stránka `analytics.html`
@@ -40,20 +41,23 @@ const appModes = process.env['VITE_APP_MODES']
     ? RELEASED_APP_MODES
     : ALL_APP_MODES;
 
+/** Konstanty buildu — sdílí je aplikace i generátor stránky `/about`. */
+const define = {
+  __COMMIT_HASH__: JSON.stringify(commitHash),
+  __BUILD_TIME__: JSON.stringify(buildTime),
+  __APP_MODES__: JSON.stringify(appModes),
+  __RELEASE_BUILD__: JSON.stringify(releaseBuild),
+};
+
 export default defineConfig({
-  define: {
-    __COMMIT_HASH__: JSON.stringify(commitHash),
-    __BUILD_TIME__: JSON.stringify(buildTime),
-    __APP_MODES__: JSON.stringify(appModes),
-    __RELEASE_BUILD__: JSON.stringify(releaseBuild),
-  },
+  define,
   // Nástroje na kořeni domény: / (JVF), /udm, /jzm (vercel.json přepisy).
   base: '/',
   optimizeDeps: {
     include: ['ol', 'proj4', 'three'],
     exclude: ['jvf-parser', 'jvf-cad', 'geotiff'],
   },
-  plugins: [analyticsPage],
+  plugins: [analyticsPage, aboutPage(define)],
   build: {
     target: 'es2022',
     sourcemap: true,

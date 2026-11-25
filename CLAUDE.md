@@ -33,9 +33,13 @@ nasazení nové verze — nikdy ne průběžně.
       — notes vyplnit z odpovídající sekce `CHANGELOG.md` (česky).
    i. Vercel auto-deployne `main`.
 
-- Produkční URL: **https://cz-dtm-utils.vercel.app/** (JVF), nástroje
+- Produkční URL: **https://superjvf.cz/** (JVF), nástroje
   **/udm** a **/jzm** (přepisy ve `vercel.json`, Vite `base: '/'`; staré
-  `/jvf_viewer/` a `?mode=…` se trvale přesměrují)
+  `/jvf_viewer/` a `?mode=…` se trvale přesměrují). `cz-dtm-utils.vercel.app`
+  a `www.superjvf.cz` se trvale (308) přesměrují na `superjvf.cz` (hlavní
+  adresa pro vyhledávače: `canonical`, sitemap). Stránka **/about** =
+  text O aplikaci jako statické HTML pro vyhledávače (`jvf_viewer/aboutPage.ts`,
+  generuje se při buildu z `INFO_CONTENT_HTML`).
 
 ### Verzování — CalVer (semver-kompatibilní)
 

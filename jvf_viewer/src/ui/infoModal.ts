@@ -16,7 +16,12 @@ const JZM = isAppModeEnabled('jzm');
 const DIALECTS = UDM || JZM;
 const when = (on: boolean, html: string): string => (on ? html : '');
 
-const INFO_CONTENT_HTML = `
+/**
+ * Obsah O aplikaci (HTML). Sdílí ho dialog ve vieweru i statická stránka
+ * `/about` generovaná při buildu (`vite.config.ts`, plugin `aboutPage`)
+ * pro vyhledávače — modul proto nesmí při importu sahat na DOM.
+ */
+export const INFO_CONTENT_HTML = `
   <h3>Co to je</h3>
   <p>
     Webový prohlížeč souborů <strong>JVF DTM</strong> (Jednotný výměnný formát

@@ -81,6 +81,11 @@ verzování používá [CalVer](https://calver.org/) ve tvaru `YYYY.MM.DD`.
   „UDM".
 
 ### Změněno
+- **Hlavní adresa superjvf.cz pro vyhledávače** — `cz-dtm-utils.vercel.app`
+  a `www.superjvf.cz` se trvale přesměrují na `superjvf.cz`; kanonická
+  adresa, sitemap a strukturovaná data míří na `superjvf.cz`; náhledový
+  obrázek pro sdílení odkazu; nová stránka **/about** s textem O aplikaci
+  pro vyhledávače.
 - **Dialekty JVF DTM jako registr** (revize UDM / DTM) — UDM i ŽXML jsou
   položky jednoho registru (`DIALECTS` v `jvf-dtm-types`, `PARSER_DIALECTS`
   v parseru); router, topologie, export do CAD i viewer se řídí registrem

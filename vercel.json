@@ -4,6 +4,28 @@
   "installCommand": "npm install --ignore-scripts=false",
   "redirects": [
     {
+      "source": "/:path(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cz-dtm-utils.vercel.app"
+        }
+      ],
+      "destination": "https://superjvf.cz/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.superjvf.cz"
+        }
+      ],
+      "destination": "https://superjvf.cz/:path",
+      "permanent": true
+    },
+    {
       "source": "/jvf_viewer",
       "has": [
         {
@@ -91,6 +113,14 @@
     {
       "source": "/analytics/",
       "destination": "/analytics.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/about/",
+      "destination": "/about.html"
     }
   ]
 }

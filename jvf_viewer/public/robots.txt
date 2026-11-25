@@ -7,4 +7,4 @@ Disallow: /symboly/
 # Interní přehled používání (vyžaduje klíč)
 Disallow: /analytics
 
-Sitemap: https://cz-dtm-utils.vercel.app/jvf_viewer/sitemap.xml
+Sitemap: https://superjvf.cz/sitemap.xml

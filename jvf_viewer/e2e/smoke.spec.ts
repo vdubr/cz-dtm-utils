@@ -51,6 +51,20 @@ test.describe('Základní stav aplikace', () => {
     expect((await chooser).isMultiple()).toBe(true);
   });
 
+  test('vyhledávače: hlavní adresa superjvf.cz a stránka /about s textem O aplikaci', async ({ page }) => {
+    await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', 'https://superjvf.cz/');
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://superjvf.cz/og-image.png');
+    expect(await page.locator('noscript').innerHTML()).toContain('href="/about"');
+    const res = await page.goto('./about');
+    expect(res?.status()).toBe(200);
+    await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', 'https://superjvf.cz/about');
+    await expect(page.locator('h1')).toContainText('JVF DTM Prohlížeč');
+    // Obsah je text okna O aplikaci (INFO_CONTENT_HTML).
+    await expect(page.locator('main h3', { hasText: 'Co to je' })).toBeVisible();
+    await expect(page.locator('main h3', { hasText: 'Historie verzí' })).toBeVisible();
+    await expect(page.locator('a.open-app').first()).toHaveAttribute('href', '/');
+  });
+
   test('nabídka ukázkových souborů se otevře a nabízí fixtures', async ({ page }) => {
     await expect(page.locator('#upload-menu')).toBeHidden();
     await page.locator('#btn-upload-menu').click();

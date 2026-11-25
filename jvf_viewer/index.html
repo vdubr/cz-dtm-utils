@@ -10,17 +10,23 @@
   <meta name="keywords" content="JVF, DTM, Digitální technická mapa, ČR, ČÚZK, DMVS, prohlížeč, viewer, validace, S-JTSK, GIS, IS DMVS" />
   <meta name="author" content="Vojtěch Dubrovský" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://cz-dtm-utils.vercel.app/" />
+  <link rel="canonical" href="https://superjvf.cz/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://cz-dtm-utils.vercel.app/" />
+  <meta property="og:url" content="https://superjvf.cz/" />
+  <meta property="og:site_name" content="superjvf.cz" />
+  <meta property="og:image" content="https://superjvf.cz/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="JVF DTM Prohlížeč — mapa s daty Digitální technické mapy ČR" />
   <meta property="og:title" content="JVF DTM Prohlížeč" />
   <meta property="og:description" content="Vizualizace a validace souborů JVF DTM (Digitální technická mapa ČR) přímo v prohlížeči. 2D + 3D, topologická validace, podklady ČÚZK." />
   <meta property="og:locale" content="cs_CZ" />
 
   <!-- Twitter -->
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://superjvf.cz/og-image.png" />
   <meta name="twitter:title" content="JVF DTM Prohlížeč" />
   <meta name="twitter:description" content="Vizualizace a validace souborů JVF DTM (Digitální technická mapa ČR) přímo v prohlížeči." />
 
@@ -45,14 +51,23 @@
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "JVF DTM Prohlížeč",
+      "alternateName": ["superjvf", "superjvf.cz", "JVF Prohlížeč", "Prohlížeč DTM"],
       "description": "Webový prohlížeč souborů JVF DTM (Jednotný výměnný formát Digitální technické mapy ČR) s 2D mapou, 3D pohledem a topologickou validací.",
-      "url": "https://cz-dtm-utils.vercel.app/",
+      "url": "https://superjvf.cz/",
       "applicationCategory": "GIS",
       "operatingSystem": "Web (any)",
+      "keywords": "JVF, DTM, Digitální technická mapa, JVF DTM, IS DMVS, validace JVF, kontrola dat DTM, prohlížeč DTM, ČÚZK, S-JTSK, DXF",
+      "featureList": [
+        "Zobrazení souborů JVF DTM 1.4.3 a 1.5.x ve 2D mapě a 3D s terénem ČÚZK",
+        "Kontrola topologie a dat podle pravidel IS DMVS",
+        "Přehled prvků a atributů s popisky číselníků",
+        "Export do AutoCAD DXF ve vzhledu Katalogu DTM ČR",
+        "Zpracování lokálně v prohlížeči bez odesílání souborů"
+      ],
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "CZK"
       },
       "inLanguage": "cs",
       "author": {
@@ -64,6 +79,17 @@
   </script>
 </head>
 <body>
+  <!-- Pro vyhledávače a prohlížeče bez JavaScriptu — popis a odkaz na /about. -->
+  <noscript>
+    <h1>JVF DTM Prohlížeč — superjvf.cz</h1>
+    <p>
+      Zdarma online prohlížeč a kontrola souborů JVF DTM (Jednotný výměnný
+      formát Digitální technické mapy ČR): 2D mapa, 3D s terénem ČÚZK,
+      kontrola topologie podle IS DMVS, přehled atributů a export do DXF.
+      Aplikace potřebuje zapnutý JavaScript.
+    </p>
+    <p><a href="/about">O aplikaci a historie verzí</a></p>
+  </noscript>
   <div id="app">
     <header id="app-header">
       <div class="header-left">
